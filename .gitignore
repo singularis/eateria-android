@@ -42,3 +42,6 @@ replay_pid*
 .externalNativeBuild
 .cxx
 local.properties
+
+# Ignore build warning files
+build_warnings*.txt

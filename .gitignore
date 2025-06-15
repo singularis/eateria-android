@@ -45,3 +45,9 @@ local.properties
 
 # Ignore build warning files
 build_warnings*.txt
+
+secrets.properties
+
+# Google Services configuration (contains sensitive project info)
+google-services.json
+app/google-services.json

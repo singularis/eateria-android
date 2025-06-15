@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
-import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,6 +30,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -88,7 +88,7 @@ fun HealthSettingsView(
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White
                     )
@@ -118,11 +118,13 @@ fun HealthSettingsView(
                         TextField(
                             value = softLimit,
                             onValueChange = { softLimit = it },
-                            label = { Text("Soft Limit (calories)", color = Color.Gray) },
+                            label = { Text("Soft Limit (calories)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
-                                textColor = Color.White,
-                                backgroundColor = Color.Transparent
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -132,11 +134,13 @@ fun HealthSettingsView(
                         TextField(
                             value = hardLimit,
                             onValueChange = { hardLimit = it },
-                            label = { Text("Hard Limit (calories)", color = Color.Gray) },
+                            label = { Text("Hard Limit (calories)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
-                                textColor = Color.White,
-                                backgroundColor = Color.Transparent
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )

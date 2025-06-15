@@ -1,8 +1,16 @@
 package com.singularis.eateria.services
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.PasswordCredential
+import androidx.credentials.PublicKeyCredential
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -10,16 +18,13 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -32,10 +37,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
-import java.security.Key
 import java.util.Base64
 import java.util.Date
-import javax.crypto.spec.SecretKeySpec
+import javax.crypto.SecretKey
+import com.singularis.eateria.util.Secrets
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -88,6 +93,9 @@ class AuthenticationService(private val context: Context) {
     
     private val gson = Gson()
     
+    // Modern Credential Manager instance
+    private val credentialManager = CredentialManager.create(context)
+    
     companion object {
         private val AUTH_TOKEN = stringPreferencesKey("auth_token")
         private val USER_EMAIL = stringPreferencesKey("user_email")
@@ -98,16 +106,6 @@ class AuthenticationService(private val context: Context) {
         private val SOFT_LIMIT = stringPreferencesKey("soft_limit")
         private val HARD_LIMIT = stringPreferencesKey("hard_limit")
         private val HAS_USER_HEALTH_DATA = booleanPreferencesKey("has_user_health_data")
-    }
-    
-    // TODO: Migrate from deprecated GoogleSignIn and GoogleSignInClient to the latest recommended authentication APIs
-    // Google Sign-In client
-    private val googleSignInClient: GoogleSignInClient by lazy {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("your-google-oauth-client-id") // Replace with actual client ID
-            .requestEmail()
-            .build()
-        GoogleSignIn.getClient(context, gso)
     }
     
     // Flow for authentication state
@@ -156,32 +154,81 @@ class AuthenticationService(private val context: Context) {
         }
     }
     
-    // Google Sign-In intent
-    fun getSignInIntent(): Intent {
-        return googleSignInClient.signInIntent
-    }
-    
-    // Handle Google Sign-In result
-    suspend fun handleSignInResult(data: Intent?): Boolean {
+    // Modern Credential Manager sign-in method
+    suspend fun signInWithCredentialManager(activity: ComponentActivity): Boolean {
+        Log.e("AuthenticationService", "=== DEBUG: Starting Google Sign-In ===")
+        Log.e("AuthenticationService", "Client ID: ${Secrets.googleClientId}")
+        Log.e("AuthenticationService", "Package: ${context.packageName}")
+        Log.e("AuthenticationService", "BuildConfig Client ID: ${com.singularis.eateria.BuildConfig.GOOGLE_CLIENT_ID}")
+        
         return try {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            val account = task.getResult(ApiException::class.java)
-            handleAuthenticationSuccess("google", account)
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setServerClientId(Secrets.googleClientId)
+                .setFilterByAuthorizedAccounts(false) // Allow all accounts, not just authorized ones
+                .build()
+            
+            Log.e("AuthenticationService", "Created GoogleIdOption with filterByAuthorizedAccounts=false")
+            
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+            
+            Log.e("AuthenticationService", "Calling credentialManager.getCredential...")
+            
+            val result = credentialManager.getCredential(
+                context = activity,
+                request = request
+            )
+            
+            Log.e("AuthenticationService", "SUCCESS: Got credential result!")
+            handleSignInResult(result)
             true
-        } catch (e: ApiException) {
-            Log.w("AuthenticationService", "signInResult:failed code=" + e.statusCode)
+        } catch (e: GetCredentialException) {
+            Log.e("AuthenticationService", "FAILED: Credential Manager sign in failed", e)
+            Log.e("AuthenticationService", "Exception type: ${e.javaClass.simpleName}")
+            Log.e("AuthenticationService", "Exception message: ${e.message}")
+            Log.e("AuthenticationService", "Exception cause: ${e.cause}")
             false
         }
     }
     
-    private suspend fun handleAuthenticationSuccess(provider: String, account: GoogleSignInAccount) {
-        val idToken = account.idToken ?: return
-        val email = account.email ?: return
-        val name = account.displayName
-        val profilePictureURL = account.photoUrl?.toString()
+    private suspend fun handleSignInResult(result: GetCredentialResponse) {
+        when (val credential = result.credential) {
+            is CustomCredential -> {
+                if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    try {
+                        val googleIdTokenCredential = GoogleIdTokenCredential
+                            .createFrom(credential.data)
+                        handleGoogleIdToken(googleIdTokenCredential)
+                    } catch (e: GoogleIdTokenParsingException) {
+                        Log.e("AuthenticationService", "Received an invalid google id token response", e)
+                    }
+                } else {
+                    Log.e("AuthenticationService", "Unexpected type of credential")
+                }
+            }
+            is PasswordCredential -> {
+                // Handle password credential if needed
+                Log.d("AuthenticationService", "Password credential received")
+            }
+            is PublicKeyCredential -> {
+                // Handle passkey credential if needed
+                Log.d("AuthenticationService", "Passkey credential received")
+            }
+            else -> {
+                Log.e("AuthenticationService", "Unexpected type of credential")
+            }
+        }
+    }
+    
+    private suspend fun handleGoogleIdToken(googleIdTokenCredential: GoogleIdTokenCredential) {
+        val idToken = googleIdTokenCredential.idToken
+        val email = googleIdTokenCredential.id
+        val name = googleIdTokenCredential.displayName
+        val profilePictureURL = googleIdTokenCredential.profilePictureUri?.toString()
         
         val tokenRequest = TokenRequest(
-            provider = provider,
+            provider = "google",
             idToken = idToken,
             email = email,
             name = name,
@@ -211,7 +258,6 @@ class AuthenticationService(private val context: Context) {
     }
     
     suspend fun signOut() {
-        googleSignInClient.signOut()
         clearAllUserData()
     }
     
@@ -222,7 +268,6 @@ class AuthenticationService(private val context: Context) {
     }
     
     suspend fun deleteAccountAndClearData() {
-        googleSignInClient.signOut()
         clearAllUserData()
     }
     
@@ -275,12 +320,12 @@ class AuthenticationService(private val context: Context) {
     }
     
     private fun verifyHS256(token: String, secret: String): Claims {
-        val key: Key = SecretKeySpec(secret.toByteArray(), SignatureAlgorithm.HS256.jcaName)
-        return Jwts.parserBuilder()
-            .setSigningKey(key)
+        val key: SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
+        return Jwts.parser()
+            .verifyWith(key)
             .build()
-            .parseClaimsJws(token)
-            .body
+            .parseSignedClaims(token)
+            .payload
     }
     
     // Calorie limits management

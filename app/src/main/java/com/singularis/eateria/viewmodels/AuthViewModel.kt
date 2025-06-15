@@ -1,6 +1,6 @@
 package com.singularis.eateria.viewmodels
 
-import android.content.Intent
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.singularis.eateria.services.AuthenticationService
@@ -15,10 +15,8 @@ class AuthViewModel(private val authService: AuthenticationService) : ViewModel(
     val userProfilePictureURL: Flow<String?> = authService.userProfilePictureURL
     val hasSeenOnboarding: Flow<Boolean> = authService.hasSeenOnboarding
     
-    fun handleSignInResult(data: Intent?) {
-        viewModelScope.launch {
-            authService.handleSignInResult(data)
-        }
+    suspend fun signInWithCredentialManager(activity: ComponentActivity): Boolean {
+        return authService.signInWithCredentialManager(activity)
     }
     
     fun signOut() {

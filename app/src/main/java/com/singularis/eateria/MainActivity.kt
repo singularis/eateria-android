@@ -1,15 +1,12 @@
 package com.singularis.eateria
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -24,15 +21,6 @@ import com.singularis.eateria.viewmodels.MainViewModel
 class MainActivity : ComponentActivity() {
     
     private lateinit var authService: AuthenticationService
-    
-    private val signInLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val authViewModel: AuthViewModel by lazy {
-            AuthViewModel(authService)
-        }
-        authViewModel.handleSignInResult(result.data)
-    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,10 +53,7 @@ class MainActivity : ComponentActivity() {
         } else {
             LoginView(
                 authViewModel = authViewModel,
-                onSignInClick = {
-                    val signInIntent = authService.getSignInIntent()
-                    signInLauncher.launch(signInIntent)
-                }
+                activity = this@MainActivity
             )
         }
     }

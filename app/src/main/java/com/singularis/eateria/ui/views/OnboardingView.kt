@@ -27,7 +27,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -114,7 +115,7 @@ fun OnboardingView(
         OnboardingPage(
             title = "Get Personalized Insights 💡",
             description = "View your trends, manage your profile, and access health information - all designed to help you reach your wellness goals.",
-            icon = Icons.Default.TrendingUp,
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
             iconColor = Color(0xFFFF9800),
             anchor = "insights"
         ),
@@ -539,13 +540,15 @@ private fun HealthFormView(
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
                 )
-                androidx.compose.material.TextField(
+                TextField(
                     value = height,
                     onValueChange = onHeightChange,
-                    placeholder = { Text("175", color = Color.Gray) },
-                    colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
-                        textColor = Color.White,
-                        backgroundColor = Color.Transparent
+                    placeholder = { Text("175") },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -561,13 +564,15 @@ private fun HealthFormView(
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
                 )
-                androidx.compose.material.TextField(
+                TextField(
                     value = weight,
                     onValueChange = onWeightChange,
-                    placeholder = { Text("70", color = Color.Gray) },
-                    colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
-                        textColor = Color.White,
-                        backgroundColor = Color.Transparent
+                    placeholder = { Text("70") },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     ),
                     modifier = Modifier.weight(1f)
                 )
@@ -583,13 +588,15 @@ private fun HealthFormView(
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
                 )
-                androidx.compose.material.TextField(
+                TextField(
                     value = age,
                     onValueChange = onAgeChange,
-                    placeholder = { Text("25", color = Color.Gray) },
-                    colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
-                        textColor = Color.White,
-                        backgroundColor = Color.Transparent
+                    placeholder = { Text("25") },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     ),
                     modifier = Modifier.weight(1f)
                 )

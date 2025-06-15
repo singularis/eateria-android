@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material.icons.filled.TrendingDown
-import androidx.compose.material.icons.filled.TrendingFlat
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -129,7 +129,7 @@ private fun StatisticsHeader(
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
                 tint = Color.White
             )
@@ -382,9 +382,9 @@ private fun TrendsView(
                             WeightTrendDirection.STABLE -> CalorieYellow
                         },
                         icon = when (trend.trend) {
-                            WeightTrendDirection.GAINING -> Icons.Default.TrendingUp
-                            WeightTrendDirection.LOSING -> Icons.Default.TrendingDown
-                            WeightTrendDirection.STABLE -> Icons.Default.TrendingFlat
+                            WeightTrendDirection.GAINING -> Icons.AutoMirrored.Filled.TrendingUp
+                            WeightTrendDirection.LOSING -> Icons.AutoMirrored.Filled.TrendingDown
+                            WeightTrendDirection.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
                         }
                     )
                 }
@@ -394,14 +394,14 @@ private fun TrendsView(
                         title = "Calorie Consistency",
                         value = "${(trend.consistency * 100).toInt()}%",
                         color = if (trend.consistency > 0.7f) CalorieGreen else CalorieOrange,
-                        icon = if (trend.consistency > 0.7f) Icons.Default.TrendingUp else Icons.Default.TrendingFlat
+                        icon = if (trend.consistency > 0.7f) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingFlat
                     )
                     
                     TrendCard(
                         title = "Avg Daily Calories",
                         value = "${trend.averageCalories.toInt()} kcal",
                         color = DarkPrimary,
-                        icon = Icons.Default.TrendingFlat
+                        icon = Icons.AutoMirrored.Filled.TrendingFlat
                     )
                 }
             }

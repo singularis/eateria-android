@@ -7,7 +7,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -59,7 +66,7 @@ fun UserProfileView(
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White
                     )
@@ -95,7 +102,7 @@ fun UserProfileView(
                         title = "Health & Statistics",
                         items = listOf(
                             ProfileMenuItem(
-                                icon = Icons.Default.TrendingUp,
+                                icon = Icons.AutoMirrored.Filled.TrendingUp,
                                 title = "Statistics",
                                 subtitle = "View your nutrition trends",
                                 onClick = onStatisticsClick
@@ -122,7 +129,7 @@ fun UserProfileView(
                         title = "Account",
                         items = listOf(
                             ProfileMenuItem(
-                                icon = Icons.Default.ExitToApp,
+                                icon = Icons.AutoMirrored.Filled.ExitToApp,
                                 title = "Sign Out",
                                 subtitle = "Sign out of your account",
                                 onClick = { showSignOutDialog = true },
@@ -276,7 +283,7 @@ private fun ProfileMenuSection(
                         }
                         
                         Icon(
-                            imageVector = Icons.Default.ChevronRight,
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
                             tint = Color.Gray,
                             modifier = Modifier.size(20.dp)

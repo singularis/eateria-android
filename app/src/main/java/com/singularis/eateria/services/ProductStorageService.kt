@@ -51,9 +51,8 @@ class ProductStorageService private constructor(private val context: Context) {
     suspend fun fetchAndProcessCustomDateProducts(date: String, callback: (List<Product>, Int, Float) -> Unit) {
         withContext(Dispatchers.IO) {
             try {
-                // For now, use the same fetch method as today
-                // In a real implementation, this would call a custom date endpoint
-                val (products, calories, weight) = grpcService.fetchProducts()
+                // Use the proper custom date endpoint instead of today's data
+                val (products, calories, weight) = grpcService.fetchCustomDateProducts(date)
                 
                 // Load images for products
                 val productsWithImages = products.map { product ->

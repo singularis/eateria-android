@@ -62,29 +62,46 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Gray3
 import java.io.File
 import java.util.concurrent.Executors
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun WeightCameraView(
+    viewModel: com.singularis.eateria.viewmodels.MainViewModel,
     onPhotoSuccess: () -> Unit,
     onPhotoFailure: () -> Unit,
     onPhotoStarted: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    if (true) {
+    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+    
+    LaunchedEffect(cameraPermissionState.status.isGranted) {
+        if (!cameraPermissionState.status.isGranted) {
+            cameraPermissionState.launchPermissionRequest()
+        }
+    }
+    
+    if (cameraPermissionState.status.isGranted) {
         CameraPreviewView(
-            onPhotoTaken = { success ->
-                if (success) {
+            onPhotoTaken = { bitmap ->
+                if (bitmap != null) {
+                    onPhotoStarted()
+                    // Send photo to ViewModel for processing
+                    viewModel.sendPhoto(bitmap, "weight_prompt", System.currentTimeMillis())
                     onPhotoSuccess()
                 } else {
                     onPhotoFailure()
                 }
             },
-            onPhotoStarted = onPhotoStarted,
             onDismiss = onDismiss,
             isWeightCamera = true
         )
@@ -93,23 +110,35 @@ fun WeightCameraView(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun FoodCameraView(
+    viewModel: com.singularis.eateria.viewmodels.MainViewModel,
     onPhotoSuccess: () -> Unit,
     onPhotoFailure: () -> Unit,
     onPhotoStarted: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    if (true) {
+    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+    
+    LaunchedEffect(cameraPermissionState.status.isGranted) {
+        if (!cameraPermissionState.status.isGranted) {
+            cameraPermissionState.launchPermissionRequest()
+        }
+    }
+    
+    if (cameraPermissionState.status.isGranted) {
         CameraPreviewView(
-            onPhotoTaken = { success ->
-                if (success) {
+            onPhotoTaken = { bitmap ->
+                if (bitmap != null) {
+                    onPhotoStarted()
+                    // Send photo to ViewModel for processing
+                    viewModel.sendPhoto(bitmap, "default_prompt", System.currentTimeMillis())
                     onPhotoSuccess()
                 } else {
                     onPhotoFailure()
                 }
             },
-            onPhotoStarted = onPhotoStarted,
             onDismiss = onDismiss,
             isWeightCamera = false
         )
@@ -120,8 +149,7 @@ fun FoodCameraView(
 
 @Composable
 private fun CameraPreviewView(
-    onPhotoTaken: (Boolean) -> Unit,
-    onPhotoStarted: () -> Unit,
+    onPhotoTaken: (Bitmap?) -> Unit,
     onDismiss: () -> Unit,
     isWeightCamera: Boolean
 ) {
@@ -244,9 +272,8 @@ private fun CameraPreviewView(
                 onClick = {
                     if (!isCapturing) {
                         isCapturing = true
-                        onPhotoStarted()
                         
-                        // Take photo
+                        // Take photo and convert to bitmap
                         val outputFileOptions = ImageCapture.OutputFileOptions.Builder(
                             File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg")
                         ).build()
@@ -257,13 +284,29 @@ private fun CameraPreviewView(
                             object : ImageCapture.OnImageSavedCallback {
                                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                                     isCapturing = false
-                                    onPhotoTaken(true)
+                                    
+                                    // Convert saved file to bitmap
+                                    try {
+                                        val savedFile = output.savedUri?.path?.let { File(it) }
+                                            ?: File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg")
+                                        
+                                        if (savedFile.exists()) {
+                                            val bitmap = BitmapFactory.decodeFile(savedFile.absolutePath)
+                                            onPhotoTaken(bitmap)
+                                            savedFile.delete() // Clean up temporary file
+                                        } else {
+                                            onPhotoTaken(null)
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("CameraView", "Failed to convert photo to bitmap", e)
+                                        onPhotoTaken(null)
+                                    }
                                 }
                                 
                                 override fun onError(exception: ImageCaptureException) {
                                     isCapturing = false
                                     Log.e("CameraView", "Photo capture failed: ${exception.message}", exception)
-                                    onPhotoTaken(false)
+                                    onPhotoTaken(null)
                                 }
                             }
                         )
@@ -305,44 +348,83 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(32.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Camera,
                 contentDescription = null,
                 tint = Color.Gray,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(80.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Text(
+                text = "Camera Permission Required",
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Camera Permission Required",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "Please grant camera permission to take photos",
+                text = "To take photos of your food and weight scale, we need access to your camera. This allows the app to analyze your food and track your weight.",
                 color = Color.Gray,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
             )
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             
             Button(
                 onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = DarkPrimary,
                     contentColor = Color.White
-                )
+                ),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Close")
+                Text(
+                    text = "Go to Settings",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.Gray
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Cancel",
+                    fontSize = 16.sp
+                )
+            }
+        }
+        
+        // Close button in top right
+        IconButton(
+            onClick = onDismiss,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close",
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }

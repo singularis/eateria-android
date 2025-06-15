@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package eater;
+
+message DeleteUserRequest {
+  string email = 1;
+}
+
+message DeleteUserResponse {
+  bool success = 1;
+} 

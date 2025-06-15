@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package eater;
+
+message DeleteFoodRequest {
+  int64 time = 1;
+}
+
+message DeleteFoodResponse {
+  bool success = 1;
+} 

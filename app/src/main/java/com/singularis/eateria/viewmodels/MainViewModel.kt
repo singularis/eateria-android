@@ -77,6 +77,12 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val _showOnboarding = MutableStateFlow(false)
     val showOnboarding: StateFlow<Boolean> = _showOnboarding.asStateFlow()
     
+    private val _showStatistics = MutableStateFlow(false)
+    val showStatistics: StateFlow<Boolean> = _showStatistics.asStateFlow()
+    
+    private val _showHealthSettings = MutableStateFlow(false)
+    val showHealthSettings: StateFlow<Boolean> = _showHealthSettings.asStateFlow()
+    
     private val _showCalendarPicker = MutableStateFlow(false)
     val showCalendarPicker: StateFlow<Boolean> = _showCalendarPicker.asStateFlow()
     
@@ -435,6 +441,22 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     fun hideOnboarding() {
         _showOnboarding.value = false
+    }
+    
+    fun showStatistics() {
+        _showStatistics.value = true
+    }
+    
+    fun hideStatistics() {
+        _showStatistics.value = false
+    }
+    
+    fun showHealthSettings() {
+        _showHealthSettings.value = true
+    }
+    
+    fun hideHealthSettings() {
+        _showHealthSettings.value = false
     }
     
     fun showCalendarPicker() {

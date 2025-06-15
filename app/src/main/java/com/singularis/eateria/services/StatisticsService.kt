@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.singularis.eateria.models.DailyStatistics
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -25,12 +27,137 @@ class StatisticsService private constructor(private val context: Context) {
     
     private val grpcService = GRPCService(context)
     private val cacheService = StatisticsCacheService.getInstance(context)
+    private val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    
+    init {
+        // Validate cache integrity on initialization (iOS-style)
+        cacheService.validateCacheIntegrity()
+    }
+    
+    // iOS-style period-based fetching
+    suspend fun fetchStatisticsForPeriod(period: StatisticsPeriod): List<DailyStatistics> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val calendar = Calendar.getInstance()
+                val endDate = Date()
+                val startDate = calendar.apply {
+                    time = endDate
+                    add(Calendar.DAY_OF_YEAR, -period.days + 1)
+                }.time
+                
+                // Generate all dates in the period
+                val allDateStrings = generateDateStrings(startDate, endDate)
+                
+                // Clean up expired cache entries first
+                cacheService.clearExpiredCache()
+                
+                // Get cached statistics
+                val cachedStatistics = cacheService.getCachedStatistics(allDateStrings)
+                
+                // Find missing dates that need to be fetched
+                val missingDateStrings = cacheService.getMissingDates(allDateStrings)
+                
+                if (missingDateStrings.isEmpty()) {
+                    // All data is cached, return immediately
+                    Log.d("StatisticsService", "All data cached for period ${period.name}")
+                    return@withContext cachedStatistics.sortedBy { it.date }
+                }
+                
+                // Fetch missing data from server
+                val newStatistics = fetchMissingStatistics(missingDateStrings)
+                
+                // Cache the new data
+                newStatistics.forEach { stats ->
+                    cacheService.cacheStatistics(stats.dateString, stats)
+                }
+                
+                // Combine cached and new data
+                val allStatistics = cachedStatistics + newStatistics
+                
+                // Create empty stats for any remaining missing dates
+                val emptyStats = createEmptyStatsForMissingDates(allDateStrings, allStatistics)
+                
+                // Combine all data and sort by date
+                val finalStatistics = (allStatistics + emptyStats).sortedBy { it.date }
+                
+                Log.d("StatisticsService", "Fetched ${finalStatistics.size} days for period ${period.name}")
+                finalStatistics
+            } catch (e: Exception) {
+                Log.e("StatisticsService", "Failed to fetch statistics for period", e)
+                emptyList()
+            }
+        }
+    }
+    
+    private fun generateDateStrings(startDate: Date, endDate: Date): List<String> {
+        val dateStrings = mutableListOf<String>()
+        val calendar = Calendar.getInstance()
+        calendar.time = startDate
+        
+        while (calendar.time <= endDate) {
+            dateStrings.add(dateFormatter.format(calendar.time))
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+        
+        return dateStrings
+    }
+    
+    private suspend fun fetchMissingStatistics(dateStrings: List<String>): List<DailyStatistics> {
+        return withContext(Dispatchers.IO) {
+            val todayString = dateFormatter.format(Date())
+            
+            // Use parallel fetching for better performance
+            val deferredResults = dateStrings.map { dateString ->
+                async {
+                    try {
+                        if (dateString == todayString) {
+                            grpcService.fetchTodayStatistics()
+                        } else {
+                            grpcService.fetchStatisticsData(dateString)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("StatisticsService", "Failed to fetch statistics for $dateString", e)
+                        null
+                    }
+                }
+            }
+            
+            deferredResults.awaitAll().filterNotNull()
+        }
+    }
+    
+    private fun createEmptyStatsForMissingDates(
+        allDateStrings: List<String>,
+        fetchedStatistics: List<DailyStatistics>
+    ): List<DailyStatistics> {
+        val fetchedDateStrings = fetchedStatistics.map { it.dateString }.toSet()
+        
+        return allDateStrings.mapNotNull { dateString ->
+            if (dateString !in fetchedDateStrings) {
+                val date = dateFormatter.parse(dateString) ?: Date()
+                DailyStatistics(
+                    date = date,
+                    dateString = dateString,
+                    totalCalories = 0,
+                    totalFoodWeight = 0,
+                    personWeight = 0f,
+                    proteins = 0.0,
+                    fats = 0.0,
+                    carbohydrates = 0.0,
+                    sugar = 0.0,
+                    numberOfMeals = 0,
+                    hasData = false // Mark as placeholder data
+                )
+            } else {
+                null
+            }
+        }
+    }
     
     suspend fun getTodayStatistics(): DailyStatistics? {
         return withContext(Dispatchers.IO) {
             try {
                 val today = Date()
-                val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
                 val todayString = dateFormatter.format(today)
                 
                 // Check cache first
@@ -79,56 +206,82 @@ class StatisticsService private constructor(private val context: Context) {
     }
     
     suspend fun getWeeklyStatistics(): List<DailyStatistics> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val calendar = Calendar.getInstance()
-                val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-                val weekStats = mutableListOf<DailyStatistics>()
-                
-                // Get last 7 days
-                for (i in 6 downTo 0) {
-                    calendar.time = Date()
-                    calendar.add(Calendar.DAY_OF_YEAR, -i)
-                    val dateString = dateFormatter.format(calendar.time)
-                    
-                    getStatisticsForDate(dateString)?.let { stats ->
-                        weekStats.add(stats)
-                    }
-                }
-                
-                Log.d("StatisticsService", "Retrieved ${weekStats.size} days of weekly statistics")
-                weekStats
-            } catch (e: Exception) {
-                Log.e("StatisticsService", "Failed to get weekly statistics", e)
-                emptyList()
-            }
-        }
+        return fetchStatisticsForPeriod(StatisticsPeriod.WEEK)
     }
     
     suspend fun getMonthlyStatistics(): List<DailyStatistics> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val calendar = Calendar.getInstance()
-                val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-                val monthStats = mutableListOf<DailyStatistics>()
-                
-                // Get last 30 days
-                for (i in 29 downTo 0) {
-                    calendar.time = Date()
-                    calendar.add(Calendar.DAY_OF_YEAR, -i)
-                    val dateString = dateFormatter.format(calendar.time)
-                    
-                    getStatisticsForDate(dateString)?.let { stats ->
-                        monthStats.add(stats)
-                    }
-                }
-                
-                Log.d("StatisticsService", "Retrieved ${monthStats.size} days of monthly statistics")
-                monthStats
-            } catch (e: Exception) {
-                Log.e("StatisticsService", "Failed to get monthly statistics", e)
-                emptyList()
+        return fetchStatisticsForPeriod(StatisticsPeriod.MONTH)
+    }
+    
+    // iOS-style analysis methods
+    suspend fun calculateAverages(statistics: List<DailyStatistics>): NutritionAverages {
+        return withContext(Dispatchers.Default) {
+            val validStats = statistics.filter { it.hasData }
+            
+            if (validStats.isEmpty()) {
+                return@withContext NutritionAverages(
+                    calories = 0.0,
+                    proteins = 0.0,
+                    fats = 0.0,
+                    carbohydrates = 0.0,
+                    weight = 0f,
+                    mealsPerDay = 0.0,
+                    daysAnalyzed = 0
+                )
             }
+            
+            val totalStats = validStats.size
+            val caloriesSum = validStats.sumOf { it.totalCalories }
+            val weightSum = validStats.sumOf { it.totalFoodWeight }
+            val personWeightStats = validStats.filter { it.personWeight > 0 }
+            val personWeightSum = personWeightStats.sumOf { it.personWeight.toDouble() }
+            val proteinsSum = validStats.sumOf { it.proteins }
+            val fatsSum = validStats.sumOf { it.fats }
+            val carbsSum = validStats.sumOf { it.carbohydrates }
+            val mealsSum = validStats.sumOf { it.numberOfMeals }
+            
+            NutritionAverages(
+                calories = caloriesSum.toDouble() / totalStats,
+                proteins = proteinsSum / totalStats,
+                fats = fatsSum / totalStats,
+                carbohydrates = carbsSum / totalStats,
+                weight = if (personWeightStats.isNotEmpty()) {
+                    (personWeightSum / personWeightStats.size).toFloat()
+                } else 0f,
+                mealsPerDay = mealsSum.toDouble() / totalStats,
+                daysAnalyzed = totalStats
+            )
+        }
+    }
+    
+    suspend fun calculateTrends(statistics: List<DailyStatistics>): StatisticsTrends {
+        return withContext(Dispatchers.Default) {
+            if (statistics.size < 2) {
+                return@withContext StatisticsTrends(0.0, 0.0, 0.0)
+            }
+            
+            val validCaloriesStats = statistics.filter { it.hasData && it.totalCalories > 0 }
+            val validWeightStats = statistics.filter { it.hasData && it.totalFoodWeight > 0 }
+            val validPersonWeightStats = statistics.filter { it.hasData && it.personWeight > 0 }
+            
+            fun calculateTrend(values: List<Number>): Double {
+                if (values.size < 2) return 0.0
+                val splitPoint = values.size / 3
+                val first = values.take(splitPoint).map { it.toDouble() }
+                val last = values.takeLast(splitPoint).map { it.toDouble() }
+                
+                if (first.isEmpty() || last.isEmpty()) return 0.0
+                
+                val firstAvg = first.average()
+                val lastAvg = last.average()
+                return lastAvg - firstAvg
+            }
+            
+            val caloriesTrend = calculateTrend(validCaloriesStats.map { it.totalCalories })
+            val weightTrend = calculateTrend(validWeightStats.map { it.totalFoodWeight })
+            val personWeightTrend = calculateTrend(validPersonWeightStats.map { it.personWeight })
+            
+            StatisticsTrends(caloriesTrend, weightTrend, personWeightTrend)
         }
     }
     
@@ -140,68 +293,28 @@ class StatisticsService private constructor(private val context: Context) {
         cacheService.clearAllCache()
     }
     
-    // Calculate nutrition averages
+    fun getCacheInfo(): Pair<Int, Int> {
+        return cacheService.getCacheInfo()
+    }
+    
+    // Calculate nutrition averages (keeping existing method for backward compatibility)
     suspend fun calculateWeeklyAverages(): NutritionAverages? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val weeklyStats = getWeeklyStatistics()
-                if (weeklyStats.isEmpty()) return@withContext null
-                
-                val daysWithData = weeklyStats.filter { it.hasData }
-                if (daysWithData.isEmpty()) return@withContext null
-                
-                val avgCalories = daysWithData.map { it.totalCalories }.average()
-                val avgProteins = daysWithData.map { it.proteins }.average()
-                val avgFats = daysWithData.map { it.fats }.average()
-                val avgCarbs = daysWithData.map { it.carbohydrates }.average()
-                val avgWeight = daysWithData.map { it.personWeight.toDouble() }.average()
-                val avgMeals = daysWithData.map { it.numberOfMeals }.average()
-                
-                NutritionAverages(
-                    calories = avgCalories,
-                    proteins = avgProteins,
-                    fats = avgFats,
-                    carbohydrates = avgCarbs,
-                    weight = avgWeight.toFloat(),
-                    mealsPerDay = avgMeals,
-                    daysAnalyzed = daysWithData.size
-                )
-            } catch (e: Exception) {
-                Log.e("StatisticsService", "Failed to calculate weekly averages", e)
-                null
-            }
+        return try {
+            val weeklyStats = getWeeklyStatistics()
+            if (weeklyStats.isEmpty()) null else calculateAverages(weeklyStats)
+        } catch (e: Exception) {
+            Log.e("StatisticsService", "Failed to calculate weekly averages", e)
+            null
         }
     }
     
     suspend fun calculateMonthlyAverages(): NutritionAverages? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val monthlyStats = getMonthlyStatistics()
-                if (monthlyStats.isEmpty()) return@withContext null
-                
-                val daysWithData = monthlyStats.filter { it.hasData }
-                if (daysWithData.isEmpty()) return@withContext null
-                
-                val avgCalories = daysWithData.map { it.totalCalories }.average()
-                val avgProteins = daysWithData.map { it.proteins }.average()
-                val avgFats = daysWithData.map { it.fats }.average()
-                val avgCarbs = daysWithData.map { it.carbohydrates }.average()
-                val avgWeight = daysWithData.map { it.personWeight.toDouble() }.average()
-                val avgMeals = daysWithData.map { it.numberOfMeals }.average()
-                
-                NutritionAverages(
-                    calories = avgCalories,
-                    proteins = avgProteins,
-                    fats = avgFats,
-                    carbohydrates = avgCarbs,
-                    weight = avgWeight.toFloat(),
-                    mealsPerDay = avgMeals,
-                    daysAnalyzed = daysWithData.size
-                )
-            } catch (e: Exception) {
-                Log.e("StatisticsService", "Failed to calculate monthly averages", e)
-                null
-            }
+        return try {
+            val monthlyStats = getMonthlyStatistics()
+            if (monthlyStats.isEmpty()) null else calculateAverages(monthlyStats)
+        } catch (e: Exception) {
+            Log.e("StatisticsService", "Failed to calculate monthly averages", e)
+            null
         }
     }
     
@@ -217,7 +330,6 @@ class StatisticsService private constructor(private val context: Context) {
                 val firstWeight = weights.first()
                 val lastWeight = weights.last()
                 val weightChange = lastWeight - firstWeight
-                val averageWeight = weights.average().toFloat()
                 
                 WeightTrend(
                     currentWeight = lastWeight,
@@ -246,36 +358,30 @@ class StatisticsService private constructor(private val context: Context) {
                 
                 val calories = daysWithData.map { it.totalCalories }
                 val averageCalories = calories.average()
-                val maxCalories = calories.maxOrNull() ?: 0
-                val minCalories = calories.minOrNull() ?: 0
+                
+                // Calculate consistency (how close each day is to the average)
+                val deviations = calories.map { kotlin.math.abs(it - averageCalories) }
+                val avgDeviation = deviations.average().toFloat()
+                val consistency = kotlin.math.max(0f, 1f - (avgDeviation / averageCalories.toFloat()))
+                
+                val weeklyChange = if (calories.size >= 7) {
+                    val firstWeekAvg = calories.take(7).average().toFloat()
+                    val lastWeekAvg = calories.takeLast(7).average().toFloat()
+                    lastWeekAvg - firstWeekAvg
+                } else {
+                    0f
+                }
                 
                 CalorieTrend(
                     averageCalories = averageCalories.toFloat(),
-                    consistency = calculateConsistency(calories.map { it.toInt() }),
-                    weeklyChange = if (calories.size >= 7) {
-                        val firstWeekAvg = calories.take(7).average().toFloat()
-                        val lastWeekAvg = calories.takeLast(7).average().toFloat()
-                        lastWeekAvg - firstWeekAvg
-                    } else {
-                        0f
-                    }
+                    consistency = consistency,
+                    weeklyChange = weeklyChange
                 )
             } catch (e: Exception) {
                 Log.e("StatisticsService", "Failed to calculate calorie trend", e)
                 null
             }
         }
-    }
-    
-    private fun calculateConsistency(values: List<Int>): Float {
-        if (values.size < 2) return 1.0f
-        
-        val average = values.average()
-        val variance = values.map { (it - average) * (it - average) }.average()
-        val standardDeviation = kotlin.math.sqrt(variance)
-        
-        // Normalize consistency to 0-1 range (lower deviation = higher consistency)
-        return (1.0f / (1.0f + (standardDeviation / average).toFloat())).coerceIn(0f, 1f)
     }
     
     fun calculateWeightTrend(statistics: List<DailyStatistics>): WeightTrend? {
@@ -332,6 +438,14 @@ class StatisticsService private constructor(private val context: Context) {
     }
 }
 
+// Enum for statistics periods (matching iOS)
+enum class StatisticsPeriod(val days: Int) {
+    WEEK(7),
+    MONTH(30),
+    THREE_MONTHS(90)
+}
+
+// Data classes for analysis results
 data class NutritionAverages(
     val calories: Double,
     val proteins: Double,
@@ -340,6 +454,12 @@ data class NutritionAverages(
     val weight: Float,
     val mealsPerDay: Double,
     val daysAnalyzed: Int
+)
+
+data class StatisticsTrends(
+    val caloriesTrend: Double,
+    val weightTrend: Double,
+    val personWeightTrend: Double
 )
 
 data class WeightTrend(

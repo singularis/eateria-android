@@ -50,6 +50,9 @@ fun ContentView(
     val showLimitsAlert by viewModel.showLimitsAlert.collectAsState()
     val showUserProfile by viewModel.showUserProfile.collectAsState()
     val showHealthDisclaimer by viewModel.showHealthDisclaimer.collectAsState()
+    val showOnboarding by viewModel.showOnboarding.collectAsState()
+    val showStatistics by viewModel.showStatistics.collectAsState()
+    val showHealthSettings by viewModel.showHealthSettings.collectAsState()
     val showCalendarPicker by viewModel.showCalendarPicker.collectAsState()
     val showWeightActionSheet by viewModel.showWeightActionSheet.collectAsState()
     val showManualWeightEntry by viewModel.showManualWeightEntry.collectAsState()
@@ -207,7 +210,11 @@ fun ContentView(
         if (showUserProfile) {
             UserProfileView(
                 authViewModel = authViewModel,
-                onBackClick = { viewModel.hideUserProfile() }
+                onBackClick = { viewModel.hideUserProfile() },
+                onStatisticsClick = { viewModel.showStatistics() },
+                onHealthSettingsClick = { viewModel.showHealthSettings() },
+                onHealthDisclaimerClick = { viewModel.showHealthDisclaimer() },
+                onOnboardingClick = { viewModel.showOnboarding() }
             )
         }
         
@@ -215,6 +222,26 @@ fun ContentView(
             HealthDisclaimerView(
                 isPresented = true,
                 onDismiss = { viewModel.hideHealthDisclaimer() }
+            )
+        }
+        
+        if (showOnboarding) {
+            OnboardingView(
+                isPresented = true,
+                onComplete = { viewModel.hideOnboarding() }
+            )
+        }
+        
+        if (showStatistics) {
+            StatisticsView(
+                onBackClick = { viewModel.hideStatistics() }
+            )
+        }
+        
+        if (showHealthSettings) {
+            HealthSettingsView(
+                authViewModel = authViewModel,
+                onBackClick = { viewModel.hideHealthSettings() }
             )
         }
         

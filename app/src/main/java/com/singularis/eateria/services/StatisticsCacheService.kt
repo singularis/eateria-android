@@ -6,8 +6,10 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.singularis.eateria.models.DailyStatistics
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 class StatisticsCacheService private constructor(private val context: Context) {
     
@@ -22,13 +24,16 @@ class StatisticsCacheService private constructor(private val context: Context) {
         }
         
         private const val CACHE_FILE_NAME = "statistics_cache.json"
-        private const val CACHE_EXPIRY_HOURS = 2
+        // Cache expiry times matching iOS
+        private const val CURRENT_DAY_CACHE_EXPIRY_HOURS = 4 // 4 hours for current day
+        private const val PAST_DAY_CACHE_EXPIRY_HOURS = 7 * 24 // 7 days for past days
     }
     
     private val gson = Gson()
     private val cacheFile: File by lazy {
         File(context.filesDir, CACHE_FILE_NAME)
     }
+    private val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     
     private var memoryCache: MutableMap<String, CachedStatistics> = mutableMapOf()
     
@@ -39,6 +44,8 @@ class StatisticsCacheService private constructor(private val context: Context) {
     
     init {
         loadCacheFromDisk()
+        // Clean up expired cache entries on initialization
+        clearExpiredCache()
     }
     
     fun cacheStatistics(dateString: String, statistics: DailyStatistics) {
@@ -60,7 +67,7 @@ class StatisticsCacheService private constructor(private val context: Context) {
     fun getCachedStatistics(dateString: String): DailyStatistics? {
         return try {
             val cachedStats = memoryCache[dateString]
-            if (cachedStats != null && !isCacheExpired(dateString)) {
+            if (cachedStats != null && !isCacheExpired(dateString, cachedStats.cachedAt)) {
                 Log.d("StatisticsCacheService", "Retrieved cached statistics for $dateString")
                 cachedStats.statistics
             } else {
@@ -77,19 +84,44 @@ class StatisticsCacheService private constructor(private val context: Context) {
         }
     }
     
+    // Batch operations to match iOS functionality
+    fun getCachedStatistics(dateStrings: List<String>): List<DailyStatistics> {
+        return dateStrings.mapNotNull { dateString ->
+            getCachedStatistics(dateString)
+        }
+    }
+    
+    fun getMissingDates(dateStrings: List<String>): List<String> {
+        return dateStrings.filter { dateString ->
+            val cachedStats = memoryCache[dateString]
+            cachedStats == null || isCacheExpired(dateString, cachedStats.cachedAt)
+        }
+    }
+    
     fun isCacheExpired(dateString: String): Boolean {
         val cachedStats = memoryCache[dateString] ?: return true
+        return isCacheExpired(dateString, cachedStats.cachedAt)
+    }
+    
+    private fun isCacheExpired(dateString: String, cachedTime: Long): Boolean {
         val now = System.currentTimeMillis()
-        val expiryTime = cachedStats.cachedAt + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000)
+        val todayString = dateFormatter.format(Date())
+        
+        // Different expiry times for current day vs past days (matching iOS)
+        val expiryHours = if (dateString == todayString) {
+            CURRENT_DAY_CACHE_EXPIRY_HOURS
+        } else {
+            PAST_DAY_CACHE_EXPIRY_HOURS
+        }
+        
+        val expiryTime = cachedTime + (expiryHours * 60 * 60 * 1000)
         return now > expiryTime
     }
     
     fun clearExpiredCache() {
         try {
-            val expiredKeys = memoryCache.filter { (_, cachedStats) ->
-                val now = System.currentTimeMillis()
-                val expiryTime = cachedStats.cachedAt + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000)
-                now > expiryTime
+            val expiredKeys = memoryCache.filter { (dateString, cachedStats) ->
+                isCacheExpired(dateString, cachedStats.cachedAt)
             }.keys
             
             expiredKeys.forEach { key ->
@@ -125,6 +157,16 @@ class StatisticsCacheService private constructor(private val context: Context) {
         return memoryCache.keys.toList().sorted()
     }
     
+    fun getCacheInfo(): Pair<Int, Int> {
+        val totalEntries = memoryCache.size
+        val cacheFileSize = if (cacheFile.exists()) {
+            cacheFile.length().toInt()
+        } else {
+            0
+        }
+        return Pair(totalEntries, cacheFileSize)
+    }
+    
     private fun loadCacheFromDisk() {
         try {
             if (cacheFile.exists()) {
@@ -133,9 +175,6 @@ class StatisticsCacheService private constructor(private val context: Context) {
                 memoryCache = gson.fromJson<Map<String, CachedStatistics>>(cacheJson, type)?.toMutableMap() ?: mutableMapOf()
                 
                 Log.d("StatisticsCacheService", "Loaded ${memoryCache.size} cache entries from disk")
-                
-                // Clean up expired entries immediately
-                clearExpiredCache()
             }
         } catch (e: Exception) {
             Log.e("StatisticsCacheService", "Failed to load cache from disk", e)
@@ -167,7 +206,6 @@ class StatisticsCacheService private constructor(private val context: Context) {
     fun preloadWeeklyData() {
         // Pre-load the last 7 days of data if not cached
         val calendar = Calendar.getInstance()
-        val dateFormatter = java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault())
         
         for (i in 0..6) {
             calendar.time = Date()
@@ -178,6 +216,18 @@ class StatisticsCacheService private constructor(private val context: Context) {
                 // Mark for background loading
                 Log.d("StatisticsCacheService", "Date $dateString needs loading")
             }
+        }
+    }
+    
+    // iOS-style cache validation with one-time fix mechanism
+    fun validateCacheIntegrity() {
+        val sharedPrefs = context.getSharedPreferences("cache_validation", Context.MODE_PRIVATE)
+        val hasCacheFix = sharedPrefs.getBoolean("hasDataLogicCacheFix", false)
+        
+        if (!hasCacheFix) {
+            Log.d("StatisticsCacheService", "Applying one-time cache integrity fix")
+            clearAllCache()
+            sharedPrefs.edit().putBoolean("hasDataLogicCacheFix", true).apply()
         }
     }
 } 

@@ -25,12 +25,14 @@ import androidx.compose.ui.unit.sp
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ContentView(
     viewModel: MainViewModel,
     authViewModel: AuthViewModel
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val products by viewModel.products.collectAsState()
     val caloriesLeft by viewModel.caloriesLeft.collectAsState()
     val personWeight by viewModel.personWeight.collectAsState()
@@ -54,6 +56,11 @@ fun ContentView(
     val manualWeightInput by viewModel.manualWeightInput.collectAsState()
     val tempSoftLimit by viewModel.tempSoftLimit.collectAsState()
     val tempHardLimit by viewModel.tempHardLimit.collectAsState()
+    val showRecommendationAlert by viewModel.showRecommendationAlert.collectAsState()
+    val recommendationText by viewModel.recommendationText.collectAsState()
+    val showPhotoErrorAlert by viewModel.showPhotoErrorAlert.collectAsState()
+    val photoErrorTitle by viewModel.photoErrorTitle.collectAsState()
+    val photoErrorMessage by viewModel.photoErrorMessage.collectAsState()
     
     // Camera states
     var showFoodCamera by remember { mutableStateOf(false) }
@@ -125,7 +132,13 @@ fun ContentView(
                             }
                         },
                         onPhotoTap = { bitmap, foodName ->
-                            fullScreenPhotoData = Pair(bitmap, foodName)
+                            // Get the image dynamically using the new method if bitmap is null
+                            val imageToShow = bitmap ?: run {
+                                // Find the product and get its image
+                                val product = products.find { it.name == foodName }
+                                product?.getImage(context)
+                            }
+                            fullScreenPhotoData = Pair(imageToShow, foodName)
                         },
                         deletingProductTime = deletingProductTime
                     )
@@ -141,8 +154,15 @@ fun ContentView(
                     showFoodCamera = true
                 },
                 onGalleryImageSelected = { bitmap ->
-                    // Process gallery image same as camera photo
-                    viewModel.sendPhoto(bitmap, "default_prompt", System.currentTimeMillis())
+                    // Use same temporary image logic as camera (iOS behavior)
+                    val tempTimestamp = System.currentTimeMillis()
+                    val imageStorage = com.singularis.eateria.services.ImageStorageService.getInstance(context)
+                    val saved = imageStorage.saveTemporaryImage(bitmap, tempTimestamp)
+                    
+                    if (saved) {
+                        // Send photo with image synchronization logic
+                        viewModel.sendPhotoWithImageSync(bitmap, "default_prompt", tempTimestamp)
+                    }
                 }
             )
         }
@@ -222,6 +242,7 @@ fun ContentView(
             )
         }
         
+        // Manual weight entry dialog
         if (showManualWeightEntry) {
             ManualWeightDialog(
                 weightInput = manualWeightInput,
@@ -239,22 +260,31 @@ fun ContentView(
             )
         }
         
-        // Camera Views
+        // Health Recommendation Alert (iOS behavior)
+        if (showRecommendationAlert) {
+            HealthRecommendationDialog(
+                recommendation = recommendationText,
+                onDismiss = { viewModel.hideRecommendationAlert() }
+            )
+        }
+        
+        // Photo Error Alert (iOS behavior)
+        if (showPhotoErrorAlert) {
+            PhotoErrorAlert(
+                title = photoErrorTitle,
+                message = photoErrorMessage,
+                onDismiss = { viewModel.hidePhotoErrorAlert() }
+            )
+        }
+        
+        // Food camera
         if (showFoodCamera) {
             FoodCameraView(
                 viewModel = viewModel,
-                onPhotoSuccess = {
-                    showFoodCamera = false
-                },
-                onPhotoFailure = {
-                    showFoodCamera = false
-                },
-                onPhotoStarted = {
-                    // Photo processing started - this will be handled by the camera view
-                },
-                onDismiss = {
-                    showFoodCamera = false
-                }
+                onPhotoSuccess = { showFoodCamera = false },
+                onPhotoFailure = { showFoodCamera = false },
+                onPhotoStarted = { },
+                onDismiss = { showFoodCamera = false }
             )
         }
         

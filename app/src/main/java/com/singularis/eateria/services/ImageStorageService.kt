@@ -21,104 +21,163 @@ class ImageStorageService private constructor(private val context: Context) {
         }
     }
     
-    private val imagesDir: File by lazy {
-        File(context.filesDir, "food_images").apply {
-            if (!exists()) {
-                mkdirs()
-            }
+    private val imagesDirectory: File by lazy {
+        val dir = File(context.filesDir, "FoodImages")
+        if (!dir.exists()) {
+            dir.mkdirs()
         }
+        dir
     }
     
-    fun saveImage(bitmap: Bitmap, time: Long): Boolean {
+    // MARK: - Primary Image Storage (by timestamp)
+    
+    fun saveImage(image: Bitmap, forTime: Long): Boolean {
         return try {
-            val file = File(imagesDir, "$time.jpg")
-            val outputStream = FileOutputStream(file)
+            val filename = "$forTime.jpg"
+            val file = File(imagesDirectory, filename)
             
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
-            outputStream.flush()
-            outputStream.close()
-            
-            Log.d("ImageStorageService", "Image saved for time: $time")
+            FileOutputStream(file).use { out ->
+                image.compress(Bitmap.CompressFormat.JPEG, 80, out)
+            }
+            Log.d("ImageStorage", "Saved image for time: $forTime")
             true
         } catch (e: IOException) {
-            Log.e("ImageStorageService", "Failed to save image for time: $time", e)
+            Log.e("ImageStorage", "Failed to save image for time: $forTime", e)
             false
         }
     }
     
-    fun loadImage(time: Long): Bitmap? {
+    fun saveTemporaryImage(image: Bitmap, forTime: Long): Boolean {
         return try {
-            val file = File(imagesDir, "$time.jpg")
-            if (file.exists()) {
-                BitmapFactory.decodeFile(file.absolutePath)
+            val filename = "temp_$forTime.jpg"
+            val file = File(imagesDirectory, filename)
+            
+            FileOutputStream(file).use { out ->
+                image.compress(Bitmap.CompressFormat.JPEG, 80, out)
+            }
+            Log.d("ImageStorage", "Saved temporary image for time: $forTime")
+            true
+        } catch (e: IOException) {
+            Log.e("ImageStorage", "Failed to save temporary image for time: $forTime", e)
+            false
+        }
+    }
+    
+    fun moveTemporaryImage(fromTime: Long, toTime: Long): Boolean {
+        return try {
+            val tempFile = File(imagesDirectory, "temp_$fromTime.jpg")
+            val finalFile = File(imagesDirectory, "$toTime.jpg")
+            
+            if (!tempFile.exists()) {
+                Log.w("ImageStorage", "Temporary image not found for time: $fromTime")
+                return false
+            }
+            
+            val success = tempFile.renameTo(finalFile)
+            if (success) {
+                Log.d("ImageStorage", "Moved temporary image from $fromTime to $toTime")
             } else {
-                null
+                Log.e("ImageStorage", "Failed to move temporary image from $fromTime to $toTime")
             }
+            success
         } catch (e: Exception) {
-            Log.e("ImageStorageService", "Failed to load image for time: $time", e)
-            null
+            Log.e("ImageStorage", "Error moving temporary image from $fromTime to $toTime", e)
+            false
         }
     }
     
-    fun loadImageByName(name: String): Bitmap? {
+    fun deleteTemporaryImage(forTime: Long): Boolean {
         return try {
-            // Try to find an image file that contains the food name
-            val files = imagesDir.listFiles()
-            files?.forEach { file ->
-                if (file.name.contains(name.replace(" ", "_"), ignoreCase = true)) {
-                    return BitmapFactory.decodeFile(file.absolutePath)
-                }
+            val file = File(imagesDirectory, "temp_$forTime.jpg")
+            val deleted = file.delete()
+            if (deleted) {
+                Log.d("ImageStorage", "Deleted temporary image for time: $forTime")
             }
-            null
+            deleted
         } catch (e: Exception) {
-            Log.e("ImageStorageService", "Failed to load image by name: $name", e)
+            Log.e("ImageStorage", "Failed to delete temporary image for time: $forTime", e)
+            false
+        }
+    }
+    
+    fun loadImage(forTime: Long): Bitmap? {
+        return try {
+            val filename = "$forTime.jpg"
+            val file = File(imagesDirectory, filename)
+            
+            if (!file.exists()) {
+                Log.d("ImageStorage", "Image not found for time: $forTime")
+                return null
+            }
+            
+            BitmapFactory.decodeFile(file.absolutePath)
+        } catch (e: Exception) {
+            Log.e("ImageStorage", "Failed to load image for time: $forTime", e)
             null
         }
     }
     
-    fun imageExists(time: Long): Boolean {
-        val file = File(imagesDir, "$time.jpg")
+    fun deleteImage(forTime: Long): Boolean {
+        return try {
+            val file = File(imagesDirectory, "$forTime.jpg")
+            val deleted = file.delete()
+            if (deleted) {
+                Log.d("ImageStorage", "Deleted image for time: $forTime")
+            }
+            deleted
+        } catch (e: Exception) {
+            Log.e("ImageStorage", "Failed to delete image for time: $forTime", e)
+            false
+        }
+    }
+    
+    fun imageExists(forTime: Long): Boolean {
+        val file = File(imagesDirectory, "$forTime.jpg")
         return file.exists()
     }
     
-    fun deleteImage(time: Long): Boolean {
+    // MARK: - Fallback Image Storage (by name)
+    
+    fun loadImageByName(name: String): Bitmap? {
         return try {
-            val file = File(imagesDir, "$time.jpg")
-            if (file.exists()) {
-                val deleted = file.delete()
-                if (deleted) {
-                    Log.d("ImageStorageService", "Image deleted for time: $time")
-                } else {
-                    Log.w("ImageStorageService", "Failed to delete image for time: $time")
-                }
-                deleted
-            } else {
-                Log.d("ImageStorageService", "Image file doesn't exist for time: $time")
-                true // Consider it successful if file doesn't exist
+            // Clean the name to make it a valid filename (same logic as iOS)
+            val cleanName = name.replace(Regex("[^a-zA-Z0-9\\s]"), "")
+                .replace(" ", "_")
+                .lowercase()
+            
+            val filename = "$cleanName.jpg"
+            val file = File(imagesDirectory, filename)
+            
+            if (!file.exists()) {
+                Log.d("ImageStorage", "Image not found for name: $name (cleaned: $cleanName)")
+                return null
             }
+            
+            BitmapFactory.decodeFile(file.absolutePath)
         } catch (e: Exception) {
-            Log.e("ImageStorageService", "Error deleting image for time: $time", e)
+            Log.e("ImageStorage", "Failed to load image for name: $name", e)
+            null
+        }
+    }
+    
+    fun saveImageByName(image: Bitmap, name: String): Boolean {
+        return try {
+            // Clean the name to make it a valid filename (same logic as iOS)
+            val cleanName = name.replace(Regex("[^a-zA-Z0-9\\s]"), "")
+                .replace(" ", "_")
+                .lowercase()
+            
+            val filename = "$cleanName.jpg"
+            val file = File(imagesDirectory, filename)
+            
+            FileOutputStream(file).use { out ->
+                image.compress(Bitmap.CompressFormat.JPEG, 80, out)
+            }
+            Log.d("ImageStorage", "Saved image for name: $name (cleaned: $cleanName)")
+            true
+        } catch (e: IOException) {
+            Log.e("ImageStorage", "Failed to save image for name: $name", e)
             false
-        }
-    }
-    
-    fun clearAllImages() {
-        try {
-            imagesDir.listFiles()?.forEach { file ->
-                file.delete()
-            }
-            Log.d("ImageStorageService", "All images cleared")
-        } catch (e: Exception) {
-            Log.e("ImageStorageService", "Failed to clear all images", e)
-        }
-    }
-    
-    fun getStoredImagesCount(): Int {
-        return try {
-            imagesDir.listFiles()?.size ?: 0
-        } catch (e: Exception) {
-            Log.e("ImageStorageService", "Failed to get stored images count", e)
-            0
         }
     }
 } 

@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.max
+import kotlin.math.min
 
 class MainViewModel(private val context: Context) : ViewModel() {
     
@@ -84,6 +86,21 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val _showManualWeightEntry = MutableStateFlow(false)
     val showManualWeightEntry: StateFlow<Boolean> = _showManualWeightEntry.asStateFlow()
     
+    private val _showRecommendationAlert = MutableStateFlow(false)
+    val showRecommendationAlert: StateFlow<Boolean> = _showRecommendationAlert.asStateFlow()
+    
+    private val _recommendationText = MutableStateFlow("")
+    val recommendationText: StateFlow<String> = _recommendationText.asStateFlow()
+    
+    private val _showPhotoErrorAlert = MutableStateFlow(false)
+    val showPhotoErrorAlert: StateFlow<Boolean> = _showPhotoErrorAlert.asStateFlow()
+    
+    private val _photoErrorTitle = MutableStateFlow("")
+    val photoErrorTitle: StateFlow<String> = _photoErrorTitle.asStateFlow()
+    
+    private val _photoErrorMessage = MutableStateFlow("")
+    val photoErrorMessage: StateFlow<String> = _photoErrorMessage.asStateFlow()
+    
     private val _manualWeightInput = MutableStateFlow("")
     val manualWeightInput: StateFlow<String> = _manualWeightInput.asStateFlow()
     
@@ -119,25 +136,74 @@ class MainViewModel(private val context: Context) : ViewModel() {
         }
     }
     
-    fun deleteProductWithLoading(time: Long) {
+    // New method for image synchronization (iOS logic)
+    fun sendPhotoWithImageSync(bitmap: Bitmap, photoType: String, tempTimestamp: Long) {
         viewModelScope.launch {
-            _deletingProductTime.value = time
-            productStorageService.deleteProduct(time) { success ->
-                if (success) {
-                    returnToToday()
+            _isLoadingFoodPhoto.value = true
+            
+            try {
+                // Send photo to backend
+                grpcService.sendPhoto(
+                    bitmap = bitmap,
+                    photoType = photoType,
+                    timestampMillis = tempTimestamp,
+                    onSuccess = {
+                        // After successful backend processing, fetch products with image mapping
+                        viewModelScope.launch {
+                            productStorageService.fetchAndProcessProducts(tempImageTime = tempTimestamp) { fetchedProducts, calories, weight ->
+                                _products.value = fetchedProducts
+                                _caloriesLeft.value = calories
+                                _personWeight.value = weight
+                                _isLoadingFoodPhoto.value = false
+                                
+                                // Return to today after successful food photo
+                                returnToToday()
+                            }
+                        }
+                    },
+                    onFailure = { errorMessage ->
+                        // Clean up temporary image on failure
+                        imageStorageService.deleteTemporaryImage(tempTimestamp)
+                        _isLoadingFoodPhoto.value = false
+                        
+                        // Show error alert based on backend response (iOS behavior)
+                        when (errorMessage) {
+                            "NOT_A_FOOD" -> {
+                                _photoErrorTitle.value = "Food Not Recognized"
+                                _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                            }
+                            "SCALE_ERROR" -> {
+                                _photoErrorTitle.value = "Scale Not Recognized"
+                                _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                            }
+                            else -> {
+                                // Handle any other backend error messages or fallback to photo type
+                                if (photoType == "weight_prompt") {
+                                    _photoErrorTitle.value = "Scale Not Recognized"
+                                    _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                                } else {
+                                    _photoErrorTitle.value = "Food Not Recognized"
+                                    _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                                }
+                            }
+                        }
+                        _showPhotoErrorAlert.value = true
+                    }
+                )
+            } catch (e: Exception) {
+                // Clean up temporary image on error
+                imageStorageService.deleteTemporaryImage(tempTimestamp)
+                _isLoadingFoodPhoto.value = false
+                
+                // Show error alert based on photo type (fallback for network errors)
+                if (photoType == "weight_prompt") {
+                    _photoErrorTitle.value = "Scale Not Recognized"
+                    _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                } else {
+                    _photoErrorTitle.value = "Food Not Recognized"
+                    _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
                 }
-                _deletingProductTime.value = null
-            }
-        }
-    }
-    
-    fun modifyProductPortion(time: Long, foodName: String, userEmail: String, percentage: Int) {
-        viewModelScope.launch {
-            productStorageService.modifyProductPortion(time, userEmail, percentage) { success ->
-                if (success) {
-                    // Show success message and return to today
-                    returnToToday()
-                }
+                _showPhotoErrorAlert.value = true
             }
         }
     }
@@ -159,9 +225,6 @@ class MainViewModel(private val context: Context) : ViewModel() {
                         _isLoadingWeightPhoto.value = false
                     } else {
                         _isLoadingFoodPhoto.value = false
-                        // Save image locally for food photos
-                        val time = timestampMillis ?: System.currentTimeMillis()
-                        imageStorageService.saveImage(bitmap, time)
                     }
                     returnToToday()
                 },
@@ -171,28 +234,94 @@ class MainViewModel(private val context: Context) : ViewModel() {
                     } else {
                         _isLoadingFoodPhoto.value = false
                     }
-                    // Handle error message display
+                    
+                    // Show error alert based on backend response (iOS behavior)
+                    when (errorMessage) {
+                        "NOT_A_FOOD" -> {
+                            _photoErrorTitle.value = "Food Not Recognized"
+                            _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                        }
+                        "SCALE_ERROR" -> {
+                            _photoErrorTitle.value = "Scale Not Recognized"
+                            _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                        }
+                        else -> {
+                            // Handle any other backend error messages or fallback to photo type
+                            if (photoType == "weight_prompt") {
+                                _photoErrorTitle.value = "Scale Not Recognized"
+                                _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                            } else {
+                                _photoErrorTitle.value = "Food Not Recognized"
+                                _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                            }
+                        }
+                    }
+                    _showPhotoErrorAlert.value = true
                 }
             )
         }
     }
     
+    fun deleteProductWithLoading(time: Long) {
+        viewModelScope.launch {
+            _deletingProductTime.value = time
+            
+            try {
+                val success = grpcService.deleteFood(time)
+                if (success) {
+                    // Also delete local image
+                    imageStorageService.deleteImage(time)
+                    // Refresh data
+                    fetchData()
+                }
+                _deletingProductTime.value = null
+            } catch (e: Exception) {
+                _deletingProductTime.value = null
+            }
+        }
+    }
+    
+    fun modifyProductPortion(time: Long, foodName: String, userEmail: String, percentage: Int) {
+        viewModelScope.launch {
+            try {
+                val success = grpcService.modifyFoodRecord(time, userEmail, percentage)
+                // Don't wait for response - provide immediate feedback in UI
+                fetchData() // Refresh data in background
+            } catch (e: Exception) {
+                // Handle error silently or show toast
+            }
+        }
+    }
+    
     fun sendManualWeight(weight: Float, userEmail: String) {
         viewModelScope.launch {
-            grpcService.sendManualWeight(weight, userEmail)
-            returnToToday()
+            try {
+                val success = grpcService.sendManualWeight(weight, userEmail)
+                returnToToday()
+            } catch (e: Exception) {
+                // Handle error silently
+            }
         }
     }
     
     fun getRecommendation(days: Int) {
         viewModelScope.launch {
             _isLoadingRecommendation.value = true
-            val recommendation = grpcService.getRecommendation(days)
-            _isLoadingRecommendation.value = false
-            
-            // Handle recommendation display
-            if (_isViewingCustomDate.value) {
-                returnToToday()
+            try {
+                val recommendation = grpcService.getRecommendation(days)
+                
+                // Store the recommendation and show alert (iOS behavior)
+                _recommendationText.value = recommendation
+                _showRecommendationAlert.value = true
+                _isLoadingRecommendation.value = false
+                
+                // Return to today after getting recommendation (iOS behavior)
+                if (_isViewingCustomDate.value) {
+                    returnToToday()
+                }
+            } catch (e: Exception) {
+                _isLoadingRecommendation.value = false
+                // Handle error - could show error dialog
             }
         }
     }
@@ -255,8 +384,24 @@ class MainViewModel(private val context: Context) : ViewModel() {
     fun saveLimits() {
         val softLimit = _tempSoftLimit.value.toIntOrNull() ?: 1900
         val hardLimit = _tempHardLimit.value.toIntOrNull() ?: 2100
-        _softLimit.value = softLimit
-        _hardLimit.value = hardLimit
+        
+        // Validate that soft limit is smaller than hard limit
+        if (softLimit >= hardLimit) {
+            // Adjust limits to ensure soft < hard
+            val adjustedSoftLimit = min(softLimit, hardLimit - 100) // Ensure at least 100 calorie difference
+            val adjustedHardLimit = max(hardLimit, softLimit + 100)
+            
+            _softLimit.value = adjustedSoftLimit
+            _hardLimit.value = adjustedHardLimit
+            
+            // Update temp values to reflect the adjusted limits
+            _tempSoftLimit.value = adjustedSoftLimit.toString()
+            _tempHardLimit.value = adjustedHardLimit.toString()
+        } else {
+            _softLimit.value = softLimit
+            _hardLimit.value = hardLimit
+        }
+        
         _showLimitsAlert.value = false
     }
     
@@ -319,5 +464,23 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     fun updateManualWeightInput(value: String) {
         _manualWeightInput.value = value
+    }
+    
+    fun showRecommendationAlert() {
+        _showRecommendationAlert.value = true
+    }
+    
+    fun hideRecommendationAlert() {
+        _showRecommendationAlert.value = false
+    }
+    
+    fun showPhotoErrorAlert(title: String, message: String) {
+        _photoErrorTitle.value = title
+        _photoErrorMessage.value = message
+        _showPhotoErrorAlert.value = true
+    }
+    
+    fun hidePhotoErrorAlert() {
+        _showPhotoErrorAlert.value = false
     }
 } 

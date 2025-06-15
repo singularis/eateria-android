@@ -220,23 +220,45 @@ class GRPCService(private val context: Context) {
                     .setPhotoType(photoType)
                     .build()
                 
-                val response = sendRequest("eater_receive_photo", "POST", photoMessage.toByteArray())
+                // Make direct HTTP call without retries for photo processing
+                val request = Request.Builder()
+                    .url("${baseUrl}eater_receive_photo")
+                    .post(photoMessage.toByteArray().toRequestBody("application/protobuf".toMediaType()))
+                    .build()
                 
-                if (response?.isSuccessful == true) {
+                // Add authorization header if available
+                val token = runCatching { 
+                    kotlinx.coroutines.runBlocking { authService.getAuthToken() }
+                }.getOrNull()
+                
+                val requestWithAuth = if (!token.isNullOrEmpty()) {
+                    request.newBuilder()
+                        .header("Authorization", "Bearer $token")
+                        .header("Content-Type", "application/protobuf")
+                        .build()
+                } else {
+                    request.newBuilder()
+                        .header("Content-Type", "application/protobuf")
+                        .build()
+                }
+                
+                val response = client.newCall(requestWithAuth).execute()
+                
+                Log.d("GRPCService", "Photo Response - Status: ${response.code}, PhotoType: $photoType")
+                
+                if (response.isSuccessful) {
+                    // HTTP 200-299 success response
                     val responseBody = response.body?.string()
                     response.close()
                     
-                    Log.d("GRPCService", "Photo Response - Status: ${response.code}, PhotoType: $photoType")
-                    
                     if (responseBody != null) {
                         val lowerText = responseBody.lowercase()
+                        Log.d("GRPCService", "Success Response Body: $responseBody")
+                        
                         if (lowerText.contains("error") || lowerText.contains("not a") || lowerText.contains("invalid")) {
-                            val errorMessage = if (photoType == "weight_prompt") {
-                                "We couldn't read your weight scale. Please make sure the scale display shows a clear number."
-                            } else {
-                                "We couldn't identify the food in your photo. Please try taking another photo with better lighting."
-                            }
-                            withContext(Dispatchers.Main) { onFailure(errorMessage) }
+                            // Backend returned error message in success response
+                            Log.d("GRPCService", "Error detected in success response: $responseBody")
+                            withContext(Dispatchers.Main) { onFailure(responseBody) }
                         } else {
                             withContext(Dispatchers.Main) { onSuccess() }
                         }
@@ -244,17 +266,39 @@ class GRPCService(private val context: Context) {
                         withContext(Dispatchers.Main) { onSuccess() }
                     }
                 } else {
-                    response?.close()
-                    val errorMessage = if (photoType == "weight_prompt") {
-                        "We couldn't read your weight scale. Please make sure the scale display shows a clear number."
+                    // HTTP 400+ error response - handle immediately without retries
+                    val statusCode = response.code
+                    val responseBody = response.body?.string()
+                    response.close()
+                    
+                    Log.d("GRPCService", "Error Response - Status: $statusCode, Body: $responseBody, PhotoType: $photoType")
+                    
+                    // Check if backend sent specific error message
+                    if (responseBody != null) {
+                        val lowerText = responseBody.lowercase()
+                        when {
+                            lowerText.contains("not a food") || lowerText.contains("not food") -> {
+                                Log.d("GRPCService", "Backend detected: NOT A FOOD - No retries needed")
+                                withContext(Dispatchers.Main) { onFailure("NOT_A_FOOD") }
+                            }
+                            lowerText.contains("scale") || lowerText.contains("weight") -> {
+                                Log.d("GRPCService", "Backend detected: Scale/Weight error - No retries needed")
+                                withContext(Dispatchers.Main) { onFailure("SCALE_ERROR") }
+                            }
+                            else -> {
+                                Log.d("GRPCService", "Generic backend error: $responseBody - No retries needed")
+                                withContext(Dispatchers.Main) { onFailure("GENERIC_ERROR") }
+                            }
+                        }
                     } else {
-                        "We couldn't identify the food in your photo. Please try taking another photo with better lighting."
+                        // No response body, use generic error based on photo type
+                        Log.d("GRPCService", "No response body, using generic error for $photoType - No retries needed")
+                        withContext(Dispatchers.Main) { onFailure("GENERIC_ERROR") }
                     }
-                    withContext(Dispatchers.Main) { onFailure(errorMessage) }
                 }
             } catch (e: Exception) {
-                Log.e("GRPCService", "Failed to send photo", e)
-                withContext(Dispatchers.Main) { onFailure("Failed to process photo. Please try again.") }
+                Log.e("GRPCService", "Failed to send photo - No retries for photo processing", e)
+                withContext(Dispatchers.Main) { onFailure("NETWORK_ERROR") }
             }
         }
     }

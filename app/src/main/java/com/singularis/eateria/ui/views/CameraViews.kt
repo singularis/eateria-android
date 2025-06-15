@@ -83,6 +83,7 @@ fun WeightCameraView(
     onDismiss: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+    val context = LocalContext.current
     
     LaunchedEffect(cameraPermissionState.status.isGranted) {
         if (!cameraPermissionState.status.isGranted) {
@@ -95,7 +96,8 @@ fun WeightCameraView(
             onPhotoTaken = { bitmap ->
                 if (bitmap != null) {
                     onPhotoStarted()
-                    // Send photo to ViewModel for processing
+                    
+                    // Weight photos don't need temporary logic, process directly
                     viewModel.sendPhoto(bitmap, "weight_prompt", System.currentTimeMillis())
                     onPhotoSuccess()
                 } else {
@@ -120,6 +122,7 @@ fun FoodCameraView(
     onDismiss: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+    val context = LocalContext.current
     
     LaunchedEffect(cameraPermissionState.status.isGranted) {
         if (!cameraPermissionState.status.isGranted) {
@@ -132,9 +135,19 @@ fun FoodCameraView(
             onPhotoTaken = { bitmap ->
                 if (bitmap != null) {
                     onPhotoStarted()
-                    // Send photo to ViewModel for processing
-                    viewModel.sendPhoto(bitmap, "default_prompt", System.currentTimeMillis())
-                    onPhotoSuccess()
+                    
+                    // Save as temporary image first (iOS logic)
+                    val tempTimestamp = System.currentTimeMillis()
+                    val imageStorage = com.singularis.eateria.services.ImageStorageService.getInstance(context)
+                    val saved = imageStorage.saveTemporaryImage(bitmap, tempTimestamp)
+                    
+                    if (saved) {
+                        // Send photo to ViewModel with temporary timestamp for processing
+                        viewModel.sendPhotoWithImageSync(bitmap, "default_prompt", tempTimestamp)
+                        onPhotoSuccess()
+                    } else {
+                        onPhotoFailure()
+                    }
                 } else {
                     onPhotoFailure()
                 }

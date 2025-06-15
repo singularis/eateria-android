@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,11 +31,14 @@ import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -44,6 +48,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,6 +92,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.text.font.FontStyle
 
 @Composable
 fun TopBarView(
@@ -98,12 +107,17 @@ fun TopBarView(
     onReturnToTodayClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp), // Add significant top padding from system tray
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Profile button
-        IconButton(onClick = onProfileClick) {
+        IconButton(
+            onClick = onProfileClick,
+            modifier = Modifier.padding(top = 8.dp) // Additional top spacing for profile button
+        ) {
             Icon(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Profile",
@@ -116,6 +130,7 @@ fun TopBarView(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
+                .padding(top = 8.dp) // Additional top spacing for date display
                 .clip(RoundedCornerShape(16.dp))
                 .background(Color.Black.copy(alpha = 0.8f))
                 .clickable { onDateClick() }
@@ -158,7 +173,10 @@ fun TopBarView(
         }
         
         // Health info button
-        IconButton(onClick = onHealthInfoClick) {
+        IconButton(
+            onClick = onHealthInfoClick,
+            modifier = Modifier.padding(top = 8.dp) // Additional top spacing for health info button
+        ) {
             Icon(
                 imageVector = Icons.Default.Info,
                 contentDescription = "Health Info",
@@ -183,45 +201,68 @@ fun StatsButtonsView(
     getColor: (Int) -> Color
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Weight button
+        // Weight button - Left aligned
         StatButton(
             onClick = onWeightClick,
-            isLoading = isLoadingWeightPhoto
+            isLoading = isLoadingWeightPhoto,
+            modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = String.format("%.1f", personWeight),
-                fontSize = 22.sp,
+                text = String.format("%.1f kg", personWeight),
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                color = Color.White,
+                textAlign = TextAlign.Center
             )
         }
         
-        // Calories button
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // Calories button - Center
         StatButton(
             onClick = onCaloriesClick,
-            isLoading = false
+            isLoading = false,
+            modifier = Modifier.weight(2f)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Calories: $caloriesConsumed",
-                fontSize = 22.sp,
+                    fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = getColor(caloriesLeft)
+                    color = getColor(caloriesLeft),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "$caloriesLeft left",
+                    fontSize = 12.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
             )
         }
+        }
         
-        // Recommendation button
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // Trend button - Right aligned
         StatButton(
             onClick = onRecommendationClick,
-            isLoading = isLoadingRecommendation
+            isLoading = isLoadingRecommendation,
+            modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = "Trend",
-                fontSize = 22.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                color = Color.White,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -231,20 +272,21 @@ fun StatsButtonsView(
 fun StatButton(
     onClick: () -> Unit,
     isLoading: Boolean,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .size(100.dp, 60.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Gray3.copy(alpha = 0.8f))
+        modifier = modifier
+            .height(60.dp) // Keep height but remove fixed width
+            .clip(RoundedCornerShape(12.dp)) // Slightly smaller radius
+            .background(Gray3.copy(alpha = 0.9f)) // Slightly more opaque
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 color = Color.White,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp) // Smaller loading indicator
             )
         } else {
             content()
@@ -318,13 +360,16 @@ fun ProductListView(
                     items = sortedProducts,
                     key = { product -> product.time }
                 ) { product ->
-                    ProductCard(
-                        product = product,
-                        onDelete = { onDelete(product.time) },
-                        onModify = { percentage -> onModify(product.time, product.name, percentage) },
-                        onPhotoTap = { onPhotoTap(product.image, product.name) },
-                        isDeleting = deletingProductTime == product.time
-                    )
+                    val context = LocalContext.current
+                ProductCard(
+                    product = product,
+                    onDelete = { onDelete(product.time) },
+                    onModify = { percentage -> onModify(product.time, product.name, percentage) },
+                        onPhotoTap = { 
+                            onPhotoTap(product.getImage(context), product.name) 
+                        },
+                    isDeleting = deletingProductTime == product.time
+                )
                 }
             }
             
@@ -333,9 +378,9 @@ fun ProductListView(
                 state = pullRefreshState,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
+            }
         }
     }
-}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -399,13 +444,13 @@ fun ProductCard(
             }
         },
         dismissContent = {
-            Card(
+    Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .alpha(if (isDeleting) 0.6f else 1.0f),
-                colors = CardDefaults.cardColors(containerColor = Gray4),
-                shape = RoundedCornerShape(12.dp)
-            ) {
+        colors = CardDefaults.cardColors(containerColor = Gray4),
+        shape = RoundedCornerShape(12.dp)
+    ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -424,9 +469,12 @@ fun ProductCard(
                                 }
                             }
                     ) {
-                        if (product.image != null) {
+                        val context = LocalContext.current
+                        val productImage = product.getImage(context)
+                        
+                        if (productImage != null) {
                             Image(
-                                bitmap = product.image!!.asImageBitmap(),
+                                bitmap = productImage.asImageBitmap(),
                                 contentDescription = product.name,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
@@ -444,7 +492,7 @@ fun ProductCard(
                     }
                     
                     // Food details - clickable for portion modification (matches iOS)
-                    Column(
+        Column(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { 
@@ -453,37 +501,37 @@ fun ProductCard(
                                 }
                             }
                     ) {
-                        Text(
-                            text = product.name,
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        Text(
+                    Text(
+                        text = product.name,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Text(
                             text = "${product.calories} kcal • ${product.weight}g",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                    
+                    if (product.ingredients.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = product.ingredients.joinToString(", "),
                             color = Color.Gray,
-                            fontSize = 14.sp
-                        )
-                        
-                        if (product.ingredients.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = product.ingredients.joinToString(", "),
-                                color = Color.Gray,
                                 fontSize = 12.sp,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        )
                     }
-                    
+                }
+                
                     // Loading indicator when deleting
-                    if (isDeleting) {
-                        CircularProgressIndicator(
-                            color = Color.White,
+                if (isDeleting) {
+                    CircularProgressIndicator(
+                        color = Color.White,
                             modifier = Modifier
                                 .size(24.dp)
                                 .align(Alignment.CenterVertically),
@@ -545,8 +593,8 @@ fun PortionSelectionDialog(
                 }
             },
             containerColor = Gray4
-        )
-    } else {
+                    )
+                } else {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
@@ -593,7 +641,7 @@ fun PortionSelectionDialog(
                                     onPortionSelected(percentage)
                                 },
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
+                        colors = ButtonDefaults.buttonColors(
                                     containerColor = DarkPrimary,
                                     contentColor = Color.White
                                 ),
@@ -622,15 +670,15 @@ fun PortionSelectionDialog(
                                     contentColor = Color.White
                                 ),
                                 shape = RoundedCornerShape(8.dp)
-                            ) {
+                    ) {
                                 Text(
                                     text = "Custom...",
                                     fontSize = 14.sp
                                 )
-                            }
-                        }
                     }
                 }
+            }
+        }
             },
             confirmButton = {},
             dismissButton = {
@@ -730,30 +778,30 @@ fun CameraButtonView(
             },
             modifier = Modifier
                 .weight(0.65f)
-                .height(60.dp),
-            colors = ButtonDefaults.buttonColors(
+            .height(60.dp),
+        colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF34C759), // iOS green color
-                contentColor = Color.White
-            ),
+            contentColor = Color.White
+        ),
             shape = RoundedCornerShape(12.dp),
             enabled = !isLoadingFoodPhoto
-        ) {
-            if (isLoadingFoodPhoto) {
-                CircularProgressIndicator(
-                    color = Color.White,
+    ) {
+        if (isLoadingFoodPhoto) {
+            CircularProgressIndicator(
+                color = Color.White,
                     modifier = Modifier.size(20.dp)
-                )
-            } else {
-                Row(
+            )
+        } else {
+            Row(
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PhotoCamera,
-                        contentDescription = "Camera",
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PhotoCamera,
+                    contentDescription = "Camera",
                         modifier = Modifier.size(20.dp)
-                    )
-                    
+                )
+                
                     Spacer(modifier = Modifier.width(6.dp))
                     
                     Text(
@@ -777,21 +825,29 @@ fun CalorieLimitsDialog(
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    // Validation check
+    val softLimitValue = tempSoftLimit.toIntOrNull() ?: 0
+    val hardLimitValue = tempHardLimit.toIntOrNull() ?: 0
+    val isValidLimits = softLimitValue > 0 && hardLimitValue > 0 && softLimitValue < hardLimitValue
+    val showValidationError = tempSoftLimit.isNotEmpty() && tempHardLimit.isNotEmpty() && !isValidLimits
+    
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
                 text = "Set Calorie Limits",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         },
         text = {
             Column {
                 Text(
-                    text = "⚠️ These are general guidelines. Consult a healthcare provider for personalized dietary advice.",
+                    text = "Set your daily calorie limits manually, or use health-based calculation if you have health data.\n\n⚠️ These are general guidelines. Consult a healthcare provider for personalized dietary advice.",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    lineHeight = 20.sp
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -799,9 +855,16 @@ fun CalorieLimitsDialog(
                 OutlinedTextField(
                     value = tempSoftLimit,
                     onValueChange = onSoftLimitChange,
-                    label = { Text("Soft Limit") },
+                    label = { Text("Soft Limit (calories)", color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = showValidationError,
+                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = if (showValidationError) Color.Red else DarkPrimary,
+                        unfocusedBorderColor = if (showValidationError) Color.Red else Color.Gray
+                    )
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -809,22 +872,49 @@ fun CalorieLimitsDialog(
                 OutlinedTextField(
                     value = tempHardLimit,
                     onValueChange = onHardLimitChange,
-                    label = { Text("Hard Limit") },
+                    label = { Text("Hard Limit (calories)", color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = showValidationError,
+                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = if (showValidationError) Color.Red else DarkPrimary,
+                        unfocusedBorderColor = if (showValidationError) Color.Red else Color.Gray
+                    )
                 )
+                
+                // Validation error message
+                if (showValidationError) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "⚠️ Soft limit must be smaller than hard limit",
+                        fontSize = 12.sp,
+                        color = Color.Red,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = onSave) {
-                Text("Save")
+            Button(
+                onClick = onSave,
+                enabled = isValidLimits, // Disable save button if limits are invalid
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isValidLimits) DarkPrimary else Color.Gray,
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Save Manual Limits")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = Color.Gray)
             }
-        }
+        },
+        containerColor = Gray4,
+        shape = RoundedCornerShape(12.dp)
     )
 }
 
@@ -946,5 +1036,368 @@ fun ManualWeightDialog(
                 Text("Cancel")
             }
         }
+    )
+}
+
+@Composable
+fun HealthRecommendationDialog(
+    recommendation: String,
+    onDismiss: () -> Unit
+) {
+    var showDisclaimerDialog by remember { mutableStateOf(false) }
+    
+    // Full-screen dialog
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackground), // Solid background instead of overlay
+        contentAlignment = Alignment.Center
+    ) {
+        // Full-screen content card
+        Card(
+            modifier = Modifier
+                .fillMaxSize(), // Take entire screen
+            colors = CardDefaults.cardColors(containerColor = Gray4),
+            shape = RoundedCornerShape(0.dp), // No rounded corners for full screen
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp), // Larger padding for full screen
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header with icon and title
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Psychology,
+                            contentDescription = "Health Recommendation",
+                            tint = Color(0xFF4CAF50), // Green color for health
+                            modifier = Modifier.size(36.dp) // Larger icon
+                        )
+                        Text(
+                            text = "Health Recommendation",
+                            fontSize = 28.sp, // Much larger title
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                    
+                    // Close button
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(48.dp) // Larger close button
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Scrollable content - now takes all available space
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f) // Take all remaining space instead of fixed height
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp) // More spacing
+                ) {
+                    item {
+                        // Recommendation content
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = Gray3),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(24.dp)) { // More padding
+                                Text(
+                                    text = "📊 Your Personal Analysis",
+                                    fontSize = 20.sp, // Larger subtitle
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF4CAF50)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = recommendation,
+                                    fontSize = 18.sp, // Much larger body text
+                                    color = Color.White,
+                                    lineHeight = 26.sp // Better line spacing
+                                )
+                            }
+                        }
+                    }
+                    
+                    item {
+                        // Health disclaimer button - trend style clickable
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showDisclaimerDialog = true },
+                            colors = CardDefaults.cardColors(containerColor = Gray3), // Same as trend button
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(24.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Text(
+                                        text = "⚠️",
+                                        fontSize = 20.sp
+                                    )
+                                    Text(
+                                        text = "Health Disclaimer",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White // Clean white text like trend button
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "View disclaimer",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // Action button - now at the very bottom
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp), // Taller button
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50),
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Got it",
+                            modifier = Modifier.size(24.dp) // Larger icon
+                        )
+                        Text(
+                            text = "Got it, thanks!",
+                            fontSize = 20.sp, // Larger button text
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
+    // Show disclaimer dialog when clicked
+    if (showDisclaimerDialog) {
+        HealthDisclaimerDialog(
+            onDismiss = { showDisclaimerDialog = false }
+        )
+    }
+}
+
+@Composable
+fun HealthDisclaimerDialog(
+    onDismiss: () -> Unit
+) {
+    // Full-screen dialog with trend button styling
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackground),
+        contentAlignment = Alignment.Center
+    ) {
+        // Full-screen content card
+        Card(
+            modifier = Modifier.fillMaxSize(),
+            colors = CardDefaults.cardColors(containerColor = Gray4),
+            shape = RoundedCornerShape(0.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header with icon and title
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "⚠️",
+                            fontSize = 36.sp
+                        )
+                        Text(
+                            text = "Health Disclaimer",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White // Clean white text like trend button
+                        )
+                    }
+                    
+                    // Close button
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Content area - trend button style
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Gray3), // Same as trend button
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Important Notice",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Text(
+                            text = "This information is for educational purposes only and should not replace professional medical advice.",
+                            fontSize = 18.sp,
+                            color = Color.Gray,
+                            lineHeight = 26.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(20.dp))
+                        
+                        Text(
+                            text = "Always consult your healthcare provider before making dietary changes or health decisions.",
+                            fontSize = 18.sp,
+                            color = Color.Gray,
+                            lineHeight = 26.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(32.dp))
+                        
+                        Text(
+                            text = "Sources: USDA FoodData Central, Dietary Guidelines for Americans",
+                            fontSize = 16.sp,
+                            color = Color.Gray.copy(alpha = 0.7f),
+                            fontStyle = FontStyle.Italic,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Confirmation button - trend style
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Gray3, // Same as trend button background
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "I Understand",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White // Same as trend button text
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PhotoErrorAlert(
+    title: String,
+    message: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        },
+        text = {
+            Text(
+                text = message,
+                fontSize = 16.sp,
+                color = Color.Gray,
+                lineHeight = 22.sp
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "OK",
+                    color = DarkPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        containerColor = Gray4,
+        shape = RoundedCornerShape(12.dp)
     )
 } 

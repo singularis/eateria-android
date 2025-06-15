@@ -6,6 +6,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.google.services)
     id("com.google.protobuf") version "0.9.4"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
 }
 
 secrets {
@@ -172,4 +173,7 @@ dependencies {
 
     // Material Compose for pull-to-refresh and swipe gestures
     implementation("androidx.compose.material:material:1.6.5")
+    
+    // Kotlinx Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }

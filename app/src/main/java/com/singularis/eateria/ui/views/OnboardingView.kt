@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,19 +63,9 @@ import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Gray3
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 
-@Composable
-fun OnboardingView(
-    isPresented: java.lang.Boolean,
-    onComplete: () -> Unit
-) {
-    // ...
-    // Health data collection state
-    var height by remember { mutableStateOf("") }
-    var weight by remember { mutableStateOf("") }
-    var age by remember { mutableStateOf("") }
-    // ...
-}
+
 
 data class OnboardingPage(
     val title: String,
@@ -84,11 +75,19 @@ data class OnboardingPage(
     val anchor: String = ""
 )
 
+data class OnboardingHealthData(
+    val height: Double,
+    val weight: Double,
+    val age: Int,
+    val isMale: Boolean,
+    val activityLevel: String
+)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingView(
     isPresented: Boolean,
-    onComplete: () -> Unit
+    onComplete: (OnboardingHealthData?) -> Unit
 ) {
     val onboardingPages = listOf(
         OnboardingPage(
@@ -197,7 +196,7 @@ fun OnboardingView(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
-                        onClick = onComplete,
+                        onClick = { onComplete(null) },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = Color.Gray
                         )
@@ -245,7 +244,21 @@ fun OnboardingView(
                             onWeightChange = { weight = it },
                             onAgeChange = { age = it },
                             onGenderChange = { isMale = it },
-                            onActivityLevelChange = { activityLevel = it }
+                            onActivityLevelChange = { activityLevel = it },
+                            onCalculateClick = {
+                                if (validateAndCalculateHealthData(
+                                        height, weight, age, isMale, activityLevel,
+                                        onOptimalWeightCalculated = { optimalWeight = it },
+                                        onRecommendedCaloriesCalculated = { recommendedCalories = it },
+                                        onTimeToOptimalWeightCalculated = { timeToOptimalWeight = it }
+                                    )) {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(page + 1)
+                                    }
+                                } else {
+                                    showingHealthDataAlert = true
+                                }
+                            }
                         )
                         "health_results" -> HealthResultsView(
                             page = onboardingPages[page],
@@ -301,8 +314,8 @@ fun OnboardingView(
                         Spacer(modifier = Modifier.width(80.dp))
                     }
                     
-                    // Next/Get Started button (only show for non-special screens)
-                    if (onboardingPages[pagerState.currentPage].anchor !in listOf("health_setup", "health_form")) {
+                    // Next/Get Started button (only hide for health_setup since it has its own buttons)
+                    if (onboardingPages[pagerState.currentPage].anchor != "health_setup") {
                         Button(
                             onClick = {
                                 when (onboardingPages[pagerState.currentPage].anchor) {
@@ -327,7 +340,18 @@ fun OnboardingView(
                                                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                             }
                                         } else {
-                                            onComplete()
+                                            // Final completion - pass health data if collected
+                                            val healthData = if (agreedToProvideData && 
+                                                height.isNotEmpty() && weight.isNotEmpty() && age.isNotEmpty()) {
+                                                OnboardingHealthData(
+                                                    height = height.toDoubleOrNull() ?: 0.0,
+                                                    weight = weight.toDoubleOrNull() ?: 0.0,
+                                                    age = age.toIntOrNull() ?: 0,
+                                                    isMale = isMale,
+                                                    activityLevel = activityLevel
+                                                )
+                                            } else null
+                                            onComplete(healthData)
                                         }
                                     }
                                 }
@@ -345,17 +369,19 @@ fun OnboardingView(
                             ),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
-                                .height(48.dp)
-                                .width(140.dp)
+                                .height(56.dp)
+                                .width(160.dp)
                         ) {
                             Text(
                                 text = when (onboardingPages[pagerState.currentPage].anchor) {
-                                    "disclaimer" -> "I Understand"
-                                    "health_form" -> "Calculate Plan"
+                                    "disclaimer" -> "I Understand\n& Agree"
+                                    "health_form" -> "Calculate My\nPlan"
                                     else -> if (pagerState.currentPage < onboardingPages.size - 1) "Next" else "Get Started"
                                 },
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 22.sp
                             )
                         }
                     }
@@ -491,7 +517,8 @@ private fun HealthFormView(
     onWeightChange: (String) -> Unit,
     onAgeChange: (String) -> Unit,
     onGenderChange: (Boolean) -> Unit,
-    onActivityLevelChange: (String) -> Unit
+    onActivityLevelChange: (String) -> Unit,
+    onCalculateClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -544,6 +571,7 @@ private fun HealthFormView(
                     value = height,
                     onValueChange = onHeightChange,
                     placeholder = { Text("175") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
@@ -568,6 +596,7 @@ private fun HealthFormView(
                     value = weight,
                     onValueChange = onWeightChange,
                     placeholder = { Text("70") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
@@ -592,6 +621,7 @@ private fun HealthFormView(
                     value = age,
                     onValueChange = onAgeChange,
                     placeholder = { Text("25") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
@@ -619,7 +649,7 @@ private fun HealthFormView(
                     Button(
                         onClick = { onGenderChange(true) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = DarkPrimary,
+                            containerColor = if (isMale) CalorieGreen else DarkPrimary,
                             contentColor = Color.White
                         ),
                         modifier = Modifier.weight(1f)
@@ -629,7 +659,7 @@ private fun HealthFormView(
                     Button(
                         onClick = { onGenderChange(false) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = DarkPrimary,
+                            containerColor = if (!isMale) CalorieGreen else DarkPrimary,
                             contentColor = Color.White
                         ),
                         modifier = Modifier.weight(1f)
@@ -638,28 +668,67 @@ private fun HealthFormView(
                     }
                 }
             }
+            
+            // Activity Level Selection
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Activity Level:",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    modifier = Modifier.width(100.dp)
+                )
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                // Dropdown-style selection with buttons
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    activityLevels.forEach { level ->
+                        Button(
+                            onClick = { onActivityLevelChange(level) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (activityLevel == level) CalorieGreen else Gray3,
+                                contentColor = Color.White
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = level,
+                                fontSize = 14.sp,
+                                fontWeight = if (activityLevel == level) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+            }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
         
         Button(
-            onClick = {
-                // This will be handled by the parent component's validation
-            },
+            onClick = onCalculateClick,
             colors = ButtonDefaults.buttonColors(
                 containerColor = CalorieGreen,
                 contentColor = Color.White
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
+                .height(56.dp)
                 .padding(horizontal = 30.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "Calculate My Plan",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                text = "Calculate My\nPersonalized Plan",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
             )
         }
     }
@@ -912,7 +981,7 @@ private fun PageIndicator(
 @Composable
 fun OnboardingFlow(
     shouldShow: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: (OnboardingHealthData?) -> Unit
 ) {
     OnboardingView(
         isPresented = shouldShow,

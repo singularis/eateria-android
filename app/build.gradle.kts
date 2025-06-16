@@ -176,4 +176,7 @@ dependencies {
     
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

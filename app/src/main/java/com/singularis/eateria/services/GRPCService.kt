@@ -449,6 +449,7 @@ class GRPCService(private val context: Context) {
     suspend fun fetchTodayStatistics(): com.singularis.eateria.models.DailyStatistics? {
         return withContext(Dispatchers.IO) {
             try {
+                Log.d("GRPCService", "Fetching today's statistics")
                 val response = sendRequest("eater_get_today", "GET")
                 if (response?.isSuccessful == true) {
                     val responseBytes = response.body?.bytes()
@@ -457,10 +458,17 @@ class GRPCService(private val context: Context) {
                     if (responseBytes != null) {
                         try {
                             val todayFood = TodayFoodOuterClass.TodayFood.parseFrom(responseBytes)
+                            val todayDateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
                             
-                            com.singularis.eateria.models.DailyStatistics(
+                            Log.d("GRPCService", "Parsed today's response: " +
+                                "dishes=${todayFood.dishesTodayList.size}, " +
+                                "totalCalories=${todayFood.totalForDay.totalCalories}, " +
+                                "personWeight=${todayFood.personWeight}, " +
+                                "hasData=${todayFood.dishesTodayList.isNotEmpty()}")
+                            
+                            val stats = com.singularis.eateria.models.DailyStatistics(
                                 date = Date(),
-                                dateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date()),
+                                dateString = todayDateString,
                                 totalCalories = todayFood.totalForDay.totalCalories,
                                 totalFoodWeight = todayFood.totalForDay.totalAvgWeight,
                                 personWeight = todayFood.personWeight,
@@ -471,19 +479,24 @@ class GRPCService(private val context: Context) {
                                 numberOfMeals = todayFood.dishesTodayList.size,
                                 hasData = todayFood.dishesTodayList.isNotEmpty()
                             )
+                            
+                            Log.d("GRPCService", "Created today's DailyStatistics: hasData=${stats.hasData}, calories=${stats.totalCalories}")
+                            return@withContext stats
                         } catch (e: Exception) {
-                            Log.e("GRPCService", "Failed to parse statistics protobuf response", e)
+                            Log.e("GRPCService", "Failed to parse today statistics protobuf response", e)
                             null
                         }
                     } else {
+                        Log.w("GRPCService", "Empty response body for today's statistics")
                         null
                     }
                 } else {
+                    Log.w("GRPCService", "Request failed for today's statistics: ${response?.code} ${response?.message}")
                     response?.close()
                     null
                 }
             } catch (e: Exception) {
-                Log.e("GRPCService", "Failed to fetch today statistics", e)
+                Log.e("GRPCService", "Failed to fetch today's statistics", e)
                 null
             }
         }
@@ -492,6 +505,7 @@ class GRPCService(private val context: Context) {
     suspend fun fetchStatisticsData(dateString: String): com.singularis.eateria.models.DailyStatistics? {
         return withContext(Dispatchers.IO) {
             try {
+                Log.d("GRPCService", "Fetching statistics for date: $dateString")
                 val request = CustomDateFood.CustomDateFoodRequest.newBuilder()
                     .setDate(dateString)
                     .build()
@@ -505,8 +519,13 @@ class GRPCService(private val context: Context) {
                     if (responseBytes != null) {
                         try {
                             val customDateFood = CustomDateFood.CustomDateFoodResponse.parseFrom(responseBytes)
+                            Log.d("GRPCService", "Parsed response for $dateString: " +
+                                "dishes=${customDateFood.dishesForDateList.size}, " +
+                                "totalCalories=${customDateFood.totalForDay.totalCalories}, " +
+                                "personWeight=${customDateFood.personWeight}, " +
+                                "hasData=${customDateFood.dishesForDateList.isNotEmpty()}")
                             
-                            com.singularis.eateria.models.DailyStatistics(
+                            val stats = com.singularis.eateria.models.DailyStatistics(
                                 date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).parse(dateString) ?: Date(),
                                 dateString = dateString,
                                 totalCalories = customDateFood.totalForDay.totalCalories,
@@ -519,14 +538,19 @@ class GRPCService(private val context: Context) {
                                 numberOfMeals = customDateFood.dishesForDateList.size,
                                 hasData = customDateFood.dishesForDateList.isNotEmpty()
                             )
+                            
+                            Log.d("GRPCService", "Created DailyStatistics for $dateString: hasData=${stats.hasData}, calories=${stats.totalCalories}")
+                            return@withContext stats
                         } catch (e: Exception) {
-                            Log.e("GRPCService", "Failed to parse custom date statistics protobuf response", e)
+                            Log.e("GRPCService", "Failed to parse custom date statistics protobuf response for $dateString", e)
                             null
                         }
                     } else {
+                        Log.w("GRPCService", "Empty response body for $dateString")
                         null
                     }
                 } else {
+                    Log.w("GRPCService", "Request failed for $dateString: ${response?.code} ${response?.message}")
                     response?.close()
                     null
                 }

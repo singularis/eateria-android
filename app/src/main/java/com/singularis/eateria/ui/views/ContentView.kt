@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ fun ContentView(
     val showStatistics by viewModel.showStatistics.collectAsState()
     val showHealthSettings by viewModel.showHealthSettings.collectAsState()
     val showCalendarPicker by viewModel.showCalendarPicker.collectAsState()
+    val hasSeenOnboarding by authViewModel.hasSeenOnboarding.collectAsState(initial = true)
     val showWeightActionSheet by viewModel.showWeightActionSheet.collectAsState()
     val showManualWeightEntry by viewModel.showManualWeightEntry.collectAsState()
     val manualWeightInput by viewModel.manualWeightInput.collectAsState()
@@ -71,6 +73,13 @@ fun ContentView(
     
     // Full screen photo state
     var fullScreenPhotoData by remember { mutableStateOf<Pair<android.graphics.Bitmap?, String>?>(null) }
+    
+    // Auto-show onboarding for first-time users
+    LaunchedEffect(hasSeenOnboarding) {
+        if (!hasSeenOnboarding) {
+            viewModel.showOnboarding()
+        }
+    }
     
     Box(
         modifier = Modifier
@@ -135,12 +144,17 @@ fun ContentView(
                             }
                         },
                         onPhotoTap = { bitmap, foodName ->
+                            android.util.Log.d("ContentView", "Photo tap received for $foodName: bitmap=${if (bitmap != null) "exists" else "null"}")
                             // Get the image dynamically using the new method if bitmap is null
                             val imageToShow = bitmap ?: run {
+                                android.util.Log.d("ContentView", "Bitmap was null, fetching from product...")
                                 // Find the product and get its image
                                 val product = products.find { it.name == foodName }
-                                product?.getImage(context)
+                                val fallbackImage = product?.getImage(context)
+                                android.util.Log.d("ContentView", "Fallback image for $foodName: ${if (fallbackImage != null) "exists" else "null"}")
+                                fallbackImage
                             }
+                            android.util.Log.d("ContentView", "Final image for full screen: ${if (imageToShow != null) "exists" else "null"}")
                             fullScreenPhotoData = Pair(imageToShow, foodName)
                         },
                         deletingProductTime = deletingProductTime
@@ -228,7 +242,22 @@ fun ContentView(
         if (showOnboarding) {
             OnboardingView(
                 isPresented = true,
-                onComplete = { viewModel.hideOnboarding() }
+                onComplete = { healthData ->
+                    viewModel.hideOnboarding()
+                    authViewModel.setHasSeenOnboarding(true)
+                    
+                    // Save health data if provided
+                    healthData?.let { data ->
+                        val healthDataService = com.singularis.eateria.services.HealthDataService.getInstance(context)
+                        healthDataService.saveHealthProfile(
+                            height = data.height,
+                            weight = data.weight,
+                            age = data.age,
+                            isMale = data.isMale,
+                            activityLevel = data.activityLevel
+                        )
+                    }
+                }
             )
         }
         

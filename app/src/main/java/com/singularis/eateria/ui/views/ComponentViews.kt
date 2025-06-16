@@ -366,7 +366,9 @@ fun ProductListView(
                     onDelete = { onDelete(product.time) },
                     onModify = { percentage -> onModify(product.time, product.name, percentage) },
                         onPhotoTap = { 
-                            onPhotoTap(product.getImage(context), product.name) 
+                            val productImage = product.getImage(context)
+                            android.util.Log.d("ProductListView", "Photo tap for ${product.name}: image=${if (productImage != null) "exists" else "null"}")
+                            onPhotoTap(productImage, product.name) 
                         },
                     isDeleting = deletingProductTime == product.time
                 )

@@ -38,6 +38,8 @@ class StatisticsService private constructor(private val context: Context) {
     suspend fun fetchStatisticsForPeriod(period: StatisticsPeriod): List<DailyStatistics> {
         return withContext(Dispatchers.IO) {
             try {
+                Log.d("StatisticsService", "Fetching statistics for period: ${period.name} (${period.days} days)")
+                
                 val calendar = Calendar.getInstance()
                 val endDate = Date()
                 val startDate = calendar.apply {
@@ -47,15 +49,18 @@ class StatisticsService private constructor(private val context: Context) {
                 
                 // Generate all dates in the period
                 val allDateStrings = generateDateStrings(startDate, endDate)
+                Log.d("StatisticsService", "Generated ${allDateStrings.size} date strings: ${allDateStrings.take(3)}...${allDateStrings.takeLast(3)}")
                 
                 // Clean up expired cache entries first
                 cacheService.clearExpiredCache()
                 
                 // Get cached statistics
                 val cachedStatistics = cacheService.getCachedStatistics(allDateStrings)
+                Log.d("StatisticsService", "Found ${cachedStatistics.size} cached entries, with data: ${cachedStatistics.count { it.hasData }}")
                 
                 // Find missing dates that need to be fetched
                 val missingDateStrings = cacheService.getMissingDates(allDateStrings)
+                Log.d("StatisticsService", "Missing ${missingDateStrings.size} dates: $missingDateStrings")
                 
                 if (missingDateStrings.isEmpty()) {
                     // All data is cached, return immediately
@@ -65,22 +70,26 @@ class StatisticsService private constructor(private val context: Context) {
                 
                 // Fetch missing data from server
                 val newStatistics = fetchMissingStatistics(missingDateStrings)
+                Log.d("StatisticsService", "Fetched ${newStatistics.size} new statistics from server")
                 
                 // Cache the new data
                 newStatistics.forEach { stats ->
                     cacheService.cacheStatistics(stats.dateString, stats)
+                    Log.d("StatisticsService", "Cached stats for ${stats.dateString}: hasData=${stats.hasData}")
                 }
                 
                 // Combine cached and new data
                 val allStatistics = cachedStatistics + newStatistics
+                Log.d("StatisticsService", "Combined: ${allStatistics.size} total statistics")
                 
                 // Create empty stats for any remaining missing dates
                 val emptyStats = createEmptyStatsForMissingDates(allDateStrings, allStatistics)
+                Log.d("StatisticsService", "Created ${emptyStats.size} empty stats for remaining missing dates")
                 
                 // Combine all data and sort by date
                 val finalStatistics = (allStatistics + emptyStats).sortedBy { it.date }
                 
-                Log.d("StatisticsService", "Fetched ${finalStatistics.size} days for period ${period.name}")
+                Log.d("StatisticsService", "Final result for ${period.name}: ${finalStatistics.size} days, ${finalStatistics.count { it.hasData }} with data")
                 finalStatistics
             } catch (e: Exception) {
                 Log.e("StatisticsService", "Failed to fetch statistics for period", e)
@@ -106,23 +115,48 @@ class StatisticsService private constructor(private val context: Context) {
         return withContext(Dispatchers.IO) {
             val todayString = dateFormatter.format(Date())
             
-            // Use parallel fetching for better performance
-            val deferredResults = dateStrings.map { dateString ->
-                async {
-                    try {
-                        if (dateString == todayString) {
-                            grpcService.fetchTodayStatistics()
-                        } else {
-                            grpcService.fetchStatisticsData(dateString)
+            Log.d("StatisticsService", "Fetching missing statistics for ${dateStrings.size} dates: $dateStrings")
+            
+            // Process in chunks to avoid overwhelming the system with too many parallel requests
+            val chunkSize = 10 // Limit to 10 parallel requests at a time
+            val results = mutableListOf<DailyStatistics>()
+            
+            for (chunk in dateStrings.chunked(chunkSize)) {
+                Log.d("StatisticsService", "Processing chunk of ${chunk.size} dates: $chunk")
+                
+                val deferredResults = chunk.map { dateString ->
+                    async {
+                        try {
+                            val stats = if (dateString == todayString) {
+                                Log.d("StatisticsService", "Fetching today's data via fetchTodayStatistics")
+                                grpcService.fetchTodayStatistics()
+                            } else {
+                                Log.d("StatisticsService", "Fetching data for $dateString via fetchStatisticsData")
+                                grpcService.fetchStatisticsData(dateString)
+                            }
+                            
+                            if (stats != null) {
+                                Log.d("StatisticsService", "Successfully fetched stats for $dateString: hasData=${stats.hasData}, calories=${stats.totalCalories}")
+                            } else {
+                                Log.w("StatisticsService", "No stats returned for $dateString")
+                            }
+                            
+                            stats
+                        } catch (e: Exception) {
+                            Log.e("StatisticsService", "Failed to fetch statistics for $dateString", e)
+                            null
                         }
-                    } catch (e: Exception) {
-                        Log.e("StatisticsService", "Failed to fetch statistics for $dateString", e)
-                        null
                     }
                 }
+                
+                // Wait for this chunk to complete before starting the next chunk
+                val chunkResults = deferredResults.awaitAll().filterNotNull()
+                results.addAll(chunkResults)
+                Log.d("StatisticsService", "Completed chunk: ${chunkResults.size} successful, ${chunk.size - chunkResults.size} failed")
             }
             
-            deferredResults.awaitAll().filterNotNull()
+            Log.d("StatisticsService", "Fetched ${results.size} out of ${dateStrings.size} requested statistics. Valid data: ${results.count { it.hasData }}")
+            results
         }
     }
     
@@ -442,6 +476,7 @@ class StatisticsService private constructor(private val context: Context) {
 enum class StatisticsPeriod(val days: Int) {
     WEEK(7),
     MONTH(30),
+    TWO_MONTHS(60),
     THREE_MONTHS(90)
 }
 

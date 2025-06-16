@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.*
+import coil.compose.AsyncImage
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -121,7 +122,8 @@ fun UserProfileView(
                     ProfileHeader(
                         greeting = greeting,
                         userEmail = userEmail,
-                        userName = userName
+                        userName = userName,
+                        userProfilePictureURL = userProfilePictureURL
                     )
                 }
                 
@@ -307,7 +309,8 @@ fun UserProfileView(
 private fun ProfileHeader(
     greeting: String,
     userEmail: String?,
-    userName: String?
+    userName: String?,
+    userProfilePictureURL: String? = null
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -320,7 +323,7 @@ private fun ProfileHeader(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Profile picture placeholder
+            // Profile picture
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -328,12 +331,24 @@ private fun ProfileHeader(
                     .background(Gray3),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Profile",
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
-                )
+                if (!userProfilePictureURL.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = userProfilePictureURL,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    )
+                } else {
+                    // Fallback icon when no profile picture
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Profile",
+                        tint = Color.White,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.height(12.dp))

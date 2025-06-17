@@ -86,7 +86,12 @@ fun UserProfileView(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 50.dp) // Add top padding for status bar
+                .padding(
+                    start = Dimensions.paddingM, 
+                    end = Dimensions.paddingM, 
+                    bottom = Dimensions.paddingM, 
+                    top = Dimensions.statusBarPadding
+                )
         ) {
             // Header
             Row(
@@ -105,17 +110,16 @@ fun UserProfileView(
                 Text(
                     text = "Profile",
                     color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.headlineSmall
                 )
                 
-                Spacer(modifier = Modifier.width(48.dp))
+                Spacer(modifier = Modifier.width(Dimensions.paddingXL + Dimensions.paddingM))
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingL))
             
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
             ) {
                 // Profile header
                 item {
@@ -137,19 +141,18 @@ fun UserProfileView(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(8.dp)
+                            .height(Dimensions.paddingXL + Dimensions.paddingM),
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusS)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(Dimensions.iconSizeS)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(Dimensions.paddingS))
                         Text(
                             text = "View Statistics",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }
@@ -315,18 +318,18 @@ private fun ProfileHeader(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(Dimensions.cornerRadiusL)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(Dimensions.paddingL),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile picture
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(Dimensions.iconSizeXL)
                     .clip(CircleShape)
                     .background(Gray3),
                 contentAlignment = Alignment.Center
@@ -336,7 +339,7 @@ private fun ProfileHeader(
                         model = userProfilePictureURL,
                         contentDescription = "Profile Picture",
                         modifier = Modifier
-                            .size(80.dp)
+                            .size(Dimensions.iconSizeXL)
                             .clip(CircleShape),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop
                     )
@@ -346,12 +349,12 @@ private fun ProfileHeader(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = "Profile",
                         tint = Color.White,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(Dimensions.paddingXL + Dimensions.paddingM)
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
             
             // Name section (if available)
             userName?.takeIf { it.isNotEmpty() }?.let { name ->
@@ -361,16 +364,15 @@ private fun ProfileHeader(
                     Text(
                         text = "Name",
                         color = Color.Gray,
-                        fontSize = 12.sp
+                        style = MaterialTheme.typography.labelMedium
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                     Text(
                         text = name,
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineSmall
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingS))
                 }
             }
             
@@ -381,14 +383,13 @@ private fun ProfileHeader(
                 Text(
                     text = "Email",
                     color = Color.Gray,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelMedium
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 Text(
                     text = userEmail ?: "No email",
                     color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
         }
@@ -405,25 +406,24 @@ private fun HealthDataCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(Dimensions.paddingM)
         ) {
             Text(
                 text = "Your Health Profile",
                 color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge
             )
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
             
             // Health metrics
             Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS)
             ) {
                 HealthMetricRow(
                     label = "Height:",
@@ -444,7 +444,7 @@ private fun HealthDataCard(
                 )
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
             Button(
                 onClick = onUpdateHealthClick,
@@ -453,12 +453,11 @@ private fun HealthDataCard(
                     contentColor = DarkPrimary
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(Dimensions.cornerRadiusS)
             ) {
                 Text(
                     text = "Update Health Settings",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleSmall
                 )
             }
         }
@@ -472,45 +471,49 @@ private fun PersonalizeCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(Dimensions.paddingM),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Personalize Your Experience",
                 color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
             
             Text(
                 text = "Set up your health profile to get personalized calorie recommendations",
                 color = Color.Gray,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
             Button(
                 onClick = onSetupHealthClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White.copy(alpha = 0.9f),
-                    contentColor = DarkPrimary
+                    containerColor = DarkPrimary,
+                    contentColor = Color.White
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(Dimensions.cornerRadiusS)
             ) {
+                Icon(
+                    imageVector = Icons.Default.FitnessCenter,
+                    contentDescription = null,
+                    modifier = Modifier.size(Dimensions.iconSizeS)
+                )
+                Spacer(modifier = Modifier.width(Dimensions.paddingS))
                 Text(
                     text = "Setup Health Profile",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleSmall
                 )
             }
         }
@@ -526,21 +529,20 @@ private fun HealthMetricRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Dimensions.paddingXS),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             color = Color.Gray,
-            fontSize = 14.sp
+            style = MaterialTheme.typography.bodyMedium
         )
         
         Text(
             text = value,
             color = valueColor,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
@@ -562,15 +564,14 @@ private fun ProfileMenuSection(
         Text(
             text = title,
             color = Color.Gray,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(horizontal = Dimensions.paddingXS, vertical = Dimensions.paddingS)
         )
         
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Gray4),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM)
         ) {
             Column {
                 items.forEach { item ->
@@ -578,17 +579,17 @@ private fun ProfileMenuSection(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { item.onClick() }
-                            .padding(16.dp),
+                            .padding(Dimensions.paddingM),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = item.icon,
                             contentDescription = null,
                             tint = item.textColor,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimensions.iconSizeM)
                         )
                         
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(Dimensions.paddingM))
                         
                         Column(
                             modifier = Modifier.weight(1f)
@@ -596,14 +597,13 @@ private fun ProfileMenuSection(
                             Text(
                                 text = item.title,
                                 color = item.textColor,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
+                                style = MaterialTheme.typography.bodyLarge
                             )
                             
                             Text(
                                 text = item.subtitle,
                                 color = Color.Gray,
-                                fontSize = 14.sp
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                         
@@ -611,7 +611,7 @@ private fun ProfileMenuSection(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
                             tint = Color.Gray,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(Dimensions.iconSizeS)
                         )
                     }
                 }

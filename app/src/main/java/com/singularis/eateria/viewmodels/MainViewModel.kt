@@ -133,11 +133,8 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 val hardLimit = authService.getHardLimit()
                 _softLimit.value = softLimit
                 _hardLimit.value = hardLimit
-                
-                android.util.Log.d("MainViewModel", "Loaded limits from storage: soft=$softLimit, hard=$hardLimit")
             } catch (e: Exception) {
                 // Keep default values if loading fails
-                android.util.Log.e("MainViewModel", "Failed to load limits from storage", e)
             }
         }
     }
@@ -161,15 +158,12 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 // Update local state
                 _softLimit.value = softLimit
                 _hardLimit.value = hardLimit
-                
-                android.util.Log.d("MainViewModel", "Saved health-based limits: soft=$softLimit, hard=$hardLimit (based on recommended $recommendedCalories)")
             } catch (e: Exception) {
-                android.util.Log.e("MainViewModel", "Failed to save health-based limits", e)
             }
         }
     }
     
-        fun fetchDataWithLoading() {
+    fun fetchDataWithLoading() {
         viewModelScope.launch {
             _isLoadingData.value = true
             productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
@@ -179,8 +173,6 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
                 _isLoadingData.value = false
-                
-                android.util.Log.d("MainViewModel", "Data loaded: totalConsumed=$totalCaloriesConsumed, softLimit=${_softLimit.value}, caloriesLeft=$actualCaloriesLeft")
             }
         }
     }
@@ -193,8 +185,6 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
-                
-                android.util.Log.d("MainViewModel", "Data refreshed: totalConsumed=$totalCaloriesConsumed, softLimit=${_softLimit.value}, caloriesLeft=$actualCaloriesLeft")
             }
         }
     }
@@ -417,8 +407,6 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
                 _isLoadingData.value = false
-                
-                android.util.Log.d("MainViewModel", "Custom date loaded: date=$dateString, totalConsumed=$totalCaloriesConsumed, softLimit=${_softLimit.value}, caloriesLeft=$actualCaloriesLeft")
             }
         }
     }
@@ -433,23 +421,18 @@ class MainViewModel(private val context: Context) : ViewModel() {
     fun getColor(caloriesLeft: Int): androidx.compose.ui.graphics.Color {
         val caloriesConsumed = _softLimit.value - caloriesLeft
         
-        // Debug logging to help understand the issue
-        android.util.Log.d("MainViewModel", "getColor: caloriesLeft=$caloriesLeft, softLimit=${_softLimit.value}, hardLimit=${_hardLimit.value}, caloriesConsumed=$caloriesConsumed")
-        
-        return when {
-            caloriesLeft > 0 -> {
-                android.util.Log.d("MainViewModel", "Color: GREEN (under soft limit)")
-                CalorieGreen // Under soft limit - still have calories left
+        val color = when {
+            caloriesLeft >= 0 -> {
+                CalorieGreen
             }
             caloriesConsumed <= _hardLimit.value -> {
-                android.util.Log.d("MainViewModel", "Color: YELLOW (over soft but under hard limit)")
-                CalorieYellow // Over soft limit but under hard limit
+                CalorieYellow
             }
             else -> {
-                android.util.Log.d("MainViewModel", "Color: RED (over hard limit)")
-                CalorieRed // Over hard limit
+                CalorieRed
             }
         }
+        return color
     }
     
     // Dialog state management
@@ -494,7 +477,6 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 authService.setSoftLimit(finalSoftLimit)
                 authService.setHardLimit(finalHardLimit)
             } catch (e: Exception) {
-                android.util.Log.e("MainViewModel", "Failed to save limits to storage", e)
             }
         }
         

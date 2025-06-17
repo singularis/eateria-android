@@ -26,12 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
+import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
@@ -54,28 +52,27 @@ fun LoginView(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(32.dp)
+            modifier = Modifier.padding(Dimensions.paddingXL)
         ) {
             // App title
             Text(
                 text = "Eateria",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.displayLarge,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
             
             // Subtitle
             Text(
                 text = "Track your nutrition with AI",
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.titleLarge,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
             )
             
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingXL + Dimensions.paddingM))
             
             // Google Sign-In Button
             Button(
@@ -96,49 +93,48 @@ fun LoginView(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(Dimensions.buttonHeight),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = DarkPrimary,
                     contentColor = Color.White
                 ),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(Dimensions.cornerRadiusL),
                 enabled = !isSigningIn
             ) {
                 if (isSigningIn) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(Dimensions.iconSizeM),
                         color = Color.White,
-                        strokeWidth = 2.dp
+                        strokeWidth = Dimensions.loadingIndicatorStrokeWidth
                     )
                 } else {
                     Text(
                         text = "Sign in with Google",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.titleLarge
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingL))
             
             // Error message
             errorMessage?.let { message ->
                 Text(
                     text = message,
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.titleSmall,
                     color = Color.Red,
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
             }
             
             // Privacy notice
             Text(
                 text = "By signing in, you agree to our Terms of Service and Privacy Policy",
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelMedium,
                 color = Gray3,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = Dimensions.paddingM)
             )
         }
     }

@@ -1,62 +1,105 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.automirrored.filled.TrendingDown
-import androidx.compose.material.icons.automirrored.filled.TrendingFlat
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.TrendingFlat
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.singularis.eateria.models.DailyStatistics
 import com.singularis.eateria.services.StatisticsService
+import com.singularis.eateria.services.StatisticsPeriod
 import com.singularis.eateria.services.NutritionAverages
 import com.singularis.eateria.services.WeightTrend
-import com.singularis.eateria.services.CalorieTrend
 import com.singularis.eateria.services.WeightTrendDirection
-import com.singularis.eateria.services.StatisticsPeriod
-import com.singularis.eateria.ui.theme.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import android.util.Log
-import com.singularis.eateria.ui.theme.CalorieOrange
+import com.singularis.eateria.services.CalorieTrend
+import com.singularis.eateria.ui.theme.CalorieBlue
 import com.singularis.eateria.ui.theme.CalorieGreen
+import com.singularis.eateria.ui.theme.CalorieOrange
+import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.CalorieYellow
+import com.singularis.eateria.ui.theme.DarkBackground
+import com.singularis.eateria.ui.theme.DarkPrimary
+import com.singularis.eateria.ui.theme.Dimensions
+import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withTimeout
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.Color as ComposeColor
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import kotlin.math.ln
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.exp
+import kotlin.math.ln
+import kotlin.math.max
+import kotlin.math.min
 
 enum class StatisticsTimeRange { WEEK, MONTH, TWO_MONTHS, THREE_MONTHS }
 enum class ChartType { INSIGHTS, CALORIES, MACROS, PERSON_WEIGHT, FOOD_WEIGHT, TRENDS }
+
+// Enhanced visual constants for organic look
+private val organicCardShape = RoundedCornerShape(Dimensions.cornerRadiusL)
+private val organicButtonShape = RoundedCornerShape(Dimensions.cornerRadiusXL)
+private val organicChipShape = RoundedCornerShape(Dimensions.cornerRadiusXL)
 
 @Composable
 fun StatisticsView(
@@ -78,48 +121,24 @@ fun StatisticsView(
     // Load data when view appears or time range changes
     LaunchedEffect(selectedTimeRange) {
         isLoading = true
-        Log.d("StatisticsView", "Loading data for time range: ${selectedTimeRange.name}")
-        
         try {
-            withContext(Dispatchers.IO) {
-                // Add timeout to prevent hanging indefinitely
-                withTimeout(30000) { // 30 second timeout
-                    
-                    val period = when (selectedTimeRange) {
-                        StatisticsTimeRange.WEEK -> StatisticsPeriod.WEEK
-                        StatisticsTimeRange.MONTH -> StatisticsPeriod.MONTH
-                        StatisticsTimeRange.TWO_MONTHS -> StatisticsPeriod.TWO_MONTHS
-                        StatisticsTimeRange.THREE_MONTHS -> StatisticsPeriod.THREE_MONTHS
-                    }
-                    
-                    Log.d("StatisticsView", "Fetching data for period: ${period.name}")
-                    val statistics = statisticsService.fetchStatisticsForPeriod(period)
-                    Log.d("StatisticsView", "Loaded ${statistics.size} days, hasData: ${statistics.any { it.hasData }}")
-                    
-                    // Calculate averages and trends
-                    val averages = if (statistics.isNotEmpty()) {
-                        statisticsService.calculateAverages(statistics)
-                    } else null
-                    
-                    // Calculate trends from data (iOS approach)
-                    val weight = calculateWeightTrend(statistics)
-                    val calorie = calculateCalorieTrend(statistics)
-                    Log.d("StatisticsView", "Calculated averages and trends: averages=${averages != null}, weight=${weight != null}, calorie=${calorie != null}")
-                    
-                    withContext(Dispatchers.Main) {
-                        currentStatistics = statistics
-                        currentAverages = averages
-                        weightTrend = weight
-                        calorieTrend = calorie
-                    }
-                }
+            val period = when (selectedTimeRange) {
+                StatisticsTimeRange.WEEK -> StatisticsPeriod.WEEK
+                StatisticsTimeRange.MONTH -> StatisticsPeriod.MONTH  
+                StatisticsTimeRange.TWO_MONTHS -> StatisticsPeriod.TWO_MONTHS
+                StatisticsTimeRange.THREE_MONTHS -> StatisticsPeriod.THREE_MONTHS
             }
             
-            Log.d("StatisticsView", "Data loading completed for ${selectedTimeRange.name}")
-        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-            Log.e("StatisticsView", "Statistics loading timed out after 30 seconds")
+            val statistics = withContext(Dispatchers.IO) {
+                statisticsService.fetchStatisticsForPeriod(period)
+            }
+            
+            currentStatistics = statistics
+            currentAverages = statisticsService.calculateAverages(statistics)
+            weightTrend = statisticsService.calculateWeightTrend(statistics) 
+            calorieTrend = statisticsService.calculateCalorieTrend(statistics)
         } catch (e: Exception) {
-            Log.e("StatisticsView", "Failed to load statistics data", e)
+            // Handle error silently or show user-friendly message
         } finally {
             isLoading = false
         }
@@ -128,69 +147,114 @@ fun StatisticsView(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        DarkBackground,
+                        DarkBackground.copy(alpha = 0.95f)
+                    )
+                )
+            )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 50.dp) // Add top padding for status bar
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Header
-            StatisticsHeader(
-                onBackClick = onBackClick,
-                selectedTimeRange = selectedTimeRange,
-                onTimeRangeChange = { selectedTimeRange = it }
-            )
+            // Header with enhanced styling
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                DarkBackground,
+                                DarkBackground.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+                    .padding(
+                        start = Dimensions.paddingM, 
+                        end = Dimensions.paddingM, 
+                        top = Dimensions.statusBarPadding,
+                        bottom = Dimensions.paddingM
+                    )
+            ) {
+                Column {
+                    StatisticsHeader(
+                        onBackClick = onBackClick,
+                        selectedTimeRange = selectedTimeRange,
+                        onTimeRangeChange = { selectedTimeRange = it }
+                    )
+                    
+                    Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                    
+                    if (isLoading) {
+                        LoadingStatistics()
+                    } else {
+                        ChartTypeSelector(
+                            selectedChart = selectedChart,
+                            onChartTypeChange = { selectedChart = it }
+                        )
+                    }
+                }
+            }
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            if (isLoading) {
-                LoadingStatistics()
-            } else {
-                // Chart Type Selection
-                ChartTypeSelector(
-                    selectedChart = selectedChart,
-                    onChartTypeChange = { selectedChart = it }
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
+            if (!isLoading) {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.paddingL),
+                    modifier = Modifier.padding(top = Dimensions.paddingM)
                 ) {
                     item {
                         when (selectedChart) {
-                            ChartType.INSIGHTS -> InsightsView(
-                                averages = currentAverages,
-                                statistics = currentStatistics,
-                                timeRange = selectedTimeRange
-                            )
-                            ChartType.CALORIES -> CaloriesChartView(
+                            ChartType.INSIGHTS -> {
+                                Box(modifier = Modifier.padding(horizontal = Dimensions.paddingM)) {
+                                    InsightsView(
+                                        averages = currentAverages,
+                                        statistics = currentStatistics,
+                                        timeRange = selectedTimeRange
+                                    )
+                                }
+                            }
+                            ChartType.CALORIES -> CaloriesChartViewFullWidth(
                                 statistics = currentStatistics
                             )
-                            ChartType.MACROS -> MacrosChartView(
-                                statistics = currentStatistics
-                            )
-                            ChartType.PERSON_WEIGHT -> PersonWeightChartView(
+                            ChartType.MACROS -> {
+                                Box(modifier = Modifier.padding(horizontal = Dimensions.paddingM)) {
+                                    MacrosChartView(
+                                        statistics = currentStatistics
+                                    )
+                                }
+                            }
+                            ChartType.PERSON_WEIGHT -> PersonWeightChartViewFullWidth(
                                 statistics = currentStatistics,
                                 weightTrend = weightTrend
                             )
-                            ChartType.FOOD_WEIGHT -> FoodWeightChartView(
+                            ChartType.FOOD_WEIGHT -> FoodWeightChartViewFullWidth(
                                 statistics = currentStatistics
                             )
-                            ChartType.TRENDS -> TrendsView(
-                                weightTrend = weightTrend,
-                                calorieTrend = calorieTrend
+                            ChartType.TRENDS -> {
+                                Box(modifier = Modifier.padding(horizontal = Dimensions.paddingM)) {
+                                    TrendsView(
+                                        weightTrend = weightTrend,
+                                        calorieTrend = calorieTrend
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Summary Stats with enhanced design
+                    item {
+                        Box(modifier = Modifier.padding(horizontal = Dimensions.paddingM)) {
+                            SummaryStatsView(
+                                averages = currentAverages,
+                                statistics = currentStatistics
                             )
                         }
                     }
                     
-                    // Summary Stats
+                    // Bottom spacing
                     item {
-                        SummaryStatsView(
-                            averages = currentAverages,
-                            statistics = currentStatistics
-                        )
+                        Spacer(modifier = Modifier.height(Dimensions.paddingXL))
                     }
                 }
             }
@@ -207,35 +271,51 @@ private fun StatisticsHeader(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // First row: Back button and title
+        // First row: Back button and title with enhanced styling
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBackClick) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Gray4.copy(alpha = 0.3f),
+                                Gray4.copy(alpha = 0.1f)
+                            )
+                        )
+                    )
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.White
+                    tint = Color.White,
+                    modifier = Modifier.size(Dimensions.iconSizeM)
                 )
             }
+            
+            Spacer(modifier = Modifier.width(Dimensions.paddingM))
             
             Text(
                 text = "Statistics",
                 color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
             )
         }
         
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(Dimensions.paddingL))
         
-        // Second row: Time range buttons centered under title
+        // Time range buttons with organic styling
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
         ) {
             TimeRangeButton(
                 text = "Week",
@@ -273,7 +353,7 @@ private fun ChartTypeSelector(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
     ) {
         ChartType.values().forEach { chartType ->
             FilterChip(
@@ -288,15 +368,22 @@ private fun ChartTypeSelector(
                             ChartType.FOOD_WEIGHT -> "Food Weight"
                             ChartType.TRENDS -> "Trends"
                         },
-                        fontSize = 12.sp
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = if (selectedChart == chartType) FontWeight.SemiBold else FontWeight.Normal
+                        )
                     )
                 },
                 selected = selectedChart == chartType,
+                shape = organicChipShape,
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = DarkPrimary,
+                    selectedContainerColor = DarkPrimary.copy(alpha = 0.9f),
                     selectedLabelColor = Color.White,
-                    containerColor = Gray3,
+                    containerColor = Gray3.copy(alpha = 0.7f),
                     labelColor = Color.Gray
+                ),
+                modifier = Modifier.shadow(
+                    elevation = if (selectedChart == chartType) 4.dp else 2.dp,
+                    shape = organicChipShape
                 )
             )
         }
@@ -318,301 +405,668 @@ private fun InsightsView(
     }
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = organicCardShape,
+                ambientColor = DarkPrimary.copy(alpha = 0.1f)
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Gray4.copy(alpha = 0.95f)
+        ),
+        shape = organicCardShape
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Gray4.copy(alpha = 0.4f),
+                            Gray4.copy(alpha = 0.8f)
+                        )
+                    )
+                )
         ) {
-            Text(
-                text = "$timeRangeText Insights",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            if (averages != null) {
-                LazyColumn(
-                    modifier = Modifier.height(300.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    item {
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingXL)
+            ) {
+                Text(
+                    text = "$timeRangeText Insights",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                
+                if (averages != null) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
+                    ) {
                         InsightRow("Active Days", "$validDays/${statistics.size}")
-                    }
-                    item {
                         InsightRow("Avg Daily Calories", "${averages.calories.toInt()} kcal")
-                    }
-                    item {
                         InsightRow("Avg Weight", "${String.format("%.1f", averages.weight)} kg")
-                    }
-                    item {
                         InsightRow("Avg Protein", "${String.format("%.1f", averages.proteins)} g")
-                    }
-                    item {
                         InsightRow("Avg Fats", "${String.format("%.1f", averages.fats)} g")
-                    }
-                    item {
                         InsightRow("Avg Carbs", "${String.format("%.1f", averages.carbohydrates)} g")
-                    }
-                    item {
                         InsightRow("Meals Per Day", "${String.format("%.1f", averages.mealsPerDay)}")
                     }
+                } else {
+                    NoDataMessage("No insights available for this period")
                 }
-            } else {
-                NoDataMessage("No insights available for this period")
             }
         }
     }
 }
 
 @Composable
-private fun CaloriesChartView(statistics: List<DailyStatistics>) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
+private fun TimeRangeButton(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) DarkPrimary.copy(alpha = 0.9f) else Gray3.copy(alpha = 0.7f),
+            contentColor = if (isSelected) Color.White else Color.Gray
+        ),
+        shape = organicButtonShape,
+        modifier = Modifier.shadow(
+            elevation = if (isSelected) 6.dp else 3.dp,
+            shape = organicButtonShape
+        )
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Calories Chart",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            if (statistics.isNotEmpty()) {
-                var useLogScale by remember { mutableStateOf(false) }
-                
-                // Scale toggle button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    FilterChip(
-                        onClick = { useLogScale = !useLogScale },
-                        label = { 
-                            Text(
-                                text = if (useLogScale) "Log Scale" else "Linear Scale",
-                                fontSize = 10.sp
-                            )
-                        },
-                        selected = useLogScale,
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = DarkPrimary.copy(alpha = 0.7f),
-                            selectedLabelColor = Color.White,
-                            containerColor = Gray3,
-                            labelColor = Color.Gray
+        )
+    }
+}
+
+@Composable
+private fun LoadingStatistics() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            color = Color.White,
+            modifier = Modifier.size(Dimensions.paddingXL)
+        )
+    }
+}
+
+@Composable
+private fun NoDataMessage(message: String) {
+    Text(
+        text = message,
+        color = Color.Gray,
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun SummaryStatsView(
+    averages: NutritionAverages?,
+    statistics: List<DailyStatistics>
+) {
+    val validDays = statistics.filter { it.hasData }.size
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = organicCardShape,
+                ambientColor = DarkPrimary.copy(alpha = 0.1f)
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Gray4.copy(alpha = 0.95f)
+        ),
+        shape = organicCardShape
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Gray4.copy(alpha = 0.4f),
+                            Gray4.copy(alpha = 0.8f)
                         )
                     )
+                )
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingXL)
+            ) {
+                Text(
+                    text = "Weekly Summary",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(bottom = Dimensions.paddingL)
+                )
+                
+                if (averages != null) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
+                    ) {
+                        StatRow("Active Days", "$validDays/${statistics.size}")
+                        StatRow("Avg Daily Calories", "${averages.calories.toInt()} kcal")
+                        StatRow("Avg Weight", "${String.format("%.1f", averages.weight)} kg")
+                        StatRow("Avg Protein", "${String.format("%.1f", averages.proteins)} g")
+                        StatRow("Avg Fats", "${String.format("%.1f", averages.fats)} g")
+                        StatRow("Avg Carbs", "${String.format("%.1f", averages.carbohydrates)} g")
+                        StatRow("Meals Per Day", "${String.format("%.1f", averages.mealsPerDay)}")
+                    }
+                } else {
+                    Text(
+                        text = "No data available for this week",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // iOS-style line chart with Canvas
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatRow(
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = Color.Gray,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        
+        Text(
+            text = value,
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun InsightRow(
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = Color.Gray,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        
+        Text(
+            text = value,
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun CaloriesChartViewFullWidth(
+    statistics: List<DailyStatistics>
+) {
+    var useLogScale by remember { mutableStateOf(false) }
+    
+    Column {
+        // Enhanced title and controls section - now full width
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp
+                    )
+                )
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Gray4.copy(alpha = 0.4f),
+                            Gray4.copy(alpha = 0.8f)
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingXL)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Calories Chart",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        
+                        // Enhanced scale toggle with organic styling
+                        if (statistics.isNotEmpty()) {
+                            FilterChip(
+                                onClick = { useLogScale = !useLogScale },
+                                label = { 
+                                    Text(
+                                        text = if (useLogScale) "Log Scale" else "Linear Scale",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    )
+                                },
+                                selected = useLogScale,
+                                shape = organicChipShape,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = CalorieOrange.copy(alpha = 0.8f),
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Gray3.copy(alpha = 0.6f),
+                                    labelColor = Color.Gray
+                                ),
+                                modifier = Modifier.shadow(
+                                    elevation = if (useLogScale) 4.dp else 2.dp,
+                                    shape = organicChipShape
+                                )
+                            )
+                        }
+                    }
+                    
+                if (statistics.isEmpty()) {
+                    Spacer(modifier = Modifier.height(Dimensions.paddingM))
+                    NoDataMessage("No calorie data available")
+                }
+            }
+        }
+        
+        // Enhanced full-width chart section
+        if (statistics.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(340.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Gray4.copy(alpha = 0.8f),
+                                Gray4.copy(alpha = 0.95f)
+                            )
+                        )
+                    )
+            ) {
                 CalorieLineChart(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp), // Increased height
+                    modifier = Modifier.fillMaxSize(),
                     statistics = statistics,
                     useLogScale = useLogScale
                 )
-
-            } else {
-                NoDataMessage("No calorie data available")
             }
         }
     }
 }
 
 @Composable
-private fun MacrosChartView(statistics: List<DailyStatistics>) {
+private fun MacrosChartView(
+    statistics: List<DailyStatistics>
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = organicCardShape,
+                ambientColor = DarkPrimary.copy(alpha = 0.1f)
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Gray4.copy(alpha = 0.95f)
+        ),
+        shape = organicCardShape
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Gray4.copy(alpha = 0.4f),
+                            Gray4.copy(alpha = 0.8f)
+                        )
+                    )
+                )
         ) {
-            Text(
-                text = "Macronutrients",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            if (statistics.isNotEmpty()) {
-                // Average macronutrient breakdown
-                val avgProteins = statistics.map { it.proteins }.average()
-                val avgFats = statistics.map { it.fats }.average()
-                val avgCarbs = statistics.map { it.carbohydrates }.average()
-                val total = avgProteins + avgFats + avgCarbs
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingXL)
+            ) {
+                Text(
+                    text = "Macronutrients",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
                 
-                if (total > 0) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        MacroBarRow(
-                            label = "Proteins",
-                            value = avgProteins.toInt(),
-                            percentage = (avgProteins / total * 100).toInt(),
-                            color = CalorieGreen
-                        )
-                        
-                        MacroBarRow(
-                            label = "Fats", 
-                            value = avgFats.toInt(),
-                            percentage = (avgFats / total * 100).toInt(),
-                            color = CalorieYellow
-                        )
-                        
-                        MacroBarRow(
-                            label = "Carbs",
-                            value = avgCarbs.toInt(), 
-                            percentage = (avgCarbs / total * 100).toInt(),
-                            color = CalorieOrange
-                        )
+                Spacer(modifier = Modifier.height(Dimensions.paddingXL))
+                
+                if (statistics.isNotEmpty()) {
+                    // Average macronutrient breakdown
+                    val avgProteins = statistics.filter { it.hasData }.map { it.proteins }.average()
+                    val avgFats = statistics.filter { it.hasData }.map { it.fats }.average()
+                    val avgCarbs = statistics.filter { it.hasData }.map { it.carbohydrates }.average()
+                    val total = avgProteins + avgFats + avgCarbs
+                    
+                    if (total > 0) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXL)
+                        ) {
+                            MacroBarRow(
+                                label = "Proteins",
+                                value = avgProteins.toInt(),
+                                percentage = (avgProteins / total * 100).toInt(),
+                                color = CalorieGreen
+                            )
+                            
+                            MacroBarRow(
+                                label = "Fats", 
+                                value = avgFats.toInt(),
+                                percentage = (avgFats / total * 100).toInt(),
+                                color = CalorieYellow
+                            )
+                            
+                            MacroBarRow(
+                                label = "Carbs",
+                                value = avgCarbs.toInt(), 
+                                percentage = (avgCarbs / total * 100).toInt(),
+                                color = CalorieOrange
+                            )
+                        }
+                    } else {
+                        NoDataMessage("No macronutrient data available")
                     }
                 } else {
                     NoDataMessage("No macronutrient data available")
                 }
-            } else {
-                NoDataMessage("No macronutrient data available")
             }
         }
     }
 }
 
 @Composable
-private fun PersonWeightChartView(
+private fun PersonWeightChartViewFullWidth(
     statistics: List<DailyStatistics>,
     weightTrend: WeightTrend?
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+    Column {
+        // Enhanced title and info section - now full width
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp
+                    )
+                )
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Gray4.copy(alpha = 0.4f),
+                            Gray4.copy(alpha = 0.8f)
+                        )
+                    )
+                )
         ) {
-            Text(
-                text = "Body Weight",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            val allWeightStats = statistics.filter { it.personWeight > 0 }
-            val uniqueWeights = allWeightStats.map { it.personWeight }.toSet()
-            
-            val validWeightStats = if (uniqueWeights.size <= 1 && allWeightStats.isNotEmpty()) {
-                // iOS logic: if only one unique weight, show latest entry
-                listOf(allWeightStats.maxByOrNull { it.date } ?: allWeightStats.first())
-            } else {
-                allWeightStats
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingXL)
+            ) {
+                Text(
+                    text = "Body Weight",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    
+                    val weightStats = statistics.filter { it.hasData && it.personWeight > 0 }
+                    
+                    if (weightStats.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                        
+                        // Enhanced current weight display
+                        val latestWeight = weightStats.maxByOrNull { it.date }?.personWeight ?: 0f
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(CalorieGreen, CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(Dimensions.paddingM))
+                            Text(
+                                text = "Current Weight: ${String.format("%.1f", latestWeight)} kg",
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
+                } else {
+                    Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                    NoDataMessage("No weight data available\nSubmit weight via camera or manual entry")
+                }
+            }
+        }
+        
+        // Enhanced full-width chart section
+        val weightStats = statistics.filter { it.hasData && it.personWeight > 0 }
+        if (weightStats.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(340.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Gray4.copy(alpha = 0.8f),
+                                Gray4.copy(alpha = 0.95f)
+                            )
+                        )
+                    )
+            ) {
+                WeightLineChart(
+                    modifier = Modifier.fillMaxSize(),
+                    statistics = weightStats
+                )
             }
             
-            if (validWeightStats.isNotEmpty()) {
-                // Show current/latest weight if single data point
-                if (validWeightStats.size == 1) {
-                    Text(
-                        text = "Current Weight: ${String.format("%.1f", validWeightStats[0].personWeight)} kg",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
-                
-                // iOS-style weight chart with proper scaling
-                WeightLineChart(
+            // Enhanced trend summary section - now full width
+            weightTrend?.let { trend ->
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(if (validWeightStats.size == 1) 300.dp else 400.dp), // Increased sizes
-                    statistics = validWeightStats
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                // Trend summary
-                weightTrend?.let { trend ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(
+                                topStart = 0.dp,
+                                topEnd = 0.dp,
+                                bottomStart = 0.dp,
+                                bottomEnd = 0.dp
+                            )
+                        )
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Gray4.copy(alpha = 0.4f),
+                                    Gray4.copy(alpha = 0.8f)
+                                )
+                            )
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(Dimensions.paddingXL)
                     ) {
-                        Text(
-                            text = "Trend: ${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} kg/week",
-                            color = when (trend.trend) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val trendColor = when (trend.trend) {
                                 WeightTrendDirection.GAINING -> CalorieOrange
                                 WeightTrendDirection.LOSING -> CalorieGreen
                                 WeightTrendDirection.STABLE -> CalorieYellow
-                            },
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                            }
+                            
+                            Icon(
+                                imageVector = when (trend.trend) {
+                                    WeightTrendDirection.GAINING -> Icons.Filled.KeyboardArrowUp
+                                    WeightTrendDirection.LOSING -> Icons.Filled.KeyboardArrowDown
+                                    WeightTrendDirection.STABLE -> Icons.Filled.TrendingFlat
+                                },
+                                contentDescription = null,
+                                tint = trendColor,
+                                modifier = Modifier.size(Dimensions.iconSizeM)
+                            )
+                            
+                            Spacer(modifier = Modifier.width(Dimensions.paddingM))
+                            
+                            Text(
+                                text = "Trend: ${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} kg/week",
+                                color = trendColor,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
                     }
                 }
-            } else {
-                NoDataMessage("No weight data available\nSubmit weight via camera or manual entry")
             }
         }
     }
 }
 
 @Composable
-private fun FoodWeightChartView(statistics: List<DailyStatistics>) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+private fun FoodWeightChartViewFullWidth(
+    statistics: List<DailyStatistics>
+) {
+    Column {
+        // Enhanced title and info section - now full width
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp
+                    )
+                )
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Gray4.copy(alpha = 0.4f),
+                            Gray4.copy(alpha = 0.8f)
+                        )
+                    )
+                )
         ) {
-            Text(
-                text = "Food Weight",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            val foodWeightStats = statistics.filter { it.hasData && it.totalFoodWeight > 0 }
-            
-            if (foodWeightStats.isNotEmpty()) {
-                // Show average food weight
-                val avgFoodWeight = foodWeightStats.map { it.totalFoodWeight }.average()
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingXL)
+            ) {
                 Text(
-                    text = "Average: ${String.format("%.0f", avgFoodWeight)} g/day",
+                    text = "Food Weight",
                     color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
                 )
                 
-                // iOS-style food weight chart
+                val foodWeightStats = statistics.filter { it.hasData && it.totalFoodWeight > 0 }
+                
+                if (foodWeightStats.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                    
+                    // Enhanced average food weight display
+                    val avgFoodWeight = foodWeightStats.map { it.totalFoodWeight }.average()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(CalorieYellow, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(Dimensions.paddingM))
+                        Text(
+                            text = "Average: ${String.format("%.0f", avgFoodWeight)} g/day",
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                    NoDataMessage("No food weight data available\nSubmit meals via camera to track food weight")
+                }
+            }
+        }
+        
+        // Enhanced full-width chart section
+        val foodWeightStats = statistics.filter { it.hasData && it.totalFoodWeight > 0 }
+        if (foodWeightStats.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(340.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Gray4.copy(alpha = 0.8f),
+                                Gray4.copy(alpha = 0.95f)
+                            )
+                        )
+                    )
+            ) {
                 FoodWeightLineChart(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp), // Increased size
+                    modifier = Modifier.fillMaxSize(),
                     statistics = foodWeightStats
                 )
-
-            } else {
-                NoDataMessage("No food weight data available\nSubmit meals via camera to track food weight")
             }
         }
     }
@@ -624,272 +1078,85 @@ private fun TrendsView(
     calorieTrend: CalorieTrend?
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Trend Analysis",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                weightTrend?.let { trend ->
-                    TrendCard(
-                        title = "Weight Trend",
-                        value = "${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} kg",
-                        color = when (trend.trend) {
-                            WeightTrendDirection.GAINING -> CalorieOrange
-                            WeightTrendDirection.LOSING -> CalorieGreen
-                            WeightTrendDirection.STABLE -> CalorieYellow
-                        },
-                        icon = when (trend.trend) {
-                            WeightTrendDirection.GAINING -> Icons.AutoMirrored.Filled.TrendingUp
-                            WeightTrendDirection.LOSING -> Icons.AutoMirrored.Filled.TrendingDown
-                            WeightTrendDirection.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
-                        }
-                    )
-                }
-                
-                calorieTrend?.let { trend ->
-                    TrendCard(
-                        title = "Calorie Consistency",
-                        value = "${(trend.consistency * 100).toInt()}%",
-                        color = if (trend.consistency > 0.7f) CalorieGreen else CalorieOrange,
-                        icon = if (trend.consistency > 0.7f) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingFlat
-                    )
-                    
-                    TrendCard(
-                        title = "Avg Daily Calories",
-                        value = "${trend.averageCalories.toInt()} kcal",
-                        color = DarkPrimary,
-                        icon = Icons.AutoMirrored.Filled.TrendingFlat
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SummaryStatsView(
-    averages: NutritionAverages?,
-    statistics: List<DailyStatistics>
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Summary",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            if (averages != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    SummaryItem("Days", "${averages.daysAnalyzed}")
-                    SummaryItem("Avg Cal", "${averages.calories.toInt()}")
-                    SummaryItem("Avg Weight", "${String.format("%.1f", averages.weight)}")
-                }
-            } else {
-                Text(
-                    text = "No summary data available",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-            }
-        }
-    }
-}
-
-// Helper Composables
-@Composable
-private fun TimeRangeButton(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) DarkPrimary else Gray3,
-            contentColor = Color.White
-        ),
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.height(36.dp)
-    ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-        )
-    }
-}
-
-@Composable
-private fun LoadingStatistics() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator(
-                color = DarkPrimary,
-                modifier = Modifier.size(48.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "Loading statistics...",
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun InsightRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            color = Color.Gray,
-            fontSize = 14.sp
-        )
-        Text(
-            text = value,
-            color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-private fun NoDataMessage(message: String) {
-    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = message,
-            color = Color.Gray,
-            fontSize = 14.sp,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-    }
-}
-
-@Composable
-private fun SummaryItem(label: String, value: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = value,
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = label,
-            color = Color.Gray,
-            fontSize = 12.sp
-        )
-    }
-}
-
-@Composable
-private fun TrendCard(
-    title: String,
-    value: String,
-    color: Color,
-    icon: ImageVector
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray3),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(24.dp)
-            )
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = value,
-                    color = color,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun LegendItem(label: String, color: Color) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
+            .shadow(
+                elevation = 8.dp,
+                shape = organicCardShape,
+                ambientColor = DarkPrimary.copy(alpha = 0.1f)
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Gray4.copy(alpha = 0.95f)
+        ),
+        shape = organicCardShape
     ) {
         Box(
             modifier = Modifier
-                .size(12.dp)
-                .background(color, CircleShape)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = label,
-            color = Color.White,
-            fontSize = 12.sp
-        )
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Gray4.copy(alpha = 0.4f),
+                            Gray4.copy(alpha = 0.8f)
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingXL)
+            ) {
+                Text(
+                    text = "Trend Analysis",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                
+                Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.paddingL)
+                ) {
+                    weightTrend?.let { trend ->
+                        TrendCard(
+                            title = "Weight Trend",
+                            value = "${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} kg",
+                            color = when (trend.trend) {
+                                WeightTrendDirection.GAINING -> CalorieOrange
+                                WeightTrendDirection.LOSING -> CalorieGreen
+                                WeightTrendDirection.STABLE -> CalorieYellow
+                            },
+                            icon = when (trend.trend) {
+                                WeightTrendDirection.GAINING -> Icons.AutoMirrored.Filled.TrendingUp
+                                WeightTrendDirection.LOSING -> Icons.Filled.KeyboardArrowDown
+                                WeightTrendDirection.STABLE -> Icons.Filled.TrendingFlat
+                            }
+                        )
+                    }
+                    
+                    calorieTrend?.let { trend ->
+                        TrendCard(
+                            title = "Calorie Consistency",
+                            value = "${(trend.consistency * 100).toInt()}%",
+                            color = if (trend.consistency > 0.7f) CalorieGreen else CalorieOrange,
+                            icon = if (trend.consistency > 0.7f) Icons.AutoMirrored.Filled.TrendingUp else Icons.Filled.TrendingFlat
+                        )
+                        
+                        TrendCard(
+                            title = "Avg Daily Calories",
+                            value = "${trend.averageCalories.toInt()} kcal",
+                            color = DarkPrimary,
+                            icon = Icons.Filled.TrendingFlat
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
+// Helper composables for charts
 @Composable
 private fun CalorieLineChart(
     modifier: Modifier = Modifier,
@@ -915,21 +1182,21 @@ private fun CalorieLineChart(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
-            val leftPadding = 60.dp.toPx() // Reduced padding for y-axis labels
-            val rightPadding = 20.dp.toPx() // Minimal right padding
-            val topPadding = 20.dp.toPx() // Minimal top padding
-            val bottomPadding = 60.dp.toPx() // Space for x-axis labels
+            val leftPadding = 60.dp.toPx() // Minimal left padding for full width
+            val rightPadding = 5.dp.toPx() // Minimal right padding for full width
+            val topPadding = 40.dp.toPx() // Increased top padding
+            val bottomPadding = 80.dp.toPx() // Increased bottom padding
             
             val chartWidth = width - leftPadding - rightPadding
             val chartHeight = height - topPadding - bottomPadding
             val xStep = if (chartData.size > 1) chartWidth / (chartData.size - 1) else 0f
             
-            // Draw grid lines
-            val gridColor = ComposeColor.Gray.copy(alpha = 0.2f)
+            // Draw grid lines with better spacing
+            val gridColor = Color.Gray.copy(alpha = 0.15f) // Softer grid
             
             // Horizontal grid lines (span full chart width)
-            for (i in 0..4) {
-                val y = topPadding + (chartHeight * i / 4)
+            for (i in 0..5) { // More grid lines
+                val y = topPadding + (chartHeight * i / 5)
                 drawLine(
                     color = gridColor,
                     start = Offset(leftPadding, y),
@@ -940,15 +1207,15 @@ private fun CalorieLineChart(
             
             // Vertical grid lines (evenly distributed)
             if (chartData.size > 1) {
-                val gridCount = kotlin.math.min(6, chartData.size)
+                val gridCount = kotlin.math.min(7, chartData.size) // More vertical lines
                 for (i in 0 until gridCount) {
                     val x = leftPadding + (chartWidth * i / (gridCount - 1))
-                drawLine(
-                    color = gridColor,
+                    drawLine(
+                        color = gridColor,
                         start = Offset(x, topPadding),
                         end = Offset(x, height - bottomPadding),
-                    strokeWidth = 1.dp.toPx()
-                )
+                        strokeWidth = 1.dp.toPx()
+                    )
                 }
             }
             
@@ -973,16 +1240,21 @@ private fun CalorieLineChart(
                     path.lineTo(x, y)
                 }
                 
-                // Draw data points with gradient effect
+                // Draw data points with better size and glow
                 drawCircle(
-                    color = CalorieOrange,
-                    radius = 5.dp.toPx(),
+                    color = CalorieOrange.copy(alpha = 0.2f),
+                    radius = 12.dp.toPx(), // Larger glow
                     center = Offset(x, y)
                 )
-                // Add inner highlight
                 drawCircle(
-                    color = CalorieOrange.copy(alpha = 0.3f),
-                    radius = 8.dp.toPx(),
+                    color = CalorieOrange,
+                    radius = 6.dp.toPx(), // Slightly larger data point
+                    center = Offset(x, y)
+                )
+                // Inner bright center
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.8f),
+                    radius = 2.dp.toPx(),
                     center = Offset(x, y)
                 )
             }
@@ -990,61 +1262,57 @@ private fun CalorieLineChart(
             // Update data points for labels
             dataPoints = points
             
-            // Draw the line with thicker stroke
+            // Draw the line with better styling
             drawPath(
                 path = path,
                 color = CalorieOrange,
-                style = Stroke(width = 3.dp.toPx())
+                style = Stroke(width = 4.dp.toPx()) // Thicker line
             )
         }
         
-        // Y-axis labels
+        // Y-axis labels with better spacing
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .width(55.dp)
-                .padding(top = 20.dp, bottom = 60.dp),
+                .width(55.dp) // Reduced width to match smaller left padding
+                .padding(top = 40.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            for (i in 0..4) {
+            for (i in 0..5) { // More labels to match grid
                 val calorieValue = if (useLogScale && logRange > 0) {
-                    exp(logMaxCalories - (logRange * i / 4))
+                    exp(logMaxCalories - (logRange * i / 5))
                 } else {
-                    maxCalories - (calorieRange * i / 4)
+                    maxCalories - (calorieRange * i / 5)
                 }
                 
                 Text(
                     text = "${calorieValue.toInt()}",
                     color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                    style = MaterialTheme.typography.labelMedium, // Slightly larger
+                    textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
         
-        // Y-axis unit label
+        // Y-axis unit label with better positioning
         Text(
             text = if (useLogScale) "kcal (log)" else "kcal",
             color = Color.White,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .offset(x = 27.dp, y = (-10).dp)
+                .offset(x = 25.dp, y = 10.dp)
         )
         
-
-        
-        // X-axis labels spanning full width
+        // X-axis labels with better spacing
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(start = 60.dp, end = 20.dp, bottom = 20.dp)
+                .padding(start = 60.dp, end = 5.dp, bottom = 30.dp)
         ) {
-            val maxLabels = kotlin.math.min(5, chartData.size)
+            val maxLabels = kotlin.math.min(6, chartData.size) // More labels
             val labelIndices = if (chartData.size <= maxLabels) {
                 chartData.indices.toList()
             } else {
@@ -1054,7 +1322,7 @@ private fun CalorieLineChart(
             }
             
             labelIndices.forEach { index ->
-                val dateLabel = java.text.SimpleDateFormat("M/d", java.util.Locale.getDefault())
+                val dateLabel = SimpleDateFormat("M/d", Locale.getDefault())
                     .format(chartData[index].date)
                 
                 val xPosition = if (chartData.size == 1) {
@@ -1066,8 +1334,7 @@ private fun CalorieLineChart(
                 Text(
                     text = dateLabel,
                     color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.labelMedium, // Larger date labels
                     maxLines = 1,
                     modifier = Modifier
                         .fillMaxWidth(xPosition + 0.001f)
@@ -1076,11 +1343,11 @@ private fun CalorieLineChart(
             }
         }
         
-        // Enhanced legend
+        // Enhanced legend with better spacing
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 5.dp),
+                .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             LegendItem("Daily Calories", CalorieOrange)
@@ -1112,21 +1379,21 @@ private fun WeightLineChart(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
-            val leftPadding = 60.dp.toPx() // Reduced padding for y-axis labels
-            val rightPadding = 20.dp.toPx() // Minimal right padding
-            val topPadding = 20.dp.toPx() // Minimal top padding
-            val bottomPadding = 60.dp.toPx() // Space for x-axis labels
+            val leftPadding = 60.dp.toPx() // Minimal left padding for full width
+            val rightPadding = 5.dp.toPx() // Minimal right padding for full width
+            val topPadding = 40.dp.toPx() // Increased top padding
+            val bottomPadding = 80.dp.toPx() // Increased bottom padding
             
             val chartWidth = width - leftPadding - rightPadding
             val chartHeight = height - topPadding - bottomPadding
             val xStep = if (chartData.size > 1) chartWidth / (chartData.size - 1) else 0f
             
-            // Draw grid lines
-            val gridColor = ComposeColor.Gray.copy(alpha = 0.2f)
+            // Draw grid lines with better spacing
+            val gridColor = Color.Gray.copy(alpha = 0.15f) // Softer grid
             
             // Horizontal grid lines (span full chart width)
-            for (i in 0..4) {
-                val y = topPadding + (chartHeight * i / 4)
+            for (i in 0..5) { // More grid lines
+                val y = topPadding + (chartHeight * i / 5)
                 drawLine(
                     color = gridColor,
                     start = Offset(leftPadding, y),
@@ -1136,8 +1403,8 @@ private fun WeightLineChart(
             }
             
             // Vertical grid lines (evenly distributed)
-                if (chartData.size > 1) {
-                val gridCount = kotlin.math.min(6, chartData.size)
+            if (chartData.size > 1) {
+                val gridCount = kotlin.math.min(7, chartData.size) // More vertical lines
                 for (i in 0 until gridCount) {
                     val x = leftPadding + (chartWidth * i / (gridCount - 1))
                     drawLine(
@@ -1168,16 +1435,21 @@ private fun WeightLineChart(
                     path.lineTo(x, y)
                 }
                 
-                // Draw data points with gradient effect
+                // Draw data points with better size and glow
                 drawCircle(
-                    color = CalorieGreen,
-                    radius = 5.dp.toPx(),
+                    color = CalorieGreen.copy(alpha = 0.2f),
+                    radius = 12.dp.toPx(), // Larger glow
                     center = Offset(x, y)
                 )
-                // Add inner highlight
                 drawCircle(
-                    color = CalorieGreen.copy(alpha = 0.3f),
-                    radius = 8.dp.toPx(),
+                    color = CalorieGreen,
+                    radius = 6.dp.toPx(), // Slightly larger data point
+                    center = Offset(x, y)
+                )
+                // Inner bright center
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.8f),
+                    radius = 2.dp.toPx(),
                     center = Offset(x, y)
                 )
             }
@@ -1185,60 +1457,56 @@ private fun WeightLineChart(
             // Update data points for labels
             dataPoints = points
             
-            // Draw the line with thicker stroke (only if more than one data point)
+            // Draw the line with better styling (only if more than one data point)
             if (chartData.size > 1) {
                 drawPath(
                     path = path,
                     color = CalorieGreen,
-                    style = Stroke(width = 3.dp.toPx())
+                    style = Stroke(width = 4.dp.toPx()) // Thicker line
                 )
             }
         }
         
-        // Y-axis labels
+        // Y-axis labels with better spacing
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .width(55.dp)
-                .padding(top = 20.dp, bottom = 60.dp),
+                .width(55.dp) // Reduced width to match smaller left padding
+                .padding(top = 40.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            for (i in 0..4) {
-                val weightValue = displayMaxWeight - (displayRange * i / 4)
+            for (i in 0..5) { // More labels to match grid
+                val weightValue = displayMaxWeight - (displayRange * i / 5)
                 
                 Text(
                     text = "${String.format("%.1f", weightValue)}",
                     color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                    style = MaterialTheme.typography.labelMedium, // Slightly larger
+                    textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
         
-        // Y-axis unit label
+        // Y-axis unit label with better positioning
         Text(
             text = "kg",
             color = Color.White,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .offset(x = 27.dp, y = (-10).dp)
+                .offset(x = 25.dp, y = 10.dp)
         )
         
-
-        
-        // X-axis labels spanning full width
+        // X-axis labels with better spacing
         if (chartData.isNotEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .padding(start = 60.dp, end = 20.dp, bottom = 20.dp)
+                    .padding(start = 60.dp, end = 5.dp, bottom = 30.dp)
             ) {
-                val maxLabels = kotlin.math.min(5, chartData.size)
+                val maxLabels = kotlin.math.min(6, chartData.size) // More labels
                 val labelIndices = if (chartData.size <= maxLabels) {
                     chartData.indices.toList()
                 } else {
@@ -1248,7 +1516,7 @@ private fun WeightLineChart(
                 }
                 
                 labelIndices.forEach { index ->
-                    val dateLabel = java.text.SimpleDateFormat("M/d", java.util.Locale.getDefault())
+                    val dateLabel = SimpleDateFormat("M/d", Locale.getDefault())
                         .format(chartData[index].date)
                     
                     val xPosition = if (chartData.size == 1) {
@@ -1260,8 +1528,7 @@ private fun WeightLineChart(
                     Text(
                         text = dateLabel,
                         color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.labelMedium, // Larger date labels
                         maxLines = 1,
                         modifier = Modifier
                             .fillMaxWidth(xPosition + 0.001f)
@@ -1271,11 +1538,11 @@ private fun WeightLineChart(
             }
         }
         
-        // Enhanced legend
+        // Enhanced legend with better spacing
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 5.dp),
+                .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             LegendItem("Body Weight", CalorieGreen)
@@ -1302,21 +1569,21 @@ private fun FoodWeightLineChart(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
-            val leftPadding = 60.dp.toPx() // Reduced padding for y-axis labels
-            val rightPadding = 20.dp.toPx() // Minimal right padding
-            val topPadding = 20.dp.toPx() // Minimal top padding
-            val bottomPadding = 60.dp.toPx() // Space for x-axis labels
+            val leftPadding = 60.dp.toPx() // Minimal left padding for full width
+            val rightPadding = 5.dp.toPx() // Minimal right padding for full width
+            val topPadding = 40.dp.toPx() // Increased top padding
+            val bottomPadding = 80.dp.toPx() // Increased bottom padding
             
             val chartWidth = width - leftPadding - rightPadding
             val chartHeight = height - topPadding - bottomPadding
             val xStep = if (chartData.size > 1) chartWidth / (chartData.size - 1) else 0f
             
-            // Draw grid lines
-            val gridColor = ComposeColor.Gray.copy(alpha = 0.2f)
+            // Draw grid lines with better spacing
+            val gridColor = Color.Gray.copy(alpha = 0.15f) // Softer grid
             
             // Horizontal grid lines (span full chart width)
-            for (i in 0..4) {
-                val y = topPadding + (chartHeight * i / 4)
+            for (i in 0..5) { // More grid lines
+                val y = topPadding + (chartHeight * i / 5)
                 drawLine(
                     color = gridColor,
                     start = Offset(leftPadding, y),
@@ -1327,15 +1594,15 @@ private fun FoodWeightLineChart(
             
             // Vertical grid lines (evenly distributed)
             if (chartData.size > 1) {
-                val gridCount = kotlin.math.min(6, chartData.size)
+                val gridCount = kotlin.math.min(7, chartData.size) // More vertical lines
                 for (i in 0 until gridCount) {
                     val x = leftPadding + (chartWidth * i / (gridCount - 1))
-                drawLine(
-                    color = gridColor,
+                    drawLine(
+                        color = gridColor,
                         start = Offset(x, topPadding),
                         end = Offset(x, height - bottomPadding),
-                    strokeWidth = 1.dp.toPx()
-                )
+                        strokeWidth = 1.dp.toPx()
+                    )
                 }
             }
             
@@ -1358,16 +1625,21 @@ private fun FoodWeightLineChart(
                     path.lineTo(x, y)
                 }
                 
-                // Draw data points with gradient effect
+                // Draw data points with better size and glow
                 drawCircle(
-                    color = CalorieYellow,
-                    radius = 5.dp.toPx(),
+                    color = CalorieYellow.copy(alpha = 0.2f),
+                    radius = 12.dp.toPx(), // Larger glow
                     center = Offset(x, y)
                 )
-                // Add inner highlight
                 drawCircle(
-                    color = CalorieYellow.copy(alpha = 0.3f),
-                    radius = 8.dp.toPx(),
+                    color = CalorieYellow,
+                    radius = 6.dp.toPx(), // Slightly larger data point
+                    center = Offset(x, y)
+                )
+                // Inner bright center
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.8f),
+                    radius = 2.dp.toPx(),
                     center = Offset(x, y)
                 )
             }
@@ -1375,57 +1647,53 @@ private fun FoodWeightLineChart(
             // Update data points for labels
             dataPoints = points
             
-            // Draw the line with thicker stroke
+            // Draw the line with better styling
             drawPath(
                 path = path,
                 color = CalorieYellow,
-                style = Stroke(width = 3.dp.toPx())
+                style = Stroke(width = 4.dp.toPx()) // Thicker line
             )
         }
         
-        // Y-axis labels
+        // Y-axis labels with better spacing
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .width(55.dp)
-                .padding(top = 20.dp, bottom = 60.dp),
+                .width(55.dp) // Reduced width to match smaller left padding
+                .padding(top = 40.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            for (i in 0..4) {
-                val weightValue = maxWeight - (weightRange * i / 4)
+            for (i in 0..5) { // More labels to match grid
+                val weightValue = maxWeight - (weightRange * i / 5)
                 
                 Text(
                     text = "${weightValue.toInt()}",
                     color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                    style = MaterialTheme.typography.labelMedium, // Slightly larger
+                    textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
         
-        // Y-axis unit label
+        // Y-axis unit label with better positioning
         Text(
             text = "g",
             color = Color.White,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .offset(x = 27.dp, y = (-10).dp)
+                .offset(x = 25.dp, y = 10.dp)
         )
         
-
-        
-        // X-axis labels spanning full width
+        // X-axis labels with better spacing
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(start = 60.dp, end = 20.dp, bottom = 20.dp)
+                .padding(start = 60.dp, end = 5.dp, bottom = 30.dp)
         ) {
-            val maxLabels = kotlin.math.min(5, chartData.size)
+            val maxLabels = kotlin.math.min(6, chartData.size) // More labels
             val labelIndices = if (chartData.size <= maxLabels) {
                 chartData.indices.toList()
             } else {
@@ -1435,7 +1703,7 @@ private fun FoodWeightLineChart(
             }
             
             labelIndices.forEach { index ->
-                val dateLabel = java.text.SimpleDateFormat("M/d", java.util.Locale.getDefault())
+                val dateLabel = SimpleDateFormat("M/d", Locale.getDefault())
                     .format(chartData[index].date)
                 
                 val xPosition = if (chartData.size == 1) {
@@ -1447,8 +1715,7 @@ private fun FoodWeightLineChart(
                 Text(
                     text = dateLabel,
                     color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.labelMedium, // Larger date labels
                     maxLines = 1,
                     modifier = Modifier
                         .fillMaxWidth(xPosition + 0.001f)
@@ -1457,14 +1724,77 @@ private fun FoodWeightLineChart(
             }
         }
         
-        // Enhanced legend
+        // Enhanced legend with better spacing
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 5.dp),
+                .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             LegendItem("Daily Food Weight", CalorieYellow)
+        }
+    }
+}
+
+@Composable
+private fun LegendItem(label: String, color: Color) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(color, CircleShape)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = label,
+            color = Color.White,
+            style = MaterialTheme.typography.labelMedium
+        )
+    }
+}
+
+@Composable
+private fun TrendCard(
+    title: String,
+    value: String,
+    color: Color,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Gray3),
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimensions.paddingL), // More padding
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(Dimensions.iconSizeL) // Larger icon
+            )
+            
+            Spacer(modifier = Modifier.width(Dimensions.paddingL)) // More space
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodyLarge // Larger title
+                )
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+                Text(
+                    text = value,
+                    color = color,
+                    style = MaterialTheme.typography.headlineSmall // Much larger value
+                )
+            }
         }
     }
 }
@@ -1480,103 +1810,184 @@ private fun MacroBarRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Label
+        // Label with better spacing
         Text(
             text = label,
             color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.width(80.dp)
+            style = MaterialTheme.typography.bodyLarge, // Larger text
+            modifier = Modifier.width(100.dp) // Wider label area
         )
         
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimensions.paddingL)) // More space
         
-        // Bar
+        // Taller, more elegant bar
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(24.dp)
-                .background(Gray3, RoundedCornerShape(6.dp))
+                .height(36.dp) // Taller bars
+                .background(Gray3, RoundedCornerShape(Dimensions.cornerRadiusM))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth((percentage / 100f).coerceIn(0f, 1f))
-                    .fillMaxHeight()
-                    .background(color, RoundedCornerShape(6.dp))
+                    .fillMaxSize()
+                    .background(color, RoundedCornerShape(Dimensions.cornerRadiusM))
             )
             
-            // Percentage text inside bar
+            // Percentage text with better styling
             Text(
                 text = "$percentage%",
                 color = Color.White,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .align(Alignment.Center)
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.align(Alignment.Center)
             )
         }
         
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimensions.paddingL)) // More space
         
-        // Value
+        // Value with better styling
         Text(
             text = "${value}g",
             color = Color.Gray,
-            fontSize = 12.sp,
-            modifier = Modifier.width(40.dp)
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.width(60.dp) // Wider value area
         )
     }
 }
 
-// Local trend calculation functions (iOS approach - calculate from already-fetched data)
-private fun calculateWeightTrend(weeklyStats: List<DailyStatistics>): WeightTrend? {
-    if (weeklyStats.size < 2) return null
+@Composable
+private fun MacroCompositionChart(
+    modifier: Modifier = Modifier,
+    statistics: List<DailyStatistics>
+) {
+    val chartData = statistics.filter { it.hasData }
+    if (chartData.isEmpty()) return
     
-    val weights = weeklyStats.filter { it.hasData && it.personWeight > 0 }.map { it.personWeight }
-    if (weights.size < 2) return null
+    // Calculate average macro percentages across all days
+    val totalCalories = chartData.sumOf { it.totalCalories }
+    val avgProtein = chartData.map { it.proteins }.average().toFloat()
+    val avgCarbs = chartData.map { it.carbohydrates }.average().toFloat()
+    val avgFat = chartData.map { it.fats }.average().toFloat()
     
-    val firstWeight = weights.first()
-    val lastWeight = weights.last()
-    val weightChange = lastWeight - firstWeight
+    // Calculate percentages for visualization
+    val totalMacros = avgProtein + avgCarbs + avgFat
+    val proteinPercentage = if (totalMacros > 0) (avgProtein / totalMacros * 100).toInt() else 0
+    val carbsPercentage = if (totalMacros > 0) (avgCarbs / totalMacros * 100).toInt() else 0
+    val fatPercentage = if (totalMacros > 0) (avgFat / totalMacros * 100).toInt() else 0
     
-    return WeightTrend(
-        currentWeight = lastWeight,
-        weeklyChange = weightChange,
-        trend = when {
-            weightChange > 0.5f -> WeightTrendDirection.GAINING
-            weightChange < -0.5f -> WeightTrendDirection.LOSING
-            else -> WeightTrendDirection.STABLE
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingL) // Better spacing
+    ) {
+        // Title with better spacing
+        Text(
+            text = "Average Macro Distribution",
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = Dimensions.paddingM)
+        )
+        
+        // Macro bars with improved spacing
+        MacroBarRow(
+            label = "Protein",
+            value = avgProtein.toInt(),
+            percentage = proteinPercentage,
+            color = CalorieBlue
+        )
+        
+        Spacer(modifier = Modifier.height(Dimensions.paddingM)) // More space between bars
+        
+        MacroBarRow(
+            label = "Carbs",
+            value = avgCarbs.toInt(),
+            percentage = carbsPercentage,
+            color = CalorieOrange
+        )
+        
+        Spacer(modifier = Modifier.height(Dimensions.paddingM))
+        
+        MacroBarRow(
+            label = "Fat",
+            value = avgFat.toInt(),
+            percentage = fatPercentage,
+            color = CalorieYellow
+        )
+        
+        // Summary statistics with better layout
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Dimensions.paddingL),
+            colors = CardDefaults.cardColors(containerColor = Gray3),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimensions.paddingL),
+                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
+            ) {
+                Text(
+                    text = "Daily Averages",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    MacroSummaryItem("Protein", "${avgProtein.toInt()}g", CalorieBlue)
+                    MacroSummaryItem("Carbs", "${avgCarbs.toInt()}g", CalorieOrange)
+                    MacroSummaryItem("Fat", "${avgFat.toInt()}g", CalorieYellow)
+                }
+                
+                HorizontalDivider(
+                    color = Color.Gray.copy(alpha = 0.3f),
+                    modifier = Modifier.padding(vertical = Dimensions.paddingS)
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Total Calories",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "${(totalCalories / chartData.size).toInt()} kcal",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            }
         }
-    )
+    }
 }
 
-private fun calculateCalorieTrend(weeklyStats: List<DailyStatistics>): CalorieTrend? {
-    if (weeklyStats.isEmpty()) return null
-    
-    val daysWithData = weeklyStats.filter { it.hasData && it.totalCalories > 0 }
-    if (daysWithData.isEmpty()) return null
-    
-    val calories = daysWithData.map { it.totalCalories }
-    val averageCalories = calories.average()
-    
-    // Calculate consistency (how close each day is to the average)
-    val deviations = calories.map { kotlin.math.abs(it - averageCalories) }
-    val avgDeviation = deviations.average().toFloat()
-    val consistency = kotlin.math.max(0f, 1f - (avgDeviation / averageCalories.toFloat()))
-    
-    val weeklyChange = if (calories.size >= 7) {
-        val firstWeekAvg = calories.take(7).average().toFloat()
-        val lastWeekAvg = calories.takeLast(7).average().toFloat()
-        lastWeekAvg - firstWeekAvg
-    } else {
-        0f
+@Composable
+private fun MacroSummaryItem(
+    label: String,
+    value: String,
+    color: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
+    ) {
+        Text(
+            text = label,
+            color = Color.Gray,
+            style = MaterialTheme.typography.labelLarge
+        )
+        Text(
+            text = value,
+            color = color,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+        )
     }
-    
-    return CalorieTrend(
-        averageCalories = averageCalories.toFloat(),
-        weeklyChange = weeklyChange,
-        consistency = consistency
-    )
 }
+
 
 

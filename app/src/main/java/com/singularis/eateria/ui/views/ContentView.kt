@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,13 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import com.singularis.eateria.ui.theme.DarkBackground
+import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ContentView(
@@ -90,7 +89,12 @@ fun ContentView(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(
+                    start = Dimensions.paddingM,
+                    end = Dimensions.paddingM,
+                    bottom = Dimensions.paddingM,
+                    top = Dimensions.statusBarPadding
+                ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Top Bar
@@ -109,7 +113,7 @@ fun ContentView(
                 onReturnToTodayClick = { viewModel.returnToToday() }
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
             // Stats Buttons Row
             StatsButtonsView(
@@ -125,7 +129,7 @@ fun ContentView(
                 getColor = viewModel::getColor
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
             // Product List
             if (isLoadingData) {
@@ -146,17 +150,12 @@ fun ContentView(
                             }
                         },
                         onPhotoTap = { bitmap, foodName ->
-                            android.util.Log.d("ContentView", "Photo tap received for $foodName: bitmap=${if (bitmap != null) "exists" else "null"}")
                             // Get the image dynamically using the new method if bitmap is null
                             val imageToShow = bitmap ?: run {
-                                android.util.Log.d("ContentView", "Bitmap was null, fetching from product...")
                                 // Find the product and get its image
                                 val product = products.find { it.name == foodName }
-                                val fallbackImage = product?.getImage(context)
-                                android.util.Log.d("ContentView", "Fallback image for $foodName: ${if (fallbackImage != null) "exists" else "null"}")
-                                fallbackImage
+                                product?.getImage(context)
                             }
-                            android.util.Log.d("ContentView", "Final image for full screen: ${if (imageToShow != null) "exists" else "null"}")
                             fullScreenPhotoData = Pair(imageToShow, foodName)
                         },
                         deletingProductTime = deletingProductTime
@@ -164,7 +163,7 @@ fun ContentView(
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
             // Camera Button - Always visible at bottom
             CameraButtonView(
@@ -262,7 +261,6 @@ fun ContentView(
                         // Get the calculated recommended calories and save as limits
                         val healthProfile = healthDataService.getHealthProfile()
                         healthProfile?.let { profile ->
-                            android.util.Log.d("ContentView", "Setting health-based limits from calculated calories: ${profile.recommendedCalories}")
                             viewModel.saveHealthBasedLimits(profile.recommendedCalories)
                         }
                     }
@@ -386,8 +384,7 @@ fun LoadingView(message: String) {
         Text(
             text = message,
             color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
@@ -404,8 +401,7 @@ fun LoadingOverlay(isVisible: Boolean, message: String) {
             Text(
                 text = message,
                 color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                style = MaterialTheme.typography.bodyLarge
             )
         }
     }

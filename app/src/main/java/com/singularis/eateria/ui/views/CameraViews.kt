@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -37,6 +36,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -70,6 +70,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
+import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import java.io.File
 import java.util.concurrent.Executors
@@ -215,7 +216,7 @@ private fun CameraPreviewView(
                         imageCapture
                     )
                 } catch (exc: Exception) {
-                    Log.e("CameraView", "Use case binding failed", exc)
+                    // Handle camera binding failure silently
                 }
             }, ContextCompat.getMainExecutor(context))
         }
@@ -240,8 +241,9 @@ private fun CameraPreviewView(
             Text(
                 text = if (isWeightCamera) "Weight Scale Photo" else "Food Photo",
                 color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
             
             IconButton(
@@ -274,7 +276,7 @@ private fun CameraPreviewView(
                     "Center your food in the frame\nEnsure good lighting for best results"
                 },
                 color = Color.White,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 lineHeight = 18.sp
             )
@@ -312,14 +314,15 @@ private fun CameraPreviewView(
                                             onPhotoTaken(null)
                                         }
                                     } catch (e: Exception) {
-                                        Log.e("CameraView", "Failed to convert photo to bitmap", e)
+                                        // Handle bitmap conversion failure
+                                        isCapturing = false
                                         onPhotoTaken(null)
                                     }
                                 }
                                 
                                 override fun onError(exception: ImageCaptureException) {
                                     isCapturing = false
-                                    Log.e("CameraView", "Photo capture failed: ${exception.message}", exception)
+                                    // Handle photo capture failure
                                     onPhotoTaken(null)
                                 }
                             }
@@ -376,20 +379,19 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
             
             Text(
                 text = "Camera Permission Required",
+                style = MaterialTheme.typography.headlineSmall,
                 color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "To take photos of your food and weight scale, we need access to your camera. This allows the app to analyze your food and track your weight.",
+                text = "Please enable camera access to take food photos",
+                style = MaterialTheme.typography.bodyLarge,
                 color = Color.Gray,
-                fontSize = 16.sp,
                 textAlign = TextAlign.Center,
-                lineHeight = 22.sp
+                modifier = Modifier.padding(horizontal = Dimensions.paddingM)
             )
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -403,9 +405,8 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Go to Settings",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = "Enable Camera",
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
             
@@ -421,7 +422,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
             ) {
                 Text(
                     text = "Cancel",
-                    fontSize = 16.sp
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
         }
@@ -511,7 +512,7 @@ fun FullScreenPhotoView(
                         Text(
                             text = "Image not available",
                             color = Color.White,
-                            fontSize = 16.sp
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }
@@ -528,8 +529,7 @@ fun FullScreenPhotoView(
                         Text(
                             text = foodName,
                             color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )

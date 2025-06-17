@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,15 +20,18 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +46,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
+import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
 import java.text.SimpleDateFormat
@@ -56,9 +64,15 @@ fun CalendarDatePickerView(
     onDismiss: () -> Unit
 ) {
     if (isVisible) {
-        Dialog(onDismissRequest = onDismiss) {
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+        ) {
             CalendarContent(
-                onDateSelected = onDateSelected,
+                onDateSelected = { dateString ->
+                    onDateSelected(dateString)
+                    onDismiss()
+                },
                 onDismiss = onDismiss
             )
         }
@@ -70,177 +84,173 @@ private fun CalendarContent(
     onDateSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var currentMonth by remember { mutableStateOf(Calendar.getInstance()) }
-    var selectedDate by remember { mutableStateOf<Calendar?>(null) }
+    val today = Calendar.getInstance()
+    var currentMonth by remember { mutableStateOf(today.clone() as Calendar) }
     
-    val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-    val monthFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-    
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(16.dp)
+            .padding(Dimensions.paddingM),
+        shape = RoundedCornerShape(Dimensions.cornerRadiusL),
+        color = Gray4
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(Dimensions.paddingL)
         ) {
             // Header
             Text(
                 text = "Select Date",
+                style = MaterialTheme.typography.headlineSmall,
                 color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.padding(bottom = Dimensions.paddingM)
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
             
             // Month navigation
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Dimensions.paddingM),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
                     onClick = {
-                        currentMonth = Calendar.getInstance().apply {
-                            time = currentMonth.time
+                        currentMonth = (currentMonth.clone() as Calendar).apply {
                             add(Calendar.MONTH, -1)
                         }
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Previous Month",
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "Previous month",
                         tint = Color.White
                     )
                 }
                 
                 Text(
-                    text = monthFormatter.format(currentMonth.time),
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
+                    text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(currentMonth.time),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White
                 )
                 
                 IconButton(
                     onClick = {
-                        val today = Calendar.getInstance()
-                        if (currentMonth.get(Calendar.YEAR) < today.get(Calendar.YEAR) ||
-                            (currentMonth.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                             currentMonth.get(Calendar.MONTH) < today.get(Calendar.MONTH))
-                        ) {
-                            currentMonth = Calendar.getInstance().apply {
-                                time = currentMonth.time
-                                add(Calendar.MONTH, 1)
-                            }
+                        // Don't allow future months
+                        val nextMonth = (currentMonth.clone() as Calendar).apply {
+                            add(Calendar.MONTH, 1)
+                        }
+                        if (nextMonth.get(Calendar.YEAR) <= today.get(Calendar.YEAR) && 
+                            nextMonth.get(Calendar.MONTH) <= today.get(Calendar.MONTH)) {
+                            currentMonth = nextMonth
                         }
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "Next Month",
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Next month",
                         tint = Color.White
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Day headers
+            // Weekday headers
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
+                val weekdays = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+                weekdays.forEach { day ->
                     Text(
                         text = day,
+                        style = MaterialTheme.typography.labelMedium,
                         color = Color.Gray,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.width(32.dp),
+                        modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
             
             // Calendar grid
-            val daysInMonth = getDaysInMonth(currentMonth)
+            CalendarGrid(
+                currentMonth = currentMonth,
+                today = today,
+                onDateSelected = onDateSelected
+            )
             
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                modifier = Modifier.height(192.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(daysInMonth) { day ->
-                    CalendarDay(
-                        day = day,
-                        isSelected = selectedDate?.let { selected ->
-                            day.day != null &&
-                            selected.get(Calendar.DAY_OF_MONTH) == day.day &&
-                            selected.get(Calendar.MONTH) == currentMonth.get(Calendar.MONTH) &&
-                            selected.get(Calendar.YEAR) == currentMonth.get(Calendar.YEAR)
-                        } ?: false,
-                        isToday = day.day != null && isToday(day.day!!, currentMonth),
-                        isClickable = day.day != null && !isFutureDate(day.day!!, currentMonth),
-                        onClick = { dayNumber ->
-                            if (dayNumber != null && !isFutureDate(dayNumber, currentMonth)) {
-                                selectedDate = Calendar.getInstance().apply {
-                                    set(Calendar.YEAR, currentMonth.get(Calendar.YEAR))
-                                    set(Calendar.MONTH, currentMonth.get(Calendar.MONTH))
-                                    set(Calendar.DAY_OF_MONTH, dayNumber)
-                                }
-                            }
-                        }
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            // Action buttons
+            // Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Gray3,
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Cancel")
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Cancel",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
                 }
                 
                 Button(
                     onClick = {
-                        selectedDate?.let { date ->
-                            val dateString = dateFormatter.format(date.time)
-                            onDateSelected(dateString)
-                        }
+                        // Select today's date
+                        val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(today.time)
+                        onDateSelected(dateString)
                     },
-                    enabled = selectedDate != null,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = DarkPrimary,
-                        contentColor = Color.White,
-                        disabledContainerColor = Gray3,
-                        disabledContentColor = Color.Gray
+                        contentColor = Color.White
                     ),
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
+                    modifier = Modifier.width(80.dp)
                 ) {
-                    Text("Select")
+                    Text(
+                        text = "Today",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CalendarGrid(
+    currentMonth: Calendar,
+    today: Calendar,
+    onDateSelected: (String) -> Unit
+) {
+    val daysInMonth = getDaysInMonth(currentMonth)
+    
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(7),
+        modifier = Modifier.height(192.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items(daysInMonth) { day ->
+            CalendarDay(
+                day = day,
+                isSelected = day.day != null &&
+                            day.day == today.get(Calendar.DAY_OF_MONTH) &&
+                            currentMonth.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
+                            currentMonth.get(Calendar.YEAR) == today.get(Calendar.YEAR),
+                isToday = day.day != null && isToday(day.day!!, today),
+                isClickable = day.day != null && !isFutureDate(day.day!!, today),
+                onClick = { dayNumber ->
+                    if (dayNumber != null && !isFutureDate(dayNumber, today)) {
+                        val selectedDate = Calendar.getInstance().apply {
+                            set(Calendar.YEAR, today.get(Calendar.YEAR))
+                            set(Calendar.MONTH, today.get(Calendar.MONTH))
+                            set(Calendar.DAY_OF_MONTH, dayNumber)
+                        }
+                        val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(selectedDate.time)
+                        onDateSelected(dateString)
+                    }
+                }
+            )
         }
     }
 }

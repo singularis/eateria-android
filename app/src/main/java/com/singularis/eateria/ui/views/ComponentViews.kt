@@ -47,6 +47,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -67,12 +68,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -84,6 +84,7 @@ import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
+import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -94,7 +95,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.ui.text.font.FontStyle
 import coil.compose.AsyncImage
 
 @Composable
@@ -111,15 +111,15 @@ fun TopBarView(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp), // Add significant top padding from system tray
+            .padding(top = Dimensions.paddingS), // Add significant top padding from system tray
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Profile button
         Box(
             modifier = Modifier
-                .padding(top = 8.dp) // Additional top spacing for profile button
-                .size(30.dp)
+                .padding(top = Dimensions.paddingS) // Additional top spacing for profile button
+                .size(Dimensions.iconSizeL)
                 .clip(CircleShape)
                 .background(Gray3)
                 .clickable { onProfileClick() },
@@ -130,7 +130,7 @@ fun TopBarView(
                     model = userProfilePictureURL,
                     contentDescription = "Profile Picture",
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(Dimensions.iconSizeL)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
@@ -140,7 +140,7 @@ fun TopBarView(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "Profile",
                     tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(Dimensions.iconSizeS)
                 )
             }
         }
@@ -149,30 +149,28 @@ fun TopBarView(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(top = 8.dp) // Additional top spacing for date display
-                .clip(RoundedCornerShape(16.dp))
+                .padding(top = Dimensions.paddingS) // Additional top spacing for date display
+                .clip(RoundedCornerShape(Dimensions.cornerRadiusL))
                 .background(Color.Black.copy(alpha = 0.8f))
                 .clickable { onDateClick() }
-                .padding(16.dp)
+                .padding(Dimensions.paddingM)
         ) {
             Text(
                 text = if (isViewingCustomDate) currentViewingDate else {
                     SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
                 },
                 color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleMedium
             )
             
             if (isViewingCustomDate) {
                 Text(
                     text = "Custom Date",
                     color = Color.Yellow,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.labelSmall
                 )
                 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 
                 Button(
                     onClick = onReturnToTodayClick,
@@ -180,12 +178,11 @@ fun TopBarView(
                         containerColor = DarkPrimary,
                         contentColor = Color.White
                     ),
-                    modifier = Modifier.height(24.dp)
+                    modifier = Modifier.height(Dimensions.paddingL)
                 ) {
                     Text(
                         text = "Today",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.labelMedium
                     )
                 }
             }
@@ -194,13 +191,13 @@ fun TopBarView(
         // Health info button
         IconButton(
             onClick = onHealthInfoClick,
-            modifier = Modifier.padding(top = 8.dp) // Additional top spacing for health info button
+            modifier = Modifier.padding(top = Dimensions.paddingS) // Additional top spacing for health info button
         ) {
             Icon(
                 imageVector = Icons.Default.Info,
                 contentDescription = "Health Info",
                 tint = DarkPrimary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(Dimensions.iconSizeM)
             )
         }
     }
@@ -222,7 +219,7 @@ fun StatsButtonsView(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = Dimensions.paddingS),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -234,14 +231,14 @@ fun StatsButtonsView(
         ) {
             Text(
                 text = String.format("%.1f kg", personWeight),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
         }
         
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimensions.paddingXS))
         
         // Calories button - Center
         StatButton(
@@ -254,21 +251,21 @@ fun StatsButtonsView(
         ) {
             Text(
                 text = "$caloriesLeft left",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                 color = getColor(caloriesLeft),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "Calories: $caloriesConsumed",
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
             )
         }
         }
         
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimensions.paddingXS))
         
         // Trend button - Right aligned
         StatButton(
@@ -278,8 +275,8 @@ fun StatsButtonsView(
         ) {
             Text(
                 text = "Trend",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
@@ -296,8 +293,8 @@ fun StatButton(
 ) {
     Box(
         modifier = modifier
-            .height(60.dp) // Keep height but remove fixed width
-            .clip(RoundedCornerShape(12.dp)) // Slightly smaller radius
+            .height(Dimensions.buttonHeight) // Keep height but remove fixed width
+            .clip(RoundedCornerShape(Dimensions.cornerRadiusM)) // Slightly smaller radius
             .background(Gray3.copy(alpha = 0.9f)) // Slightly more opaque
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -305,7 +302,7 @@ fun StatButton(
         if (isLoading) {
             CircularProgressIndicator(
                 color = Color.White,
-                modifier = Modifier.size(20.dp) // Smaller loading indicator
+                modifier = Modifier.size(Dimensions.loadingIndicatorSize) // Smaller loading indicator
             )
         } else {
             content()
@@ -347,14 +344,14 @@ fun ProductListView(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp) // Fixed height instead of fillMaxSize
+                .height(Dimensions.fixedHeight) // Fixed height instead of fillMaxSize
                 .pullRefresh(pullRefreshState),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "No food entries yet.\nTake a photo to get started!\n\nPull down to refresh",
                 color = Color.Gray,
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )
             
@@ -372,8 +369,8 @@ fun ProductListView(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(), // Only fill width, not height
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
+                contentPadding = PaddingValues(vertical = Dimensions.paddingM)
             ) {
                 items(
                     items = sortedProducts,
@@ -386,7 +383,6 @@ fun ProductListView(
                     onModify = { percentage -> onModify(product.time, product.name, percentage) },
                         onPhotoTap = { 
                             val productImage = product.getImage(context)
-                            android.util.Log.d("ProductListView", "Photo tap for ${product.name}: image=${if (productImage != null) "exists" else "null"}")
                             onPhotoTap(productImage, product.name) 
                         },
                     isDeleting = deletingProductTime == product.time
@@ -440,25 +436,25 @@ fun ProductCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color)
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = Dimensions.paddingM),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 if (dismissState.dismissDirection == DismissDirection.EndToStart) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete",
                             tint = Color.White,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimensions.iconSizeS)
                         )
                         Text(
                             text = "Remove",
                             color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                         )
                     }
                 }
@@ -470,19 +466,19 @@ fun ProductCard(
                     .fillMaxWidth()
                     .alpha(if (isDeleting) 0.6f else 1.0f),
         colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
     ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(Dimensions.paddingM),
+                    horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                 ) {
                     // Food photo - clickable for full screen (matches iOS)
                     Box(
                         modifier = Modifier
-                            .size(80.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .size(Dimensions.iconSizeL)
+                            .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
                             .background(Color.Gray.copy(alpha = 0.2f))
                             .clickable { 
                                 if (!isDeleting) {
@@ -506,7 +502,7 @@ fun ProductCard(
                                 contentDescription = "No photo",
                                 tint = Color.Gray,
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(Dimensions.iconSizeM)
                                     .align(Alignment.Center)
                             )
                         }
@@ -525,24 +521,24 @@ fun ProductCard(
                     Text(
                         text = product.name,
                         color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                     )
                     
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                     
                     Text(
                             text = "${product.calories} kcal • ${product.weight}g",
                         color = Color.Gray,
-                        fontSize = 14.sp
+                        style = MaterialTheme.typography.bodySmall
                     )
                     
                     if (product.ingredients.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                         Text(
                             text = product.ingredients.joinToString(", "),
                             color = Color.Gray,
-                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.bodySmall,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                         )
@@ -554,9 +550,9 @@ fun ProductCard(
                     CircularProgressIndicator(
                         color = Color.White,
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(Dimensions.loadingIndicatorSize)
                                 .align(Alignment.CenterVertically),
-                            strokeWidth = 2.dp
+                            strokeWidth = Dimensions.loadingIndicatorStrokeWidth
                         )
                     }
                 }
@@ -595,22 +591,22 @@ fun PortionSelectionDialog(
             title = {
                 Text(
                     text = "Portion Updated!",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     color = Color.White
                 )
             },
             text = {
                 Text(
                     text = "Successfully updated '$foodName' to $selectedPortion portion.",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     textAlign = TextAlign.Center
                 )
             },
             confirmButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("OK", color = DarkPrimary)
+                    Text("OK", color = DarkPrimary, style = MaterialTheme.typography.labelMedium)
                 }
             },
             containerColor = Gray4
@@ -621,8 +617,8 @@ fun PortionSelectionDialog(
             title = {
                 Text(
                     text = "Modify Portion",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     color = Color.White
                 )
             },
@@ -630,16 +626,16 @@ fun PortionSelectionDialog(
                 Column {
                     Text(
                         text = "How much of '$foodName' did you actually eat?\nOriginal weight: ${originalWeight}g",
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
                     )
                     
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingM))
                     
                     LazyColumn(
-                        modifier = Modifier.height(300.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.height(Dimensions.fixedHeight),
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                     ) {
                         // Add percentage options with calculated weights (matches iOS)
                         val portions = listOf(
@@ -666,11 +662,12 @@ fun PortionSelectionDialog(
                                     containerColor = DarkPrimary,
                                     contentColor = Color.White
                                 ),
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                                contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
                             ) {
                                 Text(
                                     text = "$percentage% (${calculatedWeight}g) - $description",
-                                    fontSize = 14.sp,
+                                    style = MaterialTheme.typography.bodySmall,
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -690,11 +687,12 @@ fun PortionSelectionDialog(
                                     containerColor = Gray3,
                                     contentColor = Color.White
                                 ),
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                                contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
                     ) {
                                 Text(
                                     text = "Custom...",
-                                    fontSize = 14.sp
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                     }
                 }
@@ -704,7 +702,7 @@ fun PortionSelectionDialog(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
                 }
             },
             containerColor = Gray4
@@ -735,7 +733,6 @@ fun CameraButtonView(
                 }
             } catch (e: Exception) {
                 // Handle error - could show a toast or error dialog
-                android.util.Log.e("CameraButtonView", "Failed to load image from gallery", e)
             }
         }
     }
@@ -743,8 +740,8 @@ fun CameraButtonView(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .height(Dimensions.buttonHeight),
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
     ) {
         // Upload button (30% width)
         Button(
@@ -755,18 +752,18 @@ fun CameraButtonView(
             },
             modifier = Modifier
                 .weight(0.30f)
-                .height(60.dp),
+                .height(Dimensions.buttonHeight),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF007AFF), // iOS blue color
                 contentColor = Color.White
             ),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             enabled = !isLoadingFoodPhoto
         ) {
             if (isLoadingFoodPhoto) {
                 CircularProgressIndicator(
                     color = Color.White,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(Dimensions.loadingIndicatorSize)
                 )
             } else {
                 Column(
@@ -776,15 +773,15 @@ fun CameraButtonView(
                     Icon(
                         imageVector = Icons.Default.PhotoLibrary,
                         contentDescription = "Upload",
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(Dimensions.iconSizeS)
                     )
                     
                     Text(
                         text = "Upload",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                         textAlign = TextAlign.Center,
-                        lineHeight = 14.sp
+                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight
                     )
                 }
             }
@@ -799,18 +796,18 @@ fun CameraButtonView(
             },
             modifier = Modifier
                 .weight(0.65f)
-            .height(60.dp),
+            .height(Dimensions.buttonHeight),
         colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF34C759), // iOS green color
             contentColor = Color.White
         ),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             enabled = !isLoadingFoodPhoto
     ) {
         if (isLoadingFoodPhoto) {
             CircularProgressIndicator(
                 color = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(Dimensions.loadingIndicatorSize)
             )
         } else {
             Row(
@@ -820,15 +817,15 @@ fun CameraButtonView(
                 Icon(
                     imageVector = Icons.Default.PhotoCamera,
                     contentDescription = "Camera",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(Dimensions.iconSizeS)
                 )
                 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(Dimensions.paddingXS))
                     
                     Text(
                         text = "Take Food Photo",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                         maxLines = 1
                     )
                 }
@@ -857,8 +854,8 @@ fun CalorieLimitsDialog(
         title = {
             Text(
                 text = "Set Calorie Limits",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = Color.White
             )
         },
@@ -866,17 +863,17 @@ fun CalorieLimitsDialog(
             Column {
                 Text(
                     text = "Set your daily calorie limits manually, or use health-based calculation if you have health data.\n\n⚠️ These are general guidelines. Consult a healthcare provider for personalized dietary advice.",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
-                    lineHeight = 20.sp
+                    lineHeight = MaterialTheme.typography.bodySmall.lineHeight
                 )
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
                 
                 OutlinedTextField(
                     value = tempSoftLimit,
                     onValueChange = onSoftLimitChange,
-                    label = { Text("Soft Limit (calories)", color = Color.Gray) },
+                    label = { Text("Soft Limit (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
@@ -888,12 +885,12 @@ fun CalorieLimitsDialog(
                     )
                 )
                 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 
                 OutlinedTextField(
                     value = tempHardLimit,
                     onValueChange = onHardLimitChange,
-                    label = { Text("Hard Limit (calories)", color = Color.Gray) },
+                    label = { Text("Hard Limit (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
@@ -907,12 +904,12 @@ fun CalorieLimitsDialog(
                 
                 // Validation error message
                 if (showValidationError) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                     Text(
                         text = "⚠️ Soft limit must be smaller than hard limit",
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         color = Color.Red,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                     )
                 }
             }
@@ -931,11 +928,11 @@ fun CalorieLimitsDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text("Cancel", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
             }
         },
         containerColor = Gray4,
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
     )
 }
 
@@ -952,31 +949,31 @@ fun WeightActionSheetDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
+                .padding(Dimensions.paddingM),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             color = Color.White
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier = Modifier.padding(Dimensions.paddingL),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Record Weight",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     color = Color.Black
                 )
                 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 
                 Text(
                     text = "Choose how you'd like to record your weight",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     textAlign = TextAlign.Center
                 )
                 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
                 
                 Button(
                     onClick = onTakePhoto,
@@ -986,10 +983,10 @@ fun WeightActionSheetDialog(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Take Photo", fontSize = 16.sp)
+                    Text("Take Photo", style = MaterialTheme.typography.labelMedium)
                 }
                 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 
                 Button(
                     onClick = onManualEntry,
@@ -999,13 +996,13 @@ fun WeightActionSheetDialog(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Manual Entry", fontSize = 16.sp)
+                    Text("Manual Entry", style = MaterialTheme.typography.labelMedium)
                 }
                 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -1024,24 +1021,24 @@ fun ManualWeightDialog(
         title = {
             Text(
                 text = "Enter Weight",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
             )
         },
         text = {
             Column {
                 Text(
                     text = "Enter your weight in kilograms",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
                 
                 OutlinedTextField(
                     value = weightInput,
                     onValueChange = onWeightChange,
-                    label = { Text("Weight (kg)") },
+                    label = { Text("Weight (kg)", style = MaterialTheme.typography.bodySmall) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1085,7 +1082,7 @@ fun HealthRecommendationDialog(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp), // Larger padding for full screen
+                    .padding(Dimensions.paddingL), // Larger padding for full screen
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header with icon and title
@@ -1096,18 +1093,18 @@ fun HealthRecommendationDialog(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Psychology,
                             contentDescription = "Health Recommendation",
                             tint = Color(0xFF4CAF50), // Green color for health
-                            modifier = Modifier.size(36.dp) // Larger icon
+                            modifier = Modifier.size(Dimensions.iconSizeL) // Larger icon
                         )
                         Text(
                             text = "Health Recommendation",
-                            fontSize = 28.sp, // Much larger title
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge, // Much larger title
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = Color.White
                         )
                     }
@@ -1115,47 +1112,47 @@ fun HealthRecommendationDialog(
                     // Close button
                     IconButton(
                         onClick = onDismiss,
-                        modifier = Modifier.size(48.dp) // Larger close button
+                        modifier = Modifier.size(Dimensions.iconSizeM) // Larger close button
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
                             tint = Color.Gray,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(Dimensions.iconSizeS)
                         )
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
                 
                 // Scrollable content - now takes all available space
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f) // Take all remaining space instead of fixed height
                         .fillMaxWidth(),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp) // More spacing
+                    contentPadding = PaddingValues(vertical = Dimensions.paddingM),
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS) // More spacing
                 ) {
                     item {
                         // Recommendation content
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = Gray3),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                         ) {
-                            Column(modifier = Modifier.padding(24.dp)) { // More padding
+                            Column(modifier = Modifier.padding(Dimensions.paddingM)) { // More padding
                                 Text(
                                     text = "📊 Your Personal Analysis",
-                                    fontSize = 20.sp, // Larger subtitle
-                                    fontWeight = FontWeight.SemiBold,
+                                    style = MaterialTheme.typography.titleSmall, // Larger subtitle
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                                     color = Color(0xFF4CAF50)
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                                 Text(
                                     text = recommendation,
-                                    fontSize = 18.sp, // Much larger body text
+                                    style = MaterialTheme.typography.bodyLarge, // Much larger body text
                                     color = Color.White,
-                                    lineHeight = 26.sp // Better line spacing
+                                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight // Better line spacing
                                 )
                             }
                         }
@@ -1168,25 +1165,25 @@ fun HealthRecommendationDialog(
                                 .fillMaxWidth()
                                 .clickable { showDisclaimerDialog = true },
                             colors = CardDefaults.cardColors(containerColor = Gray3), // Same as trend button
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                         ) {
                             Row(
-                                modifier = Modifier.padding(24.dp),
+                                modifier = Modifier.padding(Dimensions.paddingM),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                                 ) {
                                     Text(
                                         text = "⚠️",
-                                        fontSize = 20.sp
+                                        style = MaterialTheme.typography.bodySmall
                                     )
                                     Text(
                                         text = "Health Disclaimer",
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.SemiBold,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                                         color = Color.White // Clean white text like trend button
                                     )
                                 }
@@ -1194,7 +1191,7 @@ fun HealthRecommendationDialog(
                                     imageVector = Icons.Default.Info,
                                     contentDescription = "View disclaimer",
                                     tint = Color.Gray,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(Dimensions.iconSizeS)
                                 )
                             }
                         }
@@ -1206,26 +1203,26 @@ fun HealthRecommendationDialog(
                     onClick = onDismiss,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp), // Taller button
+                        .height(Dimensions.buttonHeight), // Taller button
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF4CAF50),
                         contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Got it",
-                            modifier = Modifier.size(24.dp) // Larger icon
+                            modifier = Modifier.size(Dimensions.iconSizeS) // Larger icon
                         )
                         Text(
                             text = "Got it, thanks!",
-                            fontSize = 20.sp, // Larger button text
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.bodyMedium, // Larger button text
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                         )
                     }
                 }
@@ -1262,7 +1259,7 @@ fun HealthDisclaimerDialog(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp),
+                    .padding(Dimensions.paddingL),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header with icon and title
@@ -1273,16 +1270,16 @@ fun HealthDisclaimerDialog(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                     ) {
                         Text(
                             text = "⚠️",
-                            fontSize = 36.sp
+                            style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
                             text = "Health Disclaimer",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = Color.White // Clean white text like trend button
                         )
                     }
@@ -1290,18 +1287,18 @@ fun HealthDisclaimerDialog(
                     // Close button
                     IconButton(
                         onClick = onDismiss,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(Dimensions.iconSizeM)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
                             tint = Color.Gray,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(Dimensions.iconSizeS)
                         )
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
                 
                 // Content area - trend button style
                 Card(
@@ -1309,73 +1306,73 @@ fun HealthDisclaimerDialog(
                         .weight(1f)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = Gray3), // Same as trend button
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(32.dp),
+                            .padding(Dimensions.paddingM),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "Important Notice",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                             color = Color.White,
                             textAlign = TextAlign.Center
                         )
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingM))
                         
                         Text(
                             text = "This information is for educational purposes only and should not replace professional medical advice.",
-                            fontSize = 18.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray,
-                            lineHeight = 26.sp,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                             textAlign = TextAlign.Center
                         )
                         
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingM))
                         
                         Text(
                             text = "Always consult your healthcare provider before making dietary changes or health decisions.",
-                            fontSize = 18.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray,
-                            lineHeight = 26.sp,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                             textAlign = TextAlign.Center
                         )
                         
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingM))
                         
                         Text(
                             text = "Sources: USDA FoodData Central, Dietary Guidelines for Americans",
-                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray.copy(alpha = 0.7f),
-                            fontStyle = FontStyle.Italic,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                             textAlign = TextAlign.Center
                         )
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
                 
                 // Confirmation button - trend style
                 Button(
                     onClick = onDismiss,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
+                        .height(Dimensions.buttonHeight),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Gray3, // Same as trend button background
                         contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                 ) {
                     Text(
                         text = "I Understand",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                         color = Color.White // Same as trend button text
                     )
                 }
@@ -1395,17 +1392,17 @@ fun PhotoErrorAlert(
         title = {
             Text(
                 text = title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = Color.White
             )
         },
         text = {
             Text(
                 text = message,
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
-                lineHeight = 22.sp
+                lineHeight = MaterialTheme.typography.bodySmall.lineHeight
             )
         },
         confirmButton = {
@@ -1413,12 +1410,12 @@ fun PhotoErrorAlert(
                 Text(
                     text = "OK",
                     color = DarkPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                 )
             }
         },
         containerColor = Gray4,
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
     )
 } 

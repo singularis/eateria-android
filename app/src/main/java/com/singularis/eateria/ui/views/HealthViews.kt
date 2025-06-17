@@ -27,6 +27,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -41,15 +42,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.platform.LocalContext
 import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
+import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
 import com.singularis.eateria.viewmodels.AuthViewModel
@@ -81,7 +80,12 @@ fun HealthSettingsView(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(
+                    start = Dimensions.paddingM,
+                    end = Dimensions.paddingM,
+                    bottom = Dimensions.paddingM,
+                    top = Dimensions.statusBarPadding
+                )
         ) {
             // Header
             Row(
@@ -100,17 +104,16 @@ fun HealthSettingsView(
                 Text(
                     text = "Health Settings",
                     color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.headlineSmall
                 )
                 
-                Spacer(modifier = Modifier.width(48.dp))
+                Spacer(modifier = Modifier.width(Dimensions.paddingXL + Dimensions.paddingM))
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingL))
             
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
             ) {
                 // Calorie Goals Section
                 item {
@@ -132,7 +135,7 @@ fun HealthSettingsView(
                             modifier = Modifier.fillMaxWidth()
                         )
                         
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         
                         TextField(
                             value = hardLimit,
@@ -148,13 +151,12 @@ fun HealthSettingsView(
                             modifier = Modifier.fillMaxWidth()
                         )
                         
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         
                         Text(
                             text = "Soft limit: Target daily intake\nHard limit: Maximum recommended intake",
                             color = Color.Gray,
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
@@ -174,13 +176,12 @@ fun HealthSettingsView(
                                 Text(
                                     text = "Use Health-Based Calculation",
                                     color = Color.White,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium
+                                    style = MaterialTheme.typography.bodyLarge
                                 )
                                 Text(
                                     text = "Automatically calculate calorie goals based on your health profile",
                                     color = Color.Gray,
-                                    fontSize = 14.sp
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
                             }
                             
@@ -197,12 +198,12 @@ fun HealthSettingsView(
                         }
                         
                         if (!hasHealthData) {
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(Dimensions.paddingS))
                             
                             Text(
                                 text = "⚠️ No health data available. Connect to Google Fit or Apple Health to enable this feature.",
                                 color = CalorieRed,
-                                fontSize = 12.sp
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
@@ -217,17 +218,15 @@ fun HealthSettingsView(
                         Text(
                             text = "BMR: ~1,650 calories/day",
                             color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.bodyLarge
                         )
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         
                         Text(
                             text = "Based on estimated age, weight, height, and activity level. Connect health data for more accurate calculations.",
                             color = Color.Gray,
-                            fontSize = 14.sp,
-                            lineHeight = 18.sp
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
@@ -241,17 +240,15 @@ fun HealthSettingsView(
                         Text(
                             text = "Coming Soon",
                             color = Color.Gray,
-                            fontSize = 14.sp,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                            style = MaterialTheme.typography.bodyMedium
                         )
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         
                         Text(
                             text = "• Vegetarian/Vegan options\n• Allergen tracking\n• Macro targets customization\n• Meal timing preferences",
                             color = Color.Gray,
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
@@ -266,13 +263,12 @@ fun HealthSettingsView(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(12.dp)
+                            .height(Dimensions.paddingXL + Dimensions.paddingM),
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                     ) {
                         Text(
                             text = "Save Settings",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }
@@ -282,26 +278,25 @@ fun HealthSettingsView(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = CalorieRed.copy(alpha = 0.1f)),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.padding(Dimensions.paddingM),
                             verticalAlignment = Alignment.Top
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
                                 tint = CalorieRed,
-                                modifier = Modifier.padding(top = 2.dp)
+                                modifier = Modifier.padding(top = Dimensions.paddingXS)
                             )
                             
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(Dimensions.paddingS))
                             
                             Text(
                                 text = "Important: These are general guidelines. Consult with a healthcare provider for personalized dietary advice, especially if you have medical conditions or specific health goals.",
                                 color = Color.White,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
@@ -330,15 +325,11 @@ fun HealthSettingsView(
                             
                             authViewModel.setSoftLimit(calculatedSoft)
                             authViewModel.setHardLimit(calculatedHard)
-                            
-                            android.util.Log.d("HealthSettingsView", "Applied health-based limits: soft=$calculatedSoft, hard=$calculatedHard")
                         }
                     } else {
                         // Use manual limits
                         authViewModel.setSoftLimit(softLimit.toIntOrNull() ?: 1900)
                         authViewModel.setHardLimit(hardLimit.toIntOrNull() ?: 2100)
-                        
-                        android.util.Log.d("HealthSettingsView", "Applied manual limits: soft=${softLimit.toIntOrNull() ?: 1900}, hard=${hardLimit.toIntOrNull() ?: 2100}")
                     }
                     
                     authViewModel.setHasUserHealthData(useHealthBasedCalculation)
@@ -360,25 +351,24 @@ private fun SettingsSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(Dimensions.paddingM)
         ) {
             Text(
                 text = title,
                 color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.bodyLarge
             )
             
             Text(
                 text = subtitle,
                 color = Color.Gray,
-                fontSize = 14.sp
+                style = MaterialTheme.typography.bodyMedium
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
             content()
         }
@@ -395,12 +385,12 @@ fun HealthDisclaimerView(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(Dimensions.paddingM),
                 colors = CardDefaults.cardColors(containerColor = Gray4),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(Dimensions.cornerRadiusL)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier.padding(Dimensions.paddingL)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -409,24 +399,23 @@ fun HealthDisclaimerView(
                             imageVector = Icons.Default.Warning,
                             contentDescription = null,
                             tint = CalorieRed,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(Dimensions.iconSizeL)
                         )
                         
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(Dimensions.paddingS))
                         
                         Text(
                             text = "Health Disclaimer",
                             color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.headlineSmall
                         )
                     }
                     
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingM))
                     
                     LazyColumn(
-                        modifier = Modifier.height(300.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.height(Dimensions.fixedHeight),
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS)
                     ) {
                         item {
                             DisclaimerSection(
@@ -464,7 +453,7 @@ fun HealthDisclaimerView(
                         }
                     }
                     
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingL))
                     
                     Button(
                         onClick = onDismiss,
@@ -473,7 +462,7 @@ fun HealthDisclaimerView(
                             contentColor = Color.White
                         ),
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                     ) {
                         Text("I Understand")
                     }
@@ -492,17 +481,15 @@ private fun DisclaimerSection(
         Text(
             text = title,
             color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.titleSmall
         )
         
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(Dimensions.paddingXS))
         
         Text(
             text = content,
             color = Color.Gray,
-            fontSize = 13.sp,
-            lineHeight = 17.sp
+            style = MaterialTheme.typography.bodySmall
         )
     }
 } 

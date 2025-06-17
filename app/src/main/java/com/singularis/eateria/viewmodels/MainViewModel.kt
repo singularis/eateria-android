@@ -5,9 +5,13 @@ import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.singularis.eateria.models.Product
+import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.ImageStorageService
 import com.singularis.eateria.services.ProductStorageService
+import com.singularis.eateria.ui.theme.CalorieGreen
+import com.singularis.eateria.ui.theme.CalorieYellow
+import com.singularis.eateria.ui.theme.CalorieRed
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +27,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val grpcService = GRPCService(context)
     private val productStorageService = ProductStorageService.getInstance(context)
     private val imageStorageService = ImageStorageService.getInstance(context)
+    private val authService = AuthenticationService(context)
     
     // State flows for UI
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -117,27 +122,79 @@ class MainViewModel(private val context: Context) : ViewModel() {
     val tempHardLimit: StateFlow<String> = _tempHardLimit.asStateFlow()
     
     init {
+        loadLimitsFromStorage()
         fetchDataWithLoading()
     }
     
-    fun fetchDataWithLoading() {
+    private fun loadLimitsFromStorage() {
         viewModelScope.launch {
-            _isLoadingData.value = true
-            productStorageService.fetchAndProcessProducts { fetchedProducts, calories, weight ->
-                _products.value = fetchedProducts
-                _caloriesLeft.value = calories
-                _personWeight.value = weight
-                _isLoadingData.value = false
+            try {
+                val softLimit = authService.getSoftLimit()
+                val hardLimit = authService.getHardLimit()
+                _softLimit.value = softLimit
+                _hardLimit.value = hardLimit
+                
+                android.util.Log.d("MainViewModel", "Loaded limits from storage: soft=$softLimit, hard=$hardLimit")
+            } catch (e: Exception) {
+                // Keep default values if loading fails
+                android.util.Log.e("MainViewModel", "Failed to load limits from storage", e)
             }
         }
     }
     
+    fun reloadLimitsFromStorage() {
+        loadLimitsFromStorage()
+    }
+    
+    fun saveHealthBasedLimits(recommendedCalories: Int) {
+        viewModelScope.launch {
+            try {
+                // Set soft limit to the calculated calories
+                val softLimit = recommendedCalories
+                // Set hard limit to 20% above soft limit (safe upper bound)
+                val hardLimit = (recommendedCalories * 1.2f).toInt()
+                
+                // Save to storage
+                authService.setSoftLimit(softLimit)
+                authService.setHardLimit(hardLimit)
+                
+                // Update local state
+                _softLimit.value = softLimit
+                _hardLimit.value = hardLimit
+                
+                android.util.Log.d("MainViewModel", "Saved health-based limits: soft=$softLimit, hard=$hardLimit (based on recommended $recommendedCalories)")
+            } catch (e: Exception) {
+                android.util.Log.e("MainViewModel", "Failed to save health-based limits", e)
+            }
+        }
+    }
+    
+        fun fetchDataWithLoading() {
+        viewModelScope.launch {
+            _isLoadingData.value = true
+            productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
+                _products.value = fetchedProducts
+                // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
+                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                _caloriesLeft.value = actualCaloriesLeft
+                _personWeight.value = weight
+                _isLoadingData.value = false
+                
+                android.util.Log.d("MainViewModel", "Data loaded: totalConsumed=$totalCaloriesConsumed, softLimit=${_softLimit.value}, caloriesLeft=$actualCaloriesLeft")
+            }
+        }
+    }
+
     fun fetchData() {
         viewModelScope.launch {
-            productStorageService.fetchAndProcessProducts { fetchedProducts, calories, weight ->
+            productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
                 _products.value = fetchedProducts
-                _caloriesLeft.value = calories
+                // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
+                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
+                
+                android.util.Log.d("MainViewModel", "Data refreshed: totalConsumed=$totalCaloriesConsumed, softLimit=${_softLimit.value}, caloriesLeft=$actualCaloriesLeft")
             }
         }
     }
@@ -156,9 +213,11 @@ class MainViewModel(private val context: Context) : ViewModel() {
                     onSuccess = {
                         // After successful backend processing, fetch products with image mapping
                         viewModelScope.launch {
-                            productStorageService.fetchAndProcessProducts(tempImageTime = tempTimestamp) { fetchedProducts, calories, weight ->
+                            productStorageService.fetchAndProcessProducts(tempImageTime = tempTimestamp) { fetchedProducts, totalCaloriesConsumed, weight ->
                                 _products.value = fetchedProducts
-                                _caloriesLeft.value = calories
+                                // Recalculate caloriesLeft based on our local soft limit
+                                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                                _caloriesLeft.value = actualCaloriesLeft
                                 _personWeight.value = weight
                                 _isLoadingFoodPhoto.value = false
                                 
@@ -351,11 +410,15 @@ class MainViewModel(private val context: Context) : ViewModel() {
             }
             _currentViewingDate.value = displayDate
             
-            productStorageService.fetchAndProcessCustomDateProducts(dateString) { fetchedProducts, calories, weight ->
+            productStorageService.fetchAndProcessCustomDateProducts(dateString) { fetchedProducts, totalCaloriesConsumed, weight ->
                 _products.value = fetchedProducts
-                _caloriesLeft.value = calories
+                // Recalculate caloriesLeft based on our local soft limit for custom date too
+                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
                 _isLoadingData.value = false
+                
+                android.util.Log.d("MainViewModel", "Custom date loaded: date=$dateString, totalConsumed=$totalCaloriesConsumed, softLimit=${_softLimit.value}, caloriesLeft=$actualCaloriesLeft")
             }
         }
     }
@@ -368,11 +431,24 @@ class MainViewModel(private val context: Context) : ViewModel() {
     }
     
     fun getColor(caloriesLeft: Int): androidx.compose.ui.graphics.Color {
+        val caloriesConsumed = _softLimit.value - caloriesLeft
+        
+        // Debug logging to help understand the issue
+        android.util.Log.d("MainViewModel", "getColor: caloriesLeft=$caloriesLeft, softLimit=${_softLimit.value}, hardLimit=${_hardLimit.value}, caloriesConsumed=$caloriesConsumed")
+        
         return when {
-            caloriesLeft > 300 -> androidx.compose.ui.graphics.Color.Green
-            caloriesLeft > 0 -> androidx.compose.ui.graphics.Color.Yellow
-            caloriesLeft > -200 -> androidx.compose.ui.graphics.Color(0xFFFF8C00) // Orange
-            else -> androidx.compose.ui.graphics.Color.Red
+            caloriesLeft > 0 -> {
+                android.util.Log.d("MainViewModel", "Color: GREEN (under soft limit)")
+                CalorieGreen // Under soft limit - still have calories left
+            }
+            caloriesConsumed <= _hardLimit.value -> {
+                android.util.Log.d("MainViewModel", "Color: YELLOW (over soft but under hard limit)")
+                CalorieYellow // Over soft limit but under hard limit
+            }
+            else -> {
+                android.util.Log.d("MainViewModel", "Color: RED (over hard limit)")
+                CalorieRed // Over hard limit
+            }
         }
     }
     
@@ -392,20 +468,34 @@ class MainViewModel(private val context: Context) : ViewModel() {
         val hardLimit = _tempHardLimit.value.toIntOrNull() ?: 2100
         
         // Validate that soft limit is smaller than hard limit
+        val finalSoftLimit: Int
+        val finalHardLimit: Int
+        
         if (softLimit >= hardLimit) {
             // Adjust limits to ensure soft < hard
-            val adjustedSoftLimit = min(softLimit, hardLimit - 100) // Ensure at least 100 calorie difference
-            val adjustedHardLimit = max(hardLimit, softLimit + 100)
-            
-            _softLimit.value = adjustedSoftLimit
-            _hardLimit.value = adjustedHardLimit
+            finalSoftLimit = min(softLimit, hardLimit - 100) // Ensure at least 100 calorie difference
+            finalHardLimit = max(hardLimit, softLimit + 100)
             
             // Update temp values to reflect the adjusted limits
-            _tempSoftLimit.value = adjustedSoftLimit.toString()
-            _tempHardLimit.value = adjustedHardLimit.toString()
+            _tempSoftLimit.value = finalSoftLimit.toString()
+            _tempHardLimit.value = finalHardLimit.toString()
         } else {
-            _softLimit.value = softLimit
-            _hardLimit.value = hardLimit
+            finalSoftLimit = softLimit
+            finalHardLimit = hardLimit
+        }
+        
+        // Update local state
+        _softLimit.value = finalSoftLimit
+        _hardLimit.value = finalHardLimit
+        
+        // Persist to storage
+        viewModelScope.launch {
+            try {
+                authService.setSoftLimit(finalSoftLimit)
+                authService.setHardLimit(finalHardLimit)
+            } catch (e: Exception) {
+                android.util.Log.e("MainViewModel", "Failed to save limits to storage", e)
+            }
         }
         
         _showLimitsAlert.value = false

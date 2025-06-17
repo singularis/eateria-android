@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.platform.LocalContext
 import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
@@ -56,8 +57,10 @@ import com.singularis.eateria.viewmodels.AuthViewModel
 @Composable
 fun HealthSettingsView(
     authViewModel: AuthViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onLimitsChanged: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
     var softLimit by remember { mutableStateOf("1900") }
     var hardLimit by remember { mutableStateOf("2100") }
     var hasHealthData by remember { mutableStateOf(false) }
@@ -314,10 +317,34 @@ fun HealthSettingsView(
                 isVisible = true,
                 onDismiss = {
                     showSaveDialog = false
-                    // Save the settings
-                    authViewModel.setSoftLimit(softLimit.toIntOrNull() ?: 1900)
-                    authViewModel.setHardLimit(hardLimit.toIntOrNull() ?: 2100)
+                    
+                    if (useHealthBasedCalculation && hasHealthData) {
+                        // Use health-based calculation
+                        val healthDataService = com.singularis.eateria.services.HealthDataService.getInstance(context)
+                        val healthProfile = healthDataService.getHealthProfile()
+                        
+                        healthProfile?.let { profile ->
+                            // Save the calculated limits instead of manual ones
+                            val calculatedSoft = profile.recommendedCalories
+                            val calculatedHard = (profile.recommendedCalories * 1.2f).toInt()
+                            
+                            authViewModel.setSoftLimit(calculatedSoft)
+                            authViewModel.setHardLimit(calculatedHard)
+                            
+                            android.util.Log.d("HealthSettingsView", "Applied health-based limits: soft=$calculatedSoft, hard=$calculatedHard")
+                        }
+                    } else {
+                        // Use manual limits
+                        authViewModel.setSoftLimit(softLimit.toIntOrNull() ?: 1900)
+                        authViewModel.setHardLimit(hardLimit.toIntOrNull() ?: 2100)
+                        
+                        android.util.Log.d("HealthSettingsView", "Applied manual limits: soft=${softLimit.toIntOrNull() ?: 1900}, hard=${hardLimit.toIntOrNull() ?: 2100}")
+                    }
+                    
                     authViewModel.setHasUserHealthData(useHealthBasedCalculation)
+                    
+                    // Notify that limits have changed
+                    onLimitsChanged?.invoke()
                 }
             )
         }

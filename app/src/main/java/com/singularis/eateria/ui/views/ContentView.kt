@@ -46,6 +46,7 @@ fun ContentView(
     val isLoadingRecommendation by viewModel.isLoadingRecommendation.collectAsState()
     val deletingProductTime by viewModel.deletingProductTime.collectAsState()
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
+    val userProfilePictureURL by authViewModel.userProfilePictureURL.collectAsState(initial = null)
     
     // Dialog states
     val showLimitsAlert by viewModel.showLimitsAlert.collectAsState()
@@ -97,6 +98,7 @@ fun ContentView(
                 authViewModel = authViewModel,
                 isViewingCustomDate = isViewingCustomDate,
                 currentViewingDate = currentViewingDate,
+                userProfilePictureURL = userProfilePictureURL,
                 onDateClick = { 
                     if (!isLoadingData) {
                         viewModel.showCalendarPicker() 
@@ -246,7 +248,7 @@ fun ContentView(
                     viewModel.hideOnboarding()
                     authViewModel.setHasSeenOnboarding(true)
                     
-                    // Save health data if provided
+                    // Save health data if provided and calculate calorie limits
                     healthData?.let { data ->
                         val healthDataService = com.singularis.eateria.services.HealthDataService.getInstance(context)
                         healthDataService.saveHealthProfile(
@@ -256,6 +258,13 @@ fun ContentView(
                             isMale = data.isMale,
                             activityLevel = data.activityLevel
                         )
+                        
+                        // Get the calculated recommended calories and save as limits
+                        val healthProfile = healthDataService.getHealthProfile()
+                        healthProfile?.let { profile ->
+                            android.util.Log.d("ContentView", "Setting health-based limits from calculated calories: ${profile.recommendedCalories}")
+                            viewModel.saveHealthBasedLimits(profile.recommendedCalories)
+                        }
                     }
                 }
             )
@@ -270,7 +279,11 @@ fun ContentView(
         if (showHealthSettings) {
             HealthSettingsView(
                 authViewModel = authViewModel,
-                onBackClick = { viewModel.hideHealthSettings() }
+                onBackClick = { viewModel.hideHealthSettings() },
+                onLimitsChanged = { 
+                    // Reload limits in MainViewModel when they're changed in health settings
+                    viewModel.reloadLimitsFromStorage()
+                }
             )
         }
         

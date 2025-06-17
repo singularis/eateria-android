@@ -943,12 +943,12 @@ private fun CalorieLineChart(
                 val gridCount = kotlin.math.min(6, chartData.size)
                 for (i in 0 until gridCount) {
                     val x = leftPadding + (chartWidth * i / (gridCount - 1))
-                    drawLine(
-                        color = gridColor,
+                drawLine(
+                    color = gridColor,
                         start = Offset(x, topPadding),
                         end = Offset(x, height - bottomPadding),
-                        strokeWidth = 1.dp.toPx()
-                    )
+                    strokeWidth = 1.dp.toPx()
+                )
                 }
             }
             
@@ -1032,24 +1032,10 @@ private fun CalorieLineChart(
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .offset(x = 8.dp, y = 25.dp)
+                .offset(x = 27.dp, y = (-10).dp)
         )
         
-        // Data point value labels
-        val density = androidx.compose.ui.platform.LocalDensity.current.density
-        dataPoints.forEach { (x, y, value) ->
-            Text(
-                text = "$value",
-                color = Color.White,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .offset(
-                        x = (x / density - 15).dp,
-                        y = (y / density - 25).dp
-                    )
-            )
-        }
+
         
         // X-axis labels spanning full width
         Box(
@@ -1150,7 +1136,7 @@ private fun WeightLineChart(
             }
             
             // Vertical grid lines (evenly distributed)
-            if (chartData.size > 1) {
+                if (chartData.size > 1) {
                 val gridCount = kotlin.math.min(6, chartData.size)
                 for (i in 0 until gridCount) {
                     val x = leftPadding + (chartWidth * i / (gridCount - 1))
@@ -1239,24 +1225,10 @@ private fun WeightLineChart(
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .offset(x = 8.dp, y = 25.dp)
+                .offset(x = 27.dp, y = (-10).dp)
         )
         
-        // Data point value labels
-        val density = androidx.compose.ui.platform.LocalDensity.current.density
-        dataPoints.forEach { (x, y, weight) ->
-            Text(
-                text = "${String.format("%.1f", weight)}",
-                color = Color.White,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .offset(
-                        x = (x / density - 20).dp,
-                        y = (y / density - 25).dp
-                    )
-            )
-        }
+
         
         // X-axis labels spanning full width
         if (chartData.isNotEmpty()) {
@@ -1358,12 +1330,12 @@ private fun FoodWeightLineChart(
                 val gridCount = kotlin.math.min(6, chartData.size)
                 for (i in 0 until gridCount) {
                     val x = leftPadding + (chartWidth * i / (gridCount - 1))
-                    drawLine(
-                        color = gridColor,
+                drawLine(
+                    color = gridColor,
                         start = Offset(x, topPadding),
                         end = Offset(x, height - bottomPadding),
-                        strokeWidth = 1.dp.toPx()
-                    )
+                    strokeWidth = 1.dp.toPx()
+                )
                 }
             }
             
@@ -1441,24 +1413,10 @@ private fun FoodWeightLineChart(
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .offset(x = 8.dp, y = 25.dp)
+                .offset(x = 27.dp, y = (-10).dp)
         )
         
-        // Data point value labels
-        val density = androidx.compose.ui.platform.LocalDensity.current.density
-        dataPoints.forEach { (x, y, foodWeight) ->
-            Text(
-                text = "${foodWeight}g",
-                color = Color.White,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .offset(
-                        x = (x / density - 20).dp,
-                        y = (y / density - 25).dp
-                    )
-            )
-        }
+
         
         // X-axis labels spanning full width
         Box(

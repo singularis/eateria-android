@@ -95,12 +95,14 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.text.font.FontStyle
+import coil.compose.AsyncImage
 
 @Composable
 fun TopBarView(
     authViewModel: AuthViewModel,
     isViewingCustomDate: Boolean,
     currentViewingDate: String,
+    userProfilePictureURL: String?,
     onDateClick: () -> Unit,
     onProfileClick: () -> Unit,
     onHealthInfoClick: () -> Unit,
@@ -114,16 +116,33 @@ fun TopBarView(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Profile button
-        IconButton(
-            onClick = onProfileClick,
-            modifier = Modifier.padding(top = 8.dp) // Additional top spacing for profile button
+        Box(
+            modifier = Modifier
+                .padding(top = 8.dp) // Additional top spacing for profile button
+                .size(30.dp)
+                .clip(CircleShape)
+                .background(Gray3)
+                .clickable { onProfileClick() },
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Profile",
-                tint = Color.White,
-                modifier = Modifier.size(30.dp)
-            )
+            if (!userProfilePictureURL.isNullOrEmpty()) {
+                AsyncImage(
+                    model = userProfilePictureURL,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Fallback icon when no profile picture
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Profile",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
         
         // Date display
@@ -234,17 +253,17 @@ fun StatsButtonsView(
                 horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Calories: $caloriesConsumed",
-                    fontSize = 16.sp,
+                text = "$caloriesLeft left",
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                    color = getColor(caloriesLeft),
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "$caloriesLeft left",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
+                color = getColor(caloriesLeft),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Calories: $caloriesConsumed",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center
             )
         }
         }

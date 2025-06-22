@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -96,6 +97,21 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxHeight
 import coil.compose.AsyncImage
+import androidx.core.os.bundleOf
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import android.Manifest
+import java.io.File
+import java.util.concurrent.Executors
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+import androidx.compose.material.FractionalThreshold
 
 @Composable
 fun TopBarView(
@@ -409,13 +425,15 @@ fun ProductCard(
     isDeleting: Boolean
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     
     // Swipe-to-dismiss state for delete functionality
     val dismissState = rememberDismissState(
         confirmStateChange = { dismissValue ->
             if (dismissValue == DismissValue.DismissedToStart && !isDeleting) {
-                onDelete()
-                true
+                showDeleteConfirmationDialog = true
+                false // Prevent dismissal, we'll handle it in the dialog
             } else {
                 false
             }
@@ -425,6 +443,7 @@ fun ProductCard(
     SwipeToDismiss(
         state = dismissState,
         directions = setOf(DismissDirection.EndToStart), // Only swipe from right to left
+        dismissThresholds = { FractionalThreshold(0.6f) }, // Make it less sensitive
         background = {
             // Red delete background when swiping
             val color = when (dismissState.dismissDirection) {
@@ -572,6 +591,21 @@ fun ProductCard(
             onDismiss = { showPortionDialog = false }
         )
     }
+
+    if (showDeleteConfirmationDialog) {
+        DeleteConfirmationDialog(
+            onConfirm = {
+                onDelete()
+                showDeleteConfirmationDialog = false
+            },
+            onDismiss = {
+                showDeleteConfirmationDialog = false
+                coroutineScope.launch {
+                    dismissState.reset()
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -710,6 +744,7 @@ fun PortionSelectionDialog(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraButtonView(
     isLoadingFoodPhoto: Boolean,
@@ -717,10 +752,13 @@ fun CameraButtonView(
     onGalleryImageSelected: ((android.graphics.Bitmap) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val galleryPermissionState = rememberPermissionState(
+        permission = Manifest.permission.READ_MEDIA_IMAGES
+    )
     
     // Image picker launcher
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
         uri?.let { imageUri ->
             try {
@@ -747,7 +785,11 @@ fun CameraButtonView(
         Button(
             onClick = { 
                 if (!isLoadingFoodPhoto) {
-                    imagePickerLauncher.launch("image/*")
+                    if (galleryPermissionState.status.isGranted) {
+                        imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    } else {
+                        galleryPermissionState.launchPermissionRequest()
+                    }
                 }
             },
             modifier = Modifier
@@ -1412,6 +1454,121 @@ fun PhotoErrorAlert(
                     color = DarkPrimary,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                )
+            }
+        },
+        containerColor = Gray4,
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+    )
+}
+
+@Composable
+fun FullScreenPhotoView(
+    bitmap: android.graphics.Bitmap,
+    onDismiss: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val offsetY = remember { Animatable(0f) }
+    val alpha = remember { Animatable(1f) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = alpha.value))
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragEnd = {
+                            coroutineScope.launch {
+                                // If dragged more than 1/4 of the screen height, dismiss
+                                if (offsetY.value > size.height / 4) {
+                                    onDismiss()
+                                } else {
+                                    // Animate back to original position
+                                    launch { offsetY.animateTo(0f, tween(250)) }
+                                    launch { alpha.animateTo(1f, tween(250)) }
+                                }
+                            }
+                        }
+                    ) { change, dragAmount ->
+                        change.consume()
+                        coroutineScope.launch {
+                            offsetY.snapTo(offsetY.value + dragAmount)
+                            alpha.snapTo(1f - (offsetY.value / (size.height / 2)).coerceIn(0f, 1f))
+                        }
+                    }
+                }
+        ) {
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = "Full screen photo",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset { IntOffset(0, offsetY.value.roundToInt()) },
+                contentScale = ContentScale.Fit
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(Dimensions.paddingM)
+                    .offset { IntOffset(0, offsetY.value.roundToInt()) }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.White.copy(alpha = alpha.value),
+                    modifier = Modifier.size(Dimensions.iconSizeM)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DeleteConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Confirm Deletion",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to remove this food entry? This action cannot be undone.",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray,
+                lineHeight = MaterialTheme.typography.bodySmall.lineHeight
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red, // Destructive action color
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    "Cancel",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium
                 )
             }
         },

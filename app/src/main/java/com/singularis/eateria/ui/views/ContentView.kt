@@ -201,13 +201,13 @@ fun ContentView(
         }
         
         // Full screen photo view
-        fullScreenPhotoData?.let { (bitmap, foodName) ->
-            FullScreenPhotoView(
-                image = bitmap,
-                foodName = foodName,
-                isPresented = true,
-                onDismiss = { fullScreenPhotoData = null }
-            )
+        fullScreenPhotoData?.let { (bitmap, _) ->
+            if (bitmap != null) {
+                FullScreenPhotoView(
+                    bitmap = bitmap,
+                    onDismiss = { fullScreenPhotoData = null }
+                )
+            }
         }
         
         // Dialog implementations

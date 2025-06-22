@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,7 +35,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
@@ -54,7 +52,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -93,10 +90,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.fillMaxHeight
 import coil.compose.AsyncImage
-import androidx.core.os.bundleOf
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.animation.core.Animatable
@@ -104,19 +98,16 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
-import com.singularis.eateria.viewmodels.AuthViewModel
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.animation.core.DecayAnimationSpec
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.draw.scale
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 @Composable
 fun TopBarView(
-    authViewModel: AuthViewModel,
     isViewingCustomDate: Boolean,
     currentViewingDate: String,
     userProfilePictureURL: String?,
@@ -224,7 +215,6 @@ fun TopBarView(
 fun StatsButtonsView(
     personWeight: Float,
     caloriesConsumed: Int,
-    softLimit: Int,
     caloriesLeft: Int,
     isLoadingWeightPhoto: Boolean,
     isLoadingRecommendation: Boolean,
@@ -416,7 +406,7 @@ fun ProductListView(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCard(
     product: Product,
@@ -429,26 +419,27 @@ fun ProductCard(
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    val dismissState = rememberDismissState(
-        confirmStateChange = {
-            if (it == DismissValue.DismissedToStart) {
+    val state = rememberSwipeToDismissBoxState(
+        confirmValueChange = {
+            if (it == SwipeToDismissBoxValue.EndToStart) {
                 showDeleteConfirmationDialog = true
-                return@rememberDismissState false
+                return@rememberSwipeToDismissBoxState false
             }
             true
         }
     )
 
-    SwipeToDismiss(
-        state = dismissState,
-        directions = setOf(DismissDirection.EndToStart),
-        background = {
+    SwipeToDismissBox(
+        state = state,
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
+        backgroundContent = {
             val color by animateColorAsState(
-                targetValue = if (dismissState.targetValue == DismissValue.Default) Color.Transparent else Color.Red,
+                targetValue = if (state.targetValue == SwipeToDismissBoxValue.Settled) Color.Transparent else Color.Red,
                 label = "background color animation"
             )
             val scale by animateFloatAsState(
-                if (dismissState.targetValue == DismissValue.Default) 0.8f else 1.2f,
+                if (state.targetValue == SwipeToDismissBoxValue.Settled) 0.8f else 1.2f,
                 label = "icon scale animation"
             )
 
@@ -467,105 +458,104 @@ fun ProductCard(
                 )
             }
         },
-        dismissContent = {
-            Card(
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .alpha(if (isDeleting) 0.6f else 1.0f),
+            colors = CardDefaults.cardColors(containerColor = Gray4),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+        ) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(if (isDeleting) 0.6f else 1.0f),
-                colors = CardDefaults.cardColors(containerColor = Gray4),
-                shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                    .padding(Dimensions.paddingM),
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
             ) {
-                Row(
+                // Food photo - clickable for full screen (matches iOS)
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Dimensions.paddingM),
-                    horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
+                        .size(Dimensions.iconSizeL)
+                        .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
+                        .background(Color.Gray.copy(alpha = 0.2f))
+                        .clickable {
+                            if (!isDeleting) {
+                                onPhotoTap()
+                            }
+                        }
                 ) {
-                    // Food photo - clickable for full screen (matches iOS)
-                    Box(
-                        modifier = Modifier
-                            .size(Dimensions.iconSizeL)
-                            .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
-                            .background(Color.Gray.copy(alpha = 0.2f))
-                            .clickable {
-                                if (!isDeleting) {
-                                    onPhotoTap()
-                                }
-                            }
-                    ) {
-                        val context = LocalContext.current
-                        val productImage = product.getImage(context)
+                    val context = LocalContext.current
+                    val productImage = product.getImage(context)
 
-                        if (productImage != null) {
-                            Image(
-                                bitmap = productImage.asImageBitmap(),
-                                contentDescription = product.name,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.PhotoLibrary,
-                                contentDescription = "No photo",
-                                tint = Color.Gray,
-                                modifier = Modifier
-                                    .size(Dimensions.iconSizeM)
-                                    .align(Alignment.Center)
-                            )
-                        }
-                    }
-
-                    // Food details - clickable for portion modification (matches iOS)
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable {
-                                if (!isDeleting) {
-                                    showPortionDialog = true
-                                }
-                            }
-                    ) {
-                        Text(
-                            text = product.name,
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
+                    if (productImage != null) {
+                        Image(
+                            bitmap = productImage.asImageBitmap(),
+                            contentDescription = product.name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
-
-                        Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-
-                        Text(
-                            text = "${product.calories} kcal • ${product.weight}g",
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-
-                        if (product.ingredients.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-                            Text(
-                                text = product.ingredients.joinToString(", "),
-                                color = Color.Gray,
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-
-                    // Loading indicator when deleting
-                    if (isDeleting) {
-                        CircularProgressIndicator(
-                            color = Color.White,
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = "No photo",
+                            tint = Color.Gray,
                             modifier = Modifier
-                                .size(Dimensions.loadingIndicatorSize)
-                                .align(Alignment.CenterVertically),
-                            strokeWidth = Dimensions.loadingIndicatorStrokeWidth
+                                .size(Dimensions.iconSizeM)
+                                .align(Alignment.Center)
                         )
                     }
                 }
+
+                // Food details - clickable for portion modification (matches iOS)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            if (!isDeleting) {
+                                showPortionDialog = true
+                            }
+                        }
+                ) {
+                    Text(
+                        text = product.name,
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+
+                    Text(
+                        text = "${product.calories} kcal • ${product.weight}g",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                    if (product.ingredients.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+                        Text(
+                            text = product.ingredients.joinToString(", "),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                // Loading indicator when deleting
+                if (isDeleting) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier
+                            .size(Dimensions.loadingIndicatorSize)
+                            .align(Alignment.CenterVertically),
+                        strokeWidth = Dimensions.loadingIndicatorStrokeWidth
+                    )
+                }
             }
         }
-    )
+    }
 
     // Portion selection dialog
     if (showPortionDialog) {
@@ -589,7 +579,7 @@ fun ProductCard(
             onDismiss = {
                 showDeleteConfirmationDialog = false
                 coroutineScope.launch {
-                    dismissState.reset()
+                    state.reset()
                 }
             }
         )
@@ -899,7 +889,7 @@ fun CalorieLimitsDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
-                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         focusedBorderColor = if (showValidationError) Color.Red else DarkPrimary,
@@ -916,7 +906,7 @@ fun CalorieLimitsDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
-                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         focusedBorderColor = if (showValidationError) Color.Red else DarkPrimary,

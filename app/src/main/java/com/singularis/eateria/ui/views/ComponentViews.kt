@@ -86,7 +86,6 @@ import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.viewmodels.AuthViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -98,12 +97,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxHeight
 import coil.compose.AsyncImage
 import androidx.core.os.bundleOf
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import android.Manifest
-import java.io.File
-import java.util.concurrent.Executors
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.animation.core.Animatable
@@ -111,7 +104,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
-import androidx.compose.material.FractionalThreshold
+import com.singularis.eateria.viewmodels.AuthViewModel
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.animateTo
+import androidx.compose.animation.core.DecayAnimationSpec
+import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.draw.scale
 
 @Composable
 fun TopBarView(
@@ -248,7 +249,7 @@ fun StatsButtonsView(
             Text(
                 text = String.format("%.1f kg", personWeight),
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                fontWeight = FontWeight.SemiBold,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
@@ -268,7 +269,7 @@ fun StatsButtonsView(
             Text(
                 text = "$caloriesLeft left",
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                fontWeight = FontWeight.SemiBold,
                 color = getColor(caloriesLeft),
                 textAlign = TextAlign.Center
             )
@@ -292,7 +293,7 @@ fun StatsButtonsView(
             Text(
                 text = "Trend",
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                fontWeight = FontWeight.SemiBold,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
@@ -411,9 +412,9 @@ fun ProductListView(
                 state = pullRefreshState,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
-            }
         }
     }
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -427,66 +428,53 @@ fun ProductCard(
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-    
-    // Swipe-to-dismiss state for delete functionality
+
     val dismissState = rememberDismissState(
-        confirmStateChange = { dismissValue ->
-            if (dismissValue == DismissValue.DismissedToStart && !isDeleting) {
+        confirmStateChange = {
+            if (it == DismissValue.DismissedToStart) {
                 showDeleteConfirmationDialog = true
-                false // Prevent dismissal, we'll handle it in the dialog
-            } else {
-                false
+                return@rememberDismissState false
             }
+            true
         }
     )
-    
+
     SwipeToDismiss(
         state = dismissState,
-        directions = setOf(DismissDirection.EndToStart), // Only swipe from right to left
-        dismissThresholds = { FractionalThreshold(0.6f) }, // Make it less sensitive
+        directions = setOf(DismissDirection.EndToStart),
         background = {
-            // Red delete background when swiping
-            val color = when (dismissState.dismissDirection) {
-                DismissDirection.EndToStart -> Color.Red
-                else -> Color.Transparent
-            }
-            
+            val color by animateColorAsState(
+                targetValue = if (dismissState.targetValue == DismissValue.Default) Color.Transparent else Color.Red,
+                label = "background color animation"
+            )
+            val scale by animateFloatAsState(
+                if (dismissState.targetValue == DismissValue.Default) 0.8f else 1.2f,
+                label = "icon scale animation"
+            )
+
             Box(
-                modifier = Modifier
+                Modifier
                     .fillMaxSize()
-                    .background(color)
-                    .padding(horizontal = Dimensions.paddingM),
+                    .background(color, shape = RoundedCornerShape(Dimensions.cornerRadiusM))
+                    .padding(horizontal = Dimensions.paddingL),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                if (dismissState.dismissDirection == DismissDirection.EndToStart) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.White,
-                            modifier = Modifier.size(Dimensions.iconSizeS)
-                        )
-                        Text(
-                            text = "Remove",
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                        )
-                    }
-                }
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.White,
+                    modifier = Modifier.scale(scale)
+                )
             }
         },
         dismissContent = {
-    Card(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .alpha(if (isDeleting) 0.6f else 1.0f),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
-    ) {
+                colors = CardDefaults.cardColors(containerColor = Gray4),
+                shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -499,7 +487,7 @@ fun ProductCard(
                             .size(Dimensions.iconSizeL)
                             .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
                             .background(Color.Gray.copy(alpha = 0.2f))
-                            .clickable { 
+                            .clickable {
                                 if (!isDeleting) {
                                     onPhotoTap()
                                 }
@@ -507,7 +495,7 @@ fun ProductCard(
                     ) {
                         val context = LocalContext.current
                         val productImage = product.getImage(context)
-                        
+
                         if (productImage != null) {
                             Image(
                                 bitmap = productImage.asImageBitmap(),
@@ -526,48 +514,48 @@ fun ProductCard(
                             )
                         }
                     }
-                    
+
                     // Food details - clickable for portion modification (matches iOS)
-        Column(
+                    Column(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { 
+                            .clickable {
                                 if (!isDeleting) {
                                     showPortionDialog = true
                                 }
                             }
                     ) {
-                    Text(
-                        text = product.name,
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                    )
-                    
-                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-                    
-                    Text(
-                            text = "${product.calories} kcal • ${product.weight}g",
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    
-                    if (product.ingredients.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                         Text(
-                            text = product.ingredients.joinToString(", "),
+                            text = product.name,
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+
+                        Text(
+                            text = "${product.calories} kcal • ${product.weight}g",
                             color = Color.Gray,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
+                        if (product.ingredients.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+                            Text(
+                                text = product.ingredients.joinToString(", "),
+                                color = Color.Gray,
                                 style = MaterialTheme.typography.bodySmall,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
-                        )
+                            )
+                        }
                     }
-                }
-                
+
                     // Loading indicator when deleting
-                if (isDeleting) {
-                    CircularProgressIndicator(
-                        color = Color.White,
+                    if (isDeleting) {
+                        CircularProgressIndicator(
+                            color = Color.White,
                             modifier = Modifier
                                 .size(Dimensions.loadingIndicatorSize)
                                 .align(Alignment.CenterVertically),
@@ -578,7 +566,7 @@ fun ProductCard(
             }
         }
     )
-    
+
     // Portion selection dialog
     if (showPortionDialog) {
         PortionSelectionDialog(
@@ -626,7 +614,7 @@ fun PortionSelectionDialog(
                 Text(
                     text = "Portion Updated!",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             },
@@ -652,7 +640,7 @@ fun PortionSelectionDialog(
                 Text(
                     text = "Modify Portion",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             },
@@ -744,7 +732,6 @@ fun PortionSelectionDialog(
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraButtonView(
     isLoadingFoodPhoto: Boolean,
@@ -752,9 +739,6 @@ fun CameraButtonView(
     onGalleryImageSelected: ((android.graphics.Bitmap) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val galleryPermissionState = rememberPermissionState(
-        permission = Manifest.permission.READ_MEDIA_IMAGES
-    )
     
     // Image picker launcher
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -785,11 +769,7 @@ fun CameraButtonView(
         Button(
             onClick = { 
                 if (!isLoadingFoodPhoto) {
-                    if (galleryPermissionState.status.isGranted) {
-                        imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                    } else {
-                        galleryPermissionState.launchPermissionRequest()
-                    }
+                    imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
             },
             modifier = Modifier
@@ -821,7 +801,7 @@ fun CameraButtonView(
                     Text(
                         text = "Upload",
                         style = MaterialTheme.typography.bodySmall,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                        fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center,
                         lineHeight = MaterialTheme.typography.bodySmall.lineHeight
                     )
@@ -867,7 +847,7 @@ fun CameraButtonView(
                     Text(
                         text = "Take Food Photo",
                         style = MaterialTheme.typography.bodySmall,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                        fontWeight = FontWeight.Medium,
                         maxLines = 1
                     )
                 }
@@ -897,7 +877,7 @@ fun CalorieLimitsDialog(
             Text(
                 text = "Set Calorie Limits",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
         },
@@ -951,7 +931,7 @@ fun CalorieLimitsDialog(
                         text = "⚠️ Soft limit must be smaller than hard limit",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Red,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
@@ -1002,7 +982,7 @@ fun WeightActionSheetDialog(
                 Text(
                     text = "Record Weight",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 
@@ -1064,7 +1044,7 @@ fun ManualWeightDialog(
             Text(
                 text = "Enter Weight",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                fontWeight = FontWeight.Bold
             )
         },
         text = {
@@ -1146,7 +1126,7 @@ fun HealthRecommendationDialog(
                         Text(
                             text = "Health Recommendation",
                             style = MaterialTheme.typography.titleLarge, // Much larger title
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     }
@@ -1186,7 +1166,7 @@ fun HealthRecommendationDialog(
                                 Text(
                                     text = "📊 Your Personal Analysis",
                                     style = MaterialTheme.typography.titleSmall, // Larger subtitle
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF4CAF50)
                                 )
                                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
@@ -1225,7 +1205,7 @@ fun HealthRecommendationDialog(
                                     Text(
                                         text = "Health Disclaimer",
                                         style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                        fontWeight = FontWeight.SemiBold,
                                         color = Color.White // Clean white text like trend button
                                     )
                                 }
@@ -1264,7 +1244,7 @@ fun HealthRecommendationDialog(
                         Text(
                             text = "Got it, thanks!",
                             style = MaterialTheme.typography.bodyMedium, // Larger button text
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
@@ -1321,7 +1301,7 @@ fun HealthDisclaimerDialog(
                         Text(
                             text = "Health Disclaimer",
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            fontWeight = FontWeight.Bold,
                             color = Color.White // Clean white text like trend button
                         )
                     }
@@ -1360,7 +1340,7 @@ fun HealthDisclaimerDialog(
                         Text(
                             text = "Important Notice",
                             style = MaterialTheme.typography.titleSmall,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                            fontWeight = FontWeight.SemiBold,
                             color = Color.White,
                             textAlign = TextAlign.Center
                         )
@@ -1414,7 +1394,7 @@ fun HealthDisclaimerDialog(
                     Text(
                         text = "I Understand",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                        fontWeight = FontWeight.SemiBold,
                         color = Color.White // Same as trend button text
                     )
                 }
@@ -1435,7 +1415,7 @@ fun PhotoErrorAlert(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
         },
@@ -1453,7 +1433,7 @@ fun PhotoErrorAlert(
                     text = "OK",
                     color = DarkPrimary,
                     style = MaterialTheme.typography.bodySmall,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                    fontWeight = FontWeight.Medium
                 )
             }
         },

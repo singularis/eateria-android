@@ -168,9 +168,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Accompanist - Permissions
-    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
-
     // Material Compose for pull-to-refresh and swipe gestures
     implementation("androidx.compose.material:material:1.6.5")
     
@@ -179,4 +176,7 @@ dependencies {
     
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Accompanist - Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 }

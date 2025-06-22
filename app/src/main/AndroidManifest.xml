@@ -10,8 +10,7 @@
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    
+
     <!-- Camera features -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -21,6 +20,7 @@
         android:required="false" />
 
     <application
+        android:name=".EateriaApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

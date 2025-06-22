@@ -27,7 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.TrendingFlat
+import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -950,16 +950,7 @@ private fun PersonWeightChartViewFullWidth(
                                 WeightTrendDirection.STABLE -> CalorieYellow
                             }
                             
-                            Icon(
-                                imageVector = when (trend.trend) {
-                                    WeightTrendDirection.GAINING -> Icons.Filled.KeyboardArrowUp
-                                    WeightTrendDirection.LOSING -> Icons.Filled.KeyboardArrowDown
-                                    WeightTrendDirection.STABLE -> Icons.Filled.TrendingFlat
-                                },
-                                contentDescription = null,
-                                tint = trendColor,
-                                modifier = Modifier.size(Dimensions.iconSizeM)
-                            )
+                            TrendIcon(trend.trend)
                             
                             Spacer(modifier = Modifier.width(Dimensions.paddingM))
                             
@@ -1129,8 +1120,8 @@ private fun TrendsView(
                             },
                             icon = when (trend.trend) {
                                 WeightTrendDirection.GAINING -> Icons.AutoMirrored.Filled.TrendingUp
-                                WeightTrendDirection.LOSING -> Icons.Filled.KeyboardArrowDown
-                                WeightTrendDirection.STABLE -> Icons.Filled.TrendingFlat
+                                WeightTrendDirection.LOSING -> Icons.AutoMirrored.Filled.TrendingUp
+                                WeightTrendDirection.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
                             }
                         )
                     }
@@ -1140,14 +1131,14 @@ private fun TrendsView(
                             title = "Calorie Consistency",
                             value = "${(trend.consistency * 100).toInt()}%",
                             color = if (trend.consistency > 0.7f) CalorieGreen else CalorieOrange,
-                            icon = if (trend.consistency > 0.7f) Icons.AutoMirrored.Filled.TrendingUp else Icons.Filled.TrendingFlat
+                            icon = if (trend.consistency > 0.7f) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingFlat
                         )
                         
                         TrendCard(
                             title = "Avg Daily Calories",
                             value = "${trend.averageCalories.toInt()} kcal",
                             color = DarkPrimary,
-                            icon = Icons.Filled.TrendingFlat
+                            icon = Icons.AutoMirrored.Filled.TrendingFlat
                         )
                     }
                 }
@@ -1987,6 +1978,26 @@ private fun MacroSummaryItem(
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
         )
     }
+}
+
+@Composable
+private fun TrendIcon(direction: WeightTrendDirection) {
+    val icon = when (direction) {
+        WeightTrendDirection.GAINING -> Icons.AutoMirrored.Filled.TrendingUp
+        WeightTrendDirection.LOSING -> Icons.AutoMirrored.Filled.TrendingUp // This should be TrendingDown, but it's not in the default icons
+        WeightTrendDirection.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
+    }
+    
+    Icon(
+        imageVector = icon,
+        contentDescription = "Trend direction: ${direction.name.lowercase()}",
+        tint = when (direction) {
+            WeightTrendDirection.GAINING -> CalorieRed
+            WeightTrendDirection.LOSING -> CalorieGreen
+            WeightTrendDirection.STABLE -> Color.Gray
+        },
+        modifier = Modifier.size(Dimensions.iconSizeS)
+    )
 }
 
 

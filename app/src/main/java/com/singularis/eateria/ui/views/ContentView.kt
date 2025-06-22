@@ -42,6 +42,7 @@ fun ContentView(
     val isLoadingWeightPhoto by viewModel.isLoadingWeightPhoto.collectAsState()
     val isLoadingRecommendation by viewModel.isLoadingRecommendation.collectAsState()
     val deletingProductTime by viewModel.deletingProductTime.collectAsState()
+    val modifiedProductTime by viewModel.modifiedProductTime.collectAsState()
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
     val userProfilePictureURL by authViewModel.userProfilePictureURL.collectAsState(initial = null)
     
@@ -154,7 +155,9 @@ fun ContentView(
                             }
                             fullScreenPhotoData = Pair(imageToShow, foodName)
                         },
-                        deletingProductTime = deletingProductTime
+                        deletingProductTime = deletingProductTime,
+                        modifiedProductTime = modifiedProductTime,
+                        onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() }
                     )
                 }
             }

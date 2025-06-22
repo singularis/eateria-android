@@ -54,6 +54,9 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val _deletingProductTime = MutableStateFlow<Long?>(null)
     val deletingProductTime: StateFlow<Long?> = _deletingProductTime.asStateFlow()
     
+    private val _modifiedProductTime = MutableStateFlow<Long?>(null)
+    val modifiedProductTime: StateFlow<Long?> = _modifiedProductTime.asStateFlow()
+    
     private val _isViewingCustomDate = MutableStateFlow(false)
     val isViewingCustomDate: StateFlow<Boolean> = _isViewingCustomDate.asStateFlow()
     
@@ -340,10 +343,14 @@ class MainViewModel(private val context: Context) : ViewModel() {
         viewModelScope.launch {
             try {
                 val success = grpcService.modifyFoodRecord(time, userEmail, percentage)
-                // Don't wait for response - provide immediate feedback in UI
-                fetchData() // Refresh data in background
+                if (success) {
+                    _modifiedProductTime.value = time
+                    fetchData() // Refresh data after modification
+                } else {
+                    // Handle failure (e.g., show an error message)
+                }
             } catch (e: Exception) {
-                // Handle error silently or show toast
+                // Handle exception
             }
         }
     }
@@ -576,5 +583,9 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     fun hidePhotoErrorAlert() {
         _showPhotoErrorAlert.value = false
+    }
+    
+    fun onSuccessDialogDismissed() {
+        _modifiedProductTime.value = null
     }
 } 

@@ -52,6 +52,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -325,7 +326,9 @@ fun ProductListView(
     onDelete: (Long) -> Unit,
     onModify: (Long, String, Int) -> Unit,
     onPhotoTap: (android.graphics.Bitmap?, String) -> Unit,
-    deletingProductTime: Long?
+    deletingProductTime: Long?,
+    modifiedProductTime: Long?,
+    onSuccessDialogDismissed: () -> Unit
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
@@ -392,7 +395,9 @@ fun ProductListView(
                             val productImage = product.getImage(context)
                             onPhotoTap(productImage, product.name) 
                         },
-                    isDeleting = deletingProductTime == product.time
+                    isDeleting = deletingProductTime == product.time,
+                    showSuccessConfirmation = modifiedProductTime == product.time,
+                    onSuccessDialogDismissed = onSuccessDialogDismissed
                 )
                 }
             }
@@ -413,7 +418,9 @@ fun ProductCard(
     onDelete: () -> Unit,
     onModify: (Int) -> Unit,
     onPhotoTap: () -> Unit,
-    isDeleting: Boolean
+    isDeleting: Boolean,
+    showSuccessConfirmation: Boolean,
+    onSuccessDialogDismissed: () -> Unit
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
@@ -558,15 +565,21 @@ fun ProductCard(
     }
 
     // Portion selection dialog
-    if (showPortionDialog) {
+    if (showPortionDialog || showSuccessConfirmation) {
         PortionSelectionDialog(
             foodName = product.name,
             originalWeight = product.weight,
             onPortionSelected = { percentage ->
                 onModify(percentage)
-                showPortionDialog = false
             },
-            onDismiss = { showPortionDialog = false }
+            onDismiss = {
+                showPortionDialog = false
+                if (showSuccessConfirmation) {
+                    onSuccessDialogDismissed()
+                }
+            },
+            isSuccess = showSuccessConfirmation,
+            resetSuccessState = onSuccessDialogDismissed
         )
     }
 
@@ -591,15 +604,26 @@ fun PortionSelectionDialog(
     foodName: String,
     originalWeight: Int,
     onPortionSelected: (Int) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isSuccess: Boolean,
+    resetSuccessState: () -> Unit
 ) {
-    var selectedPortion by remember { mutableStateOf<String?>(null) }
+    var selectedPortionPercentage by remember { mutableStateOf<Int?>(null) }
     var showConfirmation by remember { mutableStateOf(false) }
-    
-    if (showConfirmation && selectedPortion != null) {
-        // Show immediate confirmation dialog
+
+    LaunchedEffect(isSuccess) {
+        if (isSuccess) {
+            showConfirmation = true
+        }
+    }
+
+    if (showConfirmation) {
+        val selectedPortion = if(selectedPortionPercentage != null) "$selectedPortionPercentage%" else "the selected"
         AlertDialog(
-            onDismissRequest = onDismiss,
+            onDismissRequest = {
+                onDismiss()
+                resetSuccessState()
+            },
             title = {
                 Text(
                     text = "Portion Updated!",
@@ -617,13 +641,16 @@ fun PortionSelectionDialog(
                 )
             },
             confirmButton = {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = {
+                    onDismiss()
+                    resetSuccessState()
+                }) {
                     Text("OK", color = DarkPrimary, style = MaterialTheme.typography.labelMedium)
                 }
             },
             containerColor = Gray4
-                    )
-                } else {
+        )
+    } else {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
@@ -642,9 +669,9 @@ fun PortionSelectionDialog(
                         color = Color.Gray,
                         textAlign = TextAlign.Center
                     )
-                    
+
                     Spacer(modifier = Modifier.height(Dimensions.paddingM))
-                    
+
                     LazyColumn(
                         modifier = Modifier.height(Dimensions.fixedHeight),
                         verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
@@ -652,25 +679,23 @@ fun PortionSelectionDialog(
                         // Add percentage options with calculated weights (matches iOS)
                         val portions = listOf(
                             200 to "Double portion",
-                            150 to "One and a half portion", 
+                            150 to "One and a half portion",
                             125 to "One and a quarter portion",
                             75 to "Three quarters",
                             50 to "Half portion",
                             25 to "Quarter portion"
                         )
-                        
+
                         items(portions) { (percentage, description) ->
                             val calculatedWeight = originalWeight * percentage / 100
-                            
+
                             Button(
-                                onClick = { 
-                                    selectedPortion = "$percentage%"
-                                    showConfirmation = true
-                                    // Trigger backend update immediately but don't wait
+                                onClick = {
+                                    selectedPortionPercentage = percentage
                                     onPortionSelected(percentage)
                                 },
                                 modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
+                                colors = ButtonDefaults.buttonColors(
                                     containerColor = DarkPrimary,
                                     contentColor = Color.White
                                 ),
@@ -684,14 +709,12 @@ fun PortionSelectionDialog(
                                 )
                             }
                         }
-                        
+
                         // Add custom option
                         item {
                             Button(
-                                onClick = { 
-                                    selectedPortion = "100%"
-                                    showConfirmation = true
-                                    // For now, use 100% as custom (can be extended later)
+                                onClick = {
+                                    selectedPortionPercentage = 100
                                     onPortionSelected(100)
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -701,15 +724,15 @@ fun PortionSelectionDialog(
                                 ),
                                 shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                                 contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
-                    ) {
+                            ) {
                                 Text(
                                     text = "Custom...",
                                     style = MaterialTheme.typography.bodySmall
                                 )
+                            }
+                        }
                     }
                 }
-            }
-        }
             },
             confirmButton = {},
             dismissButton = {

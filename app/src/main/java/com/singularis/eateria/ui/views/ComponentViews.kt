@@ -350,35 +350,27 @@ fun ProductListView(
         }
     )
     
-    if (sortedProducts.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(Dimensions.fixedHeight) // Fixed height instead of fillMaxSize
-                .pullRefresh(pullRefreshState),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No food entries yet.\nTake a photo to get started!\n\nPull down to refresh",
-                color = Color.Gray,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-            
-            PullRefreshIndicator(
-                refreshing = isRefreshing,
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
-        }
-    } else {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth() // Only fill width, not height
-                .pullRefresh(pullRefreshState)
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize() // Use fillMaxSize to allow pull-refresh from anywhere
+            .pullRefresh(pullRefreshState)
+    ) {
+        if (sortedProducts.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(), // Also fill the size to center the text
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No food entries yet.\nTake a photo to get started!\n\nPull down to refresh",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else {
             LazyColumn(
-                modifier = Modifier.fillMaxWidth(), // Only fill width, not height
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
                 contentPadding = PaddingValues(vertical = Dimensions.paddingM)
             ) {
@@ -387,27 +379,27 @@ fun ProductListView(
                     key = { product -> product.time }
                 ) { product ->
                     val context = LocalContext.current
-                ProductCard(
-                    product = product,
-                    onDelete = { onDelete(product.time) },
-                    onModify = { percentage -> onModify(product.time, product.name, percentage) },
-                        onPhotoTap = { 
+                    ProductCard(
+                        product = product,
+                        onDelete = { onDelete(product.time) },
+                        onModify = { percentage -> onModify(product.time, product.name, percentage) },
+                        onPhotoTap = {
                             val productImage = product.getImage(context)
-                            onPhotoTap(productImage, product.name) 
+                            onPhotoTap(productImage, product.name)
                         },
-                    isDeleting = deletingProductTime == product.time,
-                    showSuccessConfirmation = modifiedProductTime == product.time,
-                    onSuccessDialogDismissed = onSuccessDialogDismissed
-                )
+                        isDeleting = deletingProductTime == product.time,
+                        showSuccessConfirmation = modifiedProductTime == product.time,
+                        onSuccessDialogDismissed = onSuccessDialogDismissed
+                    )
                 }
             }
-            
-            PullRefreshIndicator(
-                refreshing = isRefreshing,
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
         }
+
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 

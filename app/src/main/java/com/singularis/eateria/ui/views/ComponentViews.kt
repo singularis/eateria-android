@@ -1109,7 +1109,12 @@ fun HealthRecommendationDialog(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(Dimensions.paddingL), // Larger padding for full screen
+                    .padding(
+                        top = Dimensions.statusBarPadding,
+                        start = Dimensions.paddingL,
+                        end = Dimensions.paddingL,
+                        bottom = Dimensions.paddingL
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header with icon and title

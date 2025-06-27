@@ -29,6 +29,7 @@ import io.jsonwebtoken.security.Keys
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import android.accounts.AccountManager
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -157,17 +158,20 @@ class AuthenticationService(private val context: Context) {
     // Modern Credential Manager sign-in method
     suspend fun signInWithCredentialManager(activity: ComponentActivity): Boolean {
         Log.e("AuthenticationService", "=== DEBUG: Starting Google Sign-In ===")
-        Log.e("AuthenticationService", "Client ID: ${Secrets.googleClientId}")
         Log.e("AuthenticationService", "Package: ${context.packageName}")
-        Log.e("AuthenticationService", "BuildConfig Client ID: ${com.singularis.eateria.BuildConfig.GOOGLE_CLIENT_ID}")
         
         return try {
+            // Check if Google Play Services is available
+            val googlePlayServicesAvailable = checkGooglePlayServicesAvailability()
+            Log.e("AuthenticationService", "Google Play Services available: $googlePlayServicesAvailable")
+            
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setServerClientId(Secrets.googleClientId)
                 .setFilterByAuthorizedAccounts(false) // Allow all accounts, not just authorized ones
+                .setAutoSelectEnabled(false) // Don't auto-select, let user choose
                 .build()
             
-            Log.e("AuthenticationService", "Created GoogleIdOption with filterByAuthorizedAccounts=false")
+            Log.e("AuthenticationService", "Created GoogleIdOption with filterByAuthorizedAccounts=false, autoSelectEnabled=false")
             
             val request = GetCredentialRequest.Builder()
                 .addCredentialOption(googleIdOption)
@@ -188,6 +192,76 @@ class AuthenticationService(private val context: Context) {
             Log.e("AuthenticationService", "Exception type: ${e.javaClass.simpleName}")
             Log.e("AuthenticationService", "Exception message: ${e.message}")
             Log.e("AuthenticationService", "Exception cause: ${e.cause}")
+            
+            // More specific error handling
+            when (e) {
+                is NoCredentialException -> {
+                    Log.e("AuthenticationService", "NoCredentialException - Possible causes:")
+                    Log.e("AuthenticationService", "1. No Google account signed in on device")
+                    Log.e("AuthenticationService", "2. Google Play Services needs update")
+                    Log.e("AuthenticationService", "3. SHA-1 fingerprint not configured in Google Console")
+                    Log.e("AuthenticationService", "4. Client ID configuration mismatch")
+                    
+                    // Try alternative approach
+                    return tryAlternativeSignIn(activity)
+                }
+                else -> {
+                    Log.e("AuthenticationService", "Other credential exception: ${e.javaClass.simpleName}")
+                }
+            }
+            false
+        }
+    }
+    
+    private fun checkGooglePlayServicesAvailability(): Boolean {
+        return try {
+            // Check if we can create credential manager successfully
+            val testCredentialManager = CredentialManager.create(context)
+            val hasGoogleAccounts = checkGoogleAccountsAvailable()
+            Log.e("AuthenticationService", "Google accounts available: $hasGoogleAccounts")
+            testCredentialManager != null
+        } catch (e: Exception) {
+            Log.e("AuthenticationService", "Google Play Services check failed", e)
+            false
+        }
+    }
+    
+    private fun checkGoogleAccountsAvailable(): Boolean {
+        return try {
+            val accountManager = AccountManager.get(context)
+            val accounts = accountManager.getAccountsByType("com.google")
+            Log.e("AuthenticationService", "Found ${accounts.size} Google accounts on device")
+            accounts.isNotEmpty()
+        } catch (e: Exception) {
+            Log.e("AuthenticationService", "Failed to check Google accounts", e)
+            false
+        }
+    }
+    
+    private suspend fun tryAlternativeSignIn(activity: ComponentActivity): Boolean {
+        Log.e("AuthenticationService", "Attempting alternative sign-in approach...")
+        return try {
+            // Try with more permissive settings
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setServerClientId(Secrets.googleClientId)
+                .setFilterByAuthorizedAccounts(false)
+                .setAutoSelectEnabled(true) // Enable auto-select as fallback
+                .build()
+            
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+            
+            val result = credentialManager.getCredential(
+                context = activity,
+                request = request
+            )
+            
+            Log.e("AuthenticationService", "SUCCESS: Alternative sign-in worked!")
+            handleSignInResult(result)
+            true
+        } catch (e: Exception) {
+            Log.e("AuthenticationService", "Alternative sign-in also failed", e)
             false
         }
     }

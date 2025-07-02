@@ -187,7 +187,7 @@ fun TopBarView(
                         containerColor = DarkPrimary,
                         contentColor = Color.White
                     ),
-                    modifier = Modifier.height(Dimensions.paddingL)
+                    modifier = Modifier.height(Dimensions.buttonHeight)
                 ) {
                     Text(
                         text = "Today",

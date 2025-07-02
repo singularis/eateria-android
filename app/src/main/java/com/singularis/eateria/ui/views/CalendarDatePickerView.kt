@@ -208,7 +208,8 @@ private fun CalendarContent(
                 ) {
                     Text(
                         text = "Today",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1
                     )
                 }
             }
@@ -237,13 +238,13 @@ private fun CalendarGrid(
                             day.day == today.get(Calendar.DAY_OF_MONTH) &&
                             currentMonth.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
                             currentMonth.get(Calendar.YEAR) == today.get(Calendar.YEAR),
-                isToday = day.day != null && isToday(day.day!!, today),
-                isClickable = day.day != null && !isFutureDate(day.day!!, today),
+                isToday = day.day != null && isToday(day.day!!, currentMonth),
+                isClickable = day.day != null && !isFutureDate(day.day!!, currentMonth),
                 onClick = { dayNumber ->
-                    if (dayNumber != null && !isFutureDate(dayNumber, today)) {
+                    if (dayNumber != null && !isFutureDate(dayNumber, currentMonth)) {
                         val selectedDate = Calendar.getInstance().apply {
-                            set(Calendar.YEAR, today.get(Calendar.YEAR))
-                            set(Calendar.MONTH, today.get(Calendar.MONTH))
+                            set(Calendar.YEAR, currentMonth.get(Calendar.YEAR))
+                            set(Calendar.MONTH, currentMonth.get(Calendar.MONTH))
                             set(Calendar.DAY_OF_MONTH, dayNumber)
                         }
                         val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(selectedDate.time)

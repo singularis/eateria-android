@@ -64,6 +64,9 @@ import com.singularis.eateria.ui.theme.Gray3
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 
 
@@ -521,7 +524,9 @@ private fun HealthFormView(
     onCalculateClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -654,7 +659,11 @@ private fun HealthFormView(
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Male")
+                        Text(
+                            text = "Male",
+                            maxLines = 1,
+                            fontSize = 14.sp
+                        )
                     }
                     Button(
                         onClick = { onGenderChange(false) },
@@ -664,7 +673,11 @@ private fun HealthFormView(
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Female")
+                        Text(
+                            text = "Female",
+                            maxLines = 1,
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
@@ -672,7 +685,7 @@ private fun HealthFormView(
             // Activity Level Selection
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
                 Text(
                     text = "Activity Level:",
@@ -683,26 +696,38 @@ private fun HealthFormView(
                 
                 Spacer(modifier = Modifier.width(8.dp))
                 
-                // Dropdown-style selection with buttons
+                // Scrollable dropdown-style selection with buttons
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(200.dp) // Fixed height to enable scrolling
+                        .background(
+                            Color.White.copy(alpha = 0.05f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    activityLevels.forEach { level ->
-                        Button(
-                            onClick = { onActivityLevelChange(level) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (activityLevel == level) CalorieGreen else Gray3,
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(
-                                text = level,
-                                fontSize = 14.sp,
-                                fontWeight = if (activityLevel == level) FontWeight.Bold else FontWeight.Normal
-                            )
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(activityLevels.size) { index ->
+                            val level = activityLevels[index]
+                            Button(
+                                onClick = { onActivityLevelChange(level) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (activityLevel == level) CalorieGreen else Gray3,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = level,
+                                    fontSize = 14.sp,
+                                    fontWeight = if (activityLevel == level) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
                         }
                     }
                 }
@@ -854,9 +879,37 @@ private fun validateAndCalculateHealthData(
         return false
     }
     
-    // Calculate optimal weight using BMI (21.5 - middle of healthy range)
+    // Calculate optimal weight using personalized BMI based on age, gender, and activity level
     val heightInMeters = heightValue / 100.0
-    val optimalWeight = 21.5 * heightInMeters * heightInMeters
+    
+    // Base BMI ranges - more realistic and personalized
+    var targetBMI = when {
+        // Young adults (18-25) - can be leaner
+        ageValue <= 25 -> if (isMale) 22.5 else 21.5
+        // Adults (26-40) - slightly higher
+        ageValue <= 40 -> if (isMale) 23.5 else 22.5
+        // Middle age (41-60) - higher for health
+        ageValue <= 60 -> if (isMale) 24.0 else 23.0
+        // Older adults (60+) - higher BMI associated with better outcomes
+        else -> if (isMale) 24.5 else 23.5
+    }
+    
+    // Adjust for activity level (more active = more muscle mass = higher healthy weight)
+    val activityAdjustment = when (activityLevel) {
+        "Sedentary" -> -0.5 // Slightly lower for sedentary
+        "Lightly Active" -> 0.0 // Base level
+        "Moderately Active" -> 0.5 // Slightly higher
+        "Very Active" -> 1.0 // Higher for athletes
+        "Extremely Active" -> 1.5 // Much higher for very athletic people
+        else -> 0.0
+    }
+    
+    targetBMI += activityAdjustment
+    
+    // Ensure BMI stays within reasonable bounds (20-26)
+    targetBMI = targetBMI.coerceIn(20.0, 26.0)
+    
+    val optimalWeight = targetBMI * heightInMeters * heightInMeters
     onOptimalWeightCalculated(optimalWeight)
     
     // Calculate BMR using Mifflin-St Jeor Equation
@@ -885,22 +938,49 @@ private fun validateAndCalculateHealthData(
     val timeToGoal: String
     
     when {
-        kotlin.math.abs(weightDifference) < 2 -> {
-            // Maintain current weight
+        kotlin.math.abs(weightDifference) < 3 -> {
+            // Maintain current weight - expanded range for more people
             calorieAdjustment = 0.0
-            timeToGoal = "You are at optimal weight!"
+            timeToGoal = "You are at optimal weight range!"
         }
         weightDifference > 0 -> {
-            // Lose weight - safe deficit of 500 calories per day
-            calorieAdjustment = -500.0
-            val weeksToGoal = kotlin.math.ceil(kotlin.math.abs(weightDifference) * 2).toInt() // ~0.5kg per week
-            timeToGoal = "$weeksToGoal weeks to reach optimal weight"
+            // Lose weight - conservative approach with smaller deficit for sustainability
+            calorieAdjustment = when {
+                weightDifference > 15 -> -600.0 // Larger deficit for very overweight
+                weightDifference > 8 -> -500.0  // Standard deficit
+                else -> -300.0 // Smaller deficit for minor weight loss
+            }
+            
+            // More realistic timeline: 0.3-0.5kg per week depending on deficit
+            val weeklyLossRate = when {
+                weightDifference > 15 -> 0.5 // 0.5kg/week for higher deficit
+                weightDifference > 8 -> 0.4  // 0.4kg/week for standard
+                else -> 0.3 // 0.3kg/week for smaller deficit
+            }
+            
+            val weeksToGoal = kotlin.math.ceil(kotlin.math.abs(weightDifference) / weeklyLossRate).toInt()
+            timeToGoal = when {
+                weeksToGoal > 52 -> "${weeksToGoal / 52} year(s) to reach optimal weight"
+                weeksToGoal > 8 -> "${weeksToGoal / 4} month(s) to reach optimal weight"
+                else -> "$weeksToGoal weeks to reach optimal weight"
+            }
         }
         else -> {
-            // Gain weight - safe surplus of 300 calories per day
-            calorieAdjustment = 300.0
-            val weeksToGoal = kotlin.math.ceil(kotlin.math.abs(weightDifference) * 4).toInt() // ~0.25kg per week
-            timeToGoal = "$weeksToGoal weeks to reach optimal weight"
+            // Gain weight - conservative surplus
+            calorieAdjustment = when {
+                kotlin.math.abs(weightDifference) > 10 -> 400.0 // Higher surplus for underweight
+                else -> 250.0 // Smaller surplus for minor weight gain
+            }
+            
+            // Conservative weight gain rate: 0.2-0.3kg per week
+            val weeklyGainRate = if (kotlin.math.abs(weightDifference) > 10) 0.3 else 0.2
+            val weeksToGoal = kotlin.math.ceil(kotlin.math.abs(weightDifference) / weeklyGainRate).toInt()
+            
+            timeToGoal = when {
+                weeksToGoal > 52 -> "${weeksToGoal / 52} year(s) to reach optimal weight"
+                weeksToGoal > 8 -> "${weeksToGoal / 4} month(s) to reach optimal weight"
+                else -> "$weeksToGoal weeks to reach optimal weight"
+            }
         }
     }
     

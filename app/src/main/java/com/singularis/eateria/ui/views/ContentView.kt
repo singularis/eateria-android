@@ -4,10 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -84,6 +88,8 @@ fun ContentView(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         Column(
             modifier = Modifier
@@ -92,7 +98,7 @@ fun ContentView(
                     start = Dimensions.paddingM,
                     end = Dimensions.paddingM,
                     bottom = Dimensions.paddingM,
-                    top = Dimensions.statusBarPadding
+                    top = Dimensions.paddingM
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

@@ -9,12 +9,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -602,6 +606,7 @@ fun PortionSelectionDialog(
 ) {
     var selectedPortionPercentage by remember { mutableStateOf<Int?>(null) }
     var showConfirmation by remember { mutableStateOf(false) }
+    var showCustomSelection by remember { mutableStateOf(false) }
 
     LaunchedEffect(isSuccess) {
         if (isSuccess) {
@@ -647,7 +652,7 @@ fun PortionSelectionDialog(
             onDismissRequest = onDismiss,
             title = {
                 Text(
-                    text = "Modify Portion",
+                    text = if (showCustomSelection) "Custom Portion" else "Modify Portion",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -656,7 +661,10 @@ fun PortionSelectionDialog(
             text = {
                 Column {
                     Text(
-                        text = "How much of '$foodName' did you actually eat?\nOriginal weight: ${originalWeight}g",
+                        text = if (showCustomSelection) 
+                            "Select a custom portion for '$foodName'\nOriginal weight: ${originalWeight}g" 
+                        else 
+                            "How much of '$foodName' did you actually eat?\nOriginal weight: ${originalWeight}g",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
@@ -668,59 +676,85 @@ fun PortionSelectionDialog(
                         modifier = Modifier.height(Dimensions.fixedHeight),
                         verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                     ) {
-                        // Add percentage options with calculated weights (matches iOS)
-                        val portions = listOf(
-                            200 to "Double portion",
-                            150 to "One and a half portion",
-                            125 to "One and a quarter portion",
-                            75 to "Three quarters",
-                            50 to "Half portion",
-                            25 to "Quarter portion"
-                        )
+                        if (showCustomSelection) {
+                            // Show custom percentages from 10% to 300% in 10% increments
+                            items((10..300 step 10).toList()) { percentage ->
+                                val calculatedWeight = originalWeight * percentage / 100
 
-                        items(portions) { (percentage, description) ->
-                            val calculatedWeight = originalWeight * percentage / 100
-
-                            Button(
-                                onClick = {
-                                    selectedPortionPercentage = percentage
-                                    onPortionSelected(percentage)
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = DarkPrimary,
-                                    contentColor = Color.White
-                                ),
-                                shape = RoundedCornerShape(Dimensions.cornerRadiusS),
-                                contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
-                            ) {
-                                Text(
-                                    text = "$percentage% (${calculatedWeight}g) - $description",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    textAlign = TextAlign.Center
-                                )
+                                Button(
+                                    onClick = {
+                                        selectedPortionPercentage = percentage
+                                        onPortionSelected(percentage)
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = DarkPrimary,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                                    contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
+                                ) {
+                                    Text(
+                                        text = "$percentage% (${calculatedWeight}g)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
-                        }
+                        } else {
+                            // Show standard portion options
+                            val portions = listOf(
+                                200 to "Double portion",
+                                150 to "One and a half portion",
+                                125 to "One and a quarter portion",
+                                75 to "Three quarters",
+                                50 to "Half portion",
+                                25 to "Quarter portion"
+                            )
 
-                        // Add custom option
-                        item {
-                            Button(
-                                onClick = {
-                                    selectedPortionPercentage = 100
-                                    onPortionSelected(100)
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Gray3,
-                                    contentColor = Color.White
-                                ),
-                                shape = RoundedCornerShape(Dimensions.cornerRadiusS),
-                                contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
-                            ) {
-                                Text(
-                                    text = "Custom...",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
+                            items(portions) { (percentage, description) ->
+                                val calculatedWeight = originalWeight * percentage / 100
+
+                                Button(
+                                    onClick = {
+                                        selectedPortionPercentage = percentage
+                                        onPortionSelected(percentage)
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = DarkPrimary,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                                    contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
+                                ) {
+                                    Text(
+                                        text = "$percentage% (${calculatedWeight}g) - $description",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+
+                            // Add custom option
+                            item {
+                                Button(
+                                    onClick = {
+                                        showCustomSelection = true
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Gray3,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                                    contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
+                                ) {
+                                    Text(
+                                        text = "Custom...",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                             }
                         }
                     }
@@ -728,8 +762,18 @@ fun PortionSelectionDialog(
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                TextButton(onClick = {
+                    if (showCustomSelection) {
+                        showCustomSelection = false
+                    } else {
+                        onDismiss()
+                    }
+                }) {
+                    Text(
+                        if (showCustomSelection) "Back" else "Cancel", 
+                        color = Color.Gray, 
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             },
             containerColor = Gray4
@@ -1095,7 +1139,9 @@ fun HealthRecommendationDialog(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground), // Solid background instead of overlay
+            .background(DarkBackground) // Solid background instead of overlay
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(WindowInsets.navigationBars),
         contentAlignment = Alignment.Center
     ) {
         // Full-screen content card
@@ -1110,7 +1156,7 @@ fun HealthRecommendationDialog(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        top = Dimensions.statusBarPadding,
+                        top = Dimensions.paddingM,
                         start = Dimensions.paddingL,
                         end = Dimensions.paddingL,
                         bottom = Dimensions.paddingL

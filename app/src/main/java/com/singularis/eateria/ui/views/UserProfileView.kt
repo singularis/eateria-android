@@ -3,6 +3,10 @@ package com.singularis.eateria.ui.views
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -82,6 +86,8 @@ fun UserProfileView(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         Column(
             modifier = Modifier
@@ -90,7 +96,7 @@ fun UserProfileView(
                     start = Dimensions.paddingM, 
                     end = Dimensions.paddingM, 
                     bottom = Dimensions.paddingM, 
-                    top = Dimensions.statusBarPadding
+                    top = Dimensions.paddingM
                 )
         ) {
             // Header

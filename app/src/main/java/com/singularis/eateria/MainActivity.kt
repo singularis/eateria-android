@@ -3,6 +3,7 @@ package com.singularis.eateria
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -10,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.ui.theme.EateriaTheme
@@ -24,6 +26,12 @@ class MainActivity : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display
+        enableEdgeToEdge()
+        
+        // Ensure the app can draw behind system bars
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         
         authService = AuthenticationService(this)
         

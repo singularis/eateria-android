@@ -12,7 +12,7 @@ object Dimensions {
     val paddingXL = 32.dp
     
     // Status bar and system UI spacing
-    val statusBarPadding = 50.dp  // Top padding for status bar
+    // Note: statusBarPadding is no longer used - we now use WindowInsets for proper system UI handling
     val systemTopMargin = 24.dp   // Additional margin from status bar area
     
     // Component sizes

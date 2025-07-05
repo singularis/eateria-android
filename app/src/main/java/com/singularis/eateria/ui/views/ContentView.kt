@@ -77,11 +77,14 @@ fun ContentView(
     // Full screen photo state
     var fullScreenPhotoData by remember { mutableStateOf<Pair<android.graphics.Bitmap?, String>?>(null) }
     
-    // Auto-show onboarding for first-time users
     LaunchedEffect(hasSeenOnboarding) {
         if (!hasSeenOnboarding) {
             viewModel.showOnboarding()
         }
+    }
+    
+    LaunchedEffect(Unit) {
+        viewModel.triggerManualRefresh()
     }
     
     Box(

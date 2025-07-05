@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.AuthenticationService
+import com.singularis.eateria.services.DailyRefreshManager
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.ImageStorageService
 import com.singularis.eateria.services.ProductStorageService
@@ -17,8 +18,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.max
 import kotlin.math.min
 
@@ -28,6 +31,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val productStorageService = ProductStorageService.getInstance(context)
     private val imageStorageService = ImageStorageService.getInstance(context)
     private val authService = AuthenticationService(context)
+    private val dailyRefreshManager = DailyRefreshManager.getInstance(context)
     
     // State flows for UI
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -127,6 +131,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
     init {
         loadLimitsFromStorage()
         fetchDataWithLoading()
+        startDailyRefreshMonitoring()
     }
     
     private fun loadLimitsFromStorage() {
@@ -595,5 +600,53 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     fun onSuccessDialogDismissed() {
         _modifiedProductTime.value = null
+    }
+    
+    /**
+     * Starts monitoring for automatic daily refresh at 00:00 UTC
+     */
+    private fun startDailyRefreshMonitoring() {
+        dailyRefreshManager.startDailyRefreshMonitoring {
+            if (_isViewingCustomDate.value) {
+                returnToToday()
+            } else {
+                fetchData()
+            }
+        }
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        dailyRefreshManager.stopDailyRefreshMonitoring()
+    }
+    
+    fun triggerManualRefresh() {
+        dailyRefreshManager.triggerManualRefresh()
+    }
+    
+    fun getNextRefreshInfo(): String {
+        return dailyRefreshManager.getNextRefreshInfo()
+    }
+    
+    fun getDailyRefreshDebugInfo(): String {
+        return dailyRefreshManager.getDebugInfo()
+    }
+    
+    /**
+     * Simulates opening the app on a previous day for testing
+     */
+    fun simulatePreviousDayForTesting() {
+        val yesterday = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+        }
+        val yesterdayString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(yesterday.time)
+        
+        dailyRefreshManager.setLastRefreshDateForTesting(yesterdayString)
+    }
+    
+    fun clearDailyRefreshHistoryForTesting() {
+        dailyRefreshManager.clearRefreshHistory()
     }
 } 

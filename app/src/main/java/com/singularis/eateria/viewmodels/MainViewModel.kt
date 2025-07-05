@@ -225,23 +225,27 @@ class MainViewModel(private val context: Context) : ViewModel() {
                         _isLoadingFoodPhoto.value = false
                         
                         // Show error alert based on backend response (iOS behavior)
-                        when (errorMessage) {
-                            "NOT_A_FOOD" -> {
+                        when {
+                            errorMessage == "NOT_A_FOOD" -> {
                                 _photoErrorTitle.value = "Food Not Recognized"
-                                _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                                _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.\n\nReceived error: $errorMessage"
                             }
-                            "SCALE_ERROR" -> {
+                            errorMessage == "SCALE_ERROR" -> {
                                 _photoErrorTitle.value = "Scale Not Recognized"
-                                _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                                _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on\n\nReceived error: $errorMessage"
+                            }
+                            errorMessage.startsWith("Unfortuantly, you have reached your daily limit") -> {
+                                _photoErrorTitle.value = "Daily Limit Reached"
+                                _photoErrorMessage.value = "$errorMessage"
                             }
                             else -> {
                                 // Handle any other backend error messages or fallback to photo type
                                 if (photoType == "weight_prompt") {
                                     _photoErrorTitle.value = "Scale Not Recognized"
-                                    _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                                    _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on\n\nReceived error: $errorMessage"
                                 } else {
                                     _photoErrorTitle.value = "Food Not Recognized"
-                                    _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                                    _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.\n\nReceived error: $errorMessage"
                                 }
                             }
                         }
@@ -256,10 +260,10 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 // Show error alert based on photo type (fallback for network errors)
                 if (photoType == "weight_prompt") {
                     _photoErrorTitle.value = "Scale Not Recognized"
-                    _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                    _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on\n\nReceived error: ${e.message}"
                 } else {
                     _photoErrorTitle.value = "Food Not Recognized"
-                    _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                    _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.\n\nReceived error: ${e.message}"
                 }
                 _showPhotoErrorAlert.value = true
             }
@@ -294,23 +298,27 @@ class MainViewModel(private val context: Context) : ViewModel() {
                     }
                     
                     // Show error alert based on backend response (iOS behavior)
-                    when (errorMessage) {
-                        "NOT_A_FOOD" -> {
+                    when {
+                        errorMessage == "NOT_A_FOOD" -> {
                             _photoErrorTitle.value = "Food Not Recognized"
-                            _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                            _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.\n\nReceived error: $errorMessage"
                         }
-                        "SCALE_ERROR" -> {
+                        errorMessage == "SCALE_ERROR" -> {
                             _photoErrorTitle.value = "Scale Not Recognized"
-                            _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                            _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on\n\nReceived error: $errorMessage"
+                        }
+                        errorMessage.startsWith("Unfortuantly, you have reached your daily limit") -> {
+                            _photoErrorTitle.value = "Daily Limit Reached"
+                            _photoErrorMessage.value = "$errorMessage"
                         }
                         else -> {
                             // Handle any other backend error messages or fallback to photo type
                             if (photoType == "weight_prompt") {
                                 _photoErrorTitle.value = "Scale Not Recognized"
-                                _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on"
+                                _photoErrorMessage.value = "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on\n\nReceived error: $errorMessage"
                             } else {
                                 _photoErrorTitle.value = "Food Not Recognized"
-                                _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible."
+                                _photoErrorMessage.value = "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.\n\nReceived error: $errorMessage"
                             }
                         }
                     }

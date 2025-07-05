@@ -258,7 +258,26 @@ class GRPCService(private val context: Context) {
                         if (lowerText.contains("error") || lowerText.contains("not a") || lowerText.contains("invalid")) {
                             // Backend returned error message in success response
                             Log.d("GRPCService", "Error detected in success response: $responseBody")
-                            withContext(Dispatchers.Main) { onFailure(responseBody) }
+                            
+                            // Try to parse JSON error message
+                            val errorMessage = try {
+                                val jsonStart = responseBody.indexOf("{")
+                                val jsonEnd = responseBody.lastIndexOf("}") + 1
+                                if (jsonStart != -1 && jsonEnd > jsonStart) {
+                                    val jsonText = responseBody.substring(jsonStart, jsonEnd)
+                                    // Simple JSON parsing for error field
+                                    val errorFieldPattern = "\"error\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+                                    val match = errorFieldPattern.find(jsonText)
+                                    match?.groupValues?.get(1) ?: responseBody
+                                } else {
+                                    responseBody
+                                }
+                            } catch (e: Exception) {
+                                Log.w("GRPCService", "Failed to parse JSON error message in success response", e)
+                                responseBody
+                            }
+                            
+                            withContext(Dispatchers.Main) { onFailure(errorMessage) }
                         } else {
                             withContext(Dispatchers.Main) { onSuccess() }
                         }
@@ -286,8 +305,26 @@ class GRPCService(private val context: Context) {
                                 withContext(Dispatchers.Main) { onFailure("SCALE_ERROR") }
                             }
                             else -> {
+                                // Try to parse JSON error message
+                                val errorMessage = try {
+                                    val jsonStart = responseBody.indexOf("{")
+                                    val jsonEnd = responseBody.lastIndexOf("}") + 1
+                                    if (jsonStart != -1 && jsonEnd > jsonStart) {
+                                        val jsonText = responseBody.substring(jsonStart, jsonEnd)
+                                        // Simple JSON parsing for error field
+                                        val errorFieldPattern = "\"error\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+                                        val match = errorFieldPattern.find(jsonText)
+                                        match?.groupValues?.get(1) ?: responseBody
+                                    } else {
+                                        responseBody
+                                    }
+                                } catch (e: Exception) {
+                                    Log.w("GRPCService", "Failed to parse JSON error message", e)
+                                    responseBody
+                                }
+                                
                                 Log.d("GRPCService", "Generic backend error: $responseBody - No retries needed")
-                                withContext(Dispatchers.Main) { onFailure("GENERIC_ERROR") }
+                                withContext(Dispatchers.Main) { onFailure(errorMessage) }
                             }
                         }
                     } else {

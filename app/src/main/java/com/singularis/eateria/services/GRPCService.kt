@@ -27,6 +27,7 @@ import eater.DeleteFood
 import eater.GetRecomendation
 import eater.ManualWeight
 import eater.ModifyFoodRecord
+import eater.Feedback
 
 class GRPCService(private val context: Context) {
     
@@ -600,5 +601,44 @@ class GRPCService(private val context: Context) {
     
     suspend fun submitManualWeight(weight: Float): Boolean {
         return sendManualWeight(weight, "")
+    }
+    
+    suspend fun submitFeedback(userEmail: String, feedback: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val timestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
+                
+                val request = Feedback.FeedbackRequest.newBuilder()
+                    .setTime(timestamp)
+                    .setUserEmail(userEmail)
+                    .setFeedback(feedback)
+                    .build()
+                
+                val response = sendRequest("feedback", "POST", request.toByteArray())
+                
+                if (response?.isSuccessful == true) {
+                    val responseBytes = response.body?.bytes()
+                    response.close()
+                    
+                    if (responseBytes != null) {
+                        try {
+                            val feedbackResponse = Feedback.FeedbackResponse.parseFrom(responseBytes)
+                            feedbackResponse.success
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse feedback response", e)
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } else {
+                    response?.close()
+                    false
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to submit feedback", e)
+                false
+            }
+        }
     }
 }

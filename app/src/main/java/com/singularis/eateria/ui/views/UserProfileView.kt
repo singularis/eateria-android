@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material3.*
 import coil.compose.AsyncImage
 import androidx.compose.runtime.*
@@ -45,7 +46,8 @@ fun UserProfileView(
     onStatisticsClick: () -> Unit = {},
     onHealthSettingsClick: () -> Unit = {},
     onHealthDisclaimerClick: () -> Unit = {},
-    onOnboardingClick: () -> Unit = {}
+    onOnboardingClick: () -> Unit = {},
+    onFeedbackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -189,6 +191,12 @@ fun UserProfileView(
                                 title = "Tutorial",
                                 subtitle = "Replay the app tutorial",
                                 onClick = onOnboardingClick
+                            ),
+                            ProfileMenuItem(
+                                icon = Icons.Default.Feedback,
+                                title = "Share Feedback",
+                                subtitle = "Help us improve the app",
+                                onClick = onFeedbackClick
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Info,

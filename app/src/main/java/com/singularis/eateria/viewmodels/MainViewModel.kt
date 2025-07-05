@@ -119,6 +119,9 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val _photoErrorMessage = MutableStateFlow("")
     val photoErrorMessage: StateFlow<String> = _photoErrorMessage.asStateFlow()
     
+    private val _showFeedback = MutableStateFlow(false)
+    val showFeedback: StateFlow<Boolean> = _showFeedback.asStateFlow()
+    
     private val _manualWeightInput = MutableStateFlow("")
     val manualWeightInput: StateFlow<String> = _manualWeightInput.asStateFlow()
     
@@ -596,6 +599,14 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     fun hidePhotoErrorAlert() {
         _showPhotoErrorAlert.value = false
+    }
+    
+    fun showFeedback() {
+        _showFeedback.value = true
+    }
+    
+    fun hideFeedback() {
+        _showFeedback.value = false
     }
     
     fun onSuccessDialogDismissed() {

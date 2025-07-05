@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package eater;
+
+message FeedbackRequest {
+  string time = 1;
+  string user_email = 2;
+  string feedback = 3;
+}
+
+message FeedbackResponse {
+  bool success = 1;
+  string message = 2;
+} 

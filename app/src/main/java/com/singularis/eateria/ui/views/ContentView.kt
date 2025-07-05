@@ -69,6 +69,7 @@ fun ContentView(
     val showPhotoErrorAlert by viewModel.showPhotoErrorAlert.collectAsState()
     val photoErrorTitle by viewModel.photoErrorTitle.collectAsState()
     val photoErrorMessage by viewModel.photoErrorMessage.collectAsState()
+    val showFeedback by viewModel.showFeedback.collectAsState()
     
     // Camera states
     var showFoodCamera by remember { mutableStateOf(false) }
@@ -237,7 +238,8 @@ fun ContentView(
                 onStatisticsClick = { viewModel.showStatistics() },
                 onHealthSettingsClick = { viewModel.showHealthSettings() },
                 onHealthDisclaimerClick = { viewModel.showHealthDisclaimer() },
-                onOnboardingClick = { viewModel.showOnboarding() }
+                onOnboardingClick = { viewModel.showOnboarding() },
+                onFeedbackClick = { viewModel.showFeedback() }
             )
         }
         
@@ -290,6 +292,13 @@ fun ContentView(
                     // Reload limits in MainViewModel when they're changed in health settings
                     viewModel.reloadLimitsFromStorage()
                 }
+            )
+        }
+        
+        if (showFeedback) {
+            FeedbackView(
+                authViewModel = authViewModel,
+                onBackClick = { viewModel.hideFeedback() }
             )
         }
         

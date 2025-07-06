@@ -71,6 +71,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalFocusManager
 
 
 
@@ -96,6 +97,7 @@ fun OnboardingView(
     isPresented: Boolean,
     onComplete: (OnboardingHealthData?) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     val onboardingPages = listOf(
         OnboardingPage(
             title = "Welcome to Eateria! 🍎",
@@ -329,6 +331,8 @@ fun OnboardingView(
                             onClick = {
                                 when (onboardingPages[pagerState.currentPage].anchor) {
                                     "health_form" -> {
+                                        // Clear keyboard focus before validation
+                                        focusManager.clearFocus()
                                         // Validate and calculate before proceeding
                                         if (validateAndCalculateHealthData(
                                                 height, weight, age, isMale, activityLevel,
@@ -404,7 +408,7 @@ fun OnboardingView(
         if (showingHealthDataAlert) {
             AlertHelper.SimpleAlert(
                 title = "Invalid Health Data",
-                message = "Please provide valid values for height (cm), weight (kg), and age (years).",
+                message = "Please provide valid values:\n• Height: 100-300 cm\n• Weight: 30-500 kg\n• Age: 13-120 years",
                 isVisible = true,
                 onDismiss = { showingHealthDataAlert = false }
             )
@@ -529,13 +533,20 @@ private fun HealthFormView(
     onActivityLevelChange: (String) -> Unit,
     onCalculateClick: () -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
+    val isFormValid = height.toDoubleOrNull()?.let { it >= 100 && it <= 300 } == true &&
+                     weight.toDoubleOrNull()?.let { it >= 30 && it <= 500 } == true &&
+                     age.toIntOrNull()?.let { it >= 13 && it <= 120 } == true
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
+        Spacer(modifier = Modifier.height(32.dp))
+        
         // Icon
         Box(
             modifier = Modifier
@@ -564,6 +575,36 @@ private fun HealthFormView(
         
         Spacer(modifier = Modifier.height(24.dp))
         
+        // Calculate Button - moved to top
+        Button(
+            onClick = {
+                focusManager.clearFocus()
+                onCalculateClick()
+            },
+            enabled = isFormValid,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isFormValid) CalorieGreen else Gray3,
+                contentColor = Color.White,
+                disabledContainerColor = Gray3,
+                disabledContentColor = Color.White.copy(alpha = 0.6f)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 30.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Calculate My\nPersonalized Plan",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
         Column(
             modifier = Modifier.padding(horizontal = 30.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -580,16 +621,23 @@ private fun HealthFormView(
                 )
                 TextField(
                     value = height,
-                    onValueChange = onHeightChange,
-                    placeholder = { Text("175") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    onValueChange = { newValue ->
+                        if (newValue.isEmpty() || (newValue.toDoubleOrNull()?.let { it <= 300 } == true)) {
+                            onHeightChange(newValue.filter { it.isDigit() || it == '.' })
+                        }
+                    },
+                    placeholder = { Text("175", color = Color.Gray) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
+                        unfocusedContainerColor = Color.Transparent,
+                        cursorColor = CalorieGreen,
+                        focusedIndicatorColor = if (height.toDoubleOrNull()?.let { it >= 100 && it <= 300 } == true) CalorieGreen else Color.Gray
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
                 )
             }
             
@@ -605,16 +653,23 @@ private fun HealthFormView(
                 )
                 TextField(
                     value = weight,
-                    onValueChange = onWeightChange,
-                    placeholder = { Text("70") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    onValueChange = { newValue ->
+                        if (newValue.isEmpty() || (newValue.toDoubleOrNull()?.let { it <= 500 } == true)) {
+                            onWeightChange(newValue.filter { it.isDigit() || it == '.' })
+                        }
+                    },
+                    placeholder = { Text("70", color = Color.Gray) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
+                        unfocusedContainerColor = Color.Transparent,
+                        cursorColor = CalorieGreen,
+                        focusedIndicatorColor = if (weight.toDoubleOrNull()?.let { it >= 30 && it <= 500 } == true) CalorieGreen else Color.Gray
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
                 )
             }
             
@@ -630,16 +685,23 @@ private fun HealthFormView(
                 )
                 TextField(
                     value = age,
-                    onValueChange = onAgeChange,
-                    placeholder = { Text("25") },
+                    onValueChange = { newValue ->
+                        if (newValue.isEmpty() || (newValue.toIntOrNull()?.let { it <= 120 } == true)) {
+                            onAgeChange(newValue.filter { it.isDigit() })
+                        }
+                    },
+                    placeholder = { Text("25", color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
+                        unfocusedContainerColor = Color.Transparent,
+                        cursorColor = CalorieGreen,
+                        focusedIndicatorColor = if (age.toIntOrNull()?.let { it >= 13 && it <= 120 } == true) CalorieGreen else Color.Gray
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
                 )
             }
             
@@ -648,7 +710,7 @@ private fun HealthFormView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Gender:",
+                    text = "Sex:",
                     color = Color.White,
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
@@ -738,29 +800,6 @@ private fun HealthFormView(
                     }
                 }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Button(
-            onClick = onCalculateClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = CalorieGreen,
-                contentColor = Color.White
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .padding(horizontal = 30.dp),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "Calculate My\nPersonalized Plan",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                lineHeight = 22.sp
-            )
         }
     }
 }
@@ -881,7 +920,9 @@ private fun validateAndCalculateHealthData(
     val ageValue = age.toIntOrNull()
     
     if (heightValue == null || weightValue == null || ageValue == null ||
-        heightValue <= 0 || weightValue <= 0 || ageValue <= 0) {
+        heightValue < 100 || heightValue > 300 || 
+        weightValue < 30 || weightValue > 500 || 
+        ageValue < 13 || ageValue > 120) {
         return false
     }
     

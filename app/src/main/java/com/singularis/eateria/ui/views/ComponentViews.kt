@@ -91,9 +91,6 @@ import com.singularis.eateria.ui.theme.Dimensions
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import coil.compose.AsyncImage
 import androidx.compose.ui.input.pointer.pointerInput
@@ -337,21 +334,10 @@ fun ProductListView(
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
     
-    // Refresh state with immediate feedback
-    var isRefreshing by remember { mutableStateOf(false) }
-    
-    // Pull to refresh state
+    // Pull to refresh state - no manual loading state needed since main loading is handled by parent
     val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing,
-        onRefresh = {
-            isRefreshing = true
-            onRefresh()
-            // Hide refresh indicator after short delay for immediate feedback
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(500) // Show for 500ms regardless of backend
-                isRefreshing = false
-            }
-        }
+        refreshing = false, // Always false since we use main loading state
+        onRefresh = onRefresh
     )
     
     Box(
@@ -399,11 +385,7 @@ fun ProductListView(
             }
         }
 
-        PullRefreshIndicator(
-            refreshing = isRefreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
+        // Pull refresh indicator removed since we use main loading state
     }
 }
 

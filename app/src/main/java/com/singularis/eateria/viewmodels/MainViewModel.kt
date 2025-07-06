@@ -438,7 +438,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
         _isViewingCustomDate.value = false
         _currentViewingDate.value = ""
         _currentViewingDateString.value = ""
-        fetchData()
+        fetchDataWithLoading()
     }
     
     fun getColor(caloriesLeft: Int): androidx.compose.ui.graphics.Color {

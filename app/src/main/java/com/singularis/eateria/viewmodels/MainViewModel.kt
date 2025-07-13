@@ -122,6 +122,15 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val _showFeedback = MutableStateFlow(false)
     val showFeedback: StateFlow<Boolean> = _showFeedback.asStateFlow()
     
+    private val _showSportCaloriesDialog = MutableStateFlow(false)
+    val showSportCaloriesDialog: StateFlow<Boolean> = _showSportCaloriesDialog.asStateFlow()
+    
+    private val _sportCaloriesInput = MutableStateFlow("")
+    val sportCaloriesInput: StateFlow<String> = _sportCaloriesInput.asStateFlow()
+    
+    private val _todaySportCalories = MutableStateFlow(0)
+    val todaySportCalories: StateFlow<Int> = _todaySportCalories.asStateFlow()
+    
     private val _manualWeightInput = MutableStateFlow("")
     val manualWeightInput: StateFlow<String> = _manualWeightInput.asStateFlow()
     
@@ -133,6 +142,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     init {
         loadLimitsFromStorage()
+        loadTodaySportCalories()
         fetchDataWithLoading()
         startDailyRefreshMonitoring()
     }
@@ -147,6 +157,35 @@ class MainViewModel(private val context: Context) : ViewModel() {
             } catch (e: Exception) {
                 // Keep default values if loading fails
             }
+        }
+    }
+    
+    private fun loadTodaySportCalories() {
+        viewModelScope.launch {
+            try {
+                val todayKey = getTodayDateKey()
+                val sportCalories = authService.getSportCalories(todayKey)
+                _todaySportCalories.value = sportCalories
+            } catch (e: Exception) {
+                _todaySportCalories.value = 0
+            }
+        }
+    }
+    
+    private fun getTodayDateKey(): String {
+        val today = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(today.time)
+    }
+    
+    private fun getAdjustedSoftLimit(): Int {
+        return if (_isViewingCustomDate.value) {
+            // For custom dates, don't include sport calories
+            _softLimit.value
+        } else {
+            // For today, include sport calories bonus
+            _softLimit.value + _todaySportCalories.value
         }
     }
     
@@ -180,7 +219,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
             productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
                 _products.value = fetchedProducts
                 // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
-                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
                 _isLoadingData.value = false
@@ -193,7 +232,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
             productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
                 _products.value = fetchedProducts
                 // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
-                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
             }
@@ -217,7 +256,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
                             productStorageService.fetchAndProcessProducts(tempImageTime = tempTimestamp) { fetchedProducts, totalCaloriesConsumed, weight ->
                                 _products.value = fetchedProducts
                                 // Recalculate caloriesLeft based on our local soft limit
-                                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                                 _caloriesLeft.value = actualCaloriesLeft
                                 _personWeight.value = weight
                                 _isLoadingFoodPhoto.value = false
@@ -426,7 +465,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
             productStorageService.fetchAndProcessCustomDateProducts(dateString) { fetchedProducts, totalCaloriesConsumed, weight ->
                 _products.value = fetchedProducts
                 // Recalculate caloriesLeft based on our local soft limit for custom date too
-                val actualCaloriesLeft = _softLimit.value - totalCaloriesConsumed
+                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
                 _isLoadingData.value = false
@@ -438,11 +477,12 @@ class MainViewModel(private val context: Context) : ViewModel() {
         _isViewingCustomDate.value = false
         _currentViewingDate.value = ""
         _currentViewingDateString.value = ""
+        loadTodaySportCalories()
         fetchDataWithLoading()
     }
     
     fun getColor(caloriesLeft: Int): androidx.compose.ui.graphics.Color {
-        val caloriesConsumed = _softLimit.value - caloriesLeft
+        val caloriesConsumed = getAdjustedSoftLimit() - caloriesLeft
         
         val color = when {
             caloriesLeft >= 0 -> {
@@ -607,6 +647,40 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     fun hideFeedback() {
         _showFeedback.value = false
+    }
+    
+    fun showSportCaloriesDialog() {
+        _sportCaloriesInput.value = ""
+        _showSportCaloriesDialog.value = true
+    }
+    
+    fun hideSportCaloriesDialog() {
+        _showSportCaloriesDialog.value = false
+    }
+    
+    fun updateSportCaloriesInput(value: String) {
+        _sportCaloriesInput.value = value
+    }
+    
+    fun saveSportCalories() {
+        val calories = _sportCaloriesInput.value.toIntOrNull() ?: 0
+        if (calories > 0) {
+            saveSportCalories(calories)
+            fetchData()
+        }
+        _showSportCaloriesDialog.value = false
+    }
+    
+    private fun saveSportCalories(calories: Int) {
+        viewModelScope.launch {
+            try {
+                val todayKey = getTodayDateKey()
+                authService.setSportCalories(todayKey, calories)
+                _todaySportCalories.value = calories
+            } catch (e: Exception) {
+                // Handle error silently
+            }
+        }
     }
     
     fun onSuccessDialogDismissed() {

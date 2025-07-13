@@ -70,6 +70,9 @@ fun ContentView(
     val photoErrorTitle by viewModel.photoErrorTitle.collectAsState()
     val photoErrorMessage by viewModel.photoErrorMessage.collectAsState()
     val showFeedback by viewModel.showFeedback.collectAsState()
+    val showSportCaloriesDialog by viewModel.showSportCaloriesDialog.collectAsState()
+    val sportCaloriesInput by viewModel.sportCaloriesInput.collectAsState()
+    val todaySportCalories by viewModel.todaySportCalories.collectAsState()
     
     // Camera states
     var showFoodCamera by remember { mutableStateOf(false) }
@@ -118,6 +121,7 @@ fun ContentView(
                 },
                 onProfileClick = { viewModel.showUserProfile() },
                 onHealthInfoClick = { viewModel.showHealthDisclaimer() },
+                onSportClick = { viewModel.showSportCaloriesDialog() },
                 onReturnToTodayClick = { viewModel.returnToToday() }
             )
             
@@ -358,6 +362,16 @@ fun ContentView(
                 title = photoErrorTitle,
                 message = photoErrorMessage,
                 onDismiss = { viewModel.hidePhotoErrorAlert() }
+            )
+        }
+        
+        // Sport Calories Dialog
+        if (showSportCaloriesDialog) {
+            SportCaloriesDialog(
+                sportCaloriesInput = sportCaloriesInput,
+                onSportCaloriesChange = viewModel::updateSportCaloriesInput,
+                onSave = viewModel::saveSportCalories,
+                onDismiss = { viewModel.hideSportCaloriesDialog() }
             )
         }
         

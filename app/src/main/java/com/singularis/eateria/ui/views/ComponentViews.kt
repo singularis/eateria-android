@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -107,6 +108,7 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.text.input.ImeAction
 
 @Composable
 fun TopBarView(
@@ -116,19 +118,19 @@ fun TopBarView(
     onDateClick: () -> Unit,
     onProfileClick: () -> Unit,
     onHealthInfoClick: () -> Unit,
+    onSportClick: () -> Unit,
     onReturnToTodayClick: () -> Unit
 ) {
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = Dimensions.paddingS), // Add significant top padding from system tray
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(top = Dimensions.paddingS)
     ) {
-        // Profile button
+        // Profile button - Left aligned
         Box(
             modifier = Modifier
-                .padding(top = Dimensions.paddingS) // Additional top spacing for profile button
+                .align(Alignment.CenterStart)
+                .padding(top = Dimensions.paddingS)
                 .size(Dimensions.iconSizeL)
                 .clip(CircleShape)
                 .background(Gray3)
@@ -155,11 +157,12 @@ fun TopBarView(
             }
         }
         
-        // Date display
+        // Date display - Center aligned
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(top = Dimensions.paddingS) // Additional top spacing for date display
+                .align(Alignment.Center)
+                .padding(top = Dimensions.paddingS)
                 .clip(RoundedCornerShape(Dimensions.cornerRadiusL))
                 .background(Color.Black.copy(alpha = 0.8f))
                 .clickable { onDateClick() }
@@ -198,17 +201,36 @@ fun TopBarView(
             }
         }
         
-        // Health info button
-        IconButton(
-            onClick = onHealthInfoClick,
-            modifier = Modifier.padding(top = Dimensions.paddingS) // Additional top spacing for health info button
+        // Sport and Health info buttons - Right aligned
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(top = Dimensions.paddingS),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
         ) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = "Health Info",
-                tint = DarkPrimary,
-                modifier = Modifier.size(Dimensions.iconSizeM)
-            )
+            // Sport button
+            IconButton(
+                onClick = onSportClick
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FitnessCenter,
+                    contentDescription = "Sport Calories",
+                    tint = DarkPrimary,
+                    modifier = Modifier.size(Dimensions.iconSizeM)
+                )
+            }
+            
+            // Health info button
+            IconButton(
+                onClick = onHealthInfoClick
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Health Info",
+                    tint = DarkPrimary,
+                    modifier = Modifier.size(Dimensions.iconSizeM)
+                )
+            }
         }
     }
 }
@@ -1592,5 +1614,77 @@ fun DeleteConfirmationDialog(
         },
         containerColor = Gray4,
         shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+    )
+} 
+
+@Composable
+fun SportCaloriesDialog(
+    sportCaloriesInput: String,
+    onSportCaloriesChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Sport Calories Bonus",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Add extra calories for your sport activities today:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = Dimensions.paddingM)
+                )
+                
+                OutlinedTextField(
+                    value = sportCaloriesInput,
+                    onValueChange = onSportCaloriesChange,
+                    label = { Text("Calories", color = Color.Gray) },
+                    placeholder = { Text("Enter calories", color = Color.Gray) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = DarkPrimary,
+                        unfocusedBorderColor = Color.Gray
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val calories = sportCaloriesInput.toIntOrNull()
+                    if (calories != null && calories > 0) {
+                        onSave()
+                    }
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = DarkPrimary)
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)
+            ) {
+                Text("Cancel")
+            }
+        },
+        containerColor = Gray3,
+        titleContentColor = Color.White,
+        textContentColor = Color.White
     )
 } 

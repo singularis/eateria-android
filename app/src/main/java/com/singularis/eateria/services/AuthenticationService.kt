@@ -109,6 +109,10 @@ class AuthenticationService(private val context: Context) {
         private val HAS_USER_HEALTH_DATA = booleanPreferencesKey("has_user_health_data")
     }
     
+    private fun getSportCaloriesKey(dateKey: String): Preferences.Key<String> {
+        return stringPreferencesKey("sport_calories_$dateKey")
+    }
+    
     // Flow for authentication state
     val isAuthenticated: Flow<Boolean> = context.dataStore.data.map { preferences ->
         !preferences[USER_EMAIL].isNullOrEmpty()
@@ -432,6 +436,19 @@ class AuthenticationService(private val context: Context) {
     suspend fun setHasUserHealthData(hasData: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[HAS_USER_HEALTH_DATA] = hasData
+        }
+    }
+    
+    suspend fun getSportCalories(dateKey: String): Int {
+        val preferences = context.dataStore.data.first()
+        val sportCaloriesKey = getSportCaloriesKey(dateKey)
+        return preferences[sportCaloriesKey]?.toIntOrNull() ?: 0
+    }
+    
+    suspend fun setSportCalories(dateKey: String, calories: Int) {
+        context.dataStore.edit { preferences ->
+            val sportCaloriesKey = getSportCaloriesKey(dateKey)
+            preferences[sportCaloriesKey] = calories.toString()
         }
     }
 } 

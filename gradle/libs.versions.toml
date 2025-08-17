@@ -1,6 +1,6 @@
 [versions]
 # Stable Android Gradle Plugin and Kotlin versions
-agp = "8.10.1"
+agp = "8.12.0"
 kotlin = "2.1.21"
 
 # Core Android libraries - stable versions

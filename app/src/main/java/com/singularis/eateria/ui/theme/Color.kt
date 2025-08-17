@@ -21,7 +21,7 @@ val DarkTertiary = Color(0xFF48484A)
 val CalorieGreen = Color(0xFF30C432)
 val CalorieYellow = Color(0xFFFECC00)
 val CalorieOrange = Color(0xFFFF8C00)
-val CalorieRed = Color(0xFFFF3B30)
+val CalorieRed = Color(0xFFFF7A59)
 val CalorieBlue = Color(0xFF4FC3F7) // Light blue for protein
 
 // Gray colors for buttons and surfaces

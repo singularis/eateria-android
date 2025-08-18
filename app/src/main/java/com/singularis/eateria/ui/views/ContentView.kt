@@ -80,6 +80,7 @@ fun ContentView(
     
     // Full screen photo state
     var fullScreenPhotoData by remember { mutableStateOf<Pair<android.graphics.Bitmap?, String>?>(null) }
+    var showShareFoodDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
     
     LaunchedEffect(hasSeenOnboarding) {
         if (!hasSeenOnboarding) {
@@ -171,7 +172,10 @@ fun ContentView(
                         },
                         deletingProductTime = deletingProductTime,
                         modifiedProductTime = modifiedProductTime,
-                        onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() }
+                        onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
+                        onShare = { time, foodName ->
+                            showShareFoodDialog = Pair(time, foodName)
+                        }
                     )
                 }
             }
@@ -221,6 +225,18 @@ fun ContentView(
                     onDismiss = { fullScreenPhotoData = null }
                 )
             }
+        }
+        
+        // Share food dialog
+        showShareFoodDialog?.let { (time, foodName) ->
+            ShareFoodView(
+                foodName = foodName,
+                time = time,
+                onDismiss = { showShareFoodDialog = null },
+                onShareSuccess = { 
+                    viewModel.returnToToday() // Refresh the data
+                }
+            )
         }
         
         // Dialog implementations

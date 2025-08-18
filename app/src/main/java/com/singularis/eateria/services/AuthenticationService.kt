@@ -144,6 +144,10 @@ class AuthenticationService(private val context: Context) {
         return context.dataStore.data.first()[AUTH_TOKEN]
     }
     
+    suspend fun getUserEmail(): String? {
+        return context.dataStore.data.first()[USER_EMAIL]
+    }
+    
     suspend fun getGreeting(): String {
         val preferences = context.dataStore.data.first()
         val name = preferences[USER_NAME]

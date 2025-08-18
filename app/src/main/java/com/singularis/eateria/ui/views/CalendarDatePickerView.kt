@@ -204,7 +204,7 @@ private fun CalendarContent(
                         containerColor = DarkPrimary,
                         contentColor = Color.White
                     ),
-                    modifier = Modifier.width(80.dp)
+                    modifier = Modifier.width(100.dp)
                 ) {
                     Text(
                         text = "Today",

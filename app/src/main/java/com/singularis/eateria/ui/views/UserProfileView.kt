@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
@@ -66,6 +67,7 @@ fun UserProfileView(
     var userAge by remember { mutableStateOf(0) }
     var userOptimalWeight by remember { mutableStateOf(0.0) }
     var userRecommendedCalories by remember { mutableStateOf(0) }
+    var showAddFriends by remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
         greeting = authViewModel.getGreeting()
@@ -187,6 +189,12 @@ fun UserProfileView(
                         title = "App Features",
                         items = listOf(
                             ProfileMenuItem(
+                                icon = Icons.Default.PersonAdd,
+                                title = "Add Friends",
+                                subtitle = "Find and add friends by email",
+                                onClick = { showAddFriends = true }
+                            ),
+                            ProfileMenuItem(
                                 icon = Icons.Default.Info,
                                 title = "Tutorial",
                                 subtitle = "Replay the app tutorial",
@@ -233,6 +241,11 @@ fun UserProfileView(
             }
         }
         
+        // Add Friends dialog trigger from profile
+        if (showAddFriends) {
+            AddFriendsView(onDismiss = { showAddFriends = false })
+        }
+
         // Sign Out Dialog
         if (showSignOutDialog) {
             AlertDialog(

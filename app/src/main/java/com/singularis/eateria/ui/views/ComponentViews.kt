@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,6 +57,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.singularis.eateria.ui.theme.CalorieGreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -351,7 +353,8 @@ fun ProductListView(
     onPhotoTap: (android.graphics.Bitmap?, String) -> Unit,
     deletingProductTime: Long?,
     modifiedProductTime: Long?,
-    onSuccessDialogDismissed: () -> Unit
+    onSuccessDialogDismissed: () -> Unit,
+    onShare: ((Long, String) -> Unit)? = null
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
@@ -401,7 +404,8 @@ fun ProductListView(
                         },
                         isDeleting = deletingProductTime == product.time,
                         showSuccessConfirmation = modifiedProductTime == product.time,
-                        onSuccessDialogDismissed = onSuccessDialogDismissed
+                        onSuccessDialogDismissed = onSuccessDialogDismissed,
+                        onShare = onShare
                     )
                 }
             }
@@ -420,7 +424,8 @@ fun ProductCard(
     onPhotoTap: () -> Unit,
     isDeleting: Boolean,
     showSuccessConfirmation: Boolean,
-    onSuccessDialogDismissed: () -> Unit
+    onSuccessDialogDismissed: () -> Unit,
+    onShare: ((Long, String) -> Unit)? = null
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
@@ -579,7 +584,10 @@ fun ProductCard(
                 }
             },
             isSuccess = showSuccessConfirmation,
-            resetSuccessState = onSuccessDialogDismissed
+            resetSuccessState = onSuccessDialogDismissed,
+            onShare = onShare?.let { shareCallback ->
+                { shareCallback(product.time, product.name) }
+            }
         )
     }
 
@@ -606,7 +614,8 @@ fun PortionSelectionDialog(
     onPortionSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
     isSuccess: Boolean,
-    resetSuccessState: () -> Unit
+    resetSuccessState: () -> Unit,
+    onShare: (() -> Unit)? = null
 ) {
     var selectedPortionPercentage by remember { mutableStateOf<Int?>(null) }
     var showConfirmation by remember { mutableStateOf(false) }
@@ -677,7 +686,7 @@ fun PortionSelectionDialog(
                     Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
                     LazyColumn(
-                        modifier = Modifier.height(Dimensions.fixedHeight),
+                        modifier = Modifier.heightIn(max = Dimensions.fixedHeight * 3),
                         verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
                     ) {
                         if (showCustomSelection) {
@@ -737,6 +746,30 @@ fun PortionSelectionDialog(
                                         style = MaterialTheme.typography.bodySmall,
                                         textAlign = TextAlign.Center
                                     )
+                                }
+                            }
+
+                            // Add share food with friend option
+                            if (onShare != null) {
+                                item {
+                                    Button(
+                                        onClick = {
+                                            onShare()
+                                            onDismiss()
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = CalorieGreen,
+                                            contentColor = Color.White
+                                        ),
+                                        shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                                        contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
+                                    ) {
+                                        Text(
+                                            text = "Share food with friend",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
                                 }
                             }
 

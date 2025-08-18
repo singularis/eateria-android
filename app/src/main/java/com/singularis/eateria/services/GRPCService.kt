@@ -28,6 +28,9 @@ import eater.GetRecomendation
 import eater.ManualWeight
 import eater.ModifyFoodRecord
 import eater.Feedback
+import eater.AddFriend
+import eater.GetFriends
+import eater.ShareFood
 
 class GRPCService(private val context: Context) {
     
@@ -637,6 +640,114 @@ class GRPCService(private val context: Context) {
                 }
             } catch (e: Exception) {
                 Log.e("GRPCService", "Failed to submit feedback", e)
+                false
+            }
+        }
+    }
+    
+    suspend fun addFriend(email: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = AddFriend.AddFriendRequest.newBuilder()
+                    .setEmail(email)
+                    .build()
+                
+                val response = sendRequest("autocomplete/addfriend", "POST", request.toByteArray())
+                
+                if (response?.isSuccessful == true) {
+                    val responseBytes = response.body?.bytes()
+                    response.close()
+                    
+                    if (responseBytes != null) {
+                        try {
+                            val addFriendResponse = AddFriend.AddFriendResponse.parseFrom(responseBytes)
+                            addFriendResponse.success
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse add friend response", e)
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } else {
+                    response?.close()
+                    false
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to add friend", e)
+                false
+            }
+        }
+    }
+    
+    suspend fun getFriends(offset: Int = 0, limit: Int = 5): Pair<List<String>, Int> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = sendRequest("autocomplete/getfriend", "GET")
+                
+                if (response?.isSuccessful == true) {
+                    val responseBytes = response.body?.bytes()
+                    response.close()
+                    
+                    if (responseBytes != null) {
+                        try {
+                            val getFriendsResponse = GetFriends.GetFriendsResponse.parseFrom(responseBytes)
+                            val allFriends = getFriendsResponse.friendsList.map { it.email }
+                            val totalCount = getFriendsResponse.count
+                            
+                            val slicedFriends = allFriends.drop(offset).take(limit)
+                            Pair(slicedFriends, totalCount)
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse get friends response", e)
+                            Pair(emptyList(), 0)
+                        }
+                    } else {
+                        Pair(emptyList(), 0)
+                    }
+                } else {
+                    response?.close()
+                    Pair(emptyList(), 0)
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to get friends", e)
+                Pair(emptyList(), 0)
+            }
+        }
+    }
+    
+    suspend fun shareFood(time: Long, fromEmail: String, toEmail: String, percentage: Int): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = ShareFood.ShareFoodRequest.newBuilder()
+                    .setTime(time)
+                    .setFromEmail(fromEmail)
+                    .setToEmail(toEmail)
+                    .setPercentage(percentage)
+                    .build()
+                
+                val response = sendRequest("autocomplete/sharefood", "POST", request.toByteArray())
+                
+                if (response?.isSuccessful == true) {
+                    val responseBytes = response.body?.bytes()
+                    response.close()
+                    
+                    if (responseBytes != null) {
+                        try {
+                            val shareFoodResponse = ShareFood.ShareFoodResponse.parseFrom(responseBytes)
+                            shareFoodResponse.success
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse share food response", e)
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } else {
+                    response?.close()
+                    false
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to share food", e)
                 false
             }
         }

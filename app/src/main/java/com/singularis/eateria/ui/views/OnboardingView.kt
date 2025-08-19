@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
@@ -98,6 +99,7 @@ fun OnboardingView(
     onComplete: (OnboardingHealthData?) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+    var showAddFriends by remember { mutableStateOf(false) }
     val onboardingPages = listOf(
         OnboardingPage(
             title = "Welcome to Eateria! 🍎",
@@ -126,6 +128,13 @@ fun OnboardingView(
             icon = Icons.AutoMirrored.Filled.TrendingUp,
             iconColor = Color(0xFFFF9800),
             anchor = "insights"
+        ),
+        OnboardingPage(
+            title = "Share With Friends 🤝",
+            description = "Add friends and share portions of your meals to split calories. Keep in touch and see who you share with most.",
+            icon = Icons.Default.PersonAdd,
+            iconColor = Color(0xFF03A9F4),
+            anchor = "friends"
         ),
         OnboardingPage(
             title = "Personalized Health Setup 📋",
@@ -224,6 +233,10 @@ fun OnboardingView(
                     modifier = Modifier.weight(1f)
                 ) { page ->
                     when (onboardingPages[page].anchor) {
+                        "friends" -> FriendsOnboardingView(
+                            page = onboardingPages[page],
+                            onAddFriendsClick = { showAddFriends = true }
+                        )
                         "health_setup" -> HealthSetupView(
                             page = onboardingPages[page],
                             onPersonalizeClick = {
@@ -411,6 +424,13 @@ fun OnboardingView(
                 message = "Please provide valid values:\n• Height: 100-300 cm\n• Weight: 30-500 kg\n• Age: 13-120 years",
                 isVisible = true,
                 onDismiss = { showingHealthDataAlert = false }
+            )
+        }
+
+        if (showAddFriends) {
+            AddFriendsView(
+                onDismiss = { showAddFriends = false },
+                onFriendAdded = { showAddFriends = false }
             )
         }
     }
@@ -1087,6 +1107,75 @@ private fun OnboardingPageContent(
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+    }
+}
+
+@Composable
+private fun FriendsOnboardingView(
+    page: OnboardingPage,
+    onAddFriendsClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(page.iconColor.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = page.icon,
+                contentDescription = null,
+                tint = page.iconColor,
+                modifier = Modifier.size(60.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Text(
+            text = page.title,
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 34.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = page.description,
+            color = Color.Gray,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = onAddFriendsClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = DarkPrimary
+            ),
+            modifier = Modifier
+                .height(48.dp)
+                .width(200.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Add Friends",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

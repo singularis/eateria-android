@@ -14,6 +14,7 @@ class AuthViewModel(private val authService: AuthenticationService) : ViewModel(
     val userName: Flow<String?> = authService.userName
     val userProfilePictureURL: Flow<String?> = authService.userProfilePictureURL
     val hasSeenOnboarding: Flow<Boolean> = authService.hasSeenOnboarding
+    val isFullDisplayMode: Flow<Boolean> = authService.isFullDisplayMode
     
     suspend fun signInWithCredentialManager(activity: ComponentActivity): Boolean {
         return authService.signInWithCredentialManager(activity)
@@ -34,6 +35,12 @@ class AuthViewModel(private val authService: AuthenticationService) : ViewModel(
     fun setHasSeenOnboarding(seen: Boolean) {
         viewModelScope.launch {
             authService.setHasSeenOnboarding(seen)
+        }
+    }
+
+    fun setFullDisplayMode(isFull: Boolean) {
+        viewModelScope.launch {
+            authService.setFullDisplayMode(isFull)
         }
     }
     

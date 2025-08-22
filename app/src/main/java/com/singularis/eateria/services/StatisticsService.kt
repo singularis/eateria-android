@@ -197,8 +197,13 @@ class StatisticsService private constructor(private val context: Context) {
                 // Check cache first
                 cacheService.getCachedStatistics(todayString)?.let { cached ->
                     if (!cacheService.isCacheExpired(todayString)) {
-                        Log.d("StatisticsService", "Returning cached today statistics")
-                        return@withContext cached
+                        val macrosSumZero = (cached.proteins + cached.fats + cached.carbohydrates + cached.sugar) == 0.0
+                        if (cached.hasData && !macrosSumZero) {
+                            Log.d("StatisticsService", "Returning cached today statistics")
+                            return@withContext cached
+                        } else {
+                            Log.d("StatisticsService", "Cached today statistics incomplete (hasData=${cached.hasData}, macrosZero=$macrosSumZero); fetching fresh")
+                        }
                     }
                 }
                 

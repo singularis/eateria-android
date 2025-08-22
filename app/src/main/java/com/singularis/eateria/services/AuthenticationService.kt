@@ -107,6 +107,7 @@ class AuthenticationService(private val context: Context) {
         private val SOFT_LIMIT = stringPreferencesKey("soft_limit")
         private val HARD_LIMIT = stringPreferencesKey("hard_limit")
         private val HAS_USER_HEALTH_DATA = booleanPreferencesKey("has_user_health_data")
+        private val DISPLAY_MODE_FULL = booleanPreferencesKey("display_mode_full")
     }
     
     private fun getSportCaloriesKey(dateKey: String): Preferences.Key<String> {
@@ -134,9 +135,19 @@ class AuthenticationService(private val context: Context) {
         preferences[HAS_SEEN_ONBOARDING] ?: false
     }
     
+    val isFullDisplayMode: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[DISPLAY_MODE_FULL] ?: false
+    }
+    
     suspend fun setHasSeenOnboarding(seen: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[HAS_SEEN_ONBOARDING] = seen
+        }
+    }
+
+    suspend fun setFullDisplayMode(isFull: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[DISPLAY_MODE_FULL] = isFull
         }
     }
     

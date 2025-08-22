@@ -111,6 +111,9 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalContext
+import com.singularis.eateria.services.StatisticsService
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun TopBarView(
@@ -340,6 +343,45 @@ fun StatButton(
         } else {
             content()
         }
+    }
+}
+
+@Composable
+fun MacrosSummaryRow() {
+    val context = LocalContext.current
+    var summaryText by remember { mutableStateOf("") }
+    var summaryColor by remember { mutableStateOf(Color.White) }
+
+    LaunchedEffect(Unit) {
+        val statsService = StatisticsService.getInstance(context)
+        val today = statsService.getTodayStatistics()
+        if (today != null) {
+            val proteins = today.proteins
+            val fats = today.fats
+            val carbs = today.carbohydrates
+            val sugar = today.sugar
+            summaryText = "PRO ${"%.1f".format(proteins)}g • FAT ${"%.1f".format(fats)}g • CARB ${"%.1f".format(carbs)}g • SUG ${"%.1f".format(sugar)}g"
+            summaryColor = Color.White
+        } else {
+            summaryText = "No macros yet"
+            summaryColor = Color.Gray
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Dimensions.cornerRadiusM))
+            .background(Gray3.copy(alpha = 0.9f))
+            .padding(vertical = Dimensions.paddingS),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = summaryText,
+            style = MaterialTheme.typography.bodySmall,
+            color = summaryColor,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

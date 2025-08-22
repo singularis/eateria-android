@@ -55,6 +55,7 @@ fun UserProfileView(
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
     val userName by authViewModel.userName.collectAsState(initial = null)
     val userProfilePictureURL by authViewModel.userProfilePictureURL.collectAsState(initial = null)
+    val isFullMode by authViewModel.isFullDisplayMode.collectAsState(initial = false)
     
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
@@ -214,6 +215,42 @@ fun UserProfileView(
                             )
                         )
                     )
+                }
+
+                // Display Mode section
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Gray4),
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(Dimensions.paddingM),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Display Mode",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    text = if (isFullMode) "Full (show macros)" else "Simplified",
+                                    color = Color.Gray,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            Switch(
+                                checked = isFullMode,
+                                onCheckedChange = { checked ->
+                                    coroutineScope.launch { authViewModel.setFullDisplayMode(checked) }
+                                }
+                            )
+                        }
+                    }
                 }
                 
                 // Account section

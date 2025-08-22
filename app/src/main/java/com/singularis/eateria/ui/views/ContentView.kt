@@ -52,6 +52,7 @@ fun ContentView(
     val modifiedProductTime by viewModel.modifiedProductTime.collectAsState()
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
     val userProfilePictureURL by authViewModel.userProfilePictureURL.collectAsState(initial = null)
+    val isFullMode by authViewModel.isFullDisplayMode.collectAsState(initial = false)
     
     // Dialog states
     val showLimitsAlert by viewModel.showLimitsAlert.collectAsState()
@@ -145,6 +146,11 @@ fun ContentView(
             )
             
             Spacer(modifier = Modifier.height(Dimensions.paddingM))
+
+            if (isFullMode) {
+                MacrosSummaryRow()
+                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+            }
             
             // Product List
             if (isLoadingData) {
@@ -301,7 +307,8 @@ fun ContentView(
                             viewModel.saveHealthBasedLimits(profile.recommendedCalories)
                         }
                     }
-                }
+                },
+                onChooseDisplayMode = { isFull -> authViewModel.setFullDisplayMode(isFull) }
             )
         }
         

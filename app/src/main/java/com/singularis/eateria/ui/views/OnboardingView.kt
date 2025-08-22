@@ -35,6 +35,9 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -98,7 +101,8 @@ data class OnboardingHealthData(
 @Composable
 fun OnboardingView(
     isPresented: Boolean,
-    onComplete: (OnboardingHealthData?, Boolean) -> Unit
+    onComplete: (OnboardingHealthData?, Boolean) -> Unit,
+    onChooseDisplayMode: (Boolean) -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
     var showAddFriends by remember { mutableStateOf(false) }
@@ -167,6 +171,20 @@ fun OnboardingView(
             anchor = "disclaimer"
         ),
         OnboardingPage(
+            title = "Choose Data Mode",
+            description = "Pick how much detail you prefer on the main screen. You can change this later in Profile → Display Mode.",
+            icon = Icons.Default.Settings,
+            iconColor = Color(0xFF607D8B),
+            anchor = "display_mode"
+        ),
+        OnboardingPage(
+            title = "Meal Reminders",
+            description = "Enable reminders to nudge you to log meals throughout the day. You can change this anytime in settings.",
+            icon = Icons.Default.Notifications,
+            iconColor = Color(0xFF03A9F4),
+            anchor = "notifications"
+        ),
+        OnboardingPage(
             title = "You're All Set! 🎉",
             description = "Ready to start your healthy journey? You can always revisit this tutorial from your profile settings if needed.",
             icon = Icons.Default.CheckCircle,
@@ -195,6 +213,7 @@ fun OnboardingView(
     val activityLevels = listOf("Sedentary", "Lightly Active", "Moderately Active", "Very Active", "Extremely Active")
     
     var notificationsOptIn by remember { mutableStateOf(true) }
+    var fullDisplayMode by remember { mutableStateOf(false) }
     
     AnimatedVisibility(
         visible = isPresented,
@@ -294,37 +313,30 @@ fun OnboardingView(
                             recommendedCalories = recommendedCalories,
                             timeToOptimalWeight = timeToOptimalWeight
                         )
+                        "display_mode" -> DisplayModeOnboardingView(
+                            page = onboardingPages[page],
+                            isFullMode = fullDisplayMode,
+                            onSelectSimplified = {
+                                fullDisplayMode = false
+                                onChooseDisplayMode(false)
+                            },
+                            onSelectFull = {
+                                fullDisplayMode = true
+                                onChooseDisplayMode(true)
+                            }
+                        )
+                        "notifications" -> NotificationsOnboardingView(
+                            page = onboardingPages[page],
+                            notificationsOptIn = notificationsOptIn,
+                            onNotificationsChange = { notificationsOptIn = it }
+                        )
                         else -> {
                             Column(modifier = Modifier.fillMaxSize()) {
                                 OnboardingPageContent(
                                     page = onboardingPages[page],
                                     modifier = Modifier.weight(1f)
                                 )
-                                if (onboardingPages[page].anchor == "complete") {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 12.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "Enable meal reminders",
-                                            color = Color.White,
-                                            fontSize = 16.sp
-                                        )
-                                        Switch(
-                                            checked = notificationsOptIn,
-                                            onCheckedChange = { notificationsOptIn = it },
-                                            colors = SwitchDefaults.colors(
-                                                checkedThumbColor = Color.White,
-                                                checkedTrackColor = CalorieGreen,
-                                                uncheckedThumbColor = Color.White,
-                                                uncheckedTrackColor = Color.Gray
-                                            )
-                                        )
-                                    }
-                                }
+                                
                             }
                         }
                     }
@@ -464,6 +476,167 @@ fun OnboardingView(
             AddFriendsView(
                 onDismiss = { showAddFriends = false },
                 onFriendAdded = { showAddFriends = false }
+            )
+        }
+    }
+}
+@Composable
+private fun DisplayModeOnboardingView(
+    page: OnboardingPage,
+    isFullMode: Boolean,
+    onSelectSimplified: () -> Unit,
+    onSelectFull: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(page.iconColor.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = page.icon,
+                contentDescription = null,
+                tint = page.iconColor,
+                modifier = Modifier.size(60.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = page.title,
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 34.sp
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = page.description,
+            color = Color.Gray,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(horizontal = 30.dp)
+        ) {
+            Button(
+                onClick = onSelectSimplified,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!isFullMode) CalorieGreen else Gray3,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Simplified (default)")
+            }
+
+            Button(
+                onClick = onSelectFull,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isFullMode) CalorieGreen else Gray3,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Full (show macros)")
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotificationsOnboardingView(
+    page: OnboardingPage,
+    notificationsOptIn: Boolean,
+    onNotificationsChange: (Boolean) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(page.iconColor.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = null,
+                tint = page.iconColor,
+                modifier = Modifier.size(60.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = page.title,
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 34.sp
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = page.description,
+            color = Color.Gray,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Enable meal reminders",
+                color = Color.White,
+                fontSize = 16.sp
+            )
+            Switch(
+                checked = notificationsOptIn,
+                onCheckedChange = onNotificationsChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = CalorieGreen,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = Color.Gray
+                )
             )
         }
     }

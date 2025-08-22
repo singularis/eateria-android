@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ fun ContentView(
     authViewModel: AuthViewModel
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
     val products by viewModel.products.collectAsState()
     val caloriesLeft by viewModel.caloriesLeft.collectAsState()
     val personWeight by viewModel.personWeight.collectAsState()
@@ -273,9 +275,13 @@ fun ContentView(
         if (showOnboarding) {
             OnboardingView(
                 isPresented = true,
-                onComplete = { healthData ->
+                onComplete = { healthData, notificationsEnabled ->
                     viewModel.hideOnboarding()
                     authViewModel.setHasSeenOnboarding(true)
+                    val reminderService = com.singularis.eateria.services.ReminderService(context)
+                    scope.launch {
+                        reminderService.setNotificationsEnabled(notificationsEnabled)
+                    }
                     
                     // Save health data if provided and calculate calorie limits
                     healthData?.let { data ->

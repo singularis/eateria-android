@@ -152,6 +152,9 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
     
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    
     // JWT
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)

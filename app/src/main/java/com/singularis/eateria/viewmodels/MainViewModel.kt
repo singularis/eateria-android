@@ -9,6 +9,7 @@ import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.DailyRefreshManager
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.ImageStorageService
+import com.singularis.eateria.services.ReminderService
 import com.singularis.eateria.services.ProductStorageService
 import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.CalorieYellow
@@ -32,6 +33,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
     private val imageStorageService = ImageStorageService.getInstance(context)
     private val authService = AuthenticationService(context)
     private val dailyRefreshManager = DailyRefreshManager.getInstance(context)
+    private val reminderService = ReminderService(context)
     
     // State flows for UI
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -251,6 +253,11 @@ class MainViewModel(private val context: Context) : ViewModel() {
                     photoType = photoType,
                     timestampMillis = tempTimestamp,
                     onSuccess = {
+                        viewModelScope.launch {
+                            val now = System.currentTimeMillis()
+                            reminderService.updateLastSnapTime(now)
+                            reminderService.updateFirstSnapTodayIfNeeded(now)
+                        }
                         // After successful backend processing, fetch products with image mapping
                         viewModelScope.launch {
                             productStorageService.fetchAndProcessProducts(tempImageTime = tempTimestamp) { fetchedProducts, totalCaloriesConsumed, weight ->
@@ -334,6 +341,11 @@ class MainViewModel(private val context: Context) : ViewModel() {
                         _isLoadingWeightPhoto.value = false
                     } else {
                         _isLoadingFoodPhoto.value = false
+                        viewModelScope.launch {
+                            val now = System.currentTimeMillis()
+                            reminderService.updateLastSnapTime(now)
+                            reminderService.updateFirstSnapTodayIfNeeded(now)
+                        }
                     }
                     returnToToday()
                 },

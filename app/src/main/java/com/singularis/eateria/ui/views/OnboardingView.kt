@@ -96,7 +96,7 @@ data class OnboardingHealthData(
 @Composable
 fun OnboardingView(
     isPresented: Boolean,
-    onComplete: (OnboardingHealthData?) -> Unit
+    onComplete: (OnboardingHealthData?, Boolean) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     var showAddFriends by remember { mutableStateOf(false) }
@@ -191,6 +191,8 @@ fun OnboardingView(
     var timeToOptimalWeight by remember { mutableStateOf("") }
     
     val activityLevels = listOf("Sedentary", "Lightly Active", "Moderately Active", "Very Active", "Extremely Active")
+    
+    var notificationsOptIn by remember { mutableStateOf(true) }
     
     AnimatedVisibility(
         visible = isPresented,
@@ -290,10 +292,39 @@ fun OnboardingView(
                             recommendedCalories = recommendedCalories,
                             timeToOptimalWeight = timeToOptimalWeight
                         )
-                        else -> OnboardingPageContent(
-                            page = onboardingPages[page],
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        else -> {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                OnboardingPageContent(
+                                    page = onboardingPages[page],
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (onboardingPages[page].anchor == "complete") {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 12.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Enable meal reminders",
+                                            color = Color.White,
+                                            fontSize = 16.sp
+                                        )
+                                        Switch(
+                                            checked = notificationsOptIn,
+                                            onCheckedChange = { notificationsOptIn = it },
+                                            colors = SwitchDefaults.colors(
+                                                checkedThumbColor = Color.White,
+                                                checkedTrackColor = CalorieGreen,
+                                                uncheckedThumbColor = Color.White,
+                                                uncheckedTrackColor = Color.Gray
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 
@@ -377,7 +408,7 @@ fun OnboardingView(
                                                     activityLevel = activityLevel
                                                 )
                                             } else null
-                                            onComplete(healthData)
+                                            onComplete(healthData, notificationsOptIn)
                                         }
                                     }
                                 }

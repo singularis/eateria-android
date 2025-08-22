@@ -42,6 +42,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -218,7 +220,7 @@ fun OnboardingView(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
-                        onClick = { onComplete(null) },
+                        onClick = { onComplete(null, true) },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = Color.Gray
                         )
@@ -1228,10 +1230,10 @@ private fun PageIndicator(
 @Composable
 fun OnboardingFlow(
     shouldShow: Boolean,
-    onDismiss: (OnboardingHealthData?) -> Unit
+    onDismiss: (OnboardingHealthData?, Boolean) -> Unit
 ) {
     OnboardingView(
         isPresented = shouldShow,
         onComplete = onDismiss
     )
-} 
+}

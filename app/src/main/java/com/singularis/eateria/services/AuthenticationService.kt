@@ -227,7 +227,7 @@ class AuthenticationService(private val context: Context) {
             val testCredentialManager = CredentialManager.create(context)
             val hasGoogleAccounts = checkGoogleAccountsAvailable()
             Log.e("AuthenticationService", "Google accounts available: $hasGoogleAccounts")
-            testCredentialManager != null
+            true
         } catch (e: Exception) {
             Log.e("AuthenticationService", "Google Play Services check failed", e)
             false

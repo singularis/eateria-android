@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -124,40 +125,55 @@ fun TopBarView(
     onProfileClick: () -> Unit,
     onHealthInfoClick: () -> Unit,
     onSportClick: () -> Unit,
-    onReturnToTodayClick: () -> Unit
+    onReturnToTodayClick: () -> Unit,
+    alcoholIconColor: Color = Color.Green,
+    onAlcoholClick: (() -> Unit)? = null
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = Dimensions.paddingS)
     ) {
-        // Profile button - Left aligned
-        Box(
+        // Left aligned: Profile + Alcohol button
+        Row(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(top = Dimensions.paddingS)
-                .size(Dimensions.iconSizeL)
-                .clip(CircleShape)
-                .background(Gray3)
-                .clickable { onProfileClick() },
-            contentAlignment = Alignment.Center
+                .padding(top = Dimensions.paddingS),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingL),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (!userProfilePictureURL.isNullOrEmpty()) {
-                AsyncImage(
-                    model = userProfilePictureURL,
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(Dimensions.iconSizeL)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                // Fallback icon when no profile picture
+            Box(
+                modifier = Modifier
+                    .size(Dimensions.iconSizeL)
+                    .clip(CircleShape)
+                    .background(Gray3)
+                    .clickable { onProfileClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                if (!userProfilePictureURL.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = userProfilePictureURL,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(Dimensions.iconSizeL)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Profile",
+                        tint = Color.White,
+                        modifier = Modifier.size(Dimensions.iconSizeS)
+                    )
+                }
+            }
+            IconButton(onClick = { onAlcoholClick?.invoke() }) {
                 Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Profile",
-                    tint = Color.White,
-                    modifier = Modifier.size(Dimensions.iconSizeS)
+                    imageVector = Icons.Default.WineBar,
+                    contentDescription = "Alcohol",
+                    tint = alcoholIconColor,
+                    modifier = Modifier.size(Dimensions.iconSizeM)
                 )
             }
         }
@@ -206,12 +222,12 @@ fun TopBarView(
             }
         }
         
-        // Sport and Health info buttons - Right aligned
+        // Right side buttons: Sport, Health info
         Row(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(top = Dimensions.paddingS),
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS)
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingL)
         ) {
             // Sport button
             IconButton(

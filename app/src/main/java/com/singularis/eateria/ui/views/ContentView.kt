@@ -60,6 +60,7 @@ fun ContentView(
     val showHealthDisclaimer by viewModel.showHealthDisclaimer.collectAsState()
     val showOnboarding by viewModel.showOnboarding.collectAsState()
     val showStatistics by viewModel.showStatistics.collectAsState()
+    val showAlcoholCalendar by viewModel.showAlcoholCalendar.collectAsState()
     val showHealthSettings by viewModel.showHealthSettings.collectAsState()
     val showCalendarPicker by viewModel.showCalendarPicker.collectAsState()
     val hasSeenOnboarding by authViewModel.hasSeenOnboarding.collectAsState(initial = true)
@@ -77,6 +78,7 @@ fun ContentView(
     val showSportCaloriesDialog by viewModel.showSportCaloriesDialog.collectAsState()
     val sportCaloriesInput by viewModel.sportCaloriesInput.collectAsState()
     val todaySportCalories by viewModel.todaySportCalories.collectAsState()
+    val alcoholIconColor by viewModel.alcoholIconColor.collectAsState()
     
     // Camera states
     var showFoodCamera by remember { mutableStateOf(false) }
@@ -127,7 +129,9 @@ fun ContentView(
                 onProfileClick = { viewModel.showUserProfile() },
                 onHealthInfoClick = { viewModel.showHealthDisclaimer() },
                 onSportClick = { viewModel.showSportCaloriesDialog() },
-                onReturnToTodayClick = { viewModel.returnToToday() }
+                onReturnToTodayClick = { viewModel.returnToToday() },
+                alcoholIconColor = alcoholIconColor,
+                onAlcoholClick = { viewModel.showAlcoholCalendar() }
             )
             
             Spacer(modifier = Modifier.height(Dimensions.paddingM))
@@ -343,6 +347,14 @@ fun ContentView(
                     viewModel.fetchCustomDateData(dateString)
                 },
                 onDismiss = { viewModel.hideCalendarPicker() }
+            )
+        }
+
+        if (showAlcoholCalendar) {
+            AlcoholCalendarView(
+                isVisible = true,
+                onDismiss = { viewModel.hideAlcoholCalendar() },
+                viewModel = viewModel
             )
         }
         

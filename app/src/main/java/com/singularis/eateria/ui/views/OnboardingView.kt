@@ -37,6 +37,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -127,6 +128,13 @@ fun OnboardingView(
             icon = Icons.Default.FitnessCenter,
             iconColor = Color(0xFF9C27B0),
             anchor = "tracking"
+        ),
+        OnboardingPage(
+            title = "Alcohol Tracking 🍷",
+            description = "See your drinks on a monthly calendar. The top bar alcohol icon changes color based on recency (red ≤ 1 week, yellow ≤ 1 month, green otherwise).",
+            icon = Icons.Default.WineBar,
+            iconColor = Color(0xFFE53935),
+            anchor = "alcohol"
         ),
         OnboardingPage(
             title = "Get Personalized Insights 💡",

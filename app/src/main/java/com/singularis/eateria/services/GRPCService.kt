@@ -31,6 +31,7 @@ import eater.Feedback
 import eater.AddFriend
 import eater.GetFriends
 import eater.ShareFood
+import eater.Alcohol
 
 class GRPCService(private val context: Context) {
     
@@ -49,7 +50,6 @@ class GRPCService(private val context: Context) {
         .addInterceptor { chain ->
             val original = chain.request()
             val requestBuilder = original.newBuilder()
-                .header("Content-Type", "application/protobuf")
             
             // Add authorization header if available
             val token = runCatching { 
@@ -71,14 +71,18 @@ class GRPCService(private val context: Context) {
         endpoint: String,
         httpMethod: String,
         body: ByteArray? = null,
-        retriesLeft: Int = maxRetries
+        retriesLeft: Int = maxRetries,
+        headers: Map<String, String> = emptyMap(),
+        contentType: String? = null
     ): Response? {
         return withContext(Dispatchers.IO) {
             try {
-                val request = Request.Builder()
+                val builder = Request.Builder()
                     .url("$baseUrl$endpoint")
-                    .method(httpMethod, body?.toRequestBody("application/protobuf".toMediaType()))
-                    .build()
+                val requestBody = body?.toRequestBody((contentType ?: "application/protobuf").toMediaType())
+                builder.method(httpMethod, requestBody)
+                headers.forEach { (k, v) -> builder.header(k, v) }
+                val request = builder.build()
                 
                 val response = client.newCall(request).execute()
                 
@@ -101,6 +105,74 @@ class GRPCService(private val context: Context) {
                     Log.e("GRPCService", "Request failed after all retries", e)
                     null
                 }
+            }
+        }
+    }
+
+    // Alcohol
+    suspend fun fetchAlcoholLatest(): Alcohol.GetAlcoholLatestResponse? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = sendRequest(
+                    endpoint = "alcohol_latest",
+                    httpMethod = "GET",
+                    headers = mapOf("Accept" to "application/grpc+proto")
+                )
+                if (response?.isSuccessful == true) {
+                    val bytes = response.body?.bytes()
+                    response.close()
+                    if (bytes != null) {
+                        try {
+                            Alcohol.GetAlcoholLatestResponse.parseFrom(bytes)
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse alcohol latest", e)
+                            null
+                        }
+                    } else null
+                } else {
+                    response?.close(); null
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "fetchAlcoholLatest error", e)
+                null
+            }
+        }
+    }
+
+    suspend fun fetchAlcoholRange(startDateDDMMYYYY: String, endDateDDMMYYYY: String): Alcohol.GetAlcoholRangeResponse? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val req = Alcohol.GetAlcoholRangeRequest.newBuilder()
+                    .setStartDate(startDateDDMMYYYY)
+                    .setEndDate(endDateDDMMYYYY)
+                    .build()
+                val response = sendRequest(
+                    endpoint = "alcohol_range",
+                    httpMethod = "POST",
+                    body = req.toByteArray(),
+                    headers = mapOf(
+                        "Accept" to "application/grpc+proto",
+                        "Content-Type" to "application/grpc+proto"
+                    ),
+                    contentType = "application/grpc+proto"
+                )
+                if (response?.isSuccessful == true) {
+                    val bytes = response.body?.bytes()
+                    response.close()
+                    if (bytes != null) {
+                        try {
+                            Alcohol.GetAlcoholRangeResponse.parseFrom(bytes)
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse alcohol range", e)
+                            null
+                        }
+                    } else null
+                } else {
+                    response?.close(); null
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "fetchAlcoholRange error", e)
+                null
             }
         }
     }

@@ -99,6 +99,10 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     private val _showCalendarPicker = MutableStateFlow(false)
     val showCalendarPicker: StateFlow<Boolean> = _showCalendarPicker.asStateFlow()
+
+    // Alcohol calendar
+    private val _showAlcoholCalendar = MutableStateFlow(false)
+    val showAlcoholCalendar: StateFlow<Boolean> = _showAlcoholCalendar.asStateFlow()
     
     private val _showWeightActionSheet = MutableStateFlow(false)
     val showWeightActionSheet: StateFlow<Boolean> = _showWeightActionSheet.asStateFlow()
@@ -147,6 +151,8 @@ class MainViewModel(private val context: Context) : ViewModel() {
         loadTodaySportCalories()
         fetchDataWithLoading()
         startDailyRefreshMonitoring()
+        // Alcohol latest on app start
+        viewModelScope.launch { fetchAlcoholLatestAndUpdateIcon() }
     }
     
     private fun loadLimitsFromStorage() {
@@ -159,6 +165,54 @@ class MainViewModel(private val context: Context) : ViewModel() {
             } catch (e: Exception) {
                 // Keep default values if loading fails
             }
+        }
+    }
+
+    // Alcohol state
+    private val _alcoholIconColor = MutableStateFlow(androidx.compose.ui.graphics.Color.Green)
+    val alcoholIconColor: StateFlow<androidx.compose.ui.graphics.Color> = _alcoholIconColor.asStateFlow()
+
+    private val _lastAlcoholDate = MutableStateFlow<Date?>(null)
+    val lastAlcoholDate: StateFlow<Date?> = _lastAlcoholDate.asStateFlow()
+
+    fun fetchAlcoholLatestAndUpdateIcon() {
+        viewModelScope.launch {
+            try {
+                val latest = grpcService.fetchAlcoholLatest()
+                if (latest?.todaySummary?.totalDrinks ?: 0 > 0) {
+                    _lastAlcoholDate.value = Date()
+                    _alcoholIconColor.value = CalorieRed
+                    return@launch
+                }
+                // Check last 30 days
+                val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                val end = Date()
+                val cal = Calendar.getInstance().apply { time = end }
+                cal.add(Calendar.DAY_OF_YEAR, -30)
+                val startStr = sdf.format(cal.time)
+                val endStr = sdf.format(end)
+                val range = grpcService.fetchAlcoholRange(startStr, endStr)
+                val mostRecent = range?.eventsList?.maxByOrNull { it.date }?.date
+                if (mostRecent != null) {
+                    val parsed = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(mostRecent)
+                    _lastAlcoholDate.value = parsed
+                    _alcoholIconColor.value = colorForLastAlcoholDate(parsed ?: end)
+                } else {
+                    _lastAlcoholDate.value = null
+                    _alcoholIconColor.value = CalorieGreen
+                }
+            } catch (e: Exception) {
+                _alcoholIconColor.value = CalorieGreen
+            }
+        }
+    }
+
+    private fun colorForLastAlcoholDate(last: Date): androidx.compose.ui.graphics.Color {
+        val days = ((Date().time - last.time) / (1000 * 60 * 60 * 24)).toInt()
+        return when {
+            days <= 7 -> CalorieRed
+            days <= 30 -> CalorieYellow
+            else -> CalorieGreen
         }
     }
     
@@ -612,6 +666,13 @@ class MainViewModel(private val context: Context) : ViewModel() {
     
     fun hideCalendarPicker() {
         _showCalendarPicker.value = false
+    }
+
+    fun showAlcoholCalendar() {
+        _showAlcoholCalendar.value = true
+    }
+    fun hideAlcoholCalendar() {
+        _showAlcoholCalendar.value = false
     }
     
     fun showWeightActionSheet() {

@@ -85,6 +85,8 @@ import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
+import com.singularis.eateria.services.Localization
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -297,7 +299,7 @@ private fun StatisticsHeader(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
                     tint = Color.White,
                     modifier = Modifier.size(Dimensions.iconSizeM)
                 )
@@ -306,7 +308,7 @@ private fun StatisticsHeader(
             Spacer(modifier = Modifier.width(Dimensions.paddingM))
             
             Text(
-                text = "Statistics",
+                text = Localization.tr(LocalContext.current, "nav.statistics", "Statistics"),
                 color = Color.White,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.SemiBold
@@ -324,25 +326,25 @@ private fun StatisticsHeader(
             horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
         ) {
             TimeRangeButton(
-                text = "Week",
+                text = Localization.tr(LocalContext.current, "stats.period.week", "Week"),
                 isSelected = selectedTimeRange == StatisticsTimeRange.WEEK,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.WEEK) }
             )
             
             TimeRangeButton(
-                text = "Month",
+                text = Localization.tr(LocalContext.current, "stats.period.month", "Month"),
                 isSelected = selectedTimeRange == StatisticsTimeRange.MONTH,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.MONTH) }
             )
             
             TimeRangeButton(
-                text = "2 Months",
+                text = Localization.tr(LocalContext.current, "stats.period.2months", "2 Months"),
                 isSelected = selectedTimeRange == StatisticsTimeRange.TWO_MONTHS,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.TWO_MONTHS) }
             )
             
             TimeRangeButton(
-                text = "3 Months",
+                text = Localization.tr(LocalContext.current, "stats.period.3months", "3 Months"),
                 isSelected = selectedTimeRange == StatisticsTimeRange.THREE_MONTHS,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.THREE_MONTHS) }
             )
@@ -439,7 +441,7 @@ private fun InsightsView(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = "$timeRangeText Insights",
+                    text = "$timeRangeText ${Localization.tr(LocalContext.current, "stats.insights", "Insights")}",
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
@@ -555,7 +557,7 @@ private fun SummaryStatsView(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = "Weekly Summary",
+                    text = Localization.tr(LocalContext.current, "stats.summary.weekly", "Weekly Summary"),
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
@@ -577,7 +579,7 @@ private fun SummaryStatsView(
                     }
                 } else {
                     Text(
-                        text = "No data available for this week",
+                        text = Localization.tr(LocalContext.current, "stats.no_data", "No data available for this week"),
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
@@ -675,7 +677,7 @@ private fun CaloriesChartViewFullWidth(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Calories Chart",
+                        text = Localization.tr(LocalContext.current, "stats.chart.calories", "Calories"),
                             color = Color.White,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold
@@ -775,7 +777,7 @@ private fun MacrosChartView(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = "Macronutrients",
+                    text = Localization.tr(LocalContext.current, "stats.chart.macros", "Macronutrients"),
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
@@ -859,7 +861,7 @@ private fun PersonWeightChartViewFullWidth(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = "Body Weight",
+                    text = Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight"),
                         color = Color.White,
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
@@ -883,7 +885,7 @@ private fun PersonWeightChartViewFullWidth(
                             )
                             Spacer(modifier = Modifier.width(Dimensions.paddingM))
                             Text(
-                                text = "Current Weight: ${String.format("%.1f", latestWeight)} kg",
+                                text = "${Localization.tr(LocalContext.current, "stats.weight.current", "Current")}: ${String.format("%.1f", latestWeight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Medium
@@ -961,7 +963,7 @@ private fun PersonWeightChartViewFullWidth(
                             Spacer(modifier = Modifier.width(Dimensions.paddingM))
                             
                             Text(
-                                text = "Trend: ${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} kg/week",
+                                text = "${Localization.tr(LocalContext.current, "stats.trend", "Trend")}: ${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}/week",
                                 color = trendColor,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.SemiBold
@@ -1006,7 +1008,7 @@ private fun FoodWeightChartViewFullWidth(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = "Food Weight",
+                    text = Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight"),
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
@@ -1030,7 +1032,7 @@ private fun FoodWeightChartViewFullWidth(
                         )
                         Spacer(modifier = Modifier.width(Dimensions.paddingM))
                         Text(
-                            text = "Average: ${String.format("%.0f", avgFoodWeight)} g/day",
+                            text = "${Localization.tr(LocalContext.current, "stats.avg_food", "Avg Food")}: ${String.format("%.0f", avgFoodWeight)} ${Localization.tr(LocalContext.current, "units.per_day_format", "%@/day").replace("%@", Localization.tr(LocalContext.current, "units.g", "g"))}",
                             color = Color.White,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Medium
@@ -1103,7 +1105,7 @@ private fun TrendsView(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = "Trend Analysis",
+                    text = Localization.tr(LocalContext.current, "stats.trend.title", "Trend Analysis"),
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
@@ -1117,7 +1119,7 @@ private fun TrendsView(
                 ) {
                     weightTrend?.let { trend ->
                         TrendCard(
-                            title = "Weight Trend",
+                            title = Localization.tr(LocalContext.current, "stats.trend.body_weight", "Body Weight Trend"),
                             value = "${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} kg",
                             color = when (trend.trend) {
                                 WeightTrendDirection.GAINING -> CalorieOrange
@@ -1134,14 +1136,14 @@ private fun TrendsView(
                     
                     calorieTrend?.let { trend ->
                         TrendCard(
-                            title = "Calorie Consistency",
+                            title = Localization.tr(LocalContext.current, "stats.calorie.consistency", "Calorie Consistency"),
                             value = "${(trend.consistency * 100).toInt()}%",
                             color = if (trend.consistency > 0.7f) CalorieGreen else CalorieOrange,
                             icon = if (trend.consistency > 0.7f) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingFlat
                         )
                         
                         TrendCard(
-                            title = "Avg Daily Calories",
+                            title = Localization.tr(LocalContext.current, "stats.avg_calories", "Avg Daily Calories"),
                             value = "${trend.averageCalories.toInt()} kcal",
                             color = DarkPrimary,
                             icon = Icons.AutoMirrored.Filled.TrendingFlat
@@ -1487,7 +1489,7 @@ private fun WeightLineChart(
         
         // Y-axis unit label with better positioning
         Text(
-            text = "kg",
+            text = Localization.tr(LocalContext.current, "units.kg", "kg"),
             color = Color.White,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
@@ -1878,7 +1880,7 @@ private fun MacroCompositionChart(
     ) {
         // Title with better spacing
         Text(
-            text = "Average Macro Distribution",
+            text = Localization.tr(LocalContext.current, "stats.macro.distribution", "Average Macro Distribution"),
             color = Color.White,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = Dimensions.paddingM)
@@ -1923,7 +1925,7 @@ private fun MacroCompositionChart(
                 verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
             ) {
                 Text(
-                    text = "Daily Averages",
+                    text = Localization.tr(LocalContext.current, "stats.daily.averages", "Daily Averages"),
                     color = Color.White,
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                 )
@@ -1948,7 +1950,7 @@ private fun MacroCompositionChart(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Total Calories",
+                        text = Localization.tr(LocalContext.current, "stats.total.calories", "Total Calories"),
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyLarge
                     )

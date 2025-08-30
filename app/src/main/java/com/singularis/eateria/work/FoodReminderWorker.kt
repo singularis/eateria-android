@@ -6,6 +6,7 @@ import androidx.work.WorkerParameters
 import com.singularis.eateria.services.NotificationHelper
 import com.singularis.eateria.services.ReminderScheduler
 import com.singularis.eateria.services.ReminderService
+import com.singularis.eateria.services.Localization
 import kotlinx.coroutines.flow.first
 
 class FoodReminderWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
@@ -46,11 +47,11 @@ class FoodReminderWorker(appContext: Context, params: WorkerParameters) : Corout
         }
 
         if (shouldNotify) {
-            val prefix = "Canid remind to snap food thatl allow you to mentain halth habbits."
+            val prefix = Localization.tr(applicationContext, "notif.reminder.message", "Can I remind you to snap your food? This helps maintain healthy habits.")
             val title = when (type) {
-                TYPE_BREAKFAST -> "Breakfast reminder"
-                TYPE_LUNCH -> "Lunch reminder"
-                else -> "Dinner reminder"
+                TYPE_BREAKFAST -> Localization.tr(applicationContext, "notif.breakfast.title", "Breakfast reminder")
+                TYPE_LUNCH -> Localization.tr(applicationContext, "notif.lunch.title", "Lunch reminder")
+                else -> Localization.tr(applicationContext, "notif.dinner.title", "Dinner reminder")
             }
             val id = when (type) {
                 TYPE_BREAKFAST -> ID_BREAKFAST

@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.singularis.eateria.ui.theme.DarkBackground
+import com.singularis.eateria.services.Localization
+import androidx.compose.ui.platform.LocalContext
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
@@ -99,7 +101,7 @@ private fun CalendarContent(
         ) {
             // Header
             Text(
-                text = "Select Date",
+                text = Localization.tr(LocalContext.current, "calendar.selectdate", "Select Date"),
                 style = MaterialTheme.typography.headlineSmall,
                 color = Color.White,
                 modifier = Modifier.padding(bottom = Dimensions.paddingM)
@@ -122,7 +124,7 @@ private fun CalendarContent(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                        contentDescription = "Previous month",
+                        contentDescription = Localization.tr(LocalContext.current, "calendar.prev", "<"),
                         tint = Color.White
                     )
                 }
@@ -147,7 +149,7 @@ private fun CalendarContent(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next month",
+                        contentDescription = Localization.tr(LocalContext.current, "calendar.next", ">"),
                         tint = Color.White
                     )
                 }
@@ -188,7 +190,7 @@ private fun CalendarContent(
             ) {
                 TextButton(onClick = onDismiss) {
                     Text(
-                        text = "Cancel",
+                        text = Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
                     )

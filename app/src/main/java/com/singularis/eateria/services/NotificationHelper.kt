@@ -7,15 +7,15 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.singularis.eateria.R
-import com.singularis.eateria.util.FoodQuotes
+import com.singularis.eateria.services.QuotesService
 
 object NotificationHelper {
     const val CHANNEL_ID = "eateria_reminders"
 
     fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Eateria Reminders"
-            val descriptionText = "Reminders to snap your meals"
+            val name = Localization.tr(context, "notif.title", "Eateria Reminder")
+            val descriptionText = Localization.tr(context, "notif.description", "Reminders to snap your meals")
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
@@ -28,7 +28,7 @@ object NotificationHelper {
 
     fun showReminder(context: Context, id: Int, title: String, bodyPrefix: String) {
         ensureChannel(context)
-        val quote = FoodQuotes.random()
+        val quote = QuotesService.getRandomQuote(context)
         val body = "$bodyPrefix\n\n$quote"
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)

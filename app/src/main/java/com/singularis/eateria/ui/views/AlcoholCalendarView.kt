@@ -54,6 +54,8 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import androidx.compose.foundation.clickable
+import com.singularis.eateria.services.Localization
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun AlcoholCalendarView(
@@ -156,14 +158,14 @@ fun AlcoholCalendarView(
                     colors = ButtonDefaults.buttonColors(containerColor = Gray3, contentColor = Color.White),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Close")
+                    Text(Localization.tr(LocalContext.current, "common.close", "Close"))
                 }
             }
         }
     }
 
     if (isLoading) {
-        LoadingOverlay(isVisible = true, message = "Loading alcohol...")
+        LoadingOverlay(isVisible = true, message = Localization.tr(LocalContext.current, "overlay.loading_alcohol", "Loading alcohol..."))
     }
 
     if (detailsVisible) {
@@ -172,7 +174,7 @@ fun AlcoholCalendarView(
             title = { Text(detailsTitle, color = Color.White) },
             text = { Text(detailsMessage, color = Color.Gray) },
             confirmButton = {
-                Button(onClick = { detailsVisible = false }) { Text("OK") }
+                Button(onClick = { detailsVisible = false }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
             containerColor = Gray4
         )
@@ -186,14 +188,14 @@ private fun Header(date: Date, onPrev: () -> Unit, onNext: () -> Unit, onClose: 
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onPrev) { Text("<", color = Color.White) }
+        IconButton(onClick = onPrev) { Text(Localization.tr(LocalContext.current, "calendar.prev", "<"), color = Color.White) }
         Text(
             text = monthTitle(date),
             style = MaterialTheme.typography.titleMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold
         )
-        IconButton(onClick = onNext) { Text(">", color = Color.White) }
+        IconButton(onClick = onNext) { Text(Localization.tr(LocalContext.current, "calendar.next", ">"), color = Color.White) }
     }
 }
 

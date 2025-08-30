@@ -19,6 +19,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.GRPCService
+import com.singularis.eateria.services.Localization
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +74,7 @@ fun ShareFoodView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Share $foodName",
+                        text = Localization.tr(LocalContext.current, "share.title", "Share %@").replace("%@", foodName),
                         style = MaterialTheme.typography.headlineSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -83,7 +84,7 @@ fun ShareFoodView(
                         TextButton(
                             onClick = { showAddFriends = true }
                         ) {
-                            Text("Add Friend")
+                            Text(Localization.tr(LocalContext.current, "friends.add", "Add Friend"))
                         }
                     }
                 }
@@ -104,13 +105,13 @@ fun ShareFoodView(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "No friends yet",
+                                text = Localization.tr(LocalContext.current, "friends.none", "No friends yet"),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             TextButton(onClick = { showAddFriends = true }) {
-                                Text("Add your first friend")
+                                Text(Localization.tr(LocalContext.current, "friends.add_first", "Add your first friend"))
                             }
                         }
                     }
@@ -146,7 +147,7 @@ fun ShareFoodView(
                                     )
                                     if (sharesCount > 0) {
                                         Text(
-                                            text = "Shared ${sharesCount}x",
+                                            text = Localization.tr(LocalContext.current, "share.count", "Shared ${sharesCount}x"),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -182,7 +183,7 @@ fun ShareFoodView(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = "More friends",
+                                            text = Localization.tr(LocalContext.current, "friends.more", "More friends"),
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.SemiBold
@@ -198,7 +199,7 @@ fun ShareFoodView(
                         onClick = onDismiss,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Close")
+                        Text(Localization.tr(LocalContext.current, "common.close", "Close"))
                     }
                 }
             }
@@ -253,7 +254,7 @@ fun ShareFoodView(
     showShareConfirmation?.let { msg ->
         AlertDialog(
             onDismissRequest = { showShareConfirmation = null },
-            title = { Text("Shared", color = Color.White) },
+            title = { Text(Localization.tr(LocalContext.current, "portion.shared", "Shared"), color = Color.White) },
             text = { Text(msg, color = Color.Gray) },
             confirmButton = {
                 TextButton(onClick = {
@@ -261,7 +262,7 @@ fun ShareFoodView(
                     // After confirming, close the share screen and return to main
                     onShareSuccess()
                     onDismiss()
-                }) { Text("OK") }
+                }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
             containerColor = com.singularis.eateria.ui.theme.Gray4
         )
@@ -319,7 +320,7 @@ private fun PortionChooserDialog(
     val options = listOf(10, 25, 50, 75, 90)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Share portion", color = Color.White) },
+        title = { Text(Localization.tr(LocalContext.current, "share.portion", "Share portion"), color = Color.White) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 options.forEach { p ->
@@ -337,7 +338,7 @@ private fun PortionChooserDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(Localization.tr(LocalContext.current, "common.close", "Close")) } },
         containerColor = com.singularis.eateria.ui.theme.Gray4
     )
 }

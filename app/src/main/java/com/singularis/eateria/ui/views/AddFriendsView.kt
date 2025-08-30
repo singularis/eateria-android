@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.FriendsSearchWebSocket
+import com.singularis.eateria.services.Localization
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -48,6 +49,10 @@ fun AddFriendsView(
     var isAddingFriend by remember { mutableStateOf(false) }
     var showSuccess by remember { mutableStateOf<String?>(null) }
     
+    LaunchedEffect(Unit) {
+        statusText = Localization.tr(context, "search.type3", "Type at least 3 letters to search")
+    }
+    
     Dialog(
         onDismissRequest = { if (!isAddingFriend) onDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -70,14 +75,14 @@ fun AddFriendsView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Add Friends",
+                        text = Localization.tr(LocalContext.current, "friends.add", "Add Friend"),
                         style = MaterialTheme.typography.headlineSmall
                     )
                     IconButton(
                         onClick = { if (!isAddingFriend) onDismiss() },
                         enabled = !isAddingFriend
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
+                        Icon(Icons.Default.Close, contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"))
                     }
                 }
                 
@@ -96,13 +101,13 @@ fun AddFriendsView(
                     value = query,
                     onValueChange = { newValue ->
                         query = newValue
-                        handleQueryChange(newValue, ws, coroutineScope) { searching, newSuggestions, status ->
+                        handleQueryChange(newValue, ws, coroutineScope, context) { searching, newSuggestions, status ->
                             isSearching = searching
                             suggestions = newSuggestions
                             statusText = status
                         }
                     },
-                    label = { Text("Search by email...") },
+                    label = { Text(Localization.tr(LocalContext.current, "friends.search.placeholder", "Search by email...")) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     enabled = !isAddingFriend,
@@ -135,7 +140,7 @@ fun AddFriendsView(
                                             onAddingStateChanged = { isAddingFriend = it },
                                             onSuccess = {
                                                 onFriendAdded(email)
-                                                showSuccess = "$email added to your friends"
+                                                showSuccess = Localization.tr(context, "friends.add.success.msg", "%@ added to your friends list").replace("%@", email)
                                                 // keep dialog open briefly to show confirmation
                                             }
                                         )
@@ -155,7 +160,7 @@ fun AddFriendsView(
                                 ) {
                                     Icon(
                                         Icons.Default.PersonAdd,
-                                        contentDescription = "Add friend",
+                                        contentDescription = Localization.tr(LocalContext.current, "friends.add", "Add friend"),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -202,7 +207,7 @@ fun AddFriendsView(
                             CircularProgressIndicator(color = Color.White)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Adding friend...",
+                                text = Localization.tr(LocalContext.current, "friends.adding", "Adding friend..."),
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -217,10 +222,10 @@ fun AddFriendsView(
     showSuccess?.let { msg ->
         AlertDialog(
             onDismissRequest = { showSuccess = null; onDismiss() },
-            title = { Text("Success", color = Color.White) },
+            title = { Text(Localization.tr(LocalContext.current, "friends.add.success.title", "You have a new friend!"), color = Color.White) },
             text = { Text(msg, color = Color.Gray) },
             confirmButton = {
-                TextButton(onClick = { showSuccess = null; onDismiss() }) { Text("OK") }
+                TextButton(onClick = { showSuccess = null; onDismiss() }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
             containerColor = com.singularis.eateria.ui.theme.Gray4
         )
@@ -231,15 +236,16 @@ private fun handleQueryChange(
     newValue: String,
     ws: FriendsSearchWebSocket,
     coroutineScope: CoroutineScope,
+    context: android.content.Context,
     onUpdate: (Boolean, List<String>, String) -> Unit
 ) {
     val trimmed = newValue.trim()
     if (trimmed.length < 3) {
-        onUpdate(false, emptyList(), "Type at least 3 letters to search")
+        onUpdate(false, emptyList(), Localization.tr(context, "search.type3", "Type at least 3 letters to search"))
         return
     }
     
-    onUpdate(true, emptyList(), "Searching...")
+    onUpdate(true, emptyList(), Localization.tr(context, "search.connecting", "Searching..."))
     
     coroutineScope.launch {
         delay(250)
@@ -247,7 +253,7 @@ private fun handleQueryChange(
             ws.search(trimmed, limit = 10)
             // Wait one-shot for results
             val suggestions = ws.resultsChannel.receiveCatching().getOrNull() ?: emptyList()
-            onUpdate(false, suggestions, if (suggestions.isEmpty()) "No emails found" else "")
+            onUpdate(false, suggestions, if (suggestions.isEmpty()) Localization.tr(context, "search.no_emails", "No emails found") else "")
         }
     }
 }

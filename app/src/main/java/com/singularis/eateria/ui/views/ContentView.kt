@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
@@ -158,7 +159,7 @@ fun ContentView(
             
             // Product List
             if (isLoadingData) {
-                LoadingView(message = "Loading food data...")
+                LoadingView(message = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."))
             } else {
                 Box(
                     modifier = Modifier
@@ -219,14 +220,14 @@ fun ContentView(
         if (isLoadingData) {
             LoadingOverlay(
                 isVisible = true,
-                message = "Loading food data..."
+                message = Localization.tr(LocalContext.current, "loading.food", "Loading food data...")
             )
         }
         
         if (isLoadingFoodPhoto) {
             LoadingOverlay(
                 isVisible = true,
-                message = "Analyzing food photo..."
+                message = Localization.tr(LocalContext.current, "loading.photo", "Analyzing food photo...")
             )
         }
         

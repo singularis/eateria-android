@@ -32,6 +32,7 @@ import eater.AddFriend
 import eater.GetFriends
 import eater.ShareFood
 import eater.Alcohol
+import eater.SetLanguage
 
 class GRPCService(private val context: Context) {
     
@@ -820,6 +821,39 @@ class GRPCService(private val context: Context) {
                 }
             } catch (e: Exception) {
                 Log.e("GRPCService", "Failed to share food", e)
+                false
+            }
+        }
+    }
+
+    suspend fun setLanguage(userEmail: String, languageCode: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = SetLanguage.SetLanguageRequest.newBuilder()
+                    .setUserEmail(userEmail)
+                    .setLanguageCode(languageCode)
+                    .build()
+
+                val response = sendRequest("set_language", "POST", request.toByteArray())
+
+                if (response?.isSuccessful == true) {
+                    val bytes = response.body?.bytes()
+                    response.close()
+                    if (bytes != null) {
+                        try {
+                            val parsed = SetLanguage.SetLanguageResponse.parseFrom(bytes)
+                            parsed.success
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse set_language response", e)
+                            false
+                        }
+                    } else false
+                } else {
+                    response?.close()
+                    false
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to call set_language", e)
                 false
             }
         }

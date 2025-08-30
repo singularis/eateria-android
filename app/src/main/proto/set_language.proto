@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package eater;
+
+message SetLanguageRequest {
+  string user_email = 1;
+  string language_code = 2;
+}
+
+message SetLanguageResponse {
+  bool success = 1;
+}
+
+

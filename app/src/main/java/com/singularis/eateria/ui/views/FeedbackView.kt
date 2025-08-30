@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.ui.theme.*
+import com.singularis.eateria.services.Localization
 import com.singularis.eateria.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
 
@@ -65,13 +66,13 @@ fun FeedbackView(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
                         tint = Color.White
                     )
                 }
                 
                 Text(
-                    text = "Share Feedback",
+                    text = Localization.tr(LocalContext.current, "feedback.title", "Share Your Feedback"),
                     color = Color.White,
                     style = MaterialTheme.typography.headlineSmall
                 )
@@ -92,7 +93,7 @@ fun FeedbackView(
                         .padding(Dimensions.paddingM)
                 ) {
                     Text(
-                        text = "We'd love to hear from you!",
+                        text = Localization.tr(LocalContext.current, "feedback.subtitle", "Help us improve your experience"),
                         color = Color.White,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
@@ -101,7 +102,7 @@ fun FeedbackView(
                     Spacer(modifier = Modifier.height(Dimensions.paddingS))
                     
                     Text(
-                        text = "Share your thoughts, suggestions, or report any issues you've encountered. Your feedback helps us make Eateria better.",
+                        text = Localization.tr(LocalContext.current, "feedback.subtitle", "Help us improve your experience"),
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -111,8 +112,8 @@ fun FeedbackView(
                     OutlinedTextField(
                         value = feedbackText,
                         onValueChange = { feedbackText = it },
-                        label = { Text("Your feedback", color = Color.Gray) },
-                        placeholder = { Text("Tell us what you think...", color = Color.Gray) },
+                        label = { Text(Localization.tr(LocalContext.current, "feedback.field.label", "Your Feedback"), color = Color.Gray) },
+                        placeholder = { Text(Localization.tr(LocalContext.current, "feedback.placeholder", "Tell us what you think..."), color = Color.Gray) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp),
@@ -141,6 +142,8 @@ fun FeedbackView(
                         onClick = {
                             if (isValidFeedback && !isSubmitting) {
                                 isSubmitting = true
+                                val failedMsg = "Failed to submit feedback. Please try again."
+                                val networkMsg = "Network error. Please check your connection and try again."
                                 coroutineScope.launch {
                                     try {
                                         val grpcService = GRPCService(context)
@@ -154,11 +157,11 @@ fun FeedbackView(
                                             keyboardController?.hide()
                                             showSuccessDialog = true
                                         } else {
-                                            errorMessage = "Failed to submit feedback. Please try again."
+                                            errorMessage = failedMsg
                                             showErrorDialog = true
                                         }
                                     } catch (e: Exception) {
-                                        errorMessage = "Network error. Please check your connection and try again."
+                                        errorMessage = networkMsg
                                         showErrorDialog = true
                                     } finally {
                                         isSubmitting = false
@@ -183,7 +186,7 @@ fun FeedbackView(
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(Dimensions.paddingS))
-                            Text("Submitting...")
+                            Text(Localization.tr(LocalContext.current, "feedback.submitting", "Submitting..."))
                         } else {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
@@ -192,7 +195,7 @@ fun FeedbackView(
                             )
                             Spacer(modifier = Modifier.width(Dimensions.paddingS))
                             Text(
-                                text = "Submit Feedback",
+                                text = Localization.tr(LocalContext.current, "feedback.submit", "Submit Feedback"),
                                 style = MaterialTheme.typography.titleSmall
                             )
                         }
@@ -209,7 +212,7 @@ fun FeedbackView(
                 },
                 title = {
                     Text(
-                        text = "Thank You!",
+                        text = Localization.tr(LocalContext.current, "feedback.thanks", "Thank You!"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -227,7 +230,7 @@ fun FeedbackView(
                             onBackClick()
                         }
                     ) {
-                        Text("OK", color = CalorieGreen)
+                        Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = CalorieGreen)
                     }
                 },
                 containerColor = Gray4
@@ -239,7 +242,7 @@ fun FeedbackView(
                 onDismissRequest = { showErrorDialog = false },
                 title = {
                     Text(
-                        text = "Error",
+                        text = Localization.tr(LocalContext.current, "common.error", "Error"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -254,7 +257,7 @@ fun FeedbackView(
                     TextButton(
                         onClick = { showErrorDialog = false }
                     ) {
-                        Text("OK", color = CalorieRed)
+                        Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = CalorieRed)
                     }
                 },
                 containerColor = Gray4

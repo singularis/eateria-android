@@ -38,6 +38,7 @@ import com.singularis.eateria.ui.theme.*
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.services.HealthDataService
+import com.singularis.eateria.services.Localization
 import kotlinx.coroutines.launch
 
 @Composable
@@ -113,13 +114,13 @@ fun UserProfileView(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
                         tint = Color.White
                     )
                 }
                 
                 Text(
-                    text = "Profile",
+                    text = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
                     color = Color.White,
                     style = MaterialTheme.typography.headlineSmall
                 )
@@ -162,7 +163,7 @@ fun UserProfileView(
                         )
                         Spacer(modifier = Modifier.width(Dimensions.paddingS))
                         Text(
-                            text = "View Statistics",
+                            text = Localization.tr(LocalContext.current, "profile.viewstats", "View Statistics"),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -187,30 +188,30 @@ fun UserProfileView(
                 // App Features section
                 item {
                     ProfileMenuSection(
-                        title = "App Features",
+                        title = Localization.tr(LocalContext.current, "profile.features", "App Features"),
                         items = listOf(
                             ProfileMenuItem(
                                 icon = Icons.Default.PersonAdd,
-                                title = "Add Friends",
-                                subtitle = "Find and add friends by email",
+                                title = Localization.tr(LocalContext.current, "profile.addfriends", "Add Friends"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.addfriends.desc", "Find and add friends by email"),
                                 onClick = { showAddFriends = true }
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Info,
-                                title = "Tutorial",
-                                subtitle = "Replay the app tutorial",
+                                title = Localization.tr(LocalContext.current, "profile.tutorial", "Tutorial"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.tutorial.desc", "Replay the app tutorial"),
                                 onClick = onOnboardingClick
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Feedback,
-                                title = "Share Feedback",
-                                subtitle = "Help us improve the app",
+                                title = Localization.tr(LocalContext.current, "profile.sharefeedback", "Share Feedback"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.sharefeedback.desc", "Help us improve the app"),
                                 onClick = onFeedbackClick
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Info,
-                                title = "Health Disclaimer",
-                                subtitle = "Important health information",
+                                title = Localization.tr(LocalContext.current, "disc.title", "Health Information Disclaimer"),
+                                subtitle = Localization.tr(LocalContext.current, "disc.subtitle", "Important health information"),
                                 onClick = onHealthDisclaimerClick
                             )
                         )
@@ -233,7 +234,7 @@ fun UserProfileView(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Display Mode",
+                                    text = Localization.tr(LocalContext.current, "profile.datamode", "Data Mode"),
                                     color = Color.White,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
@@ -256,19 +257,19 @@ fun UserProfileView(
                 // Account section
                 item {
                     ProfileMenuSection(
-                        title = "Account",
+                        title = Localization.tr(LocalContext.current, "profile.account", "Account"),
                         items = listOf(
                             ProfileMenuItem(
                                 icon = Icons.AutoMirrored.Filled.ExitToApp,
-                                title = "Logout",
-                                subtitle = "Sign out of your account",
+                                title = Localization.tr(LocalContext.current, "profile.logout", "Logout"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.logout.desc", "Sign out of your account"),
                                 onClick = { showSignOutDialog = true },
                                 textColor = CalorieYellow
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Delete,
-                                title = "Delete Account",
-                                subtitle = "Permanently delete your account",
+                                title = Localization.tr(LocalContext.current, "profile.delete", "Delete Account"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.delete.desc", "Permanently delete your account"),
                                 onClick = { showDeleteAccountDialog = true },
                                 textColor = CalorieRed
                             )
@@ -289,14 +290,14 @@ fun UserProfileView(
                 onDismissRequest = { showSignOutDialog = false },
                 title = {
                     Text(
-                        text = "Logout",
+                        text = Localization.tr(LocalContext.current, "profile.logout", "Logout"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 },
                 text = {
                     Text(
-                        text = "Are you sure you want to sign out?",
+                        text = Localization.tr(LocalContext.current, "profile.logout.confirm", "Are you sure you want to sign out?"),
                         color = Color.Gray
                     )
                 },
@@ -312,14 +313,14 @@ fun UserProfileView(
                             }
                         }
                     ) {
-                        Text("Logout", color = CalorieYellow)
+                        Text(Localization.tr(LocalContext.current, "profile.logout", "Logout"), color = CalorieYellow)
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showSignOutDialog = false }
                     ) {
-                        Text("Cancel", color = Color.Gray)
+                        Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = Color.Gray)
                     }
                 },
                 containerColor = Gray4
@@ -332,14 +333,14 @@ fun UserProfileView(
                 onDismissRequest = { showDeleteAccountDialog = false },
                 title = {
                     Text(
-                        text = "Delete Account",
+                        text = Localization.tr(LocalContext.current, "profile.delete", "Delete Account"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 },
                 text = {
                     Text(
-                        text = "Are you sure you want to delete your account? This will immediately remove all your data and preferences from this device and sign you out.",
+                        text = Localization.tr(LocalContext.current, "alert.delete.message", "Are you sure you want to delete your account? This will immediately remove all your data and preferences from this device and sign you out."),
                         color = Color.Gray
                     )
                 },
@@ -356,14 +357,14 @@ fun UserProfileView(
                             }
                         }
                     ) {
-                        Text("Delete", color = CalorieRed)
+                        Text(Localization.tr(LocalContext.current, "profile.delete", "Delete Account"), color = CalorieRed)
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showDeleteAccountDialog = false }
                     ) {
-                        Text("Cancel", color = Color.Gray)
+                        Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = Color.Gray)
                     }
                 },
                 containerColor = Gray4
@@ -401,7 +402,7 @@ private fun ProfileHeader(
                 if (!userProfilePictureURL.isNullOrEmpty()) {
                     AsyncImage(
                         model = userProfilePictureURL,
-                        contentDescription = "Profile Picture",
+                        contentDescription = Localization.tr(LocalContext.current, "profile.name", "Profile Picture"),
                         modifier = Modifier
                             .size(Dimensions.iconSizeXL)
                             .clip(CircleShape),
@@ -411,7 +412,7 @@ private fun ProfileHeader(
                     // Fallback icon when no profile picture
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Profile",
+                        contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
                         tint = Color.White,
                         modifier = Modifier.size(Dimensions.paddingXL + Dimensions.paddingM)
                     )
@@ -426,7 +427,7 @@ private fun ProfileHeader(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Name",
+                        text = Localization.tr(LocalContext.current, "profile.name", "Name"),
                         color = Color.Gray,
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -445,7 +446,7 @@ private fun ProfileHeader(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Email",
+                    text = Localization.tr(LocalContext.current, "profile.email", "Email"),
                     color = Color.Gray,
                     style = MaterialTheme.typography.labelMedium
                 )
@@ -490,19 +491,19 @@ private fun HealthDataCard(
                 verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS)
             ) {
                 HealthMetricRow(
-                    label = "Height:",
+                    label = Localization.tr(LocalContext.current, "health.height.label", "Height:"),
                     value = "${userHeight.toInt()} cm",
                     valueColor = Color.White
                 )
                 
                 HealthMetricRow(
-                    label = "Target Weight:",
+                    label = Localization.tr(LocalContext.current, "profile.targetweight", "Target Weight:"),
                     value = String.format("%.1f kg", userOptimalWeight),
                     valueColor = CalorieGreen
                 )
                 
                 HealthMetricRow(
-                    label = "Daily Calorie Target:",
+                    label = Localization.tr(LocalContext.current, "profile.dailycalorie", "Daily Calorie Target:"),
                     value = "$userRecommendedCalories kcal",
                     valueColor = CalorieOrange
                 )
@@ -520,7 +521,7 @@ private fun HealthDataCard(
                 shape = RoundedCornerShape(Dimensions.cornerRadiusS)
             ) {
                 Text(
-                    text = "Update Health Settings",
+                    text = Localization.tr(LocalContext.current, "health.update.title", "Update Your Health Data"),
                     style = MaterialTheme.typography.titleSmall
                 )
             }
@@ -544,7 +545,7 @@ private fun PersonalizeCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Personalize Your Experience",
+                text = Localization.tr(LocalContext.current, "profile.personalize", "Personalize Your Experience"),
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge
             )
@@ -552,7 +553,7 @@ private fun PersonalizeCard(
             Spacer(modifier = Modifier.height(Dimensions.paddingS))
             
             Text(
-                text = "Set up your health profile to get personalized calorie recommendations",
+                text = Localization.tr(LocalContext.current, "profile.setuphealth", "Set up your health profile to get personalized calorie recommendations"),
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -576,7 +577,7 @@ private fun PersonalizeCard(
                 )
                 Spacer(modifier = Modifier.width(Dimensions.paddingS))
                 Text(
-                    text = "Setup Health Profile",
+                    text = Localization.tr(LocalContext.current, "health.setup.title", "Setup Health Profile"),
                     style = MaterialTheme.typography.titleSmall
                 )
             }

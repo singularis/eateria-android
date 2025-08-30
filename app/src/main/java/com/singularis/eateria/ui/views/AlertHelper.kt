@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.sp
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
+import com.singularis.eateria.services.Localization
+import androidx.compose.ui.platform.LocalContext
 
 object AlertHelper {
     
@@ -42,7 +44,7 @@ object AlertHelper {
                 },
                 confirmButton = {
                     TextButton(onClick = onDismiss) {
-                        Text("OK", color = DarkPrimary)
+                        Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = DarkPrimary)
                     }
                 },
                 containerColor = Gray4

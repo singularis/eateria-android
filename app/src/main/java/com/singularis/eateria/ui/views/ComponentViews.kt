@@ -74,6 +74,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import com.singularis.eateria.services.Localization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
@@ -153,7 +154,7 @@ fun TopBarView(
                 if (!userProfilePictureURL.isNullOrEmpty()) {
                     AsyncImage(
                         model = userProfilePictureURL,
-                        contentDescription = "Profile Picture",
+                        contentDescription = Localization.tr(LocalContext.current, "profile.name", "Profile Picture"),
                         modifier = Modifier
                             .size(Dimensions.iconSizeL)
                             .clip(CircleShape),
@@ -162,7 +163,7 @@ fun TopBarView(
                 } else {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Profile",
+                        contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
                         tint = Color.White,
                         modifier = Modifier.size(Dimensions.iconSizeS)
                     )
@@ -171,7 +172,7 @@ fun TopBarView(
             IconButton(onClick = { onAlcoholClick?.invoke() }) {
                 Icon(
                     imageVector = Icons.Default.WineBar,
-                    contentDescription = "Alcohol",
+                    contentDescription = Localization.tr(LocalContext.current, "onboarding.alcohol.title", "Alcohol"),
                     tint = alcoholIconColor,
                     modifier = Modifier.size(Dimensions.iconSizeM)
                 )
@@ -199,7 +200,7 @@ fun TopBarView(
             
             if (isViewingCustomDate) {
                 Text(
-                    text = "Custom Date",
+                    text = Localization.tr(LocalContext.current, "date.custom", "Custom Date"),
                     color = Color.Yellow,
                     style = MaterialTheme.typography.labelSmall
                 )
@@ -215,7 +216,7 @@ fun TopBarView(
                     modifier = Modifier.height(Dimensions.buttonHeight)
                 ) {
                     Text(
-                        text = "Today",
+                        text = Localization.tr(LocalContext.current, "date.today", "Today"),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -235,7 +236,7 @@ fun TopBarView(
             ) {
                 Icon(
                     imageVector = Icons.Default.FitnessCenter,
-                    contentDescription = "Sport Calories",
+                    contentDescription = Localization.tr(LocalContext.current, "sport.title", "Sport Calories"),
                     tint = DarkPrimary,
                     modifier = Modifier.size(Dimensions.iconSizeM)
                 )
@@ -247,7 +248,7 @@ fun TopBarView(
             ) {
                 Icon(
                     imageVector = Icons.Default.Info,
-                    contentDescription = "Health Info",
+                    contentDescription = Localization.tr(LocalContext.current, "nav.health_settings", "Health Info"),
                     tint = DarkPrimary,
                     modifier = Modifier.size(Dimensions.iconSizeM)
                 )
@@ -302,14 +303,14 @@ fun StatsButtonsView(
                 horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "$caloriesLeft left",
+                text = "$caloriesLeft ${Localization.tr(LocalContext.current, "calories.left", "left")}",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = getColor(caloriesLeft),
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Calories: $caloriesConsumed",
+                text = "${Localization.tr(LocalContext.current, "calories.label", "Calories")}: $caloriesConsumed",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
@@ -326,7 +327,7 @@ fun StatsButtonsView(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = "Trend",
+                text = Localization.tr(LocalContext.current, "stats.trend", "Trend"),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
@@ -376,10 +377,14 @@ fun MacrosSummaryRow() {
             val fats = today.fats
             val carbs = today.carbohydrates
             val sugar = today.sugar
-            summaryText = "PRO ${"%.1f".format(proteins)}g • FAT ${"%.1f".format(fats)}g • CARB ${"%.1f".format(carbs)}g • SUG ${"%.1f".format(sugar)}g"
+            val proPart = "${Localization.tr(context, "macro.pro", "PRO")} ${"%.1f".format(proteins)}g"
+            val fatPart = "${Localization.tr(context, "macro.fat", "FAT")} ${"%.1f".format(fats)}g"
+            val carbPart = "${Localization.tr(context, "macro.car", "CAR")} ${"%.1f".format(carbs)}g"
+            val sugPart = "${Localization.tr(context, "macro.sug", "SUG")} ${"%.1f".format(sugar)}g"
+            summaryText = "$proPart • $fatPart • $carbPart • $sugPart"
             summaryColor = Color.White
         } else {
-            summaryText = "No macros yet"
+                            summaryText = Localization.tr(context, "macro.no_data", "No macros yet")
             summaryColor = Color.Gray
         }
     }
@@ -435,7 +440,7 @@ fun ProductListView(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No food entries yet.\nTake a photo to get started!\n\nPull down to refresh",
+                    text = Localization.tr(LocalContext.current, "food.empty.message", "No food entries yet.\nTake a photo to get started!\n\nPull down to refresh"),
                     color = Color.Gray,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
@@ -522,7 +527,7 @@ fun ProductCard(
             ) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Delete",
+                    contentDescription = Localization.tr(LocalContext.current, "common.remove", "Delete"),
                     tint = Color.White,
                     modifier = Modifier.scale(scale)
                 )
@@ -567,7 +572,7 @@ fun ProductCard(
                     } else {
                         Icon(
                             imageVector = Icons.Default.PhotoLibrary,
-                            contentDescription = "No photo",
+                            contentDescription = Localization.tr(LocalContext.current, "fs.no_photo", "No photo"),
                             tint = Color.Gray,
                             modifier = Modifier
                                 .size(Dimensions.iconSizeM)
@@ -596,7 +601,7 @@ fun ProductCard(
                     Spacer(modifier = Modifier.height(Dimensions.paddingXS))
 
                     Text(
-                        text = "${product.calories} kcal • ${product.weight}g",
+                        text = "${product.calories} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")} • ${product.weight}${Localization.tr(LocalContext.current, "units.g", "g")}",
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -694,7 +699,7 @@ fun PortionSelectionDialog(
             },
             title = {
                 Text(
-                    text = "Portion Updated!",
+                    text = Localization.tr(LocalContext.current, "portion.updated.title", "Portion Updated!"),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -702,7 +707,7 @@ fun PortionSelectionDialog(
             },
             text = {
                 Text(
-                    text = "Successfully updated '$foodName' to $selectedPortion portion.",
+                    text = Localization.tr(LocalContext.current, "portion.updated.msg", "Successfully updated '%@' to %d%% portion.").replace("%@", foodName).replace("%d%%", "$selectedPortion%"),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     textAlign = TextAlign.Center
@@ -713,7 +718,7 @@ fun PortionSelectionDialog(
                     onDismiss()
                     resetSuccessState()
                 }) {
-                    Text("OK", color = DarkPrimary, style = MaterialTheme.typography.labelMedium)
+                    Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = DarkPrimary, style = MaterialTheme.typography.labelMedium)
                 }
             },
             containerColor = Gray4
@@ -723,7 +728,7 @@ fun PortionSelectionDialog(
             onDismissRequest = onDismiss,
             title = {
                 Text(
-                    text = if (showCustomSelection) "Custom Portion" else "Modify Portion",
+                    text = if (showCustomSelection) Localization.tr(LocalContext.current, "portion.custom.title", "Custom Portion") else Localization.tr(LocalContext.current, "portion.modify.title", "Modify Portion"),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -733,9 +738,9 @@ fun PortionSelectionDialog(
                 Column {
                     Text(
                         text = if (showCustomSelection) 
-                            "Select a custom portion for '$foodName'\nOriginal weight: ${originalWeight}g" 
+                            Localization.tr(LocalContext.current, "portion.custom.msg", "Select the amount of '%@' you ate:\nOriginal weight: %dg").replace("%@", foodName).replace("%dg", "${originalWeight}g")
                         else 
-                            "How much of '$foodName' did you actually eat?\nOriginal weight: ${originalWeight}g",
+                            Localization.tr(LocalContext.current, "portion.modify.msg", "How much of '%@' did you actually eat?\nOriginal weight: %dg").replace("%@", foodName).replace("%dg", "${originalWeight}g"),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
@@ -774,16 +779,9 @@ fun PortionSelectionDialog(
                             }
                         } else {
                             // Show standard portion options
-                            val portions = listOf(
-                                200 to "Double portion",
-                                150 to "One and a half portion",
-                                125 to "One and a quarter portion",
-                                75 to "Three quarters",
-                                50 to "Half portion",
-                                25 to "Quarter portion"
-                            )
+                            val portions = listOf(200, 150, 125, 75, 50, 25)
 
-                            items(portions) { (percentage, description) ->
+                            items(portions) { percentage ->
                                 val calculatedWeight = originalWeight * percentage / 100
 
                                 Button(
@@ -799,8 +797,17 @@ fun PortionSelectionDialog(
                                     shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                                     contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
                                 ) {
+                                    val localizedDescription = when (percentage) {
+                                        200 -> Localization.tr(LocalContext.current, "portion.200", "200%% (%dg) - Double portion").replace("%dg", "${calculatedWeight.toInt()}g")
+                                        150 -> Localization.tr(LocalContext.current, "portion.150", "150%% (%dg) - One and a half portion").replace("%dg", "${calculatedWeight.toInt()}g")
+                                        125 -> Localization.tr(LocalContext.current, "portion.125", "125%% (%dg) - One and a quarter portion").replace("%dg", "${calculatedWeight.toInt()}g")
+                                        75 -> Localization.tr(LocalContext.current, "portion.75", "75%% (%dg) - Three quarters").replace("%dg", "${calculatedWeight.toInt()}g")
+                                        50 -> Localization.tr(LocalContext.current, "portion.50", "50%% (%dg) - Half portion").replace("%dg", "${calculatedWeight.toInt()}g")
+                                        25 -> Localization.tr(LocalContext.current, "portion.25", "25%% (%dg) - Quarter portion").replace("%dg", "${calculatedWeight.toInt()}g")
+                                        else -> "$percentage% (${calculatedWeight.toInt()}g)"
+                                    }
                                     Text(
-                                        text = "$percentage% (${calculatedWeight}g) - $description",
+                                        text = localizedDescription,
                                         style = MaterialTheme.typography.bodySmall,
                                         textAlign = TextAlign.Center
                                     )
@@ -824,7 +831,7 @@ fun PortionSelectionDialog(
                                         contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
                                     ) {
                                         Text(
-                                            text = "Share food with friend",
+                                            text = Localization.tr(LocalContext.current, "portion.share", "Share food with friend"),
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                     }
@@ -846,7 +853,7 @@ fun PortionSelectionDialog(
                                     contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
                                 ) {
                                     Text(
-                                        text = "Custom...",
+                                        text = Localization.tr(LocalContext.current, "portion.custom", "Custom..."),
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -865,7 +872,7 @@ fun PortionSelectionDialog(
                     }
                 }) {
                     Text(
-                        if (showCustomSelection) "Back" else "Cancel", 
+                        if (showCustomSelection) Localization.tr(LocalContext.current, "common.back_to_edit", "Back") else Localization.tr(LocalContext.current, "common.cancel", "Cancel"), 
                         color = Color.Gray, 
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -938,12 +945,12 @@ fun CameraButtonView(
                 ) {
                     Icon(
                         imageVector = Icons.Default.PhotoLibrary,
-                        contentDescription = "Upload",
+                        contentDescription = Localization.tr(LocalContext.current, "camera.upload", "Upload"),
                         modifier = Modifier.size(Dimensions.iconSizeS)
                     )
                     
                     Text(
-                        text = "Upload",
+                        text = Localization.tr(LocalContext.current, "camera.upload", "Upload"),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center,
@@ -982,14 +989,14 @@ fun CameraButtonView(
             ) {
                 Icon(
                     imageVector = Icons.Default.PhotoCamera,
-                    contentDescription = "Camera",
+                    contentDescription = Localization.tr(LocalContext.current, "nav.camera", "Camera"),
                         modifier = Modifier.size(Dimensions.iconSizeS)
                 )
                 
                     Spacer(modifier = Modifier.width(Dimensions.paddingXS))
                     
                     Text(
-                        text = "Take Food Photo",
+                        text = Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo"),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1
@@ -1019,7 +1026,7 @@ fun CalorieLimitsDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Set Calorie Limits",
+                text = Localization.tr(LocalContext.current, "limits.title", "Set Calorie Limits"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -1028,7 +1035,7 @@ fun CalorieLimitsDialog(
         text = {
             Column {
                 Text(
-                    text = "Set your daily calorie limits manually, or use health-based calculation if you have health data.\n\n⚠️ These are general guidelines. Consult a healthcare provider for personalized dietary advice.",
+                    text = Localization.tr(LocalContext.current, "limits.msg", "Set your daily calorie limits manually, or use health-based calculation if you have health data.\n\n⚠️ These are general guidelines. Consult a healthcare provider for personalized dietary advice."),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     lineHeight = MaterialTheme.typography.bodySmall.lineHeight
@@ -1039,7 +1046,7 @@ fun CalorieLimitsDialog(
                 OutlinedTextField(
                     value = tempSoftLimit,
                     onValueChange = onSoftLimitChange,
-                    label = { Text("Soft Limit (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
+                    label = { Text(Localization.tr(LocalContext.current, "limits.soft", "Soft Limit") + " (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
@@ -1056,7 +1063,7 @@ fun CalorieLimitsDialog(
                 OutlinedTextField(
                     value = tempHardLimit,
                     onValueChange = onHardLimitChange,
-                    label = { Text("Hard Limit (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
+                    label = { Text(Localization.tr(LocalContext.current, "limits.hard", "Hard Limit") + " (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
@@ -1072,7 +1079,7 @@ fun CalorieLimitsDialog(
                 if (showValidationError) {
                     Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                     Text(
-                        text = "⚠️ Soft limit must be smaller than hard limit",
+                        text = Localization.tr(LocalContext.current, "limits.invalid_input_msg", "Please enter valid positive numbers. Soft limit must be less than or equal to hard limit."),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Red,
                         fontWeight = FontWeight.Medium
@@ -1089,12 +1096,12 @@ fun CalorieLimitsDialog(
                     contentColor = Color.White
                 )
             ) {
-                Text("Save Manual Limits")
+                Text(Localization.tr(LocalContext.current, "limits.save_manual", "Save Manual Limits"))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = Color.Gray, style = MaterialTheme.typography.bodySmall)
             }
         },
         containerColor = Gray4,
@@ -1124,7 +1131,7 @@ fun WeightActionSheetDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Record Weight",
+                    text = Localization.tr(LocalContext.current, "weight.record.title", "Record Weight"),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -1133,7 +1140,7 @@ fun WeightActionSheetDialog(
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 
                 Text(
-                    text = "Choose how you'd like to record your weight",
+                    text = Localization.tr(LocalContext.current, "weight.record.msg", "Choose how you'd like to record your weight"),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     textAlign = TextAlign.Center
@@ -1149,7 +1156,7 @@ fun WeightActionSheetDialog(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Take Photo", style = MaterialTheme.typography.labelMedium)
+                    Text(Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo"), style = MaterialTheme.typography.labelMedium)
                 }
                 
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
@@ -1162,13 +1169,13 @@ fun WeightActionSheetDialog(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Manual Entry", style = MaterialTheme.typography.labelMedium)
+                    Text(Localization.tr(LocalContext.current, "weight.manual", "Manual Entry"), style = MaterialTheme.typography.labelMedium)
                 }
                 
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                    Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = Color.Gray, style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -1186,7 +1193,7 @@ fun ManualWeightDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Enter Weight",
+                text = Localization.tr(LocalContext.current, "weight.enter.title", "Enter Weight"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -1194,7 +1201,7 @@ fun ManualWeightDialog(
         text = {
             Column {
                 Text(
-                    text = "Enter your weight in kilograms",
+                    text = Localization.tr(LocalContext.current, "weight.enter.msg", "Enter your weight in kilograms"),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
@@ -1204,7 +1211,7 @@ fun ManualWeightDialog(
                 OutlinedTextField(
                     value = weightInput,
                     onValueChange = onWeightChange,
-                    label = { Text("Weight (kg)", style = MaterialTheme.typography.bodySmall) },
+                    label = { Text(Localization.tr(LocalContext.current, "weight.kg", "Weight (kg)"), style = MaterialTheme.typography.bodySmall) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1212,12 +1219,12 @@ fun ManualWeightDialog(
         },
         confirmButton = {
             TextButton(onClick = onSubmit) {
-                Text("Submit")
+                Text(Localization.tr(LocalContext.current, "feedback.submit", "Submit Feedback"))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"))
             }
         }
     )
@@ -1270,12 +1277,12 @@ fun HealthRecommendationDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Psychology,
-                            contentDescription = "Health Recommendation",
+                            contentDescription = Localization.tr(LocalContext.current, "rec.title", "Health Recommendation"),
                             tint = Color(0xFF4CAF50), // Green color for health
                             modifier = Modifier.size(Dimensions.iconSizeL) // Larger icon
                         )
                         Text(
-                            text = "Health Recommendation",
+                            text = Localization.tr(LocalContext.current, "rec.title", "Health Recommendation"),
                             style = MaterialTheme.typography.titleLarge, // Much larger title
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -1289,7 +1296,7 @@ fun HealthRecommendationDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
                             tint = Color.Gray,
                             modifier = Modifier.size(Dimensions.iconSizeS)
                         )
@@ -1315,7 +1322,7 @@ fun HealthRecommendationDialog(
                         ) {
                             Column(modifier = Modifier.padding(Dimensions.paddingM)) { // More padding
                                 Text(
-                                    text = "📊 Your Personal Analysis",
+                                    text = Localization.tr(LocalContext.current, "rec.title", "Health Recommendation"),
                                     style = MaterialTheme.typography.titleSmall, // Larger subtitle
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF4CAF50)
@@ -1354,7 +1361,7 @@ fun HealthRecommendationDialog(
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                     Text(
-                                        text = "Health Disclaimer",
+                                        text = Localization.tr(LocalContext.current, "rec.disclaimer.title", "Important Health Disclaimer"),
                                         style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.SemiBold,
                                         color = Color.White // Clean white text like trend button
@@ -1362,7 +1369,7 @@ fun HealthRecommendationDialog(
                                 }
                                 Icon(
                                     imageVector = Icons.Default.Info,
-                                    contentDescription = "View disclaimer",
+                                    contentDescription = Localization.tr(LocalContext.current, "disc.title", "Health Information Disclaimer"),
                                     tint = Color.Gray,
                                     modifier = Modifier.size(Dimensions.iconSizeS)
                                 )
@@ -1389,11 +1396,11 @@ fun HealthRecommendationDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Got it",
+                            contentDescription = Localization.tr(LocalContext.current, "common.ok", "OK"),
                             modifier = Modifier.size(Dimensions.iconSizeS) // Larger icon
                         )
                         Text(
-                            text = "Got it, thanks!",
+                            text = Localization.tr(LocalContext.current, "common.ok", "OK"),
                             style = MaterialTheme.typography.bodyMedium, // Larger button text
                             fontWeight = FontWeight.Medium
                         )
@@ -1450,7 +1457,7 @@ fun HealthDisclaimerDialog(
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
-                            text = "Health Disclaimer",
+                            text = Localization.tr(LocalContext.current, "disc.title", "Health Information Disclaimer"),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
                             color = Color.White // Clean white text like trend button
@@ -1464,7 +1471,7 @@ fun HealthDisclaimerDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
                             tint = Color.Gray,
                             modifier = Modifier.size(Dimensions.iconSizeS)
                         )
@@ -1489,7 +1496,7 @@ fun HealthDisclaimerDialog(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Important Notice",
+                            text = Localization.tr(LocalContext.current, "disc.section.notice", "Important Notice"),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
@@ -1499,7 +1506,7 @@ fun HealthDisclaimerDialog(
                         Spacer(modifier = Modifier.height(Dimensions.paddingM))
                         
                         Text(
-                            text = "This information is for educational purposes only and should not replace professional medical advice.",
+                            text = Localization.tr(LocalContext.current, "disc.notice.text", "This app provides general nutritional information and dietary suggestions for educational purposes only. The information is not intended to replace professional medical advice, diagnosis, or treatment."),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray,
                             lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
@@ -1509,7 +1516,7 @@ fun HealthDisclaimerDialog(
                         Spacer(modifier = Modifier.height(Dimensions.paddingM))
                         
                         Text(
-                            text = "Always consult your healthcare provider before making dietary changes or health decisions.",
+                            text = Localization.tr(LocalContext.current, "disc.medical.text", "Always consult with a qualified healthcare provider before making any changes to your diet or nutrition plan, especially if you have medical conditions, allergies, or dietary restrictions."),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray,
                             lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
@@ -1519,7 +1526,7 @@ fun HealthDisclaimerDialog(
                         Spacer(modifier = Modifier.height(Dimensions.paddingM))
                         
                         Text(
-                            text = "Sources: USDA FoodData Central, Dietary Guidelines for Americans",
+                            text = Localization.tr(LocalContext.current, "rec.sources", "Data Sources"),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray.copy(alpha = 0.7f),
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
@@ -1543,7 +1550,7 @@ fun HealthDisclaimerDialog(
                     shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                 ) {
                     Text(
-                        text = "I Understand",
+                        text = Localization.tr(LocalContext.current, "onboarding.understand", "I Understand"),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White // Same as trend button text
@@ -1581,7 +1588,7 @@ fun PhotoErrorAlert(
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = "OK",
+                    text = Localization.tr(LocalContext.current, "common.ok", "OK"),
                     color = DarkPrimary,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium
@@ -1635,7 +1642,7 @@ fun FullScreenPhotoView(
         ) {
             Image(
                 bitmap = bitmap.asImageBitmap(),
-                contentDescription = "Full screen photo",
+                contentDescription = Localization.tr(LocalContext.current, "fs.hint", "Double tap to reset • Pinch to zoom • Drag to pan"),
                 modifier = Modifier
                     .fillMaxSize()
                     .offset { IntOffset(0, offsetY.value.roundToInt()) },
@@ -1668,7 +1675,7 @@ fun DeleteConfirmationDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Confirm Deletion",
+                text = Localization.tr(LocalContext.current, "common.delete", "Confirm Deletion"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -1676,7 +1683,7 @@ fun DeleteConfirmationDialog(
         },
         text = {
             Text(
-                text = "Are you sure you want to remove this food entry? This action cannot be undone.",
+                text = Localization.tr(LocalContext.current, "food.remove.confirm", "Are you sure you want to remove this food entry? This action cannot be undone."),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight
@@ -1690,7 +1697,7 @@ fun DeleteConfirmationDialog(
                     contentColor = Color.White
                 )
             ) {
-                Text("Delete")
+                Text(Localization.tr(LocalContext.current, "common.remove", "Remove"))
             }
         },
         dismissButton = {
@@ -1719,7 +1726,7 @@ fun SportCaloriesDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Sport Calories Bonus",
+                text = Localization.tr(LocalContext.current, "sport.title", "Sport Calories Bonus"),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White
             )
@@ -1727,7 +1734,7 @@ fun SportCaloriesDialog(
         text = {
             Column {
                 Text(
-                    text = "Add extra calories for your sport activities today:",
+                    text = Localization.tr(LocalContext.current, "sport.msg", "Add extra calories for your sport activities today:"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
                     modifier = Modifier.padding(bottom = Dimensions.paddingM)
@@ -1736,8 +1743,8 @@ fun SportCaloriesDialog(
                 OutlinedTextField(
                     value = sportCaloriesInput,
                     onValueChange = onSportCaloriesChange,
-                    label = { Text("Calories", color = Color.Gray) },
-                    placeholder = { Text("Enter calories", color = Color.Gray) },
+                    label = { Text(Localization.tr(LocalContext.current, "calories.label", "Calories"), color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "sport.msg", "Enter calories"), color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
@@ -1763,7 +1770,7 @@ fun SportCaloriesDialog(
                 },
                 colors = ButtonDefaults.textButtonColors(contentColor = DarkPrimary)
             ) {
-                Text("Save")
+                Text(Localization.tr(LocalContext.current, "common.save", "Save"))
             }
         },
         dismissButton = {
@@ -1771,7 +1778,7 @@ fun SportCaloriesDialog(
                 onClick = onDismiss,
                 colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)
             ) {
-                Text("Cancel")
+                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"))
             }
         },
         containerColor = Gray3,

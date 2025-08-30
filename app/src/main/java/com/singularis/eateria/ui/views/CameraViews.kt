@@ -76,6 +76,8 @@ import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
+import com.singularis.eateria.services.Localization
+import androidx.compose.ui.platform.LocalContext
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -238,14 +240,14 @@ private fun CameraPreviewView(
             IconButton(onClick = onDismiss) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
+                    contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)
                 )
             }
             
             Text(
-                text = if (isWeightCamera) "Weight Scale Photo" else "Food Photo",
+                text = if (isWeightCamera) Localization.tr(LocalContext.current, "weight.take_photo", "Take Photo") else Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo"),
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
@@ -260,7 +262,7 @@ private fun CameraPreviewView(
             ) {
                 Icon(
                     imageVector = if (isFlashOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
-                    contentDescription = if (isFlashOn) "Flash On" else "Flash Off",
+                    contentDescription = if (isFlashOn) Localization.tr(LocalContext.current, "camera.flash.on", "Flash On") else Localization.tr(LocalContext.current, "camera.flash.off", "Flash Off"),
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)
                 )
@@ -346,7 +348,7 @@ private fun CameraPreviewView(
                 } else {
                     Icon(
                         imageVector = Icons.Default.Camera,
-                        contentDescription = "Capture",
+                        contentDescription = Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo"),
                         tint = Color.White,
                         modifier = Modifier.size(36.dp)
                     )
@@ -386,7 +388,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "Camera Permission Required",
+                text = Localization.tr(LocalContext.current, "camera.permission.title", "Camera Permission Required"),
                 style = MaterialTheme.typography.headlineSmall,
                 color = Color.White,
                 textAlign = TextAlign.Center
@@ -395,7 +397,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Please enable camera access to take food photos",
+                text = Localization.tr(LocalContext.current, "camera.permission.message", "Please enable camera access to take food photos"),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
@@ -413,7 +415,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Enable Camera",
+                    text = Localization.tr(LocalContext.current, "camera.enable", "Enable Camera"),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -429,7 +431,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Cancel",
+                    text = Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -444,7 +446,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Close",
+                contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
                 tint = Color.White,
                 modifier = Modifier.size(24.dp)
             )
@@ -490,7 +492,7 @@ fun FullScreenPhotoView(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
+                        contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
                     )
@@ -518,7 +520,7 @@ fun FullScreenPhotoView(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Image not available",
+                            text = Localization.tr(LocalContext.current, "camera.image_unavailable", "Image not available"),
                             color = Color.White,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -571,7 +573,7 @@ fun ProfileImageView(
         ) {
             Icon(
                 imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Profile",
+                contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
                 tint = fallbackIconColor,
                 modifier = Modifier.size(displaySize * 0.8f)
             )

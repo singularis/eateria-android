@@ -79,6 +79,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
+import com.singularis.eateria.services.Localization
 
 
 
@@ -109,91 +111,91 @@ fun OnboardingView(
     var showAddFriends by remember { mutableStateOf(false) }
     val onboardingPages = listOf(
         OnboardingPage(
-            title = "Welcome to Eateria! 🍎",
-            description = "Your smart food companion that helps you track calories, monitor weight, and make healthier choices. Let's take a quick tour!",
+            title = Localization.tr(LocalContext.current, "onboarding.welcome.title", "Welcome to Eateria! 🍎"),
+            description = Localization.tr(LocalContext.current, "onboarding.welcome.desc", "Your smart food companion that helps you track calories, monitor weight, and make healthier choices. Let's take a quick tour!"),
             icon = Icons.Default.Restaurant,
             iconColor = Color(0xFF4CAF50),
             anchor = "welcome"
         ),
         OnboardingPage(
-            title = "Smart Food Recognition 📸",
-            description = "Simply take a photo of your food and our AI will automatically identify it and log the calories. No more manual searching!",
+            title = Localization.tr(LocalContext.current, "onboarding.recognition.title", "Smart Food Recognition 📸"),
+            description = Localization.tr(LocalContext.current, "onboarding.recognition.desc", "Simply take a photo of your food and our AI will automatically identify it and log the calories. No more manual searching!"),
             icon = Icons.Default.Camera,
             iconColor = Color(0xFF2196F3),
             anchor = "addfood"
         ),
         OnboardingPage(
-            title = "Track Your Progress 📊",
-            description = "Monitor your daily calories with our color-coded system and track your weight by photographing your scale. Everything is automated!",
+            title = Localization.tr(LocalContext.current, "onboarding.tracking.title", "Track Your Progress 📊"),
+            description = Localization.tr(LocalContext.current, "onboarding.tracking.desc", "Monitor your daily calories with our color-coded system and track your weight by photographing your scale. Everything is automated!"),
             icon = Icons.Default.FitnessCenter,
             iconColor = Color(0xFF9C27B0),
             anchor = "tracking"
         ),
         OnboardingPage(
-            title = "Alcohol Tracking 🍷",
-            description = "See your drinks on a monthly calendar. The top bar alcohol icon changes color based on recency (red ≤ 1 week, yellow ≤ 1 month, green otherwise).",
+            title = Localization.tr(LocalContext.current, "onboarding.alcohol.title", "Alcohol Tracking 🍷"),
+            description = Localization.tr(LocalContext.current, "onboarding.alcohol.desc", "See your drinks on a monthly calendar. The top bar alcohol icon changes color based on recency (red ≤ 1 week, yellow ≤ 1 month, green otherwise)."),
             icon = Icons.Default.WineBar,
             iconColor = Color(0xFFE53935),
             anchor = "alcohol"
         ),
         OnboardingPage(
-            title = "Get Personalized Insights 💡",
+            title = Localization.tr(LocalContext.current, "onboarding.insights.title", "Get Personalized Insights 💡"),
             description = "View your trends, manage your profile, and access health information - all designed to help you reach your wellness goals.",
             icon = Icons.AutoMirrored.Filled.TrendingUp,
             iconColor = Color(0xFFFF9800),
             anchor = "insights"
         ),
         OnboardingPage(
-            title = "Share With Friends 🤝",
+            title = Localization.tr(LocalContext.current, "onboarding.friends.title", "Share Meals with Friends 🤝"),
             description = "Add friends and share portions of your meals to split calories. Keep in touch and see who you share with most.",
             icon = Icons.Default.PersonAdd,
             iconColor = Color(0xFF03A9F4),
             anchor = "friends"
         ),
         OnboardingPage(
-            title = "Personalized Health Setup 📋",
+            title = Localization.tr(LocalContext.current, "onboarding.health_setup.title", "Personalized Health Setup 📋"),
             description = "For the best experience, we can calculate personalized calorie recommendations based on your health data. This is completely optional!",
             icon = Icons.Default.Person,
             iconColor = Color(0xFF3F51B5),
             anchor = "health_setup"
         ),
         OnboardingPage(
-            title = "Your Health Data 📝",
+            title = Localization.tr(LocalContext.current, "onboarding.health_form.title", "Your Health Data 📝"),
             description = "Please provide your basic health information to get personalized recommendations.",
             icon = Icons.Default.Favorite,
             iconColor = Color(0xFFE91E63),
             anchor = "health_form"
         ),
         OnboardingPage(
-            title = "Your Personalized Plan 🎯",
+            title = Localization.tr(LocalContext.current, "onboarding.health_results.title", "Your Personalized Plan 🎯"),
             description = "Based on your data, here are your personalized recommendations for optimal health.",
             icon = Icons.Default.CheckCircle,
             iconColor = Color(0xFF4CAF50),
             anchor = "health_results"
         ),
         OnboardingPage(
-            title = "Important Health Disclaimer ⚠️",
+            title = Localization.tr(LocalContext.current, "onboarding.disclaimer.title", "Important Health Disclaimer ⚠️"),
             description = "This app is for informational purposes only and not a substitute for professional medical advice. Always consult healthcare providers for personalized dietary guidance and medical decisions.",
             icon = Icons.Default.Warning,
             iconColor = Color(0xFFFF9800),
             anchor = "disclaimer"
         ),
         OnboardingPage(
-            title = "Choose Data Mode",
+            title = Localization.tr(LocalContext.current, "onboarding.datamode.title", "Choose Your Data Mode 📈"),
             description = "Pick how much detail you prefer on the main screen. You can change this later in Profile → Display Mode.",
             icon = Icons.Default.Settings,
             iconColor = Color(0xFF607D8B),
             anchor = "display_mode"
         ),
         OnboardingPage(
-            title = "Meal Reminders",
+            title = Localization.tr(LocalContext.current, "onboarding.notifications.title", "Stay on Track with Gentle Reminders ⏰"),
             description = "Enable reminders to nudge you to log meals throughout the day. You can change this anytime in settings.",
             icon = Icons.Default.Notifications,
             iconColor = Color(0xFF03A9F4),
             anchor = "notifications"
         ),
         OnboardingPage(
-            title = "You're All Set! 🎉",
+            title = Localization.tr(LocalContext.current, "onboarding.complete.title", "You're All Set! 🎉"),
             description = "Ready to start your healthy journey? You can always revisit this tutorial from your profile settings if needed.",
             icon = Icons.Default.CheckCircle,
             iconColor = Color(0xFF4CAF50),
@@ -209,7 +211,7 @@ fun OnboardingView(
     var weight by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
     var isMale by remember { mutableStateOf(true) }
-    var activityLevel by remember { mutableStateOf("Sedentary") }
+    var activityLevel by remember { mutableStateOf(Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary")) }
     var showingHealthDataAlert by remember { mutableStateOf(false) }
     var agreedToProvideData by remember { mutableStateOf(false) }
     
@@ -218,7 +220,13 @@ fun OnboardingView(
     var recommendedCalories by remember { mutableStateOf(0) }
     var timeToOptimalWeight by remember { mutableStateOf("") }
     
-    val activityLevels = listOf("Sedentary", "Lightly Active", "Moderately Active", "Very Active", "Extremely Active")
+    val activityLevels = listOf(
+        Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary"), 
+        Localization.tr(LocalContext.current, "health.activity.lightly", "Lightly Active"), 
+        Localization.tr(LocalContext.current, "health.activity.moderately", "Moderately Active"), 
+        Localization.tr(LocalContext.current, "health.activity.very", "Very Active"), 
+        Localization.tr(LocalContext.current, "health.activity.extremely", "Extremely Active")
+    )
     
     var notificationsOptIn by remember { mutableStateOf(true) }
     var fullDisplayMode by remember { mutableStateOf(false) }
@@ -252,7 +260,7 @@ fun OnboardingView(
                             contentColor = Color.Gray
                         )
                     ) {
-                        Text("Skip", fontSize = 16.sp)
+                        Text(Localization.tr(LocalContext.current, "onboarding.skip", "Skip"), fontSize = 16.sp)
                     }
                 }
                 
@@ -385,7 +393,7 @@ fun OnboardingView(
                                 contentColor = Color.Gray
                             )
                         ) {
-                            Text("Previous", fontSize = 16.sp)
+                            Text(Localization.tr(LocalContext.current, "common.back", "Previous"), fontSize = 16.sp)
                         }
                     } else {
                         Spacer(modifier = Modifier.width(80.dp))
@@ -453,9 +461,9 @@ fun OnboardingView(
                         ) {
                             Text(
                                 text = when (onboardingPages[pagerState.currentPage].anchor) {
-                                    "disclaimer" -> "I Understand\n& Agree"
-                                    "health_form" -> "Calculate My\nPlan"
-                                    else -> if (pagerState.currentPage < onboardingPages.size - 1) "Next" else "Get Started"
+                                    "disclaimer" -> Localization.tr(LocalContext.current, "onboarding.understand", "I Understand")
+                                    "health_form" -> Localization.tr(LocalContext.current, "health.calc_plan", "Calculate My Plan")
+                                    else -> if (pagerState.currentPage < onboardingPages.size - 1) Localization.tr(LocalContext.current, "onboarding.next", "Next") else Localization.tr(LocalContext.current, "onboarding.getstarted", "Get Started")
                                 },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium,
@@ -473,8 +481,8 @@ fun OnboardingView(
         // Health data validation alert
         if (showingHealthDataAlert) {
             AlertHelper.SimpleAlert(
-                title = "Invalid Health Data",
-                message = "Please provide valid values:\n• Height: 100-300 cm\n• Weight: 30-500 kg\n• Age: 13-120 years",
+                title = Localization.tr(LocalContext.current, "health.invalid.title", "Invalid Health Data"),
+                message = Localization.tr(LocalContext.current, "health.invalid.msg", "Please provide valid values for height (cm), weight (kg), and age (years)."),
                 isVisible = true,
                 onDismiss = { showingHealthDataAlert = false }
             )
@@ -554,7 +562,7 @@ private fun DisplayModeOnboardingView(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Simplified (default)")
+                Text(Localization.tr(LocalContext.current, "common.simplified", "Simplified") + " (default)")
             }
 
             Button(
@@ -568,7 +576,7 @@ private fun DisplayModeOnboardingView(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Full (show macros)")
+                Text(Localization.tr(LocalContext.current, "common.full", "Full") + " (show macros)")
             }
         }
     }
@@ -632,7 +640,7 @@ private fun NotificationsOnboardingView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Enable meal reminders",
+                text = Localization.tr(LocalContext.current, "onboarding.reminders", "Enable meal reminders"),
                 color = Color.White,
                 fontSize = 16.sp
             )
@@ -722,7 +730,7 @@ private fun HealthSetupView(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "Yes, Let's Personalize",
+                    text = Localization.tr(LocalContext.current, "onboarding.personalize", "Yes, Let's Personalize"),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -741,7 +749,7 @@ private fun HealthSetupView(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "Skip This Step",
+                    text = Localization.tr(LocalContext.current, "onboarding.skip_step", "Skip This Step"),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -829,7 +837,7 @@ private fun HealthFormView(
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "Calculate My\nPersonalized Plan",
+                text = Localization.tr(LocalContext.current, "health.calc_plan", "Calculate My Plan"),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -848,7 +856,7 @@ private fun HealthFormView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Height (cm):",
+                    text = Localization.tr(LocalContext.current, "health.height", "Height (cm):"),
                     color = Color.White,
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
@@ -860,7 +868,7 @@ private fun HealthFormView(
                             onHeightChange(newValue.filter { it.isDigit() || it == '.' })
                         }
                     },
-                    placeholder = { Text("175", color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "health.height.placeholder", "175"), color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
@@ -880,7 +888,7 @@ private fun HealthFormView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Weight (kg):",
+                    text = Localization.tr(LocalContext.current, "health.weight", "Weight (kg):"),
                     color = Color.White,
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
@@ -892,7 +900,7 @@ private fun HealthFormView(
                             onWeightChange(newValue.filter { it.isDigit() || it == '.' })
                         }
                     },
-                    placeholder = { Text("70", color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "health.weight.placeholder", "70"), color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
@@ -912,7 +920,7 @@ private fun HealthFormView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Age (years):",
+                    text = Localization.tr(LocalContext.current, "health.age", "Age (years):"),
                     color = Color.White,
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
@@ -924,7 +932,7 @@ private fun HealthFormView(
                             onAgeChange(newValue.filter { it.isDigit() })
                         }
                     },
-                    placeholder = { Text("25", color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "health.age.placeholder", "25"), color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = Color.White,
@@ -944,7 +952,7 @@ private fun HealthFormView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Sex:",
+                    text = Localization.tr(LocalContext.current, "health.gender", "Gender:"),
                     color = Color.White,
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
@@ -962,7 +970,7 @@ private fun HealthFormView(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Male",
+                            text = Localization.tr(LocalContext.current, "health.gender.male", "Male"),
                             maxLines = 1,
                             fontSize = 14.sp
                         )
@@ -976,7 +984,7 @@ private fun HealthFormView(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Female",
+                            text = Localization.tr(LocalContext.current, "health.gender.female", "Female"),
                             maxLines = 1,
                             fontSize = 14.sp
                         )
@@ -990,7 +998,7 @@ private fun HealthFormView(
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
-                    text = "Activity Level:",
+                    text = Localization.tr(LocalContext.current, "health.activity", "Activity Level:"),
                     color = Color.White,
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp)
@@ -1083,19 +1091,19 @@ private fun HealthResultsView(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ResultCard(
-                title = "🎯 Optimal Weight",
+                title = Localization.tr(LocalContext.current, "health.optimal_weight", "🎯 Optimal Weight"),
                 value = "${String.format("%.1f", optimalWeight)} kg",
                 color = CalorieGreen
             )
             
             ResultCard(
-                title = "🔥 Daily Calorie Target",
+                title = Localization.tr(LocalContext.current, "health.daily_calorie", "🔥 Daily Calorie Target"),
                 value = "$recommendedCalories kcal",
                 color = CalorieOrange
             )
             
             ResultCard(
-                title = "⏰ Estimated Timeline",
+                title = Localization.tr(LocalContext.current, "health.estimated_timeline", "⏰ Estimated Timeline"),
                 value = timeToOptimalWeight,
                 color = DarkPrimary
             )
@@ -1177,11 +1185,11 @@ private fun validateAndCalculateHealthData(
     
     // Adjust for activity level (more active = more muscle mass = higher healthy weight)
     val activityAdjustment = when (activityLevel) {
-        "Sedentary" -> -0.5 // Slightly lower for sedentary
-        "Lightly Active" -> 0.0 // Base level
-        "Moderately Active" -> 0.5 // Slightly higher
-        "Very Active" -> 1.0 // Higher for athletes
-        "Extremely Active" -> 1.5 // Much higher for very athletic people
+        Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary") -> -0.5 // Slightly lower for sedentary
+        Localization.tr(LocalContext.current, "health.activity.lightly", "Lightly Active") -> 0.0 // Base level
+        Localization.tr(LocalContext.current, "health.activity.moderately", "Moderately Active") -> 0.5 // Slightly higher
+        Localization.tr(LocalContext.current, "health.activity.very", "Very Active") -> 1.0 // Higher for athletes
+        Localization.tr(LocalContext.current, "health.activity.extremely", "Extremely Active") -> 1.5 // Much higher for very athletic people
         else -> 0.0
     }
     
@@ -1202,11 +1210,11 @@ private fun validateAndCalculateHealthData(
     
     // Activity multipliers
     val activityMultiplier = when (activityLevel) {
-        "Sedentary" -> 1.2
-        "Lightly Active" -> 1.375
-        "Moderately Active" -> 1.55
-        "Very Active" -> 1.725
-        "Extremely Active" -> 1.9
+        Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary") -> 1.2
+        Localization.tr(LocalContext.current, "health.activity.lightly", "Lightly Active") -> 1.375
+        Localization.tr(LocalContext.current, "health.activity.moderately", "Moderately Active") -> 1.55
+        Localization.tr(LocalContext.current, "health.activity.very", "Very Active") -> 1.725
+        Localization.tr(LocalContext.current, "health.activity.extremely", "Extremely Active") -> 1.9
         else -> 1.2
     }
     
@@ -1385,7 +1393,7 @@ private fun FriendsOnboardingView(
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "Add Friends",
+                text = Localization.tr(LocalContext.current, "friends.add", "Add Friend"),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

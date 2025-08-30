@@ -318,5 +318,17 @@
   "profile.delete.desc": "Scrios do chuntas go buan",
   "profile.logout.confirm": "An bhfuil tú cinnte gur mian leat logáil amach?",
   "profile.no_email": "Gan ríomhphost",
-  "profile.language.select": "Roghnaigh teanga"
+  "profile.language.select": "Roghnaigh teanga",
+  "stats.calorie.consistency": "Calorie Consistency",
+  "stats.daily.averages": "Daily Averages",
+  "stats.macro.carbs": "Carbs",
+  "stats.macro.distribution": "Average Macro Distribution",
+  "stats.macro.fat": "Fat",
+  "stats.macro.protein": "Protein",
+  "stats.no_data": "No data available for this period",
+  "stats.scale.kcal_log": "kcal (log)",
+  "stats.scale.linear": "Linear Scale",
+  "stats.scale.log": "Log Scale",
+  "stats.total.calories": "Total Calories",
+  "stats.trend.direction": "Trend direction"
 }

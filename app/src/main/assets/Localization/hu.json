@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "A testsúly rögzítése nem sikerült. Próbálja újra.",
   "weight.recorded.msg": "Testsúlyát sikeresen rögzítettük.",
   "weight.recorded.title": "Testsúly rögzítve",
-  "weight.take_photo": "Fénykép készítése"
+  "weight.take_photo": "Fénykép készítése",
+  "profile.addfriends.desc": "Barátok keresése és hozzáadása e-mail alapján",
+  "profile.tutorial.desc": "Az alkalmazás oktatóanyagának újrajátszása",
+  "profile.sharefeedback.desc": "Segítsen nekünk az alkalmazás fejlesztésében",
+  "disc.subtitle": "Fontos egészségügyi információk",
+  "profile.account": "Fiók",
+  "profile.logout.desc": "Kijelentkezés a fiókból",
+  "profile.delete.desc": "Fiók végleges törlése",
+  "profile.logout.confirm": "Biztos benne, hogy ki szeretne jelentkezni?",
+  "profile.no_email": "Nincs e-mail",
+  "profile.language.select": "Nyelv kiválasztása"
 }

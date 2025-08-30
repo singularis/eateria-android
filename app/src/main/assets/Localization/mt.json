@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "Ir-reġistrazzjoni tal-piż falliet. Erġa’ pprova.",
   "weight.recorded.msg": "Il-piż tiegħek ġie rreġistrat b’suċċess.",
   "weight.recorded.title": "Il-piż irreġistrat",
-  "weight.take_photo": "Ħu ritratt"
+  "weight.take_photo": "Ħu ritratt",
+  "profile.addfriends.desc": "Sib u żid ħbieb permezz tal-email",
+  "profile.tutorial.desc": "Erġa' laqqa' t-tutorial tal-app",
+  "profile.sharefeedback.desc": "Għinna ntejbu l-app",
+  "disc.subtitle": "Informazzjoni importanti dwar is-saħħa",
+  "profile.account": "Kont",
+  "profile.logout.desc": "Oħroġ mill-kont tiegħek",
+  "profile.delete.desc": "Ħassar il-kont tiegħek permanentement",
+  "profile.logout.confirm": "Żgur li trid toħroġ?",
+  "profile.no_email": "Ebda email",
+  "profile.language.select": "Agħżel Lingwa"
 }

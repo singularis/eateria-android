@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "Záznam hmotnosti zlyhal. Skúste znova.",
   "weight.recorded.msg": "Vaša hmotnosť bola úspešne zaznamenaná.",
   "weight.recorded.title": "Hmotnosť zaznamenaná",
-  "weight.take_photo": "Odfotiť"
+  "weight.take_photo": "Odfotiť",
+  "profile.addfriends.desc": "Nájsť a pridať priateľov cez email",
+  "profile.tutorial.desc": "Prehrať návod aplikácie",
+  "profile.sharefeedback.desc": "Pomôžte nám vylepšiť aplikáciu",
+  "disc.subtitle": "Dôležité zdravotné informácie",
+  "profile.account": "Účet",
+  "profile.logout.desc": "Odhlásiť sa z účtu",
+  "profile.delete.desc": "Trvalo vymazať účet",
+  "profile.logout.confirm": "Ste si istí, že sa chcete odhlásiť?",
+  "profile.no_email": "Žiadny email",
+  "profile.language.select": "Vybrať jazyk"
 }

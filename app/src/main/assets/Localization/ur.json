@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "وزن ریکارڈ کرنے میں ناکامی۔ دوبارہ کوشش کریں۔",
   "weight.recorded.msg": "آپ کا وزن کامیابی سے ریکارڈ ہو گیا۔",
   "weight.recorded.title": "وزن ریکارڈ ہو گیا",
-  "weight.take_photo": "تصویر لیں"
+  "weight.take_photo": "تصویر لیں",
+  "profile.addfriends.desc": "ای میل کے ذریعے دوست تلاش کریں اور شامل کریں",
+  "profile.tutorial.desc": "ایپ کا ٹیوٹوریل دوبارہ چلائیں",
+  "profile.sharefeedback.desc": "ایپ کو بہتر بنانے میں ہماری مدد کریں",
+  "disc.subtitle": "اہم صحت کی معلومات",
+  "profile.account": "اکاؤنٹ",
+  "profile.logout.desc": "اپنے اکاؤنٹ سے لاگ آؤٹ کریں",
+  "profile.delete.desc": "اپنا اکاؤنٹ مستقل طور پر ڈیلیٹ کریں",
+  "profile.logout.confirm": "کیا آپ واقعی لاگ آؤٹ کرنا چاہتے ہیں؟",
+  "profile.no_email": "کوئی ای میل نہیں",
+  "profile.language.select": "زبان منتخب کریں"
 }

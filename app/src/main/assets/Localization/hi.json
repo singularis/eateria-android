@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "वजन रिकॉर्ड करने में विफल। कृपया फिर से प्रयास करें।",
   "weight.recorded.msg": "आपका वजन सफलतापूर्वक रिकॉर्ड हो गया है।",
   "weight.recorded.title": "वजन रिकॉर्ड हुआ",
-  "weight.take_photo": "फोटो लें"
+  "weight.take_photo": "फोटो लें",
+  "profile.addfriends.desc": "ईमेल द्वारा मित्र खोजें और जोड़ें",
+  "profile.tutorial.desc": "ऐप ट्यूटोरियल फिर से चलाएं",
+  "profile.sharefeedback.desc": "ऐप को बेहतर बनाने में हमारी मदद करें",
+  "disc.subtitle": "महत्वपूर्ण स्वास्थ्य जानकारी",
+  "profile.account": "खाता",
+  "profile.logout.desc": "अपने खाते से लॉग आउट करें",
+  "profile.delete.desc": "अपना खाता स्थायी रूप से हटाएं",
+  "profile.logout.confirm": "क्या आप वाकई लॉग आउट करना चाहते हैं?",
+  "profile.no_email": "कोई ईमेल नहीं",
+  "profile.language.select": "भाषा चुनें"
 }

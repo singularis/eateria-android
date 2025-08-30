@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "ไม่สามารถบันทึกน้ำหนักได้ โปรดลองอีกครั้ง",
   "weight.recorded.msg": "บันทึกน้ำหนักของคุณเรียบร้อยแล้ว",
   "weight.recorded.title": "บันทึกน้ำหนักแล้ว",
-  "weight.take_photo": "ถ่ายรูป"
+  "weight.take_photo": "ถ่ายรูป",
+  "profile.addfriends.desc": "ค้นหาและเพิ่มเพื่อนทางอีเมล",
+  "profile.tutorial.desc": "เล่นบทช่วยสอนแอปอีกครั้ง",
+  "profile.sharefeedback.desc": "ช่วยเราปรับปรุงแอป",
+  "disc.subtitle": "ข้อมูลสุขภาพที่สำคัญ",
+  "profile.account": "บัญชี",
+  "profile.logout.desc": "ออกจากระบบบัญชีของคุณ",
+  "profile.delete.desc": "ลบบัญชีของคุณอย่างถาวร",
+  "profile.logout.confirm": "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?",
+  "profile.no_email": "ไม่มีอีเมล",
+  "profile.language.select": "เลือกภาษา"
 }

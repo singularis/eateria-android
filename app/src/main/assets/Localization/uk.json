@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "Не вдалося записати вагу. Спробуйте ще раз.",
   "weight.recorded.msg": "Вашу вагу успішно записано.",
   "weight.recorded.title": "Вагу записано",
-  "weight.take_photo": "Зробити фото"
+  "weight.take_photo": "Зробити фото",
+  "profile.addfriends.desc": "Знайти та додати друзів через електронну пошту",
+  "profile.tutorial.desc": "Повторити навчання додатка",
+  "profile.sharefeedback.desc": "Допоможіть нам покращити додаток",
+  "disc.subtitle": "Важлива інформація про здоров'я",
+  "profile.account": "Обліковий запис",
+  "profile.logout.desc": "Вийти з облікового запису",
+  "profile.delete.desc": "Назавжди видалити обліковий запис",
+  "profile.logout.confirm": "Ви впевнені, що хочете вийти?",
+  "profile.no_email": "Немає електронної пошти",
+  "profile.language.select": "Вибрати мову"
 }

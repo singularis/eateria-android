@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "Ghi cân nặng thất bại. Vui lòng thử lại.",
   "weight.recorded.msg": "Cân nặng của bạn đã được ghi thành công.",
   "weight.recorded.title": "Đã ghi cân nặng",
-  "weight.take_photo": "Chụp ảnh"
+  "weight.take_photo": "Chụp ảnh",
+  "profile.addfriends.desc": "Tìm và thêm bạn bè qua email",
+  "profile.tutorial.desc": "Phát lại hướng dẫn ứng dụng",
+  "profile.sharefeedback.desc": "Giúp chúng tôi cải thiện ứng dụng",
+  "disc.subtitle": "Thông tin sức khỏe quan trọng",
+  "profile.account": "Tài khoản",
+  "profile.logout.desc": "Đăng xuất khỏi tài khoản",
+  "profile.delete.desc": "Xóa tài khoản vĩnh viễn",
+  "profile.logout.confirm": "Bạn có chắc muốn đăng xuất không?",
+  "profile.no_email": "Không có email",
+  "profile.language.select": "Chọn Ngôn Ngữ"
 }

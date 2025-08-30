@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "Zabeležitev teže ni uspela. Poskusite znova.",
   "weight.recorded.msg": "Vaša teža je bila uspešno zabeležena.",
   "weight.recorded.title": "Teža zabeležena",
-  "weight.take_photo": "Posnemi fotografijo"
+  "weight.take_photo": "Posnemi fotografijo",
+  "profile.addfriends.desc": "Najdite in dodajte prijatelje preko e-pošte",
+  "profile.tutorial.desc": "Predvajaj vodič aplikacije",
+  "profile.sharefeedback.desc": "Pomagajte nam izboljšati aplikacijo",
+  "disc.subtitle": "Pomembne zdravstvene informacije",
+  "profile.account": "Račun",
+  "profile.logout.desc": "Odjava iz računa",
+  "profile.delete.desc": "Trajno izbriši račun",
+  "profile.logout.confirm": "Ali se res želite odjaviti?",
+  "profile.no_email": "Ni e-pošte",
+  "profile.language.select": "Izberi jezik"
 }

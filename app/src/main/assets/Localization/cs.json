@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Vaše hmotnost byla úspěšně zaznamenána.",
   "weight.recorded.title": "Hmotnost zaznamenána",
   "weight.take_photo": "Pořídit fotografii"
+,
+  "profile.addfriends.desc": "Najděte a přidejte přátele podle e‑mailu",
+  "profile.tutorial.desc": "Přehrát výukový program aplikace znovu",
+  "profile.sharefeedback.desc": "Pomozte nám vylepšit aplikaci",
+  "disc.subtitle": "Důležité zdravotní informace",
+  "profile.account": "Účet",
+  "profile.logout.desc": "Odhlásit se ze svého účtu",
+  "profile.delete.desc": "Trvale odstranit váš účet",
+  "profile.logout.confirm": "Opravdu se chcete odhlásit?",
+  "profile.no_email": "Bez e‑mailu",
+  "profile.language.select": "Vybrat jazyk"
 }

@@ -309,4 +309,15 @@
   "weight.recorded.msg": "আপনার ওজন সফলভাবে রেকর্ড করা হয়েছে।",
   "weight.recorded.title": "ওজন রেকর্ড হয়েছে",
   "weight.take_photo": "ছবি তুলুন"
+,
+  "profile.addfriends.desc": "ইমেইলের মাধ্যমে বন্ধু খুঁজুন এবং যোগ করুন",
+  "profile.tutorial.desc": "অ্যাপ টিউটোরিয়াল পুনরায় চালান",
+  "profile.sharefeedback.desc": "অ্যাপ উন্নত করতে আমাদের সহায়তা করুন",
+  "disc.subtitle": "গুরুত্বপূর্ণ স্বাস্থ্য তথ্য",
+  "profile.account": "অ্যাকাউন্ট",
+  "profile.logout.desc": "আপনার অ্যাকাউন্ট থেকে সাইন আউট করুন",
+  "profile.delete.desc": "আপনার অ্যাকাউন্ট স্থায়ীভাবে মুছে ফেলুন",
+  "profile.logout.confirm": "আপনি কি সত্যিই সাইন আউট করতে চান?",
+  "profile.no_email": "কোন ইমেইল নেই",
+  "profile.language.select": "ভাষা নির্বাচন করুন"
 }

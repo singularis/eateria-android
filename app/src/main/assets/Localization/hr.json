@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Vaša težina je uspješno zabilježena.",
   "weight.recorded.title": "Težina zabilježena",
   "weight.take_photo": "Fotografiraj"
+,
+  "profile.addfriends.desc": "Pronađite i dodajte prijatelje putem e‑pošte",
+  "profile.tutorial.desc": "Ponovno pokreni vodič kroz aplikaciju",
+  "profile.sharefeedback.desc": "Pomozite nam poboljšati aplikaciju",
+  "disc.subtitle": "Važne zdravstvene informacije",
+  "profile.account": "Račun",
+  "profile.logout.desc": "Odjavite se s računa",
+  "profile.delete.desc": "Trajno izbrišite svoj račun",
+  "profile.logout.confirm": "Jeste li sigurni da se želite odjaviti?",
+  "profile.no_email": "Nema e‑pošte",
+  "profile.language.select": "Odaberite jezik"
 }

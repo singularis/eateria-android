@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Seu peso foi registrado com sucesso.",
   "weight.recorded.title": "Peso registrado",
   "weight.take_photo": "Tirar foto"
+,
+  "profile.addfriends.desc": "Encontrar e adicionar amigos por e-mail",
+  "profile.tutorial.desc": "Rever o tutorial do app",
+  "profile.sharefeedback.desc": "Ajude-nos a melhorar o app",
+  "disc.subtitle": "Informações importantes de saúde",
+  "profile.account": "Conta",
+  "profile.logout.desc": "Sair da sua conta",
+  "profile.delete.desc": "Excluir permanentemente sua conta",
+  "profile.logout.confirm": "Tem certeza de que deseja sair?",
+  "profile.no_email": "Sem e-mail",
+  "profile.language.select": "Selecionar idioma"
 }

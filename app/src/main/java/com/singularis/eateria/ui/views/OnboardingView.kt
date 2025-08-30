@@ -36,9 +36,12 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -80,7 +83,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.collectAsState
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.services.LanguageService
 
 
 
@@ -108,8 +113,19 @@ fun OnboardingView(
     onChooseDisplayMode: (Boolean) -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     var showAddFriends by remember { mutableStateOf(false) }
+    var showLanguageSelector by remember { mutableStateOf(false) }
+    // Observe language to trigger recomposition of text content when changed
+    val currentLanguage by LanguageService.languageFlow(LocalContext.current).collectAsState(initial = LanguageService.getCurrentCode(LocalContext.current))
     val onboardingPages = listOf(
+        OnboardingPage(
+            title = Localization.tr(LocalContext.current, "onboarding.language.select", "Select Language"),
+            description = Localization.tr(LocalContext.current, "onboarding.language.desc", "Choose your preferred language. You can change this later in Profile."),
+            icon = Icons.Default.Language,
+            iconColor = Color(0xFF4CAF50),
+            anchor = "language_select"
+        ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.welcome.title", "Welcome to Eateria! 🍎"),
             description = Localization.tr(LocalContext.current, "onboarding.welcome.desc", "Your smart food companion that helps you track calories, monitor weight, and make healthier choices. Let's take a quick tour!"),
@@ -161,7 +177,7 @@ fun OnboardingView(
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.health_form.title", "Your Health Data 📝"),
-            description = "Please provide your basic health information to get personalized recommendations.",
+            description = Localization.tr(LocalContext.current, "onboarding.health_form.desc", "Please provide your basic health information to get personalized recommendations."),
             icon = Icons.Default.Favorite,
             iconColor = Color(0xFFE91E63),
             anchor = "health_form"
@@ -211,7 +227,7 @@ fun OnboardingView(
     var weight by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
     var isMale by remember { mutableStateOf(true) }
-    var activityLevel by remember { mutableStateOf(Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary")) }
+    var activityLevel by remember { mutableStateOf("Sedentary") }
     var showingHealthDataAlert by remember { mutableStateOf(false) }
     var agreedToProvideData by remember { mutableStateOf(false) }
     
@@ -221,11 +237,11 @@ fun OnboardingView(
     var timeToOptimalWeight by remember { mutableStateOf("") }
     
     val activityLevels = listOf(
-        Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary"), 
-        Localization.tr(LocalContext.current, "health.activity.lightly", "Lightly Active"), 
-        Localization.tr(LocalContext.current, "health.activity.moderately", "Moderately Active"), 
-        Localization.tr(LocalContext.current, "health.activity.very", "Very Active"), 
-        Localization.tr(LocalContext.current, "health.activity.extremely", "Extremely Active")
+        "Sedentary",
+        "Lightly Active",
+        "Moderately Active",
+        "Very Active",
+        "Extremely Active"
     )
     
     var notificationsOptIn by remember { mutableStateOf(true) }
@@ -255,7 +271,13 @@ fun OnboardingView(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
-                        onClick = { onComplete(null, true) },
+                        onClick = {
+                            if (!LanguageService.hasPersistedLanguage(context)) {
+                                // If no language was chosen, default to English
+                                coroutineScope.launch { LanguageService.setLanguage(context, "en") }
+                            }
+                            onComplete(null, true)
+                        },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = Color.Gray
                         )
@@ -272,6 +294,11 @@ fun OnboardingView(
                     modifier = Modifier.weight(1f)
                 ) { page ->
                     when (onboardingPages[page].anchor) {
+                        "language_select" -> LanguageSelectOnboardingView(page = onboardingPages[page])
+                        "welcome" -> WelcomeOnboardingView(
+                            page = onboardingPages[page],
+                            onLanguageSelect = { showLanguageSelector = true }
+                        )
                         "friends" -> FriendsOnboardingView(
                             page = onboardingPages[page],
                             onAddFriendsClick = { showAddFriends = true }
@@ -494,6 +521,17 @@ fun OnboardingView(
                 onFriendAdded = { showAddFriends = false }
             )
         }
+        
+        // Language Selector Dialog
+        if (showLanguageSelector) {
+            LanguageSelectorDialog(
+                currentLanguage = LanguageService.getCurrentCode(LocalContext.current),
+                onLanguageSelected = { newLanguage ->
+                    showLanguageSelector = false
+                },
+                onDismiss = { showLanguageSelector = false }
+            )
+        }
     }
 }
 @Composable
@@ -562,7 +600,7 @@ private fun DisplayModeOnboardingView(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(Localization.tr(LocalContext.current, "common.simplified", "Simplified") + " (default)")
+                Text(Localization.tr(LocalContext.current, "common.simplified", "Simplified"))
             }
 
             Button(
@@ -576,7 +614,7 @@ private fun DisplayModeOnboardingView(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(Localization.tr(LocalContext.current, "common.full", "Full") + " (show macros)")
+                Text(Localization.tr(LocalContext.current, "common.full", "Full"))
             }
         }
     }
@@ -640,7 +678,7 @@ private fun NotificationsOnboardingView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = Localization.tr(LocalContext.current, "onboarding.reminders", "Enable meal reminders"),
+                text = Localization.tr(LocalContext.current, "onboarding.notifications.enable", "Enable Reminders"),
                 color = Color.White,
                 fontSize = 16.sp
             )
@@ -1185,11 +1223,11 @@ private fun validateAndCalculateHealthData(
     
     // Adjust for activity level (more active = more muscle mass = higher healthy weight)
     val activityAdjustment = when (activityLevel) {
-        Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary") -> -0.5 // Slightly lower for sedentary
-        Localization.tr(LocalContext.current, "health.activity.lightly", "Lightly Active") -> 0.0 // Base level
-        Localization.tr(LocalContext.current, "health.activity.moderately", "Moderately Active") -> 0.5 // Slightly higher
-        Localization.tr(LocalContext.current, "health.activity.very", "Very Active") -> 1.0 // Higher for athletes
-        Localization.tr(LocalContext.current, "health.activity.extremely", "Extremely Active") -> 1.5 // Much higher for very athletic people
+        "Sedentary" -> -0.5 // Slightly lower for sedentary
+        "Lightly Active" -> 0.0 // Base level
+        "Moderately Active" -> 0.5 // Slightly higher
+        "Very Active" -> 1.0 // Higher for athletes
+        "Extremely Active" -> 1.5 // Much higher for very athletic people
         else -> 0.0
     }
     
@@ -1210,11 +1248,11 @@ private fun validateAndCalculateHealthData(
     
     // Activity multipliers
     val activityMultiplier = when (activityLevel) {
-        Localization.tr(LocalContext.current, "health.activity.sedentary", "Sedentary") -> 1.2
-        Localization.tr(LocalContext.current, "health.activity.lightly", "Lightly Active") -> 1.375
-        Localization.tr(LocalContext.current, "health.activity.moderately", "Moderately Active") -> 1.55
-        Localization.tr(LocalContext.current, "health.activity.very", "Very Active") -> 1.725
-        Localization.tr(LocalContext.current, "health.activity.extremely", "Extremely Active") -> 1.9
+        "Sedentary" -> 1.2
+        "Lightly Active" -> 1.375
+        "Moderately Active" -> 1.55
+        "Very Active" -> 1.725
+        "Extremely Active" -> 1.9
         else -> 1.2
     }
     
@@ -1230,7 +1268,7 @@ private fun validateAndCalculateHealthData(
         kotlin.math.abs(weightDifference) < 3 -> {
             // Maintain current weight - expanded range for more people
             calorieAdjustment = 0.0
-            timeToGoal = "You are at optimal weight range!"
+            timeToGoal = "You are at optimal weight!"
         }
         weightDifference > 0 -> {
             // Lose weight - conservative approach with smaller deficit for sustainability
@@ -1402,6 +1440,102 @@ private fun FriendsOnboardingView(
 }
 
 @Composable
+private fun LanguageSelectOnboardingView(
+    page: OnboardingPage
+) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val languages = remember {
+        LanguageService.availableLanguageCodes(context)
+            .map { code ->
+                LanguageOption(
+                    code = code,
+                    flag = LanguageService.flagEmoji(code),
+                    nativeName = LanguageService.nativeName(code)
+                )
+            }
+            .sortedBy { it.nativeName.lowercase() }
+    }
+    val deviceDefault = LanguageService.deviceDefault()
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(page.iconColor.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = page.icon,
+                contentDescription = null,
+                tint = page.iconColor,
+                modifier = Modifier.size(60.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = page.title,
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 34.sp
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = Localization.tr(LocalContext.current, "onboarding.language.desc", "Choose your preferred language. You can change this later in Profile."),
+            color = Color.Gray,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        LazyColumn(
+            modifier = Modifier
+                .height(360.dp)
+                .padding(horizontal = 30.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(languages.size) { index ->
+                val lang = languages[index]
+                val isDeviceDefault = lang.code == deviceDefault
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            val ok = LanguageService.setLanguage(context, lang.code)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isDeviceDefault) CalorieGreen else Gray3,
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = if (lang.flag.isNotEmpty()) lang.flag else "", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(text = lang.nativeName)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun PageIndicator(
     isSelected: Boolean,
     modifier: Modifier = Modifier
@@ -1413,6 +1547,55 @@ private fun PageIndicator(
                 if (isSelected) DarkPrimary else Gray3
             )
     )
+}
+
+@Composable
+private fun WelcomeOnboardingView(
+    page: OnboardingPage,
+    onLanguageSelect: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(page.iconColor.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = page.icon,
+                contentDescription = null,
+                tint = page.iconColor,
+                modifier = Modifier.size(60.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Text(
+            text = page.title,
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 34.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = page.description,
+            color = Color.Gray,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
 }
 
 // Extension function for easier usage

@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Ваша вага паспяхова запісана.",
   "weight.recorded.title": "Вага запісана",
   "weight.take_photo": "Зрабіць фота"
+,
+  "profile.addfriends.desc": "Знайсці і дадаць сяброў па электроннай пошце",
+  "profile.tutorial.desc": "Паўтарыць навучальны курс у дадатку",
+  "profile.sharefeedback.desc": "Дапамажыце нам палепшыць дадатак",
+  "disc.subtitle": "Важная інфармацыя аб здароўі",
+  "profile.account": "Акаўнт",
+  "profile.logout.desc": "Выйсці з вашага акаўнта",
+  "profile.delete.desc": "Назаўсёды выдаліць ваш акаўнт",
+  "profile.logout.confirm": "Вы ўпэўнены, што хочаце выйсці?",
+  "profile.no_email": "Няма электроннай пошты",
+  "profile.language.select": "Выбраць мову"
 }

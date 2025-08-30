@@ -309,4 +309,15 @@
   "weight.recorded.msg": "体重が正常に記録されました。",
   "weight.recorded.title": "体重を記録しました",
   "weight.take_photo": "写真を撮る"
+,
+  "profile.addfriends.desc": "メールで友達を見つけて追加",
+  "profile.tutorial.desc": "アプリのチュートリアルをもう一度再生",
+  "profile.sharefeedback.desc": "アプリの改善にご協力ください",
+  "disc.subtitle": "重要な健康情報",
+  "profile.account": "アカウント",
+  "profile.logout.desc": "アカウントからサインアウト",
+  "profile.delete.desc": "アカウントを完全に削除",
+  "profile.logout.confirm": "本当にサインアウトしますか？",
+  "profile.no_email": "メールなし",
+  "profile.language.select": "言語を選択"
 }

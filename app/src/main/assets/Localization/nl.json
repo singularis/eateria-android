@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Je gewicht is succesvol vastgelegd.",
   "weight.recorded.title": "Gewicht vastgelegd",
   "weight.take_photo": "Foto maken"
+,
+  "profile.addfriends.desc": "Vind en voeg vrienden toe via e-mail",
+  "profile.tutorial.desc": "Speel de app-tutorial opnieuw af",
+  "profile.sharefeedback.desc": "Help ons de app te verbeteren",
+  "disc.subtitle": "Belangrijke gezondheidsinformatie",
+  "profile.account": "Account",
+  "profile.logout.desc": "Afmelden van je account",
+  "profile.delete.desc": "Je account permanent verwijderen",
+  "profile.logout.confirm": "Weet je zeker dat je wilt afmelden?",
+  "profile.no_email": "Geen e-mail",
+  "profile.language.select": "Taal selecteren"
 }

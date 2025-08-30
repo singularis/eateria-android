@@ -26,19 +26,24 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
+import androidx.compose.runtime.key
 
 @Composable
 fun ContentView(
     viewModel: MainViewModel,
     authViewModel: AuthViewModel
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    // Observe current language to trigger recomposition of the whole content when changed
+    val currentLanguage by LanguageService.languageFlow(context).collectAsState(initial = LanguageService.getCurrentCode(context))
     val products by viewModel.products.collectAsState()
     val caloriesLeft by viewModel.caloriesLeft.collectAsState()
     val personWeight by viewModel.personWeight.collectAsState()
@@ -99,13 +104,14 @@ fun ContentView(
         viewModel.triggerManualRefresh()
     }
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackground)
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .windowInsetsPadding(WindowInsets.navigationBars)
-    ) {
+    key(currentLanguage) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackground)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -445,6 +451,7 @@ fun ContentView(
                     showWeightCamera = false
                 }
             )
+        }
         }
     }
 }

@@ -308,5 +308,15 @@
   "weight.record_failed.msg": "Failed to record your weight. Please try again.",
   "weight.recorded.msg": "Your weight has been successfully recorded.",
   "weight.recorded.title": "Weight Recorded",
-  "weight.take_photo": "Take Photo"
+  "weight.take_photo": "Take Photo",
+  "profile.addfriends.desc": "Find and add friends by email",
+  "profile.tutorial.desc": "Replay the app tutorial",
+  "profile.sharefeedback.desc": "Help us improve the app",
+  "disc.subtitle": "Important health information",
+  "profile.account": "Account",
+  "profile.logout.desc": "Sign out of your account",
+  "profile.delete.desc": "Permanently delete your account",
+  "profile.logout.confirm": "Are you sure you want to sign out?",
+  "profile.no_email": "No email",
+  "profile.language.select": "Select Language"
 }

@@ -22,7 +22,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Feedback
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.items
 import coil.compose.AsyncImage
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,6 +42,8 @@ import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.services.HealthDataService
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.services.LanguageService
+import com.singularis.eateria.services.QuotesService
 import kotlinx.coroutines.launch
 
 @Composable
@@ -61,6 +66,12 @@ fun UserProfileView(
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var greeting by remember { mutableStateOf("Hello") }
+    var showLanguageSelector by remember { mutableStateOf(false) }
+    var currentLanguage by remember { mutableStateOf(LanguageService.getCurrentCode(context)) }
+    val languageFlowCurrent by LanguageService.languageFlow(context).collectAsState(initial = currentLanguage)
+    LaunchedEffect(languageFlowCurrent) {
+        currentLanguage = languageFlowCurrent
+    }
     
     // Health data state
     var hasHealthData by remember { mutableStateOf(false) }
@@ -71,8 +82,10 @@ fun UserProfileView(
     var userRecommendedCalories by remember { mutableStateOf(0) }
     var showAddFriends by remember { mutableStateOf(false) }
     
-    LaunchedEffect(Unit) {
-        greeting = authViewModel.getGreeting()
+    LaunchedEffect(languageFlowCurrent) {
+        Localization.clearCache()
+        QuotesService.clearCache()
+        greeting = authViewModel.getGreeting() ?: Localization.tr(context, "profile.greeting", "Hello")
         val healthDataService = HealthDataService.getInstance(context)
         val healthProfile = healthDataService.getHealthProfile()
         
@@ -163,7 +176,7 @@ fun UserProfileView(
                         )
                         Spacer(modifier = Modifier.width(Dimensions.paddingS))
                         Text(
-                            text = Localization.tr(LocalContext.current, "profile.viewstats", "View Statistics"),
+                            text = Localization.tr(LocalContext.current, "profile.viewstats"),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -188,30 +201,30 @@ fun UserProfileView(
                 // App Features section
                 item {
                     ProfileMenuSection(
-                        title = Localization.tr(LocalContext.current, "profile.features", "App Features"),
+                        title = Localization.tr(LocalContext.current, "profile.features"),
                         items = listOf(
                             ProfileMenuItem(
                                 icon = Icons.Default.PersonAdd,
-                                title = Localization.tr(LocalContext.current, "profile.addfriends", "Add Friends"),
-                                subtitle = Localization.tr(LocalContext.current, "profile.addfriends.desc", "Find and add friends by email"),
+                                title = Localization.tr(LocalContext.current, "profile.addfriends"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.addfriends.desc"),
                                 onClick = { showAddFriends = true }
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Info,
-                                title = Localization.tr(LocalContext.current, "profile.tutorial", "Tutorial"),
-                                subtitle = Localization.tr(LocalContext.current, "profile.tutorial.desc", "Replay the app tutorial"),
+                                title = Localization.tr(LocalContext.current, "profile.tutorial"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.tutorial.desc"),
                                 onClick = onOnboardingClick
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Feedback,
-                                title = Localization.tr(LocalContext.current, "profile.sharefeedback", "Share Feedback"),
-                                subtitle = Localization.tr(LocalContext.current, "profile.sharefeedback.desc", "Help us improve the app"),
+                                title = Localization.tr(LocalContext.current, "profile.sharefeedback"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.sharefeedback.desc"),
                                 onClick = onFeedbackClick
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Info,
-                                title = Localization.tr(LocalContext.current, "disc.title", "Health Information Disclaimer"),
-                                subtitle = Localization.tr(LocalContext.current, "disc.subtitle", "Important health information"),
+                                title = Localization.tr(LocalContext.current, "disc.title"),
+                                subtitle = Localization.tr(LocalContext.current, "disc.subtitle"),
                                 onClick = onHealthDisclaimerClick
                             )
                         )
@@ -234,12 +247,12 @@ fun UserProfileView(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = Localization.tr(LocalContext.current, "profile.datamode", "Data Mode"),
+                                    text = Localization.tr(LocalContext.current, "profile.datamode"),
                                     color = Color.White,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                                 Text(
-                                    text = if (isFullMode) "Full (show macros)" else "Simplified",
+                                    text = if (isFullMode) Localization.tr(LocalContext.current, "common.full") else Localization.tr(LocalContext.current, "common.simplified"),
                                     color = Color.Gray,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -254,22 +267,63 @@ fun UserProfileView(
                     }
                 }
                 
+
+                
+                // Language Selection section
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Gray4),
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(Dimensions.paddingM),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = Localization.tr(LocalContext.current, "profile.language"),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    text = LanguageService.nativeName(currentLanguage),
+                                    color = Color.Gray,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            IconButton(
+                                onClick = { showLanguageSelector = true }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Language,
+                                    contentDescription = Localization.tr(LocalContext.current, "profile.language.select"),
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+                
                 // Account section
                 item {
                     ProfileMenuSection(
-                        title = Localization.tr(LocalContext.current, "profile.account", "Account"),
+                        title = Localization.tr(LocalContext.current, "profile.account"),
                         items = listOf(
                             ProfileMenuItem(
                                 icon = Icons.AutoMirrored.Filled.ExitToApp,
-                                title = Localization.tr(LocalContext.current, "profile.logout", "Logout"),
-                                subtitle = Localization.tr(LocalContext.current, "profile.logout.desc", "Sign out of your account"),
+                                title = Localization.tr(LocalContext.current, "profile.logout"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.logout.desc"),
                                 onClick = { showSignOutDialog = true },
                                 textColor = CalorieYellow
                             ),
                             ProfileMenuItem(
                                 icon = Icons.Default.Delete,
-                                title = Localization.tr(LocalContext.current, "profile.delete", "Delete Account"),
-                                subtitle = Localization.tr(LocalContext.current, "profile.delete.desc", "Permanently delete your account"),
+                                title = Localization.tr(LocalContext.current, "profile.delete"),
+                                subtitle = Localization.tr(LocalContext.current, "profile.delete.desc"),
                                 onClick = { showDeleteAccountDialog = true },
                                 textColor = CalorieRed
                             )
@@ -283,6 +337,18 @@ fun UserProfileView(
         if (showAddFriends) {
             AddFriendsView(onDismiss = { showAddFriends = false })
         }
+        
+        // Language Selector Dialog
+        if (showLanguageSelector) {
+            LanguageSelectorDialog(
+                currentLanguage = currentLanguage,
+                onLanguageSelected = { newLanguage ->
+                    currentLanguage = newLanguage
+                    showLanguageSelector = false
+                },
+                onDismiss = { showLanguageSelector = false }
+            )
+        }
 
         // Sign Out Dialog
         if (showSignOutDialog) {
@@ -290,14 +356,14 @@ fun UserProfileView(
                 onDismissRequest = { showSignOutDialog = false },
                 title = {
                     Text(
-                        text = Localization.tr(LocalContext.current, "profile.logout", "Logout"),
+                        text = Localization.tr(LocalContext.current, "profile.logout"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 },
                 text = {
                     Text(
-                        text = Localization.tr(LocalContext.current, "profile.logout.confirm", "Are you sure you want to sign out?"),
+                        text = Localization.tr(LocalContext.current, "profile.logout.confirm"),
                         color = Color.Gray
                     )
                 },
@@ -313,14 +379,14 @@ fun UserProfileView(
                             }
                         }
                     ) {
-                        Text(Localization.tr(LocalContext.current, "profile.logout", "Logout"), color = CalorieYellow)
+                        Text(Localization.tr(LocalContext.current, "profile.logout"), color = CalorieYellow)
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showSignOutDialog = false }
                     ) {
-                        Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = Color.Gray)
+                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = Color.Gray)
                     }
                 },
                 containerColor = Gray4
@@ -333,14 +399,14 @@ fun UserProfileView(
                 onDismissRequest = { showDeleteAccountDialog = false },
                 title = {
                     Text(
-                        text = Localization.tr(LocalContext.current, "profile.delete", "Delete Account"),
+                        text = Localization.tr(LocalContext.current, "profile.delete"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 },
                 text = {
                     Text(
-                        text = Localization.tr(LocalContext.current, "alert.delete.message", "Are you sure you want to delete your account? This will immediately remove all your data and preferences from this device and sign you out."),
+                        text = Localization.tr(LocalContext.current, "alert.delete.message"),
                         color = Color.Gray
                     )
                 },
@@ -357,14 +423,14 @@ fun UserProfileView(
                             }
                         }
                     ) {
-                        Text(Localization.tr(LocalContext.current, "profile.delete", "Delete Account"), color = CalorieRed)
+                        Text(Localization.tr(LocalContext.current, "profile.delete"), color = CalorieRed)
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showDeleteAccountDialog = false }
                     ) {
-                        Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = Color.Gray)
+                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = Color.Gray)
                     }
                 },
                 containerColor = Gray4
@@ -452,7 +518,7 @@ private fun ProfileHeader(
                 )
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 Text(
-                    text = userEmail ?: "No email",
+                    text = userEmail ?: Localization.tr(LocalContext.current, "profile.no_email", "No email"),
                     color = Color.White,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -479,7 +545,7 @@ private fun HealthDataCard(
                 .padding(Dimensions.paddingM)
         ) {
             Text(
-                text = "Your Health Profile",
+                text = Localization.tr(LocalContext.current, "profile.healthprofile", "Your Health Profile"),
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge
             )
@@ -684,3 +750,99 @@ private fun ProfileMenuSection(
         }
     }
 }
+
+@Composable
+internal fun LanguageSelectorDialog(
+    currentLanguage: String,
+    onLanguageSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val languages = remember {
+        LanguageService.availableLanguageCodes(context)
+            .map { code ->
+                LanguageOption(
+                    code = code,
+                    flag = LanguageService.flagEmoji(code),
+                    nativeName = LanguageService.nativeName(code)
+                )
+            }
+            .sortedBy { it.nativeName.lowercase() }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = Localization.tr(LocalContext.current, "profile.language.select", "Select Language"),
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            LazyColumn(
+                modifier = Modifier.height(400.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(languages) { language ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { 
+                                coroutineScope.launch {
+                                    val ok = LanguageService.setLanguage(context, language.code)
+                                    if (ok) {
+                                        onLanguageSelected(language.code)
+                                    } else {
+                                        onLanguageSelected("en")
+                                    }
+                                }
+                            }
+                            .padding(vertical = 12.dp, horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = language.flag,
+                            fontSize = 24.sp,
+                            modifier = Modifier.width(40.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = language.nativeName,
+                            color = if (currentLanguage == language.code) CalorieGreen else Color.White,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (currentLanguage == language.code) FontWeight.Bold else FontWeight.Normal
+                        )
+                        if (currentLanguage == language.code) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = CalorieGreen,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    Localization.tr(LocalContext.current, "common.close", "Close"),
+                    color = Color.Gray
+                )
+            }
+        },
+        containerColor = Gray4
+    )
+}
+
+internal data class LanguageOption(
+    val code: String,
+    val flag: String,
+    val nativeName: String
+)
+
+

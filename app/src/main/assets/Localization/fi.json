@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Painosi on tallennettu onnistuneesti.",
   "weight.recorded.title": "Paino tallennettu",
   "weight.take_photo": "Ota kuva"
+,
+  "profile.addfriends.desc": "Etsi ja lisää ystäviä sähköpostilla",
+  "profile.tutorial.desc": "Toista sovelluksen opastus uudelleen",
+  "profile.sharefeedback.desc": "Auta meitä parantamaan sovellusta",
+  "disc.subtitle": "Tärkeää terveyteen liittyvää tietoa",
+  "profile.account": "Tili",
+  "profile.logout.desc": "Kirjaudu ulos tililtäsi",
+  "profile.delete.desc": "Poista tilisi pysyvästi",
+  "profile.logout.confirm": "Haluatko varmasti kirjautua ulos?",
+  "profile.no_email": "Ei sähköpostia",
+  "profile.language.select": "Valitse kieli"
 }

@@ -51,6 +51,10 @@ object Localization {
         }
         return emptyMap()
     }
+
+    fun clearCache() {
+        cache.clear()
+    }
 }
 
 

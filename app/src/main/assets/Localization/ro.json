@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Greutatea ta a fost înregistrată cu succes.",
   "weight.recorded.title": "Greutate înregistrată",
   "weight.take_photo": "Fă o fotografie"
+,
+  "profile.addfriends.desc": "Găsiți și adăugați prieteni prin e-mail",
+  "profile.tutorial.desc": "Reluați tutorialul aplicației",
+  "profile.sharefeedback.desc": "Ajutați-ne să îmbunătățim aplicația",
+  "disc.subtitle": "Informații importante despre sănătate",
+  "profile.account": "Cont",
+  "profile.logout.desc": "Deconectați-vă din contul dvs.",
+  "profile.delete.desc": "Ștergeți definitiv contul",
+  "profile.logout.confirm": "Sigur doriți să vă deconectați?",
+  "profile.no_email": "Fără e-mail",
+  "profile.language.select": "Selectați limba"
 }

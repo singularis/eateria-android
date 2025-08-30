@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Jūsų svoris sėkmingai įrašytas.",
   "weight.recorded.title": "Svoris įrašytas",
   "weight.take_photo": "Nufotografuoti"
+,
+  "profile.addfriends.desc": "Raskite ir pridėkite draugų el. paštu",
+  "profile.tutorial.desc": "Pakartotinai paleiskite programėlės vadovą",
+  "profile.sharefeedback.desc": "Padėkite mums tobulinti programėlę",
+  "disc.subtitle": "Svarbi sveikatos informacija",
+  "profile.account": "Paskyra",
+  "profile.logout.desc": "Atsijungti nuo paskyros",
+  "profile.delete.desc": "Visam laikui ištrinti paskyrą",
+  "profile.logout.confirm": "Ar tikrai norite atsijungti?",
+  "profile.no_email": "Nėra el. pašto",
+  "profile.language.select": "Pasirinkti kalbą"
 }

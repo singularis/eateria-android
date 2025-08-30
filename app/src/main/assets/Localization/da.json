@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Din vægt blev registreret.",
   "weight.recorded.title": "Vægt registreret",
   "weight.take_photo": "Tag foto"
+,
+  "profile.addfriends.desc": "Find og tilføj venner via e-mail",
+  "profile.tutorial.desc": "Afspil app-tutorial igen",
+  "profile.sharefeedback.desc": "Hjælp os med at forbedre appen",
+  "disc.subtitle": "Vigtig sundhedsinformation",
+  "profile.account": "Konto",
+  "profile.logout.desc": "Log ud af din konto",
+  "profile.delete.desc": "Slet din konto permanent",
+  "profile.logout.confirm": "Er du sikker på, at du vil logge ud?",
+  "profile.no_email": "Ingen e-mail",
+  "profile.language.select": "Vælg sprog"
 }

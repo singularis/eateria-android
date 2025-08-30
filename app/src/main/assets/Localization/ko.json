@@ -309,4 +309,15 @@
   "weight.recorded.msg": "체중이 성공적으로 기록되었습니다.",
   "weight.recorded.title": "체중 기록됨",
   "weight.take_photo": "사진 촬영"
+,
+  "profile.addfriends.desc": "이메일로 친구 찾기 및 추가",
+  "profile.tutorial.desc": "앱 튜토리얼 다시 보기",
+  "profile.sharefeedback.desc": "앱 개선에 도움 주세요",
+  "disc.subtitle": "중요한 건강 정보",
+  "profile.account": "계정",
+  "profile.logout.desc": "계정에서 로그아웃",
+  "profile.delete.desc": "계정을 영구적으로 삭제",
+  "profile.logout.confirm": "정말 로그아웃하시겠습니까?",
+  "profile.no_email": "이메일 없음",
+  "profile.language.select": "언어 선택"
 }

@@ -309,4 +309,15 @@
   "weight.recorded.msg": "你的体重已成功记录。",
   "weight.recorded.title": "体重已记录",
   "weight.take_photo": "拍照"
+,
+  "profile.addfriends.desc": "通过电子邮件查找并添加朋友",
+  "profile.tutorial.desc": "重新播放应用教程",
+  "profile.sharefeedback.desc": "帮助我们改进应用",
+  "disc.subtitle": "重要的健康信息",
+  "profile.account": "帐户",
+  "profile.logout.desc": "从你的帐户退出",
+  "profile.delete.desc": "永久删除你的帐户",
+  "profile.logout.confirm": "确定要退出吗？",
+  "profile.no_email": "无电子邮件",
+  "profile.language.select": "选择语言"
 }

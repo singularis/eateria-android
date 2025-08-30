@@ -55,7 +55,7 @@ object AlertHelper {
     @Composable
     fun ErrorDialog(
         isVisible: Boolean,
-        title: String = "Error",
+        title: String = Localization.tr(LocalContext.current, "common.error", "Error"),
         message: String,
         onDismiss: () -> Unit
     ) {
@@ -65,7 +65,7 @@ object AlertHelper {
     @Composable
     fun SuccessDialog(
         isVisible: Boolean,
-        title: String = "Success", 
+        title: String = Localization.tr(LocalContext.current, "common.success", "Success"), 
         message: String,
         onDismiss: () -> Unit
     ) {

@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Teie kaal on edukalt salvestatud.",
   "weight.recorded.title": "Kaal salvestatud",
   "weight.take_photo": "Tee foto"
+,
+  "profile.addfriends.desc": "Leia ja lisa sõpru e-posti teel",
+  "profile.tutorial.desc": "Esita rakenduse õpetus uuesti",
+  "profile.sharefeedback.desc": "Aita meil rakendust paremaks muuta",
+  "disc.subtitle": "Oluline terviseteave",
+  "profile.account": "Konto",
+  "profile.logout.desc": "Logi oma kontolt välja",
+  "profile.delete.desc": "Kustuta oma konto jäädavalt",
+  "profile.logout.confirm": "Kas soovid kindlasti välja logida?",
+  "profile.no_email": "E-posti pole",
+  "profile.language.select": "Vali keel"
 }

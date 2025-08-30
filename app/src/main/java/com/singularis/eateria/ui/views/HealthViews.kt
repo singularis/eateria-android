@@ -131,7 +131,7 @@ fun HealthSettingsView(
                         TextField(
                             value = softLimit,
                             onValueChange = { softLimit = it },
-                            label = { Text(Localization.tr(LocalContext.current, "limits.soft", "Soft Limit") + " (calories)") },
+                            label = { Text(Localization.tr(LocalContext.current, "limits.soft", "Soft Limit") + " (" + Localization.tr(LocalContext.current, "units.calories", "calories") + ")") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = TextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
@@ -147,7 +147,7 @@ fun HealthSettingsView(
                         TextField(
                             value = hardLimit,
                             onValueChange = { hardLimit = it },
-                            label = { Text(Localization.tr(LocalContext.current, "limits.hard", "Hard Limit") + " (calories)") },
+                            label = { Text(Localization.tr(LocalContext.current, "limits.hard", "Hard Limit") + " (" + Localization.tr(LocalContext.current, "units.calories", "calories") + ")") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = TextFieldDefaults.colors(
                                 focusedTextColor = Color.White,

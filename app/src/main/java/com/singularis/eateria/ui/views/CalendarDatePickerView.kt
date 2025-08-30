@@ -160,7 +160,15 @@ private fun CalendarContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                val weekdays = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+                val weekdays = listOf(
+            Localization.tr(LocalContext.current, "calendar.sun", "Sun"),
+            Localization.tr(LocalContext.current, "calendar.mon", "Mon"),
+            Localization.tr(LocalContext.current, "calendar.tue", "Tue"),
+            Localization.tr(LocalContext.current, "calendar.wed", "Wed"),
+            Localization.tr(LocalContext.current, "calendar.thu", "Thu"),
+            Localization.tr(LocalContext.current, "calendar.fri", "Fri"),
+            Localization.tr(LocalContext.current, "calendar.sat", "Sat")
+        )
                 weekdays.forEach { day ->
                     Text(
                         text = day,
@@ -209,7 +217,7 @@ private fun CalendarContent(
                     modifier = Modifier.width(100.dp)
                 ) {
                     Text(
-                        text = "Today",
+                        text = Localization.tr(LocalContext.current, "date.today", "Today"),
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1
                     )

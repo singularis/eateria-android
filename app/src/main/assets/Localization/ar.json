@@ -309,4 +309,15 @@
   "weight.recorded.msg": "تم تسجيل وزنك بنجاح.",
   "weight.recorded.title": "تم تسجيل الوزن",
   "weight.take_photo": "التقاط صورة"
+,
+  "profile.addfriends.desc": "ابحث وأضف الأصدقاء عبر البريد الإلكتروني",
+  "profile.tutorial.desc": "إعادة تشغيل دليل التطبيق",
+  "profile.sharefeedback.desc": "ساعدنا على تحسين التطبيق",
+  "disc.subtitle": "معلومات صحية مهمة",
+  "profile.account": "الحساب",
+  "profile.logout.desc": "تسجيل الخروج من حسابك",
+  "profile.delete.desc": "حذف حسابك نهائياً",
+  "profile.logout.confirm": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+  "profile.no_email": "لا يوجد بريد إلكتروني",
+  "profile.language.select": "اختيار اللغة"
 }

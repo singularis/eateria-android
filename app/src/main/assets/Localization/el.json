@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Το βάρος σας καταγράφηκε με επιτυχία.",
   "weight.recorded.title": "Το βάρος καταγράφηκε",
   "weight.take_photo": "Λήψη φωτογραφίας"
+,
+  "profile.addfriends.desc": "Βρείτε και προσθέστε φίλους μέσω email",
+  "profile.tutorial.desc": "Επανάληψη του οδηγού της εφαρμογής",
+  "profile.sharefeedback.desc": "Βοηθήστε μας να βελτιώσουμε την εφαρμογή",
+  "disc.subtitle": "Σημαντικές πληροφορίες υγείας",
+  "profile.account": "Λογαριασμός",
+  "profile.logout.desc": "Αποσύνδεση από τον λογαριασμό σας",
+  "profile.delete.desc": "Οριστική διαγραφή του λογαριασμού σας",
+  "profile.logout.confirm": "Είστε σίγουροι ότι θέλετε να αποσυνδεθείτε;",
+  "profile.no_email": "Χωρίς email",
+  "profile.language.select": "Επιλογή γλώσσας"
 }

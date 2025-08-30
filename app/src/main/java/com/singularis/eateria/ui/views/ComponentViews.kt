@@ -511,11 +511,11 @@ fun ProductCard(
         backgroundContent = {
             val color by animateColorAsState(
                 targetValue = if (state.targetValue == SwipeToDismissBoxValue.Settled) Color.Transparent else Color.Red,
-                label = "background color animation"
+                label = Localization.tr(LocalContext.current, "common.background_animation", "background color animation")
             )
             val scale by animateFloatAsState(
                 if (state.targetValue == SwipeToDismissBoxValue.Settled) 0.8f else 1.2f,
-                label = "icon scale animation"
+                label = Localization.tr(LocalContext.current, "common.icon_scale_animation", "icon scale animation")
             )
 
             Box(
@@ -691,7 +691,7 @@ fun PortionSelectionDialog(
     }
 
     if (showConfirmation) {
-        val selectedPortion = if(selectedPortionPercentage != null) "$selectedPortionPercentage%" else "the selected"
+        val selectedPortion = if(selectedPortionPercentage != null) "$selectedPortionPercentage%" else Localization.tr(LocalContext.current, "portion.selected", "the selected")
         AlertDialog(
             onDismissRequest = {
                 onDismiss()
@@ -1046,7 +1046,7 @@ fun CalorieLimitsDialog(
                 OutlinedTextField(
                     value = tempSoftLimit,
                     onValueChange = onSoftLimitChange,
-                    label = { Text(Localization.tr(LocalContext.current, "limits.soft", "Soft Limit") + " (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
+                    label = { Text(Localization.tr(LocalContext.current, "limits.soft", "Soft Limit") + " (" + Localization.tr(LocalContext.current, "units.calories", "calories") + ")", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
@@ -1063,7 +1063,7 @@ fun CalorieLimitsDialog(
                 OutlinedTextField(
                     value = tempHardLimit,
                     onValueChange = onHardLimitChange,
-                    label = { Text(Localization.tr(LocalContext.current, "limits.hard", "Hard Limit") + " (calories)", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
+                    label = { Text(Localization.tr(LocalContext.current, "limits.hard", "Hard Limit") + " (" + Localization.tr(LocalContext.current, "units.calories", "calories") + ")", style = MaterialTheme.typography.bodySmall, color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     isError = showValidationError,
@@ -1169,7 +1169,7 @@ fun WeightActionSheetDialog(
                         contentColor = Color.White
                     )
                 ) {
-                    Text(Localization.tr(LocalContext.current, "weight.manual", "Manual Entry"), style = MaterialTheme.typography.labelMedium)
+                                            Text(Localization.tr(LocalContext.current, "weight.manual_entry", "Manual Entry"), style = MaterialTheme.typography.labelMedium)
                 }
                 
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
@@ -1657,7 +1657,7 @@ fun FullScreenPhotoView(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
+                    contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
                     tint = Color.White.copy(alpha = alpha.value),
                     modifier = Modifier.size(Dimensions.iconSizeM)
                 )
@@ -1675,7 +1675,7 @@ fun DeleteConfirmationDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = Localization.tr(LocalContext.current, "common.delete", "Confirm Deletion"),
+                                        text = Localization.tr(LocalContext.current, "common.remove", "Remove"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -1703,7 +1703,7 @@ fun DeleteConfirmationDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    "Cancel",
+                    Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
                     color = Color.Gray,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium
@@ -1744,7 +1744,7 @@ fun SportCaloriesDialog(
                     value = sportCaloriesInput,
                     onValueChange = onSportCaloriesChange,
                     label = { Text(Localization.tr(LocalContext.current, "calories.label", "Calories"), color = Color.Gray) },
-                    placeholder = { Text(Localization.tr(LocalContext.current, "sport.msg", "Enter calories"), color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "sport.placeholder", "Calories burned (e.g., 300)"), color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done

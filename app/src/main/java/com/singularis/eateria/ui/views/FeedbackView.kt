@@ -219,7 +219,7 @@ fun FeedbackView(
                 },
                 text = {
                     Text(
-                        text = "Your feedback has been submitted successfully. We appreciate your input!",
+                        text = Localization.tr(LocalContext.current, "feedback.success.msg", "Your feedback has been submitted successfully. We appreciate your input!"),
                         color = Color.Gray
                     )
                 },

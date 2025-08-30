@@ -10,10 +10,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.singularis.eateria.services.AuthenticationService
+import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.ui.theme.EateriaTheme
 import com.singularis.eateria.ui.views.ContentView
 import com.singularis.eateria.ui.views.LoginView
@@ -34,6 +36,8 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         
         authService = AuthenticationService(this)
+        // Set process Locale to stored language at startup
+        com.singularis.eateria.services.LanguageService.applyCurrentLocale(this)
         
         setContent {
             EateriaTheme {
@@ -49,20 +53,23 @@ class MainActivity : ComponentActivity() {
     
     @Composable
     fun EateriaApp() {
+        val context = this@MainActivity
+        val currentLanguage by LanguageService.languageFlow(context).collectAsState(initial = LanguageService.getCurrentCode(context))
         val authViewModel: AuthViewModel = viewModel { AuthViewModel(authService) }
         val isAuthenticated by authViewModel.isAuthenticated.collectAsState(initial = false)
-        
-        if (isAuthenticated) {
-            val mainViewModel: MainViewModel = viewModel { MainViewModel(this@MainActivity) }
-            ContentView(
-                viewModel = mainViewModel,
-                authViewModel = authViewModel
-            )
-        } else {
-            LoginView(
-                authViewModel = authViewModel,
-                activity = this@MainActivity
-            )
+        key(currentLanguage) {
+            if (isAuthenticated) {
+                val mainViewModel: MainViewModel = viewModel { MainViewModel(this@MainActivity) }
+                ContentView(
+                    viewModel = mainViewModel,
+                    authViewModel = authViewModel
+                )
+            } else {
+                LoginView(
+                    authViewModel = authViewModel,
+                    activity = this@MainActivity
+                )
+            }
         }
     }
 } 

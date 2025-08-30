@@ -52,4 +52,8 @@ object QuotesService {
         }
         return emptyList()
     }
+
+    fun clearCache() {
+        cache.clear()
+    }
 }

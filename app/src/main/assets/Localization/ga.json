@@ -309,4 +309,15 @@
   "weight.recorded.msg": "Taifeadadh do mheáchan go rathúil.",
   "weight.recorded.title": "Meáchan taifeadta",
   "weight.take_photo": "Tóg grianghraf"
+,
+  "profile.addfriends.desc": "Aimsigh agus cuir cairde leis trí ríomhphost",
+  "profile.tutorial.desc": "Seinn rang teagaisc an aip arís",
+  "profile.sharefeedback.desc": "Cabhraigh linn an aip a fheabhsú",
+  "disc.subtitle": "Eolas tábhachtach sláinte",
+  "profile.account": "Cuntas",
+  "profile.logout.desc": "Logáil amach as do chuntas",
+  "profile.delete.desc": "Scrios do chuntas go buan",
+  "profile.logout.confirm": "An bhfuil tú cinnte gur mian leat logáil amach?",
+  "profile.no_email": "Gan ríomhphost",
+  "profile.language.select": "Roghnaigh teanga"
 }

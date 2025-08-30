@@ -89,6 +89,9 @@ import com.singularis.eateria.services.Localization
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -326,25 +329,29 @@ private fun StatisticsHeader(
             horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
         ) {
             TimeRangeButton(
-                text = Localization.tr(LocalContext.current, "stats.period.week", "Week"),
+                text = MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                    .format(Measure(1, MeasureUnit.WEEK)),
                 isSelected = selectedTimeRange == StatisticsTimeRange.WEEK,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.WEEK) }
             )
             
             TimeRangeButton(
-                text = Localization.tr(LocalContext.current, "stats.period.month", "Month"),
+                text = MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                    .format(Measure(1, MeasureUnit.MONTH)),
                 isSelected = selectedTimeRange == StatisticsTimeRange.MONTH,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.MONTH) }
             )
             
             TimeRangeButton(
-                text = Localization.tr(LocalContext.current, "stats.period.2months", "2 Months"),
+                text = MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                    .format(Measure(2, MeasureUnit.MONTH)),
                 isSelected = selectedTimeRange == StatisticsTimeRange.TWO_MONTHS,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.TWO_MONTHS) }
             )
             
             TimeRangeButton(
-                text = Localization.tr(LocalContext.current, "stats.period.3months", "3 Months"),
+                text = MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                    .format(Measure(3, MeasureUnit.MONTH)),
                 isSelected = selectedTimeRange == StatisticsTimeRange.THREE_MONTHS,
                 onClick = { onTimeRangeChange(StatisticsTimeRange.THREE_MONTHS) }
             )
@@ -369,12 +376,12 @@ private fun ChartTypeSelector(
                 label = { 
                     Text(
                         text = when (chartType) {
-                            ChartType.INSIGHTS -> "Insights"
-                            ChartType.CALORIES -> "Calories"
-                            ChartType.MACROS -> "Macronutrients"
-                            ChartType.PERSON_WEIGHT -> "Body Weight"
-                            ChartType.FOOD_WEIGHT -> "Food Weight"
-                            ChartType.TRENDS -> "Trends"
+                                    ChartType.INSIGHTS -> Localization.tr(LocalContext.current, "stats.chart.insights", "Insights")
+        ChartType.CALORIES -> Localization.tr(LocalContext.current, "stats.chart.calories", "Calories")
+        ChartType.MACROS -> Localization.tr(LocalContext.current, "stats.chart.macros", "Macronutrients")
+        ChartType.PERSON_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight")
+        ChartType.FOOD_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight")
+        ChartType.TRENDS -> Localization.tr(LocalContext.current, "stats.chart.trends", "Trends")
                         },
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = if (selectedChart == chartType) FontWeight.SemiBold else FontWeight.Normal
@@ -405,12 +412,7 @@ private fun InsightsView(
     timeRange: StatisticsTimeRange
 ) {
     val validDays = statistics.filter { it.hasData }.size
-    val timeRangeText = when (timeRange) {
-        StatisticsTimeRange.WEEK -> "Weekly"
-        StatisticsTimeRange.MONTH -> "Monthly"
-        StatisticsTimeRange.TWO_MONTHS -> "2-Month"
-        StatisticsTimeRange.THREE_MONTHS -> "3-Month"
-    }
+    val insightsTitle = Localization.tr(LocalContext.current, "stats.insights.title", "Insights Overview")
     
     Card(
         modifier = Modifier
@@ -441,7 +443,7 @@ private fun InsightsView(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = "$timeRangeText ${Localization.tr(LocalContext.current, "stats.insights", "Insights")}",
+                    text = insightsTitle,
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
@@ -454,16 +456,16 @@ private fun InsightsView(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
                     ) {
-                        InsightRow("Active Days", "$validDays/${statistics.size}")
-                        InsightRow("Avg Daily Calories", "${averages.calories.toInt()} kcal")
-                        InsightRow("Avg Weight", "${String.format("%.1f", averages.weight)} kg")
-                        InsightRow("Avg Protein", "${String.format("%.1f", averages.proteins)} g")
-                        InsightRow("Avg Fats", "${String.format("%.1f", averages.fats)} g")
-                        InsightRow("Avg Carbs", "${String.format("%.1f", averages.carbohydrates)} g")
-                        InsightRow("Meals Per Day", "${String.format("%.1f", averages.mealsPerDay)}")
+                                InsightRow(Localization.tr(LocalContext.current, "stats.insights.active_days", "Active Days"), "$validDays/${statistics.size}")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"), "${averages.calories.toInt()} kcal")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"), "${String.format("%.1f", averages.weight)} kg")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"), "${String.format("%.1f", averages.proteins)} g")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"), "${String.format("%.1f", averages.fats)} g")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"), "${String.format("%.1f", averages.carbohydrates)} g")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.meals_per_day", "Meals Per Day"), "${String.format("%.1f", averages.mealsPerDay)}")
                     }
                 } else {
-                    NoDataMessage("No insights available for this period")
+                    NoDataMessage(Localization.tr(LocalContext.current, "stats.no_insights", "No insights available for this period"))
                 }
             }
         }
@@ -569,13 +571,13 @@ private fun SummaryStatsView(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
                     ) {
-                        StatRow("Active Days", "$validDays/${statistics.size}")
-                        StatRow("Avg Daily Calories", "${averages.calories.toInt()} kcal")
-                        StatRow("Avg Weight", "${String.format("%.1f", averages.weight)} kg")
-                        StatRow("Avg Protein", "${String.format("%.1f", averages.proteins)} g")
-                        StatRow("Avg Fats", "${String.format("%.1f", averages.fats)} g")
-                        StatRow("Avg Carbs", "${String.format("%.1f", averages.carbohydrates)} g")
-                        StatRow("Meals Per Day", "${String.format("%.1f", averages.mealsPerDay)}")
+                                StatRow(Localization.tr(LocalContext.current, "stats.insights.active_days", "Active Days"), "$validDays/${statistics.size}")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"), "${averages.calories.toInt()} kcal")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"), "${String.format("%.1f", averages.weight)} kg")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"), "${String.format("%.1f", averages.proteins)} g")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"), "${String.format("%.1f", averages.fats)} g")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"), "${String.format("%.1f", averages.carbohydrates)} g")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.meals_per_day", "Meals Per Day"), "${String.format("%.1f", averages.mealsPerDay)}")
                     }
                 } else {
                     Text(
@@ -690,7 +692,7 @@ private fun CaloriesChartViewFullWidth(
                                 onClick = { useLogScale = !useLogScale },
                                 label = { 
                                     Text(
-                                        text = if (useLogScale) "Log Scale" else "Linear Scale",
+                                        text = if (useLogScale) Localization.tr(LocalContext.current, "stats.scale.log", "Log Scale") else Localization.tr(LocalContext.current, "stats.scale.linear", "Linear Scale"),
                                         style = MaterialTheme.typography.labelMedium.copy(
                                             fontWeight = FontWeight.Medium
                                         )
@@ -714,7 +716,7 @@ private fun CaloriesChartViewFullWidth(
                     
                 if (statistics.isEmpty()) {
                     Spacer(modifier = Modifier.height(Dimensions.paddingM))
-                    NoDataMessage("No calorie data available")
+                    NoDataMessage(Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"))
                 }
             }
         }
@@ -798,32 +800,32 @@ private fun MacrosChartView(
                             verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXL)
                         ) {
                             MacroBarRow(
-                                label = "Proteins",
+                                label = Localization.tr(LocalContext.current, "stats.macro.proteins", "Proteins"),
                                 value = avgProteins.toInt(),
                                 percentage = (avgProteins / total * 100).toInt(),
                                 color = CalorieGreen
                             )
                             
                             MacroBarRow(
-                                label = "Fats", 
+                                label = Localization.tr(LocalContext.current, "stats.macro.fats", "Fats"), 
                                 value = avgFats.toInt(),
                                 percentage = (avgFats / total * 100).toInt(),
                                 color = CalorieYellow
                             )
                             
                             MacroBarRow(
-                                label = "Carbs",
+                                label = Localization.tr(LocalContext.current, "stats.macro.carbs", "Carbs"),
                                 value = avgCarbs.toInt(), 
                                 percentage = (avgCarbs / total * 100).toInt(),
                                 color = CalorieOrange
                             )
                         }
-                    } else {
-                        NoDataMessage("No macronutrient data available")
+                                        } else {
+                        NoDataMessage(Localization.tr(LocalContext.current, "stats.no_macros", "No macronutrient data available"))
                     }
                 } else {
-                    NoDataMessage("No macronutrient data available")
-                }
+                        NoDataMessage(Localization.tr(LocalContext.current, "stats.no_macros", "No macronutrient data available"))
+                    }
             }
         }
     }
@@ -894,7 +896,7 @@ private fun PersonWeightChartViewFullWidth(
                         }
                 } else {
                     Spacer(modifier = Modifier.height(Dimensions.paddingL))
-                    NoDataMessage("No weight data available\nSubmit weight via camera or manual entry")
+                    NoDataMessage(Localization.tr(LocalContext.current, "stats.weight.empty.title", "No weight data available") + "\n" + Localization.tr(LocalContext.current, "stats.weight.empty.subtitle", "Submit weight via camera or manual entry"))
                 }
             }
         }
@@ -1041,7 +1043,7 @@ private fun FoodWeightChartViewFullWidth(
                     }
                 } else {
                     Spacer(modifier = Modifier.height(Dimensions.paddingL))
-                    NoDataMessage("No food weight data available\nSubmit meals via camera to track food weight")
+                    NoDataMessage(Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"))
                 }
             }
         }
@@ -1296,7 +1298,7 @@ private fun CalorieLineChart(
         
         // Y-axis unit label with better positioning
         Text(
-            text = if (useLogScale) "kcal (log)" else "kcal",
+                            text = if (useLogScale) Localization.tr(LocalContext.current, "stats.scale.kcal_log", "kcal (log)") else Localization.tr(LocalContext.current, "units.kcal", "kcal"),
             color = Color.White,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
@@ -1349,7 +1351,7 @@ private fun CalorieLineChart(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            LegendItem("Daily Calories", CalorieOrange)
+            LegendItem(Localization.tr(LocalContext.current, "stats.chart.calories", "Calories"), CalorieOrange)
         }
     }
 }
@@ -1544,7 +1546,7 @@ private fun WeightLineChart(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            LegendItem("Body Weight", CalorieGreen)
+            LegendItem(Localization.tr(LocalContext.current, "stats.legend.body_weight", "Body Weight"), CalorieGreen)
         }
     }
 }
@@ -1677,7 +1679,7 @@ private fun FoodWeightLineChart(
         
         // Y-axis unit label with better positioning
         Text(
-            text = "g",
+            text = Localization.tr(LocalContext.current, "units.g", "g"),
             color = Color.White,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
@@ -1730,7 +1732,7 @@ private fun FoodWeightLineChart(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            LegendItem("Daily Food Weight", CalorieYellow)
+            LegendItem(Localization.tr(LocalContext.current, "stats.legend.daily_food_weight", "Daily Food Weight"), CalorieYellow)
         }
     }
 }
@@ -1888,7 +1890,7 @@ private fun MacroCompositionChart(
         
         // Macro bars with improved spacing
         MacroBarRow(
-            label = "Protein",
+            label = Localization.tr(LocalContext.current, "stats.macro.protein", "Protein"),
             value = avgProtein.toInt(),
             percentage = proteinPercentage,
             color = CalorieBlue
@@ -1897,7 +1899,7 @@ private fun MacroCompositionChart(
         Spacer(modifier = Modifier.height(Dimensions.paddingM)) // More space between bars
         
         MacroBarRow(
-            label = "Carbs",
+            label = Localization.tr(LocalContext.current, "stats.macro.carbs", "Carbs"),
             value = avgCarbs.toInt(),
             percentage = carbsPercentage,
             color = CalorieOrange
@@ -1906,7 +1908,7 @@ private fun MacroCompositionChart(
         Spacer(modifier = Modifier.height(Dimensions.paddingM))
         
         MacroBarRow(
-            label = "Fat",
+            label = Localization.tr(LocalContext.current, "stats.macro.fat", "Fat"),
             value = avgFat.toInt(),
             percentage = fatPercentage,
             color = CalorieYellow
@@ -1934,9 +1936,9 @@ private fun MacroCompositionChart(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    MacroSummaryItem("Protein", "${avgProtein.toInt()}g", CalorieBlue)
-                    MacroSummaryItem("Carbs", "${avgCarbs.toInt()}g", CalorieOrange)
-                    MacroSummaryItem("Fat", "${avgFat.toInt()}g", CalorieYellow)
+                            MacroSummaryItem(Localization.tr(LocalContext.current, "stats.macro.protein", "Protein"), "${avgProtein.toInt()}g", CalorieBlue)
+        MacroSummaryItem(Localization.tr(LocalContext.current, "stats.macro.carbs", "Carbs"), "${avgCarbs.toInt()}g", CalorieOrange)
+        MacroSummaryItem(Localization.tr(LocalContext.current, "stats.macro.fat", "Fat"), "${avgFat.toInt()}g", CalorieYellow)
                 }
                 
                 HorizontalDivider(
@@ -1998,7 +2000,7 @@ private fun TrendIcon(direction: WeightTrendDirection) {
     
     Icon(
         imageVector = icon,
-        contentDescription = "Trend direction: ${direction.name.lowercase()}",
+        contentDescription = Localization.tr(LocalContext.current, "stats.trend.direction", "Trend direction") + ": ${direction.name.lowercase()}",
         tint = when (direction) {
             WeightTrendDirection.GAINING -> CalorieRed
             WeightTrendDirection.LOSING -> CalorieGreen

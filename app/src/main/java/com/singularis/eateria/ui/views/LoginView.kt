@@ -36,6 +36,8 @@ import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.viewmodels.AuthViewModel
+import com.singularis.eateria.services.Localization
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 
 @Composable
@@ -45,6 +47,7 @@ fun LoginView(
 ) {
     var isSigningIn by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     
     Box(
@@ -62,7 +65,7 @@ fun LoginView(
         ) {
             // App title
             Text(
-                text = "Eateria",
+                text = Localization.tr(context, "login.welcome", "Welcome to Eateria"),
                 style = MaterialTheme.typography.displayLarge,
                 color = Color.White,
                 textAlign = TextAlign.Center
@@ -72,7 +75,7 @@ fun LoginView(
             
             // Subtitle
             Text(
-                text = "Track your nutrition with AI",
+                text = Localization.tr(context, "login.subtitle", "Sign in to continue"),
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
@@ -90,7 +93,7 @@ fun LoginView(
                             try {
                                 authViewModel.signInWithCredentialManager(activity)
                             } catch (e: Exception) {
-                                errorMessage = "Sign-in failed. Please try again."
+                                errorMessage = Localization.tr(context, "login.failed", "Sign-in failed. Please try again.")
                             } finally {
                                 isSigningIn = false
                             }
@@ -115,7 +118,7 @@ fun LoginView(
                     )
                 } else {
                     Text(
-                        text = "Sign in with Google",
+                        text = Localization.tr(context, "login.apple", "Sign in with Apple"),
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
@@ -136,7 +139,7 @@ fun LoginView(
             
             // Privacy notice
             Text(
-                text = "By signing in, you agree to our Terms of Service and Privacy Policy",
+                text = Localization.tr(context, "login.privacy", "By signing in, you agree to our Terms of Service and Privacy Policy"),
                 style = MaterialTheme.typography.labelMedium,
                 color = Gray3,
                 textAlign = TextAlign.Center,

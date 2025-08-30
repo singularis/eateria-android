@@ -318,5 +318,17 @@
   "profile.delete.desc": "Назавжди видалити обліковий запис",
   "profile.logout.confirm": "Ви впевнені, що хочете вийти?",
   "profile.no_email": "Немає електронної пошти",
-  "profile.language.select": "Вибрати мову"
+  "profile.language.select": "Вибрати мову",
+  "stats.scale.log": "Логарифмічна шкала",
+  "stats.scale.linear": "Лінійна шкала",
+  "stats.scale.kcal_log": "ккал (лог)",
+  "stats.calorie.consistency": "Послідовність калорій",
+  "stats.no_data": "Немає даних для цього періоду",
+  "stats.macro.protein": "Білок",
+  "stats.macro.fat": "Жир",
+  "stats.macro.carbs": "Вуглеводи",
+  "stats.macro.distribution": "Середній розподіл макронутрієнтів",
+  "stats.daily.averages": "Щоденні середні",
+  "stats.total.calories": "Загальні калорії",
+  "stats.trend.direction": "Напрямок тренду"
 }

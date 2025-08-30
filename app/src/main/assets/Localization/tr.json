@@ -318,5 +318,17 @@
   "profile.delete.desc": "Hesabınızı kalıcı olarak silin",
   "profile.logout.confirm": "Çıkış yapmak istediğinizden emin misiniz?",
   "profile.no_email": "E-posta yok",
-  "profile.language.select": "Dil Seçin"
+  "profile.language.select": "Dil Seçin",
+  "stats.scale.log": "Logaritmik Ölçek",
+  "stats.scale.linear": "Doğrusal Ölçek",
+  "stats.scale.kcal_log": "kcal (log)",
+  "stats.calorie.consistency": "Kalori Tutarlılığı",
+  "stats.no_data": "Bu dönem için veri mevcut değil",
+  "stats.macro.protein": "Protein",
+  "stats.macro.fat": "Yağ",
+  "stats.macro.carbs": "Karbonhidrat",
+  "stats.macro.distribution": "Ortalama Makro Dağılımı",
+  "stats.daily.averages": "Günlük Ortalamalar",
+  "stats.total.calories": "Toplam Kalori",
+  "stats.trend.direction": "Trend Yönü"
 }

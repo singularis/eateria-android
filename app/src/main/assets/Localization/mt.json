@@ -318,5 +318,17 @@
   "profile.delete.desc": "Ħassar il-kont tiegħek permanentement",
   "profile.logout.confirm": "Żgur li trid toħroġ?",
   "profile.no_email": "Ebda email",
-  "profile.language.select": "Agħżel Lingwa"
+  "profile.language.select": "Agħżel Lingwa",
+  "stats.scale.log": "Skala Logaritmika",
+  "stats.scale.linear": "Skala Lineari",
+  "stats.scale.kcal_log": "kcal (log)",
+  "stats.calorie.consistency": "Konsistenza tal-Kaloriji",
+  "stats.no_data": "Ebda dejta disponibbli għal dan il-perjodu",
+  "stats.macro.protein": "Proteina",
+  "stats.macro.fat": "Xaħam",
+  "stats.macro.carbs": "Karboidrati",
+  "stats.macro.distribution": "Distribuzzjoni medja tal-makronutrienti",
+  "stats.daily.averages": "Medji ta' kuljum",
+  "stats.total.calories": "Kaloriji totali",
+  "stats.trend.direction": "Direzzjoni tat-trend"
 }

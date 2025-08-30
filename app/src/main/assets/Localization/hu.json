@@ -318,5 +318,17 @@
   "profile.delete.desc": "Fiók végleges törlése",
   "profile.logout.confirm": "Biztos benne, hogy ki szeretne jelentkezni?",
   "profile.no_email": "Nincs e-mail",
-  "profile.language.select": "Nyelv kiválasztása"
+  "profile.language.select": "Nyelv kiválasztása",
+  "stats.scale.log": "Logaritmikus skála",
+  "stats.scale.linear": "Lineáris skála",
+  "stats.scale.kcal_log": "kcal (log)",
+  "stats.calorie.consistency": "Kalória konzisztencia",
+  "stats.no_data": "Nincs elérhető adat ehhez az időszakhoz",
+  "stats.macro.protein": "Fehérje",
+  "stats.macro.fat": "Zsír",
+  "stats.macro.carbs": "Szénhidrát",
+  "stats.macro.distribution": "Átlagos makrotápanyag eloszlás",
+  "stats.daily.averages": "Napi átlagok",
+  "stats.total.calories": "Összes kalória",
+  "stats.trend.direction": "Trend iránya"
 }

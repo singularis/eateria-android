@@ -308,8 +308,7 @@
   "weight.record_failed.msg": "Nu s-a putut înregistra greutatea. Încearcă din nou.",
   "weight.recorded.msg": "Greutatea ta a fost înregistrată cu succes.",
   "weight.recorded.title": "Greutate înregistrată",
-  "weight.take_photo": "Fă o fotografie"
-,
+  "weight.take_photo": "Fă o fotografie",
   "profile.addfriends.desc": "Găsiți și adăugați prieteni prin e-mail",
   "profile.tutorial.desc": "Reluați tutorialul aplicației",
   "profile.sharefeedback.desc": "Ajutați-ne să îmbunătățim aplicația",

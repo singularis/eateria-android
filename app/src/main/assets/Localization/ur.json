@@ -318,5 +318,17 @@
   "profile.delete.desc": "اپنا اکاؤنٹ مستقل طور پر ڈیلیٹ کریں",
   "profile.logout.confirm": "کیا آپ واقعی لاگ آؤٹ کرنا چاہتے ہیں؟",
   "profile.no_email": "کوئی ای میل نہیں",
-  "profile.language.select": "زبان منتخب کریں"
+  "profile.language.select": "زبان منتخب کریں",
+  "stats.scale.log": "لاگ اسکیل",
+  "stats.scale.linear": "لکیری اسکیل",
+  "stats.scale.kcal_log": "kcal (لاگ)",
+  "stats.calorie.consistency": "کیلوری کی مستقل مزاجی",
+  "stats.no_data": "اس مدت کے لیے کوئی ڈیٹا دستیاب نہیں",
+  "stats.macro.protein": "پروٹین",
+  "stats.macro.fat": "چکنائی",
+  "stats.macro.carbs": "کاربوہائیڈریٹس",
+  "stats.macro.distribution": "اوسط میکرو تقسیم",
+  "stats.daily.averages": "روزانہ اوسط",
+  "stats.total.calories": "کل کیلوریز",
+  "stats.trend.direction": "رجحان کی سمت"
 }

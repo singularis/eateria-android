@@ -457,15 +457,15 @@ private fun InsightsView(
                         verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
                     ) {
                                 InsightRow(Localization.tr(LocalContext.current, "stats.insights.active_days", "Active Days"), "$validDays/${statistics.size}")
-        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"), "${averages.calories.toInt()} kcal")
-        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"), "${String.format("%.1f", averages.weight)} kg")
-        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"), "${String.format("%.1f", averages.proteins)} g")
-        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"), "${String.format("%.1f", averages.fats)} g")
-        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"), "${String.format("%.1f", averages.carbohydrates)} g")
-        InsightRow(Localization.tr(LocalContext.current, "stats.insights.meals_per_day", "Meals Per Day"), "${String.format("%.1f", averages.mealsPerDay)}")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"), "${averages.calories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"), "${String.format("%.1f", averages.weight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"), "${String.format("%.1f", averages.proteins)} ${Localization.tr(LocalContext.current, "units.g", "g")}")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"), "${String.format("%.1f", averages.fats)} ${Localization.tr(LocalContext.current, "units.g", "g")}")
+        InsightRow(Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"), "${String.format("%.1f", averages.carbohydrates)} ${Localization.tr(LocalContext.current, "units.g", "g")}")
+        InsightRow(Localization.tr(LocalContext.current, "stats.summary.avg_food", "Avg Food"), "${String.format("%.1f", averages.mealsPerDay)}")
                     }
                 } else {
-                    NoDataMessage(Localization.tr(LocalContext.current, "stats.no_insights", "No insights available for this period"))
+                    NoDataMessage(Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"))
                 }
             }
         }
@@ -559,7 +559,8 @@ private fun SummaryStatsView(
                 modifier = Modifier.padding(Dimensions.paddingXL)
             ) {
                 Text(
-                    text = Localization.tr(LocalContext.current, "stats.summary.weekly", "Weekly Summary"),
+                    text = Localization.tr(LocalContext.current, "stats.summary.title_format", "Summary (%@)")
+                        .replace("%@", MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE).format(Measure(1, MeasureUnit.WEEK))),
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
@@ -572,16 +573,16 @@ private fun SummaryStatsView(
                         verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM)
                     ) {
                                 StatRow(Localization.tr(LocalContext.current, "stats.insights.active_days", "Active Days"), "$validDays/${statistics.size}")
-        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"), "${averages.calories.toInt()} kcal")
-        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"), "${String.format("%.1f", averages.weight)} kg")
-        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"), "${String.format("%.1f", averages.proteins)} g")
-        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"), "${String.format("%.1f", averages.fats)} g")
-        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"), "${String.format("%.1f", averages.carbohydrates)} g")
-        StatRow(Localization.tr(LocalContext.current, "stats.insights.meals_per_day", "Meals Per Day"), "${String.format("%.1f", averages.mealsPerDay)}")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"), "${averages.calories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"), "${String.format("%.1f", averages.weight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"), "${String.format("%.1f", averages.proteins)} ${Localization.tr(LocalContext.current, "units.g", "g")}")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"), "${String.format("%.1f", averages.fats)} ${Localization.tr(LocalContext.current, "units.g", "g")}")
+        StatRow(Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"), "${String.format("%.1f", averages.carbohydrates)} ${Localization.tr(LocalContext.current, "units.g", "g")}")
+        StatRow(Localization.tr(LocalContext.current, "stats.summary.avg_food", "Avg Food"), "${String.format("%.1f", averages.mealsPerDay)}")
                     }
                 } else {
                     Text(
-                        text = Localization.tr(LocalContext.current, "stats.no_data", "No data available for this week"),
+                        text = Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"),
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
@@ -800,14 +801,14 @@ private fun MacrosChartView(
                             verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXL)
                         ) {
                             MacroBarRow(
-                                label = Localization.tr(LocalContext.current, "stats.macro.proteins", "Proteins"),
+                                label = Localization.tr(LocalContext.current, "stats.macro.protein", "Protein"),
                                 value = avgProteins.toInt(),
                                 percentage = (avgProteins / total * 100).toInt(),
                                 color = CalorieGreen
                             )
                             
                             MacroBarRow(
-                                label = Localization.tr(LocalContext.current, "stats.macro.fats", "Fats"), 
+                                label = Localization.tr(LocalContext.current, "stats.macro.fat", "Fat"), 
                                 value = avgFats.toInt(),
                                 percentage = (avgFats / total * 100).toInt(),
                                 color = CalorieYellow
@@ -821,10 +822,10 @@ private fun MacrosChartView(
                             )
                         }
                                         } else {
-                        NoDataMessage(Localization.tr(LocalContext.current, "stats.no_macros", "No macronutrient data available"))
+                        NoDataMessage(Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"))
                     }
                 } else {
-                        NoDataMessage(Localization.tr(LocalContext.current, "stats.no_macros", "No macronutrient data available"))
+                        NoDataMessage(Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"))
                     }
             }
         }
@@ -1122,7 +1123,7 @@ private fun TrendsView(
                     weightTrend?.let { trend ->
                         TrendCard(
                             title = Localization.tr(LocalContext.current, "stats.trend.body_weight", "Body Weight Trend"),
-                            value = "${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} kg",
+                            value = "${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
                             color = when (trend.trend) {
                                 WeightTrendDirection.GAINING -> CalorieOrange
                                 WeightTrendDirection.LOSING -> CalorieGreen
@@ -1146,7 +1147,7 @@ private fun TrendsView(
                         
                         TrendCard(
                             title = Localization.tr(LocalContext.current, "stats.avg_calories", "Avg Daily Calories"),
-                            value = "${trend.averageCalories.toInt()} kcal",
+                            value = "${trend.averageCalories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
                             color = DarkPrimary,
                             icon = Icons.AutoMirrored.Filled.TrendingFlat
                         )
@@ -1546,7 +1547,7 @@ private fun WeightLineChart(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            LegendItem(Localization.tr(LocalContext.current, "stats.legend.body_weight", "Body Weight"), CalorieGreen)
+            LegendItem(Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight"), CalorieGreen)
         }
     }
 }
@@ -1732,7 +1733,7 @@ private fun FoodWeightLineChart(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            LegendItem(Localization.tr(LocalContext.current, "stats.legend.daily_food_weight", "Daily Food Weight"), CalorieYellow)
+            LegendItem(Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight"), CalorieYellow)
         }
     }
 }
@@ -1957,7 +1958,7 @@ private fun MacroCompositionChart(
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
-                        text = "${(totalCalories / chartData.size).toInt()} kcal",
+                        text = "${(totalCalories / chartData.size).toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
                         color = Color.White,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )

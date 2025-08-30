@@ -318,5 +318,17 @@
   "profile.delete.desc": "ลบบัญชีของคุณอย่างถาวร",
   "profile.logout.confirm": "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?",
   "profile.no_email": "ไม่มีอีเมล",
-  "profile.language.select": "เลือกภาษา"
+  "profile.language.select": "เลือกภาษา",
+  "stats.scale.log": "มาตราส่วนลอการิทึม",
+  "stats.scale.linear": "มาตราส่วนเชิงเส้น",
+  "stats.scale.kcal_log": "kcal (ลอก)",
+  "stats.calorie.consistency": "ความสม่ำเสมอของแคลอรี",
+  "stats.no_data": "ไม่มีข้อมูลสำหรับช่วงเวลานี้",
+  "stats.macro.protein": "โปรตีน",
+  "stats.macro.fat": "ไขมัน",
+  "stats.macro.carbs": "คาร์โบไฮเดรต",
+  "stats.macro.distribution": "การกระจายมาโครเฉลี่ย",
+  "stats.daily.averages": "ค่าเฉลี่ยรายวัน",
+  "stats.total.calories": "แคลอรีทั้งหมด",
+  "stats.trend.direction": "ทิศทางแนวโน้ม"
 }

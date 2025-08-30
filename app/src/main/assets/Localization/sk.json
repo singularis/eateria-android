@@ -318,5 +318,17 @@
   "profile.delete.desc": "Trvalo vymazať účet",
   "profile.logout.confirm": "Ste si istí, že sa chcete odhlásiť?",
   "profile.no_email": "Žiadny email",
-  "profile.language.select": "Vybrať jazyk"
+  "profile.language.select": "Vybrať jazyk",
+  "stats.scale.log": "Logaritmická škála",
+  "stats.scale.linear": "Lineárna škála",
+  "stats.scale.kcal_log": "kcal (log)",
+  "stats.calorie.consistency": "Konzistencia kalórií",
+  "stats.no_data": "Pre toto obdobie nie sú k dispozícii žiadne údaje",
+  "stats.macro.protein": "Proteín",
+  "stats.macro.fat": "Tuk",
+  "stats.macro.carbs": "Sacharidy",
+  "stats.macro.distribution": "Priemerné rozdelenie makronutrientov",
+  "stats.daily.averages": "Denné priemery",
+  "stats.total.calories": "Celkové kalórie",
+  "stats.trend.direction": "Smer trendu"
 }

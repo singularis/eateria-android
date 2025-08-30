@@ -318,5 +318,17 @@
   "profile.delete.desc": "Trajno izbriši račun",
   "profile.logout.confirm": "Ali se res želite odjaviti?",
   "profile.no_email": "Ni e-pošte",
-  "profile.language.select": "Izberi jezik"
+  "profile.language.select": "Izberi jezik",
+  "stats.scale.log": "Logaritmična lestvica",
+  "stats.scale.linear": "Linearna lestvica",
+  "stats.scale.kcal_log": "kcal (log)",
+  "stats.calorie.consistency": "Doslednost kalorij",
+  "stats.no_data": "Za to obdobje ni na voljo podatkov",
+  "stats.macro.protein": "Beljakovine",
+  "stats.macro.fat": "Maščobe",
+  "stats.macro.carbs": "Ogljikovi hidrati",
+  "stats.macro.distribution": "Povprečna porazdelitev makronutrientov",
+  "stats.daily.averages": "Dnevna povprečja",
+  "stats.total.calories": "Skupne kalorije",
+  "stats.trend.direction": "Smer trenda"
 }

@@ -318,5 +318,17 @@
   "profile.delete.desc": "अपना खाता स्थायी रूप से हटाएं",
   "profile.logout.confirm": "क्या आप वाकई लॉग आउट करना चाहते हैं?",
   "profile.no_email": "कोई ईमेल नहीं",
-  "profile.language.select": "भाषा चुनें"
+  "profile.language.select": "भाषा चुनें",
+  "stats.scale.log": "लॉग स्केल",
+  "stats.scale.linear": "लिनियर स्केल",
+  "stats.scale.kcal_log": "kcal (लॉग)",
+  "stats.calorie.consistency": "कैलोरी स्थिरता",
+  "stats.no_data": "इस अवधि के लिए कोई डेटा उपलब्ध नहीं",
+  "stats.macro.protein": "प्रोटीन",
+  "stats.macro.fat": "वसा",
+  "stats.macro.carbs": "कार्बोहाइड्रेट",
+  "stats.macro.distribution": "औसत मैक्रो वितरण",
+  "stats.daily.averages": "दैनिक औसत",
+  "stats.total.calories": "कुल कैलोरी",
+  "stats.trend.direction": "ट्रेंड दिशा"
 }

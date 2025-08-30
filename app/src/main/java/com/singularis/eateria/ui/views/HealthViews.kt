@@ -125,13 +125,13 @@ fun HealthSettingsView(
                 // Calorie Goals Section
                 item {
                     SettingsSection(
-                        title = Localization.tr(LocalContext.current, "health.daily_goals", "Daily Calorie Goals"),
-                        subtitle = Localization.tr(LocalContext.current, "health.daily_goals.subtitle", "Set your daily calorie intake targets")
+                        title = Localization.tr(LocalContext.current, "limits.title", "Set Calorie Limits"),
+                        subtitle = Localization.tr(LocalContext.current, "limits.msg", "Set your daily calorie limits manually, or use health-based calculation if you have health data.")
                     ) {
                         TextField(
                             value = softLimit,
                             onValueChange = { softLimit = it },
-                            label = { Text(Localization.tr(LocalContext.current, "limits.soft", "Soft Limit") + " (" + Localization.tr(LocalContext.current, "units.calories", "calories") + ")") },
+                            label = { Text(Localization.tr(LocalContext.current, "limits.soft", "Soft Limit") + " (" + Localization.tr(LocalContext.current, "units.kcal", "kcal") + ")") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = TextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
@@ -147,7 +147,7 @@ fun HealthSettingsView(
                         TextField(
                             value = hardLimit,
                             onValueChange = { hardLimit = it },
-                            label = { Text(Localization.tr(LocalContext.current, "limits.hard", "Hard Limit") + " (" + Localization.tr(LocalContext.current, "units.calories", "calories") + ")") },
+                            label = { Text(Localization.tr(LocalContext.current, "limits.hard", "Hard Limit") + " (" + Localization.tr(LocalContext.current, "units.kcal", "kcal") + ")") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = TextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
@@ -161,7 +161,7 @@ fun HealthSettingsView(
                         Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         
                         Text(
-                            text = Localization.tr(LocalContext.current, "limits.description", "Soft limit: Target daily intake\nHard limit: Maximum recommended intake"),
+                            text = Localization.tr(LocalContext.current, "limits.msg", "Set your daily calorie limits manually, or use health-based calculation if you have health data.\n\n⚠️ These are general guidelines. Consult a healthcare provider for personalized dietary advice."),
                             color = Color.Gray,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -171,8 +171,8 @@ fun HealthSettingsView(
                 // Health Data Integration
                 item {
                     SettingsSection(
-                        title = Localization.tr(LocalContext.current, "health.integration.title", "Health Data Integration"),
-                        subtitle = Localization.tr(LocalContext.current, "health.integration.desc", "Connect with health apps for personalized goals")
+                        title = Localization.tr(LocalContext.current, "limits.use_health", "Use Health-Based Calculation"),
+                        subtitle = Localization.tr(LocalContext.current, "limits.msg", "Set your daily calorie limits manually, or use health-based calculation if you have health data.")
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -186,7 +186,7 @@ fun HealthSettingsView(
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                                 Text(
-                                    text = Localization.tr(LocalContext.current, "limits.health_desc", "Automatically calculate calorie goals based on your health profile"),
+                                    text = Localization.tr(LocalContext.current, "limits.msg", "Set your daily calorie limits manually, or use health-based calculation if you have health data."),
                                     color = Color.Gray,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -208,7 +208,7 @@ fun HealthSettingsView(
                             Spacer(modifier = Modifier.height(Dimensions.paddingS))
                             
                             Text(
-                                text = Localization.tr(LocalContext.current, "health.no_data", "⚠️ No health data available. Connect to Google Fit or Apple Health to enable this feature."),
+                                text = Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"),
                                 color = CalorieRed,
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -219,11 +219,11 @@ fun HealthSettingsView(
                 // BMR Calculation
                 item {
                     SettingsSection(
-                        title = Localization.tr(LocalContext.current, "health.bmr.title", "Basal Metabolic Rate"),
-                        subtitle = Localization.tr(LocalContext.current, "health.bmr.subtitle", "Your estimated daily calorie burn at rest")
+                        title = Localization.tr(LocalContext.current, "rec.title", "Health Recommendation"),
+                        subtitle = Localization.tr(LocalContext.current, "rec.subtitle", "Your Personalized Recommendation")
                     ) {
                         Text(
-                            text = Localization.tr(LocalContext.current, "health.bmr_estimate", "BMR: ~1,650 calories/day"),
+                            text = "BMR: ~1,650 " + Localization.tr(LocalContext.current, "units.per_day_format", "%@/day").replace("%@", Localization.tr(LocalContext.current, "units.kcal", "kcal")),
                             color = Color.White,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -231,7 +231,7 @@ fun HealthSettingsView(
                         Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         
                         Text(
-                            text = Localization.tr(LocalContext.current, "health.bmr_desc", "Based on estimated age, weight, height, and activity level. Connect health data for more accurate calculations."),
+                            text = Localization.tr(LocalContext.current, "rec.disclaimer.text", "⚠️ This information is for educational purposes only and should not replace professional medical advice. Consult your healthcare provider before making dietary changes."),
                             color = Color.Gray,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -241,11 +241,11 @@ fun HealthSettingsView(
                 // Dietary Preferences
                 item {
                     SettingsSection(
-                        title = Localization.tr(LocalContext.current, "health.dietary.title", "Dietary Preferences"),
-                        subtitle = Localization.tr(LocalContext.current, "health.dietary.desc", "Customize nutrition tracking for your diet")
+                        title = Localization.tr(LocalContext.current, "rec.title", "Health Recommendation"),
+                        subtitle = Localization.tr(LocalContext.current, "rec.subtitle", "Your Personalized Recommendation")
                     ) {
                         Text(
-                            text = Localization.tr(LocalContext.current, "health.coming_soon", "Coming Soon"),
+                            text = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."),
                             color = Color.Gray,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -253,7 +253,7 @@ fun HealthSettingsView(
                         Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         
                         Text(
-                            text = Localization.tr(LocalContext.current, "health.coming_features", "• Vegetarian/Vegan options\n• Allergen tracking\n• Macro targets customization\n• Meal timing preferences"),
+                            text = Localization.tr(LocalContext.current, "rec.disclaimer.text", "⚠️ This information is for educational purposes only and should not replace professional medical advice. Consult your healthcare provider before making dietary changes."),
                             color = Color.Gray,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -426,7 +426,7 @@ fun HealthDisclaimerView(
                     ) {
                         item {
                             DisclaimerSection(
-                                title = Localization.tr(LocalContext.current, "disc.section.general", "General Information"),
+                                title = Localization.tr(LocalContext.current, "disc.section.notice", "Important Notice"),
                                 content = Localization.tr(LocalContext.current, "disc.notice.text", "This app provides general nutritional information and dietary suggestions for educational purposes only. The information is not intended to replace professional medical advice, diagnosis, or treatment.")
                             )
                         }
@@ -447,15 +447,15 @@ fun HealthDisclaimerView(
                         
                         item {
                             DisclaimerSection(
-                                title = Localization.tr(LocalContext.current, "disc.section.guidance", "Professional Guidance"),
-                                content = Localization.tr(LocalContext.current, "health.professional.advice", "For personalized nutrition advice, weight management, or dietary planning, please consult qualified healthcare professionals, registered dietitians, or nutritionists.")
+                                title = Localization.tr(LocalContext.current, "disc.section.notice", "Important Notice"),
+                                content = Localization.tr(LocalContext.current, "disc.notice.text", "This app provides general nutritional information and dietary suggestions for educational purposes only. The information is not intended to replace professional medical advice, diagnosis, or treatment.")
                             )
                         }
                         
                         item {
                             DisclaimerSection(
-                                title = Localization.tr(LocalContext.current, "disc.section.responsibility", "Individual Responsibility"),
-                                content = Localization.tr(LocalContext.current, "health.responsibility.text", "Users are responsible for their own dietary choices and health decisions. This app does not replace professional medical or nutritional guidance.")
+                                title = Localization.tr(LocalContext.current, "disc.section.notice", "Important Notice"),
+                                content = Localization.tr(LocalContext.current, "disc.notice.text", "This app provides general nutritional information and dietary suggestions for educational purposes only. The information is not intended to replace professional medical advice, diagnosis, or treatment.")
                             )
                         }
                     }

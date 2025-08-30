@@ -318,5 +318,17 @@
   "profile.delete.desc": "Xóa tài khoản vĩnh viễn",
   "profile.logout.confirm": "Bạn có chắc muốn đăng xuất không?",
   "profile.no_email": "Không có email",
-  "profile.language.select": "Chọn Ngôn Ngữ"
+  "profile.language.select": "Chọn Ngôn Ngữ",
+  "stats.scale.log": "Thang logarit",
+  "stats.scale.linear": "Thang tuyến tính",
+  "stats.scale.kcal_log": "kcal (log)",
+  "stats.calorie.consistency": "Tính nhất quán calo",
+  "stats.no_data": "Không có dữ liệu cho khoảng thời gian này",
+  "stats.macro.protein": "Protein",
+  "stats.macro.fat": "Chất béo",
+  "stats.macro.carbs": "Carbohydrate",
+  "stats.macro.distribution": "Phân bố macro trung bình",
+  "stats.daily.averages": "Trung bình hàng ngày",
+  "stats.total.calories": "Tổng calo",
+  "stats.trend.direction": "Hướng xu hướng"
 }

@@ -29,6 +29,9 @@ object NotificationHelper {
 
     fun showReminder(context: Context, id: Int, title: String, bodyPrefix: String) {
         ensureChannel(context)
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            return
+        }
         val quote = QuotesService.getRandomQuote(context)
         val body = "$bodyPrefix\n\n$quote"
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)

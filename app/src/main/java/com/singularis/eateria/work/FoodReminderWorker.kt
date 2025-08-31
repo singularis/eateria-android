@@ -60,12 +60,6 @@ class FoodReminderWorker(appContext: Context, params: WorkerParameters) : Corout
             }
             NotificationHelper.showReminder(applicationContext, id, title, prefix)
         }
-
-        when (type) {
-            TYPE_BREAKFAST -> ReminderScheduler.scheduleBreakfast(applicationContext)
-            TYPE_LUNCH -> ReminderScheduler.scheduleLunch(applicationContext)
-            TYPE_DINNER -> ReminderScheduler.scheduleDinner(applicationContext)
-        }
         return Result.success()
     }
 }

@@ -34,6 +34,10 @@ import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
 import androidx.compose.runtime.key
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.isGranted
+import android.Manifest
 
 @Composable
 fun ContentView(
@@ -102,6 +106,17 @@ fun ContentView(
     
     LaunchedEffect(Unit) {
         viewModel.triggerManualRefresh()
+    }
+
+    // Ask for notifications permission on first load if onboarding seen
+    @OptIn(ExperimentalPermissionsApi::class)
+    run {
+        val postNotifPermission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
+        LaunchedEffect(hasSeenOnboarding) {
+            if (hasSeenOnboarding && !postNotifPermission.status.isGranted) {
+                postNotifPermission.launchPermissionRequest()
+            }
+        }
     }
     
     key(currentLanguage) {

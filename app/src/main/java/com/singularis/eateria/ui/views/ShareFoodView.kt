@@ -147,7 +147,7 @@ fun ShareFoodView(
                                     )
                                     if (sharesCount > 0) {
                                         Text(
-                                            text = Localization.tr(LocalContext.current, "share.count", "Shared ${sharesCount}x"),
+                                            text = Localization.tr(LocalContext.current, "share.count", "Shared") + " ${sharesCount}x",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -227,7 +227,8 @@ fun ShareFoodView(
                                     .thenBy { it.lowercase() }
                             )
                             onShareSuccess()
-                            showShareConfirmation = "Shared ${percentage}% with ${toEmail}"
+                            val successTemplate = Localization.tr(context, "share.success.msg", "Shared %d%% with %@")
+                            showShareConfirmation = successTemplate.replace("%d", "$percentage").replace("%@", toEmail)
                             showPortionDialogFor = null
                         }
                     }

@@ -83,6 +83,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalContext
+import android.content.Context
 import androidx.compose.runtime.collectAsState
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.LanguageService
@@ -156,21 +157,21 @@ fun OnboardingView(
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.insights.title", "Get Personalized Insights 💡"),
-            description = "View your trends, manage your profile, and access health information - all designed to help you reach your wellness goals.",
+            description = Localization.tr(LocalContext.current, "onboarding.insights.desc", "View your trends, manage your profile, and access health information - all designed to help you reach your wellness goals."),
             icon = Icons.AutoMirrored.Filled.TrendingUp,
             iconColor = Color(0xFFFF9800),
             anchor = "insights"
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.friends.title", "Share Meals with Friends 🤝"),
-            description = "Add friends and share portions of your meals to split calories. Keep in touch and see who you share with most.",
+            description = Localization.tr(LocalContext.current, "onboarding.friends.desc", "Add friends and share portions of your meals to split calories. Keep in touch and see who you share with most."),
             icon = Icons.Default.PersonAdd,
             iconColor = Color(0xFF03A9F4),
             anchor = "friends"
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.health_setup.title", "Personalized Health Setup 📋"),
-            description = "For the best experience, we can calculate personalized calorie recommendations based on your health data. This is completely optional!",
+            description = Localization.tr(LocalContext.current, "onboarding.health_setup.desc", "For the best experience, we can calculate personalized calorie recommendations based on your health data. This is completely optional!"),
             icon = Icons.Default.Person,
             iconColor = Color(0xFF3F51B5),
             anchor = "health_setup"
@@ -184,35 +185,35 @@ fun OnboardingView(
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.health_results.title", "Your Personalized Plan 🎯"),
-            description = "Based on your data, here are your personalized recommendations for optimal health.",
+            description = Localization.tr(LocalContext.current, "onboarding.health_results.desc", "Based on your data, here are your personalized recommendations for optimal health."),
             icon = Icons.Default.CheckCircle,
             iconColor = Color(0xFF4CAF50),
             anchor = "health_results"
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.disclaimer.title", "Important Health Disclaimer ⚠️"),
-            description = "This app is for informational purposes only and not a substitute for professional medical advice. Always consult healthcare providers for personalized dietary guidance and medical decisions.",
+            description = Localization.tr(LocalContext.current, "onboarding.disclaimer.desc", "This app is for informational purposes only and not a substitute for professional medical advice. Always consult healthcare providers for personalized dietary guidance and medical decisions."),
             icon = Icons.Default.Warning,
             iconColor = Color(0xFFFF9800),
             anchor = "disclaimer"
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.datamode.title", "Choose Your Data Mode 📈"),
-            description = "Pick how much detail you prefer on the main screen. You can change this later in Profile → Display Mode.",
+            description = Localization.tr(LocalContext.current, "onboarding.datamode.desc", "Pick how much detail you prefer on the main screen. You can change this later in Profile → Display Mode."),
             icon = Icons.Default.Settings,
             iconColor = Color(0xFF607D8B),
             anchor = "display_mode"
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.notifications.title", "Stay on Track with Gentle Reminders ⏰"),
-            description = "Enable reminders to nudge you to log meals throughout the day. You can change this anytime in settings.",
+            description = Localization.tr(LocalContext.current, "onboarding.notifications.desc", "Enable reminders to nudge you to log meals throughout the day. You can change this anytime in settings."),
             icon = Icons.Default.Notifications,
             iconColor = Color(0xFF03A9F4),
             anchor = "notifications"
         ),
         OnboardingPage(
             title = Localization.tr(LocalContext.current, "onboarding.complete.title", "You're All Set! 🎉"),
-            description = "Ready to start your healthy journey? You can always revisit this tutorial from your profile settings if needed.",
+            description = Localization.tr(LocalContext.current, "onboarding.complete.desc", "Ready to start your healthy journey? You can always revisit this tutorial from your profile settings if needed."),
             icon = Icons.Default.CheckCircle,
             iconColor = Color(0xFF4CAF50),
             anchor = "complete"
@@ -340,7 +341,8 @@ fun OnboardingView(
                                         height, weight, age, isMale, activityLevel,
                                         onOptimalWeightCalculated = { optimalWeight = it },
                                         onRecommendedCaloriesCalculated = { recommendedCalories = it },
-                                        onTimeToOptimalWeightCalculated = { timeToOptimalWeight = it }
+                                        onTimeToOptimalWeightCalculated = { timeToOptimalWeight = it },
+                                        context = context
                                     )) {
                                     coroutineScope.launch {
                                         pagerState.animateScrollToPage(page + 1)
@@ -439,7 +441,8 @@ fun OnboardingView(
                                                 height, weight, age, isMale, activityLevel,
                                                 onOptimalWeightCalculated = { optimalWeight = it },
                                                 onRecommendedCaloriesCalculated = { recommendedCalories = it },
-                                                onTimeToOptimalWeightCalculated = { timeToOptimalWeight = it }
+                                                onTimeToOptimalWeightCalculated = { timeToOptimalWeight = it },
+                                                context = context
                                             )) {
                                             coroutineScope.launch {
                                                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
@@ -1071,7 +1074,14 @@ private fun HealthFormView(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    text = level,
+                                    text = when (level) {
+                                        "Sedentary" -> Localization.tr(LocalContext.current, "health.activity.sedentary", level)
+                                        "Lightly Active" -> Localization.tr(LocalContext.current, "health.activity.lightly", level)
+                                        "Moderately Active" -> Localization.tr(LocalContext.current, "health.activity.moderately", level)
+                                        "Very Active" -> Localization.tr(LocalContext.current, "health.activity.very", level)
+                                        "Extremely Active" -> Localization.tr(LocalContext.current, "health.activity.extremely", level)
+                                        else -> level
+                                    },
                                     fontSize = 14.sp,
                                     fontWeight = if (activityLevel == level) FontWeight.Bold else FontWeight.Normal
                                 )
@@ -1130,13 +1140,13 @@ private fun HealthResultsView(
         ) {
             ResultCard(
                 title = Localization.tr(LocalContext.current, "health.optimal_weight", "🎯 Optimal Weight"),
-                value = "${String.format("%.1f", optimalWeight)} kg",
+                                    value = "${String.format("%.1f", optimalWeight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
                 color = CalorieGreen
             )
             
             ResultCard(
                 title = Localization.tr(LocalContext.current, "health.daily_calorie", "🔥 Daily Calorie Target"),
-                value = "$recommendedCalories kcal",
+                value = "$recommendedCalories ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
                 color = CalorieOrange
             )
             
@@ -1193,7 +1203,8 @@ private fun validateAndCalculateHealthData(
     activityLevel: String,
     onOptimalWeightCalculated: (Double) -> Unit,
     onRecommendedCaloriesCalculated: (Int) -> Unit,
-    onTimeToOptimalWeightCalculated: (String) -> Unit
+    onTimeToOptimalWeightCalculated: (String) -> Unit,
+    context: Context
 ): Boolean {
     val heightValue = height.toDoubleOrNull()
     val weightValue = weight.toDoubleOrNull()
@@ -1266,9 +1277,8 @@ private fun validateAndCalculateHealthData(
     
     when {
         kotlin.math.abs(weightDifference) < 3 -> {
-            // Maintain current weight - expanded range for more people
             calorieAdjustment = 0.0
-            timeToGoal = "You are at optimal weight!"
+            timeToGoal = Localization.tr(context, "health.goal.maintain", "You are at optimal weight!")
         }
         weightDifference > 0 -> {
             // Lose weight - conservative approach with smaller deficit for sustainability
@@ -1287,9 +1297,9 @@ private fun validateAndCalculateHealthData(
             
             val weeksToGoal = kotlin.math.ceil(kotlin.math.abs(weightDifference) / weeklyLossRate).toInt()
             timeToGoal = when {
-                weeksToGoal > 52 -> "${weeksToGoal / 52} year(s) to reach optimal weight"
-                weeksToGoal > 8 -> "${weeksToGoal / 4} month(s) to reach optimal weight"
-                else -> "$weeksToGoal weeks to reach optimal weight"
+                weeksToGoal > 52 -> Localization.tr(context, "health.goal.years", "%d year(s) to reach optimal weight").replace("%d", "${weeksToGoal / 52}")
+                weeksToGoal > 8 -> Localization.tr(context, "health.goal.months", "%d month(s) to reach optimal weight").replace("%d", "${weeksToGoal / 4}")
+                else -> Localization.tr(context, "health.goal.weeks", "%d weeks to reach optimal weight").replace("%d", "$weeksToGoal")
             }
         }
         else -> {
@@ -1304,9 +1314,9 @@ private fun validateAndCalculateHealthData(
             val weeksToGoal = kotlin.math.ceil(kotlin.math.abs(weightDifference) / weeklyGainRate).toInt()
             
             timeToGoal = when {
-                weeksToGoal > 52 -> "${weeksToGoal / 52} year(s) to reach optimal weight"
-                weeksToGoal > 8 -> "${weeksToGoal / 4} month(s) to reach optimal weight"
-                else -> "$weeksToGoal weeks to reach optimal weight"
+                weeksToGoal > 52 -> Localization.tr(context, "health.goal.years", "%d year(s) to reach optimal weight").replace("%d", "${weeksToGoal / 52}")
+                weeksToGoal > 8 -> Localization.tr(context, "health.goal.months", "%d month(s) to reach optimal weight").replace("%d", "${weeksToGoal / 4}")
+                else -> Localization.tr(context, "health.goal.weeks", "%d weeks to reach optimal weight").replace("%d", "$weeksToGoal")
             }
         }
     }

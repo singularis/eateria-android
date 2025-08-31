@@ -8,6 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.singularis.eateria.R
 import com.singularis.eateria.services.QuotesService
+import com.singularis.eateria.services.Localization
 
 object NotificationHelper {
     const val CHANNEL_ID = "eateria_reminders"

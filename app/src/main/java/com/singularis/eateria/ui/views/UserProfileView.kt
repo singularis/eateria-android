@@ -558,19 +558,19 @@ private fun HealthDataCard(
             ) {
                 HealthMetricRow(
                     label = Localization.tr(LocalContext.current, "health.height.label", "Height:"),
-                    value = "${userHeight.toInt()} cm",
+                    value = "${userHeight.toInt()} ${Localization.tr(LocalContext.current, "units.cm", "cm")}",
                     valueColor = Color.White
                 )
                 
                 HealthMetricRow(
                     label = Localization.tr(LocalContext.current, "profile.targetweight", "Target Weight:"),
-                    value = String.format("%.1f kg", userOptimalWeight),
+                    value = String.format("%.1f %s", userOptimalWeight, Localization.tr(LocalContext.current, "units.kg", "kg")),
                     valueColor = CalorieGreen
                 )
                 
                 HealthMetricRow(
                     label = Localization.tr(LocalContext.current, "profile.dailycalorie", "Daily Calorie Target:"),
-                    value = "$userRecommendedCalories kcal",
+                    value = "$userRecommendedCalories ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
                     valueColor = CalorieOrange
                 )
             }

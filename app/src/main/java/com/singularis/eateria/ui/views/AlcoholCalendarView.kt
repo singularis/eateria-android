@@ -50,6 +50,7 @@ import com.singularis.eateria.ui.theme.Dimensions
 import eater.Alcohol
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.text.DateFormatSymbols
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -201,11 +202,14 @@ private fun Header(date: Date, onPrev: () -> Unit, onNext: () -> Unit, onClose: 
 
 @Composable
 private fun WeekdayHeader() {
-    val labels = listOf("S", "M", "T", "W", "T", "F", "S")
+    val labels = remember {
+        val weekdays = DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays
+        (1..7).map { weekdays[it] }
+    }
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        labels.forEach { l ->
+        labels.forEach { label ->
             Text(
-                text = l,
+                text = label,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 color = Color.White.copy(alpha = 0.7f),

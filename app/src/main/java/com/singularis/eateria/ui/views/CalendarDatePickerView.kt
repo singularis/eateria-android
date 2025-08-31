@@ -55,6 +55,7 @@ import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
 import java.text.SimpleDateFormat
+import java.text.DateFormatSymbols
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -160,15 +161,10 @@ private fun CalendarContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                val weekdays = listOf(
-            Localization.tr(LocalContext.current, "calendar.sun", "Sun"),
-            Localization.tr(LocalContext.current, "calendar.mon", "Mon"),
-            Localization.tr(LocalContext.current, "calendar.tue", "Tue"),
-            Localization.tr(LocalContext.current, "calendar.wed", "Wed"),
-            Localization.tr(LocalContext.current, "calendar.thu", "Thu"),
-            Localization.tr(LocalContext.current, "calendar.fri", "Fri"),
-            Localization.tr(LocalContext.current, "calendar.sat", "Sat")
-        )
+                val weekdays = remember {
+                    val symbols = DateFormatSymbols.getInstance(Locale.getDefault())
+                    (1..7).map { symbols.shortWeekdays[it] }
+                }
                 weekdays.forEach { day ->
                     Text(
                         text = day,

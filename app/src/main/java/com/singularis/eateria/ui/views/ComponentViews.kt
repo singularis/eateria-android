@@ -283,7 +283,7 @@ fun StatsButtonsView(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = String.format("%.1f kg", personWeight),
+                text = String.format("%.1f %s", personWeight, Localization.tr(LocalContext.current, "units.kg", "kg")),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
@@ -377,10 +377,10 @@ fun MacrosSummaryRow() {
             val fats = today.fats
             val carbs = today.carbohydrates
             val sugar = today.sugar
-            val proPart = "${Localization.tr(context, "macro.pro", "PRO")} ${"%.1f".format(proteins)}g"
-            val fatPart = "${Localization.tr(context, "macro.fat", "FAT")} ${"%.1f".format(fats)}g"
-            val carbPart = "${Localization.tr(context, "macro.car", "CAR")} ${"%.1f".format(carbs)}g"
-            val sugPart = "${Localization.tr(context, "macro.sug", "SUG")} ${"%.1f".format(sugar)}g"
+            val proPart = "${Localization.tr(context, "macro.pro", "PRO")} ${"%.1f".format(proteins)}${Localization.tr(context, "units.g", "g")}"
+            val fatPart = "${Localization.tr(context, "macro.fat", "FAT")} ${"%.1f".format(fats)}${Localization.tr(context, "units.g", "g")}"
+            val carbPart = "${Localization.tr(context, "macro.car", "CAR")} ${"%.1f".format(carbs)}${Localization.tr(context, "units.g", "g")}"
+            val sugPart = "${Localization.tr(context, "macro.sug", "SUG")} ${"%.1f".format(sugar)}${Localization.tr(context, "units.g", "g")}"
             summaryText = "$proPart • $fatPart • $carbPart • $sugPart"
             summaryColor = Color.White
         } else {
@@ -738,9 +738,9 @@ fun PortionSelectionDialog(
                 Column {
                     Text(
                         text = if (showCustomSelection) 
-                            Localization.tr(LocalContext.current, "portion.custom.msg", "Select the amount of '%@' you ate:\nOriginal weight: %dg").replace("%@", foodName).replace("%dg", "${originalWeight}g")
+                            Localization.tr(LocalContext.current, "portion.custom.msg", "Select the amount of '%@' you ate:\nOriginal weight: %dg").replace("%@", foodName).replace("%dg", "${originalWeight}${Localization.tr(LocalContext.current, "units.g", "g")}")
                         else 
-                            Localization.tr(LocalContext.current, "portion.modify.msg", "How much of '%@' did you actually eat?\nOriginal weight: %dg").replace("%@", foodName).replace("%dg", "${originalWeight}g"),
+                            Localization.tr(LocalContext.current, "portion.modify.msg", "How much of '%@' did you actually eat?\nOriginal weight: %dg").replace("%@", foodName).replace("%dg", "${originalWeight}${Localization.tr(LocalContext.current, "units.g", "g")}"),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
@@ -771,7 +771,7 @@ fun PortionSelectionDialog(
                                     contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
                                 ) {
                                     Text(
-                                        text = "$percentage% (${calculatedWeight}g)",
+                                        text = "$percentage% (${calculatedWeight}${Localization.tr(LocalContext.current, "units.g", "g")})",
                                         style = MaterialTheme.typography.bodySmall,
                                         textAlign = TextAlign.Center
                                     )
@@ -798,13 +798,13 @@ fun PortionSelectionDialog(
                                     contentPadding = PaddingValues(vertical = Dimensions.paddingXS)
                                 ) {
                                     val localizedDescription = when (percentage) {
-                                        200 -> Localization.tr(LocalContext.current, "portion.200", "200%% (%dg) - Double portion").replace("%dg", "${calculatedWeight.toInt()}g")
-                                        150 -> Localization.tr(LocalContext.current, "portion.150", "150%% (%dg) - One and a half portion").replace("%dg", "${calculatedWeight.toInt()}g")
-                                        125 -> Localization.tr(LocalContext.current, "portion.125", "125%% (%dg) - One and a quarter portion").replace("%dg", "${calculatedWeight.toInt()}g")
-                                        75 -> Localization.tr(LocalContext.current, "portion.75", "75%% (%dg) - Three quarters").replace("%dg", "${calculatedWeight.toInt()}g")
-                                        50 -> Localization.tr(LocalContext.current, "portion.50", "50%% (%dg) - Half portion").replace("%dg", "${calculatedWeight.toInt()}g")
-                                        25 -> Localization.tr(LocalContext.current, "portion.25", "25%% (%dg) - Quarter portion").replace("%dg", "${calculatedWeight.toInt()}g")
-                                        else -> "$percentage% (${calculatedWeight.toInt()}g)"
+                                        200 -> Localization.tr(LocalContext.current, "portion.200", "200%% (%dg) - Double portion").replace("%dg", "${calculatedWeight.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}")
+                                        150 -> Localization.tr(LocalContext.current, "portion.150", "150%% (%dg) - One and a half portion").replace("%dg", "${calculatedWeight.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}")
+                                        125 -> Localization.tr(LocalContext.current, "portion.125", "125%% (%dg) - One and a quarter portion").replace("%dg", "${calculatedWeight.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}")
+                                        75 -> Localization.tr(LocalContext.current, "portion.75", "75%% (%dg) - Three quarters").replace("%dg", "${calculatedWeight.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}")
+                                        50 -> Localization.tr(LocalContext.current, "portion.50", "50%% (%dg) - Half portion").replace("%dg", "${calculatedWeight.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}")
+                                        25 -> Localization.tr(LocalContext.current, "portion.25", "25%% (%dg) - Quarter portion").replace("%dg", "${calculatedWeight.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}")
+                                        else -> "$percentage% (${calculatedWeight.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")})"
                                     }
                                     Text(
                                         text = localizedDescription,

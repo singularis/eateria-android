@@ -966,7 +966,7 @@ private fun PersonWeightChartViewFullWidth(
                             Spacer(modifier = Modifier.width(Dimensions.paddingM))
                             
                             Text(
-                                text = "${Localization.tr(LocalContext.current, "stats.trend", "Trend")}: ${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}/week",
+                                text = "${Localization.tr(LocalContext.current, "stats.trend", "Trend")}: ${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}/${Localization.tr(LocalContext.current, "stats.trend.week", "week")}",
                                 color = trendColor,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.SemiBold
@@ -1849,7 +1849,7 @@ private fun MacroBarRow(
         
         // Value with better styling
         Text(
-            text = "${value}g",
+            text = "${value}${Localization.tr(LocalContext.current, "units.g", "g")}",
             color = Color.Gray,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.width(60.dp) // Wider value area
@@ -1937,9 +1937,21 @@ private fun MacroCompositionChart(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                            MacroSummaryItem(Localization.tr(LocalContext.current, "stats.macro.protein", "Protein"), "${avgProtein.toInt()}g", CalorieBlue)
-        MacroSummaryItem(Localization.tr(LocalContext.current, "stats.macro.carbs", "Carbs"), "${avgCarbs.toInt()}g", CalorieOrange)
-        MacroSummaryItem(Localization.tr(LocalContext.current, "stats.macro.fat", "Fat"), "${avgFat.toInt()}g", CalorieYellow)
+                    MacroSummaryItem(
+                        Localization.tr(LocalContext.current, "stats.macro.protein", "Protein"), 
+                        "${avgProtein.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}", 
+                        CalorieBlue
+                    )
+                    MacroSummaryItem(
+                        Localization.tr(LocalContext.current, "stats.macro.carbs", "Carbs"), 
+                        "${avgCarbs.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}", 
+                        CalorieOrange
+                    )
+                    MacroSummaryItem(
+                        Localization.tr(LocalContext.current, "stats.macro.fat", "Fat"), 
+                        "${avgFat.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}", 
+                        CalorieYellow
+                    )
                 }
                 
                 HorizontalDivider(

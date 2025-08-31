@@ -223,7 +223,9 @@ fun HealthSettingsView(
                         subtitle = Localization.tr(LocalContext.current, "rec.subtitle", "Your Personalized Recommendation")
                     ) {
                         Text(
-                            text = "BMR: ~1,650 " + Localization.tr(LocalContext.current, "units.per_day_format", "%@/day").replace("%@", Localization.tr(LocalContext.current, "units.kcal", "kcal")),
+                            text = Localization.tr(LocalContext.current, "health.bmr.example", "BMR: ~%@ %@")
+                                .replace("%@", "1,650")
+                                .replaceFirst("%@", Localization.tr(LocalContext.current, "units.per_day_format", "%@/day").replace("%@", Localization.tr(LocalContext.current, "units.kcal", "kcal"))),
                             color = Color.White,
                             style = MaterialTheme.typography.bodyLarge
                         )

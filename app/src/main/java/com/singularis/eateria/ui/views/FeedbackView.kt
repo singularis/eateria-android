@@ -138,12 +138,13 @@ fun FeedbackView(
                     
                     Spacer(modifier = Modifier.height(Dimensions.paddingL))
                     
+                    val failedMsg = Localization.tr(LocalContext.current, "feedback.submit_failed", "Failed to submit feedback. Please try again.")
+                    val networkMsg = Localization.tr(LocalContext.current, "feedback.network_error", "Network error. Please check your connection and try again.")
+
                     Button(
                         onClick = {
                             if (isValidFeedback && !isSubmitting) {
                                 isSubmitting = true
-                                val failedMsg = "Failed to submit feedback. Please try again."
-                                val networkMsg = "Network error. Please check your connection and try again."
                                 coroutineScope.launch {
                                     try {
                                         val grpcService = GRPCService(context)

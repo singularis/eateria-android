@@ -346,5 +346,6 @@
   "profile.no_email": "이메일 없음",
   "profile.language.select": "언어 선택",
   "stats.trend.week": "주",
-  "health.disclaimer.text": "중요: 이는 일반적인 지침입니다. 특히 질환이 있거나 특정 건강 목표가 있는 경우에는 개인 맞춤 식이 조언을 위해 의료 전문가와 상담하세요."
+  "health.disclaimer.text": "중요: 이는 일반적인 지침입니다. 특히 질환이 있거나 특정 건강 목표가 있는 경우에는 개인 맞춤 식이 조언을 위해 의료 전문가와 상담하세요.",
+  "calories.left": "남음"
 }

@@ -346,5 +346,6 @@
   "profile.no_email": "无电子邮件",
   "profile.language.select": "选择语言",
   "stats.trend.week": "周",
-  "health.disclaimer.text": "重要提示：以上为一般性指南。若需个性化饮食建议，尤其在您有医疗状况或特定健康目标时，请咨询医疗保健专业人士。"
+  "health.disclaimer.text": "重要提示：以上为一般性指南。若需个性化饮食建议，尤其在您有医疗状况或特定健康目标时，请咨询医疗保健专业人士。",
+  "calories.left": "剩余"
 }

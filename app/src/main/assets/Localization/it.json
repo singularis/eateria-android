@@ -346,5 +346,6 @@
   "profile.no_email": "Nessuna email",
   "profile.language.select": "Seleziona lingua",
   "stats.trend.week": "settimana",
-  "health.disclaimer.text": "Importante: queste sono linee guida generali. Per consigli dietetici personalizzati consulta un professionista sanitario, soprattutto se hai condizioni mediche o obiettivi specifici di salute."
+  "health.disclaimer.text": "Importante: queste sono linee guida generali. Per consigli dietetici personalizzati consulta un professionista sanitario, soprattutto se hai condizioni mediche o obiettivi specifici di salute.",
+  "calories.left": "rimanenti"
 }

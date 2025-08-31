@@ -346,5 +346,6 @@
   "profile.no_email": "Ei sähköpostia",
   "profile.language.select": "Valitse kieli",
   "stats.trend.week": "viikko",
-  "health.disclaimer.text": "Tärkeää: Nämä ovat yleisiä ohjeita. Kysy terveydenhuollon ammattilaiselta henkilökohtaista ravitsemusneuvontaa, erityisesti jos sinulla on sairauksia tai erityisiä terveystavoitteita."
+  "health.disclaimer.text": "Tärkeää: Nämä ovat yleisiä ohjeita. Kysy terveydenhuollon ammattilaiselta henkilökohtaista ravitsemusneuvontaa, erityisesti jos sinulla on sairauksia tai erityisiä terveystavoitteita.",
+  "calories.left": "jäljellä"
 }

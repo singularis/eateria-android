@@ -346,5 +346,6 @@
   "profile.no_email": "Nėra el. pašto",
   "profile.language.select": "Pasirinkti kalbą",
   "stats.trend.week": "savaitė",
-  "health.disclaimer.text": "Svarbu: tai bendros gairės. Dėl suasmenintų mitybos patarimų pasitarkite su sveikatos priežiūros specialistu, ypač jei turite sveikatos sutrikimų ar konkrečių tikslų."
+  "health.disclaimer.text": "Svarbu: tai bendros gairės. Dėl suasmenintų mitybos patarimų pasitarkite su sveikatos priežiūros specialistu, ypač jei turite sveikatos sutrikimų ar konkrečių tikslų.",
+  "calories.left": "liko"
 }

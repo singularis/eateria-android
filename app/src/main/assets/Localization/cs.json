@@ -346,5 +346,6 @@
   "profile.no_email": "Bez e‑mailu",
   "profile.language.select": "Vybrat jazyk",
   "stats.trend.week": "týden",
-  "health.disclaimer.text": "Důležité: Jedná se o obecná doporučení. Pro personalizované dietní rady se poraďte se zdravotníkem, zejména pokud máte zdravotní potíže nebo specifické zdravotní cíle."
+  "health.disclaimer.text": "Důležité: Jedná se o obecná doporučení. Pro personalizované dietní rady se poraďte se zdravotníkem, zejména pokud máte zdravotní potíže nebo specifické zdravotní cíle.",
+  "calories.left": "zbývá"
 }

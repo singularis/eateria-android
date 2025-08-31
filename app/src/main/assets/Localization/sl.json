@@ -346,5 +346,6 @@
   "profile.no_email": "Ni e-pošte",
   "profile.language.select": "Izberi jezik",
   "stats.trend.week": "teden",
-  "health.disclaimer.text": "Pomembno: To so splošne smernice. Za osebno prehransko svetovanje se posvetujte z zdravstvenim strokovnjakom, še posebej, če imate zdravstvene težave ali posebne cilje."
+  "health.disclaimer.text": "Pomembno: To so splošne smernice. Za osebno prehransko svetovanje se posvetujte z zdravstvenim strokovnjakom, še posebej, če imate zdravstvene težave ali posebne cilje.",
+  "calories.left": "ostaja"
 }

@@ -346,5 +346,6 @@
   "profile.no_email": "Brak e-maila",
   "profile.language.select": "Wybierz język",
   "stats.trend.week": "tydzień",
-  "health.disclaimer.text": "Ważne: To ogólne wytyczne. Skonsultuj się z pracownikiem ochrony zdrowia w celu uzyskania spersonalizowanych porad żywieniowych, zwłaszcza jeśli masz schorzenia lub konkretne cele zdrowotne."
+  "health.disclaimer.text": "Ważne: To ogólne wytyczne. Skonsultuj się z pracownikiem ochrony zdrowia w celu uzyskania spersonalizowanych porad żywieniowych, zwłaszcza jeśli masz schorzenia lub konkretne cele zdrowotne.",
+  "calories.left": "pozostało"
 }

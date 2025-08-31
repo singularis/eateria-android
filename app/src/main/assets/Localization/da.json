@@ -346,5 +346,6 @@
   "profile.no_email": "Ingen e-mail",
   "profile.language.select": "Vælg sprog",
   "stats.trend.week": "uge",
-  "health.disclaimer.text": "Vigtigt: Dette er generelle retningslinjer. Rådfør dig med en sundhedsprofessionel for personlig kostvejledning, især hvis du har medicinske tilstande eller specifikke sundhedsmål."
+  "health.disclaimer.text": "Vigtigt: Dette er generelle retningslinjer. Rådfør dig med en sundhedsprofessionel for personlig kostvejledning, især hvis du har medicinske tilstande eller specifikke sundhedsmål.",
+  "calories.left": "tilbage"
 }

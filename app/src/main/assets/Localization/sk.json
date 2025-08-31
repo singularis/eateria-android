@@ -346,5 +346,6 @@
   "profile.no_email": "Žiadny email",
   "profile.language.select": "Vybrať jazyk",
   "stats.trend.week": "týždeň",
-  "health.disclaimer.text": "Dôležité: Ide o všeobecné usmernenia. Pre personalizované stravovacie odporúčania sa poraďte so zdravotníkom, najmä ak máte zdravotné problémy alebo špecifické zdravotné ciele."
+  "health.disclaimer.text": "Dôležité: Ide o všeobecné usmernenia. Pre personalizované stravovacie odporúčania sa poraďte so zdravotníkom, najmä ak máte zdravotné problémy alebo špecifické zdravotné ciele.",
+  "calories.left": "zostáva"
 }

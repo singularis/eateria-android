@@ -346,5 +346,6 @@
   "profile.no_email": "Nincs e-mail",
   "profile.language.select": "Nyelv kiválasztása",
   "stats.trend.week": "hét",
-  "health.disclaimer.text": "Fontos: Ezek általános iránymutatások. Személyre szabott étrendi tanácsért konzultáljon egészségügyi szakemberrel, különösen, ha egészségügyi problémái vannak vagy konkrét céljai."
+  "health.disclaimer.text": "Fontos: Ezek általános iránymutatások. Személyre szabott étrendi tanácsért konzultáljon egészségügyi szakemberrel, különösen, ha egészségügyi problémái vannak vagy konkrét céljai.",
+  "calories.left": "maradt"
 }

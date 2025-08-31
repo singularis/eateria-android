@@ -346,5 +346,6 @@
   "profile.no_email": "Ingen e‑post",
   "profile.language.select": "Välj språk",
   "stats.trend.week": "vecka",
-  "health.disclaimer.text": "Viktigt: Detta är allmänna riktlinjer. Rådfråga vårdpersonal för personliga kostråd, särskilt om du har medicinska tillstånd eller specifika hälsomål."
+  "health.disclaimer.text": "Viktigt: Detta är allmänna riktlinjer. Rådfråga vårdpersonal för personliga kostråd, särskilt om du har medicinska tillstånd eller specifika hälsomål.",
+  "calories.left": "kvar"
 }

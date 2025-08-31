@@ -346,5 +346,6 @@
   "profile.no_email": "Sin correo electrónico",
   "profile.language.select": "Seleccionar idioma",
   "stats.trend.week": "semana",
-  "health.disclaimer.text": "Importante: Estas son pautas generales. Consulta con un proveedor de atención médica para recibir asesoramiento dietético personalizado, especialmente si tienes condiciones médicas u objetivos de salud específicos."
+  "health.disclaimer.text": "Importante: Estas son pautas generales. Consulta con un proveedor de atención médica para recibir asesoramiento dietético personalizado, especialmente si tienes condiciones médicas u objetivos de salud específicos.",
+  "calories.left": "restantes"
 }

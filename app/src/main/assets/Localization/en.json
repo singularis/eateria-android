@@ -346,5 +346,6 @@
   "profile.no_email": "No email",
   "profile.language.select": "Select Language",
   "stats.trend.week": "week",
-  "health.disclaimer.text": "Important: These are general guidelines. Consult with a healthcare provider for personalized dietary advice, especially if you have medical conditions or specific health goals."
+  "health.disclaimer.text": "Important: These are general guidelines. Consult with a healthcare provider for personalized dietary advice, especially if you have medical conditions or specific health goals.",
+  "calories.left": "left"
 }

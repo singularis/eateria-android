@@ -346,5 +346,6 @@
   "profile.no_email": "Aucun e-mail",
   "profile.language.select": "Sélectionner la langue",
   "stats.trend.week": "semaine",
-  "health.disclaimer.text": "Important : Il s’agit de lignes directrices générales. Consultez un professionnel de santé pour des conseils diététiques personnalisés, surtout si vous avez des problèmes médicaux ou des objectifs de santé spécifiques."
+  "health.disclaimer.text": "Important : Il s’agit de lignes directrices générales. Consultez un professionnel de santé pour des conseils diététiques personnalisés, surtout si vous avez des problèmes médicaux ou des objectifs de santé spécifiques.",
+  "calories.left": "restants"
 }

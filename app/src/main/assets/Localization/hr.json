@@ -346,5 +346,6 @@
   "profile.no_email": "Nema e‑pošte",
   "profile.language.select": "Odaberite jezik",
   "stats.trend.week": "tjedan",
-  "health.disclaimer.text": "Važno: Ovo su opće smjernice. Za personalizirane prehrambene savjete posavjetujte se sa zdravstvenim stručnjakom, posebno ako imate medicinska stanja ili posebne ciljeve."
+  "health.disclaimer.text": "Važno: Ovo su opće smjernice. Za personalizirane prehrambene savjete posavjetujte se sa zdravstvenim stručnjakom, posebno ako imate medicinska stanja ili posebne ciljeve.",
+  "calories.left": "preostalo"
 }

@@ -346,5 +346,6 @@
   "profile.no_email": "Không có email",
   "profile.language.select": "Chọn Ngôn Ngữ",
   "stats.trend.week": "tuần",
-  "health.disclaimer.text": "Quan trọng: Đây là các hướng dẫn chung. Hãy tham khảo nhà cung cấp dịch vụ y tế để được tư vấn dinh dưỡng cá nhân hóa, đặc biệt nếu bạn có bệnh lý hoặc mục tiêu sức khỏe cụ thể."
+  "health.disclaimer.text": "Quan trọng: Đây là các hướng dẫn chung. Hãy tham khảo nhà cung cấp dịch vụ y tế để được tư vấn dinh dưỡng cá nhân hóa, đặc biệt nếu bạn có bệnh lý hoặc mục tiêu sức khỏe cụ thể.",
+  "calories.left": "còn lại"
 }

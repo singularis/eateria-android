@@ -346,5 +346,6 @@
   "profile.no_email": "メールなし",
   "profile.language.select": "言語を選択",
   "stats.trend.week": "週",
-  "health.disclaimer.text": "重要: これは一般的なガイドラインです。特に持病や特定の健康目標がある場合は、個別の食事指導について医療提供者にご相談ください。"
+  "health.disclaimer.text": "重要: これは一般的なガイドラインです。特に持病や特定の健康目標がある場合は、個別の食事指導について医療提供者にご相談ください。",
+  "calories.left": "残り"
 }

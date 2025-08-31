@@ -346,5 +346,6 @@
   "profile.no_email": "Keine E-Mail",
   "profile.language.select": "Sprache auswählen",
   "stats.trend.week": "Woche",
-  "health.disclaimer.text": "Wichtig: Dies sind allgemeine Richtlinien. Konsultieren Sie eine medizinische Fachkraft für personalisierte Ernährungsempfehlungen, insbesondere wenn Sie medizinische Bedingungen oder spezifische Gesundheitsziele haben."
+  "health.disclaimer.text": "Wichtig: Dies sind allgemeine Richtlinien. Konsultieren Sie eine medizinische Fachkraft für personalisierte Ernährungsempfehlungen, insbesondere wenn Sie medizinische Bedingungen oder spezifische Gesundheitsziele haben.",
+  "calories.left": "übrig"
 }

@@ -346,5 +346,6 @@
   "profile.no_email": "Gan ríomhphost",
   "profile.language.select": "Roghnaigh teanga",
   "stats.trend.week": "seachtain",
-  "health.disclaimer.text": "Tábhachtach: Is treoirlínte ginearálta iad seo. Téigh i gcomhairle le soláthraí cúraim sláinte le haghaidh comhairle aiste bia phearsantaithe, go háirithe má tá coinníollacha leighis nó spriocanna sláinte ar leith agat."
+  "health.disclaimer.text": "Tábhachtach: Is treoirlínte ginearálta iad seo. Téigh i gcomhairle le soláthraí cúraim sláinte le haghaidh comhairle aiste bia phearsantaithe, go háirithe má tá coinníollacha leighis nó spriocanna sláinte ar leith agat.",
+  "calories.left": "fágtha"
 }

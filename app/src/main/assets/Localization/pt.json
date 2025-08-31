@@ -346,5 +346,6 @@
   "profile.no_email": "Sem e-mail",
   "profile.language.select": "Selecionar idioma",
   "stats.trend.week": "semana",
-  "health.disclaimer.text": "Importante: Estas são diretrizes gerais. Consulte um profissional de saúde para obter aconselhamento dietético personalizado, especialmente se você tiver condições médicas ou metas específicas de saúde."
+  "health.disclaimer.text": "Importante: Estas são diretrizes gerais. Consulte um profissional de saúde para obter aconselhamento dietético personalizado, especialmente se você tiver condições médicas ou metas específicas de saúde.",
+  "calories.left": "restantes"
 }

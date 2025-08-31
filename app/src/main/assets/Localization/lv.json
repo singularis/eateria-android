@@ -346,5 +346,6 @@
   "profile.no_email": "Nav e-pasta",
   "profile.language.select": "Izvēlēties valodu",
   "stats.trend.week": "nedēļa",
-  "health.disclaimer.text": "Svarīgi: tie ir vispārīgi ieteikumi. Personalizētai uztura konsultācijai konsultējieties ar veselības aprūpes speciālistu, īpaši, ja jums ir veselības traucējumi vai konkrēti veselības mērķi."
+  "health.disclaimer.text": "Svarīgi: tie ir vispārīgi ieteikumi. Personalizētai uztura konsultācijai konsultējieties ar veselības aprūpes speciālistu, īpaši, ja jums ir veselības traucējumi vai konkrēti veselības mērķi.",
+  "calories.left": "atlicis"
 }

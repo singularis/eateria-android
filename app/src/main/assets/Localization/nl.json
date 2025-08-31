@@ -346,5 +346,6 @@
   "profile.no_email": "Geen e-mail",
   "profile.language.select": "Taal selecteren",
   "stats.trend.week": "week",
-  "health.disclaimer.text": "Belangrijk: Dit zijn algemene richtlijnen. Raadpleeg een zorgverlener voor persoonlijk voedingsadvies, vooral als u medische aandoeningen heeft of specifieke gezondheidsdoelen."
+  "health.disclaimer.text": "Belangrijk: Dit zijn algemene richtlijnen. Raadpleeg een zorgverlener voor persoonlijk voedingsadvies, vooral als u medische aandoeningen heeft of specifieke gezondheidsdoelen.",
+  "calories.left": "over"
 }

@@ -346,5 +346,6 @@
   "profile.no_email": "E-posta yok",
   "profile.language.select": "Dil Seçin",
   "stats.trend.week": "hafta",
-  "health.disclaimer.text": "Önemli: Bunlar genel yönergelerdir. Özellikle tıbbi durumlarınız veya belirli sağlık hedefleriniz varsa, kişiselleştirilmiş beslenme tavsiyesi için bir sağlık uzmanına danışın."
+  "health.disclaimer.text": "Önemli: Bunlar genel yönergelerdir. Özellikle tıbbi durumlarınız veya belirli sağlık hedefleriniz varsa, kişiselleştirilmiş beslenme tavsiyesi için bir sağlık uzmanına danışın.",
+  "calories.left": "kalan"
 }

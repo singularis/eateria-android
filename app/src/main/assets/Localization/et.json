@@ -346,5 +346,6 @@
   "profile.no_email": "E-posti pole",
   "profile.language.select": "Vali keel",
   "stats.trend.week": "nädal",
-  "health.disclaimer.text": "Tähtis: Need on üldised juhised. Isikupärastatud toitumisnõu saamiseks konsulteeri tervishoiutöötajaga, eriti kui sul on terviseseisundeid või konkreetsed tervise-eesmärgid."
+  "health.disclaimer.text": "Tähtis: Need on üldised juhised. Isikupärastatud toitumisnõu saamiseks konsulteeri tervishoiutöötajaga, eriti kui sul on terviseseisundeid või konkreetsed tervise-eesmärgid.",
+  "calories.left": "jäänud"
 }

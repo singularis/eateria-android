@@ -346,5 +346,6 @@
   "profile.no_email": "Fără e-mail",
   "profile.language.select": "Selectează limba",
   "stats.trend.week": "săptămână",
-  "health.disclaimer.text": "Important: Acestea sunt linii generale. Consultă un profesionist în sănătate pentru recomandări alimentare personalizate, mai ales dacă ai afecțiuni medicale sau obiective specifice de sănătate."
+  "health.disclaimer.text": "Important: Acestea sunt linii generale. Consultă un profesionist în sănătate pentru recomandări alimentare personalizate, mai ales dacă ai afecțiuni medicale sau obiective specifice de sănătate.",
+  "calories.left": "rămase"
 }

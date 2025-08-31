@@ -97,7 +97,6 @@ class HealthDataService private constructor(context: Context) {
     fun getOptimalWeight(): Double = sharedPrefs.getFloat(KEY_USER_OPTIMAL_WEIGHT, 0f).toDouble()
     fun getRecommendedCalories(): Int = sharedPrefs.getInt(KEY_USER_RECOMMENDED_CALORIES, 0)
     
-    // Health calculations matching iOS logic
     private fun calculateHealthMetrics(
         height: Double,
         weight: Double,
@@ -105,18 +104,29 @@ class HealthDataService private constructor(context: Context) {
         isMale: Boolean,
         activityLevel: String
     ): Pair<Double, Int> {
-        // Calculate BMI optimal weight (BMI 22 as target)
-        val heightInMeters = height / 100.0
-        val optimalWeight = 22.0 * (heightInMeters * heightInMeters)
-        
-        // Calculate BMR (Basal Metabolic Rate) using Harris-Benedict equation
-        val bmr = if (isMale) {
-            88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
-        } else {
-            447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
+        val heightMeters = height / 100.0
+        var targetBmi = when {
+            age <= 25 -> if (isMale) 22.5 else 21.5
+            age <= 40 -> if (isMale) 23.5 else 22.5
+            age <= 60 -> if (isMale) 24.0 else 23.0
+            else -> if (isMale) 24.5 else 23.5
         }
-        
-        // Activity multipliers
+        val activityAdjustment = when (activityLevel) {
+            "Sedentary" -> -0.5
+            "Lightly Active" -> 0.0
+            "Moderately Active" -> 0.5
+            "Very Active" -> 1.0
+            "Extremely Active" -> 1.5
+            else -> 0.0
+        }
+        targetBmi = (targetBmi + activityAdjustment).coerceIn(20.0, 26.0)
+        val optimalWeight = targetBmi * heightMeters * heightMeters
+
+        val bmr = if (isMale) {
+            10 * weight + 6.25 * height - 5 * age + 5
+        } else {
+            10 * weight + 6.25 * height - 5 * age - 161
+        }
         val activityMultiplier = when (activityLevel) {
             "Sedentary" -> 1.2
             "Lightly Active" -> 1.375
@@ -125,9 +135,22 @@ class HealthDataService private constructor(context: Context) {
             "Extremely Active" -> 1.9
             else -> 1.2
         }
-        
-        val recommendedCalories = (bmr * activityMultiplier).toInt()
-        
+        val tdee = bmr * activityMultiplier
+
+        val weightDifference = weight - optimalWeight
+        val calorieAdjustment = if (kotlin.math.abs(weightDifference) < 3) {
+            0.0
+        } else if (weightDifference > 0) {
+            when {
+                weightDifference > 15 -> -600.0
+                weightDifference > 8 -> -500.0
+                else -> -300.0
+            }
+        } else {
+            if (kotlin.math.abs(weightDifference) > 10) 400.0 else 250.0
+        }
+
+        val recommendedCalories = (tdee + calorieAdjustment).toInt()
         return Pair(optimalWeight, recommendedCalories)
     }
     

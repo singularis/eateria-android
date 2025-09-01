@@ -7,7 +7,7 @@
   "calories.invalid.msg": "กรุณาใส่จำนวนแคลอรี่ที่เผาผลาญที่ถูกต้อง",
   "calories.invalid.title": "แคลอรี่ไม่ถูกต้อง",
   "calories.label": "แคลอรี่",
-  "camera.takefood": "ถ่ายภาพอาหาร",
+  "camera.takefood": "ถ่ายรูป",
   "camera.unavailable.msg": "อุปกรณ์ของคุณไม่มีกล้อง",
   "camera.unavailable.title": "กล้องไม่พร้อมใช้งาน",
   "camera.upload": "อัปโหลด",

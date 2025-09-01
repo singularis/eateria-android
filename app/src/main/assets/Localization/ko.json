@@ -7,7 +7,7 @@
   "calories.invalid.msg": "소모한 칼로리의 유효한 값을 입력해 주세요.",
   "calories.invalid.title": "잘못된 칼로리",
   "calories.label": "칼로리",
-  "camera.takefood": "음식 사진 촬영",
+  "camera.takefood": "사진 촬영",
   "camera.unavailable.msg": "기기에 카메라가 없습니다.",
   "camera.unavailable.title": "카메라 사용 불가",
   "camera.upload": "업로드",

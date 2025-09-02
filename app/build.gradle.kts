@@ -21,8 +21,8 @@ android {
         applicationId = "com.singularis.eateria"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "2.91"
+        versionCode = 14
+        versionName = "2.92"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         

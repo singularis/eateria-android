@@ -118,7 +118,7 @@ fun LoginView(
                     )
                 } else {
                     Text(
-                        text = Localization.tr(context, "login.apple", "Sign in with Apple"),
+                        text = Localization.tr(context, "login.apple", "Sign in with Google"),
                         style = MaterialTheme.typography.titleLarge
                     )
                 }

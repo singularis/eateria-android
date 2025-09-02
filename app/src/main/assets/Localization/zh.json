@@ -148,7 +148,7 @@
   "loading.food": "正在加载食物数据...",
   "loading.photo": "正在分析食物照片...",
   "loading.scale": "正在读取体重秤...",
-  "login.apple": "使用 Apple 登录",
+  "login.apple": "使用 Google 登录",
   "login.subtitle": "登录以继续",
   "login.welcome": "欢迎来到 Eateria",
   "macro.car": "碳水",

@@ -24,26 +24,34 @@ object QuotesService {
         }
     }
 
-    private fun getQuotes(assets: AssetManager, code: String): List<String> {
+    private fun getQuotes(
+        assets: AssetManager,
+        code: String,
+    ): List<String> {
         cache[code]?.let { return it }
         val quotes = loadQuotes(assets, code)
         cache[code] = quotes
         return quotes
     }
 
-    private fun loadQuotes(assets: AssetManager, code: String): List<String> {
-        val candidates = listOf(
-            "Localization/quotes/${code.lowercase()}.txt",
-            "quotes/${code.lowercase()}.txt"
-        )
-        
+    private fun loadQuotes(
+        assets: AssetManager,
+        code: String,
+    ): List<String> {
+        val candidates =
+            listOf(
+                "Localization/quotes/${code.lowercase()}.txt",
+                "quotes/${code.lowercase()}.txt",
+            )
+
         for (path in candidates) {
             try {
                 assets.open(path).use { input ->
-                    val quotes = BufferedReader(InputStreamReader(input))
-                        .readLines()
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
+                    val quotes =
+                        BufferedReader(InputStreamReader(input))
+                            .readLines()
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
                     return quotes
                 }
             } catch (_: Exception) {

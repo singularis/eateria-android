@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,31 +19,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.singularis.eateria.services.Localization
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.singularis.eateria.services.LanguageService
+import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
-import androidx.compose.runtime.key
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.isGranted
-import android.Manifest
+import kotlinx.coroutines.launch
 
 @Composable
 fun ContentView(
     viewModel: MainViewModel,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -64,7 +64,7 @@ fun ContentView(
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
     val userProfilePictureURL by authViewModel.userProfilePictureURL.collectAsState(initial = null)
     val isFullMode by authViewModel.isFullDisplayMode.collectAsState(initial = false)
-    
+
     // Dialog states
     val showLimitsAlert by viewModel.showLimitsAlert.collectAsState()
     val showUserProfile by viewModel.showUserProfile.collectAsState()
@@ -90,21 +90,21 @@ fun ContentView(
     val sportCaloriesInput by viewModel.sportCaloriesInput.collectAsState()
     val todaySportCalories by viewModel.todaySportCalories.collectAsState()
     val alcoholIconColor by viewModel.alcoholIconColor.collectAsState()
-    
+
     // Camera states
     var showFoodCamera by remember { mutableStateOf(false) }
     var showWeightCamera by remember { mutableStateOf(false) }
-    
+
     // Full screen photo state
     var fullScreenPhotoData by remember { mutableStateOf<Pair<android.graphics.Bitmap?, String>?>(null) }
     var showShareFoodDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
-    
+
     LaunchedEffect(hasSeenOnboarding) {
         if (!hasSeenOnboarding) {
             viewModel.showOnboarding()
         }
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.triggerManualRefresh()
     }
@@ -119,359 +119,369 @@ fun ContentView(
             }
         }
     }
-    
+
     key(currentLanguage) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackground)
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .windowInsetsPadding(WindowInsets.navigationBars)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(DarkBackground)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .windowInsetsPadding(WindowInsets.navigationBars),
         ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = Dimensions.paddingM,
-                    end = Dimensions.paddingM,
-                    bottom = Dimensions.paddingM,
-                    top = Dimensions.paddingM
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Top Bar
-            TopBarView(
-                isViewingCustomDate = isViewingCustomDate,
-                currentViewingDate = currentViewingDate,
-                userProfilePictureURL = userProfilePictureURL,
-                onDateClick = { 
-                    if (!isLoadingData) {
-                        viewModel.showCalendarPicker() 
-                    }
-                },
-                onProfileClick = { viewModel.showUserProfile() },
-                onHealthInfoClick = { viewModel.showHealthDisclaimer() },
-                onSportClick = { viewModel.showSportCaloriesDialog() },
-                onReturnToTodayClick = { viewModel.returnToToday() },
-                alcoholIconColor = alcoholIconColor,
-                onAlcoholClick = { viewModel.showAlcoholCalendar() }
-            )
-            
-            Spacer(modifier = Modifier.height(Dimensions.paddingM))
-            
-            // Stats Buttons Row
-            StatsButtonsView(
-                personWeight = personWeight,
-                caloriesConsumed = softLimit - caloriesLeft,
-                caloriesLeft = caloriesLeft,
-                isLoadingWeightPhoto = isLoadingWeightPhoto,
-                isLoadingRecommendation = isLoadingRecommendation,
-                onWeightClick = { viewModel.showWeightActionSheet() },
-                onCaloriesClick = { viewModel.showLimitsAlert() },
-                onRecommendationClick = { viewModel.getRecommendation(7) },
-                getColor = viewModel::getColor
-            )
-            
-            Spacer(modifier = Modifier.height(Dimensions.paddingM))
-
-            if (isFullMode) {
-                MacrosSummaryRow(
-                    products = products,
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = Dimensions.paddingM,
+                            end = Dimensions.paddingM,
+                            bottom = Dimensions.paddingM,
+                            top = Dimensions.paddingM,
+                        ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                // Top Bar
+                TopBarView(
                     isViewingCustomDate = isViewingCustomDate,
-                    currentViewingDateString = currentViewingDateString
-                )
-                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-            }
-            
-            // Product List
-            if (isLoadingData) {
-                LoadingView(message = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."))
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f) // Take remaining space but leave room for camera buttons
-                ) {
-                    ProductListView(
-                        products = products,
-                        onRefresh = { viewModel.returnToToday() },
-                        onDelete = { time -> viewModel.deleteProductWithLoading(time) },
-                        onModify = { time, foodName, percentage -> 
-                            userEmail?.let { email ->
-                                viewModel.modifyProductPortion(time, foodName, email, percentage)
-                            }
-                        },
-                        onPhotoTap = { bitmap, foodName ->
-                            // Get the image dynamically using the new method if bitmap is null
-                            val imageToShow = bitmap ?: run {
-                                // Find the product and get its image
-                                val product = products.find { it.name == foodName }
-                                product?.getImage(context)
-                            }
-                            fullScreenPhotoData = Pair(imageToShow, foodName)
-                        },
-                        deletingProductTime = deletingProductTime,
-                        modifiedProductTime = modifiedProductTime,
-                        onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
-                        onShare = { time, foodName ->
-                            showShareFoodDialog = Pair(time, foodName)
+                    currentViewingDate = currentViewingDate,
+                    userProfilePictureURL = userProfilePictureURL,
+                    onDateClick = {
+                        if (!isLoadingData) {
+                            viewModel.showCalendarPicker()
                         }
+                    },
+                    onProfileClick = { viewModel.showUserProfile() },
+                    onHealthInfoClick = { viewModel.showHealthDisclaimer() },
+                    onSportClick = { viewModel.showSportCaloriesDialog() },
+                    onReturnToTodayClick = { viewModel.returnToToday() },
+                    alcoholIconColor = alcoholIconColor,
+                    onAlcoholClick = { viewModel.showAlcoholCalendar() },
+                )
+
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+
+                // Stats Buttons Row
+                StatsButtonsView(
+                    personWeight = personWeight,
+                    caloriesConsumed = softLimit - caloriesLeft,
+                    caloriesLeft = caloriesLeft,
+                    isLoadingWeightPhoto = isLoadingWeightPhoto,
+                    isLoadingRecommendation = isLoadingRecommendation,
+                    onWeightClick = { viewModel.showWeightActionSheet() },
+                    onCaloriesClick = { viewModel.showLimitsAlert() },
+                    onRecommendationClick = { viewModel.getRecommendation(7) },
+                    getColor = viewModel::getColor,
+                )
+
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+
+                if (isFullMode) {
+                    MacrosSummaryRow(
+                        products = products,
+                        isViewingCustomDate = isViewingCustomDate,
+                        currentViewingDateString = currentViewingDateString,
+                    )
+                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+                }
+
+                // Product List
+                if (isLoadingData) {
+                    LoadingView(message = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."))
+                } else {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f), // Take remaining space but leave room for camera buttons
+                    ) {
+                        ProductListView(
+                            products = products,
+                            onRefresh = { viewModel.returnToToday() },
+                            onDelete = { time -> viewModel.deleteProductWithLoading(time) },
+                            onModify = { time, foodName, percentage ->
+                                userEmail?.let { email ->
+                                    viewModel.modifyProductPortion(time, foodName, email, percentage)
+                                }
+                            },
+                            onPhotoTap = { bitmap, foodName ->
+                                // Get the image dynamically using the new method if bitmap is null
+                                val imageToShow =
+                                    bitmap ?: run {
+                                        // Find the product and get its image
+                                        val product = products.find { it.name == foodName }
+                                        product?.getImage(context)
+                                    }
+                                fullScreenPhotoData = Pair(imageToShow, foodName)
+                            },
+                            deletingProductTime = deletingProductTime,
+                            modifiedProductTime = modifiedProductTime,
+                            onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
+                            onShare = { time, foodName ->
+                                showShareFoodDialog = Pair(time, foodName)
+                            },
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+
+                // Camera Button - Always visible at bottom
+                CameraButtonView(
+                    isLoadingFoodPhoto = isLoadingFoodPhoto,
+                    onCameraClick = {
+                        showFoodCamera = true
+                    },
+                    onGalleryImageSelected = { bitmap ->
+                        // Use same temporary image logic as camera (iOS behavior)
+                        val tempTimestamp = System.currentTimeMillis()
+                        val imageStorage =
+                            com.singularis.eateria.services.ImageStorageService
+                                .getInstance(context)
+                        val saved = imageStorage.saveTemporaryImage(bitmap, tempTimestamp)
+
+                        if (saved) {
+                            // Send photo with image synchronization logic
+                            viewModel.sendPhotoWithImageSync(bitmap, "default_prompt", tempTimestamp)
+                        }
+                    },
+                )
+            }
+
+            // Loading overlays
+            if (isLoadingData) {
+                LoadingOverlay(
+                    isVisible = true,
+                    message = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."),
+                )
+            }
+
+            if (isLoadingFoodPhoto) {
+                LoadingOverlay(
+                    isVisible = true,
+                    message = Localization.tr(LocalContext.current, "loading.photo", "Analyzing food photo..."),
+                )
+            }
+
+            // Full screen photo view
+            fullScreenPhotoData?.let { (bitmap, _) ->
+                if (bitmap != null) {
+                    FullScreenPhotoView(
+                        bitmap = bitmap,
+                        onDismiss = { fullScreenPhotoData = null },
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(Dimensions.paddingM))
-            
-            // Camera Button - Always visible at bottom
-            CameraButtonView(
-                isLoadingFoodPhoto = isLoadingFoodPhoto,
-                onCameraClick = {
-                    showFoodCamera = true
-                },
-                onGalleryImageSelected = { bitmap ->
-                    // Use same temporary image logic as camera (iOS behavior)
-                    val tempTimestamp = System.currentTimeMillis()
-                    val imageStorage = com.singularis.eateria.services.ImageStorageService.getInstance(context)
-                    val saved = imageStorage.saveTemporaryImage(bitmap, tempTimestamp)
-                    
-                    if (saved) {
-                        // Send photo with image synchronization logic
-                        viewModel.sendPhotoWithImageSync(bitmap, "default_prompt", tempTimestamp)
-                    }
-                }
-            )
-        }
-        
-        // Loading overlays
-        if (isLoadingData) {
-            LoadingOverlay(
-                isVisible = true,
-                message = Localization.tr(LocalContext.current, "loading.food", "Loading food data...")
-            )
-        }
-        
-        if (isLoadingFoodPhoto) {
-            LoadingOverlay(
-                isVisible = true,
-                message = Localization.tr(LocalContext.current, "loading.photo", "Analyzing food photo...")
-            )
-        }
-        
-        // Full screen photo view
-        fullScreenPhotoData?.let { (bitmap, _) ->
-            if (bitmap != null) {
-                FullScreenPhotoView(
-                    bitmap = bitmap,
-                    onDismiss = { fullScreenPhotoData = null }
+
+            // Share food dialog
+            showShareFoodDialog?.let { (time, foodName) ->
+                ShareFoodView(
+                    foodName = foodName,
+                    time = time,
+                    onDismiss = { showShareFoodDialog = null },
+                    onShareSuccess = {
+                        viewModel.returnToToday() // Refresh the data
+                    },
                 )
             }
-        }
-        
-        // Share food dialog
-        showShareFoodDialog?.let { (time, foodName) ->
-            ShareFoodView(
-                foodName = foodName,
-                time = time,
-                onDismiss = { showShareFoodDialog = null },
-                onShareSuccess = { 
-                    viewModel.returnToToday() // Refresh the data
-                }
-            )
-        }
-        
-        // Dialog implementations
-        if (showLimitsAlert) {
-            CalorieLimitsDialog(
-                tempSoftLimit = tempSoftLimit,
-                tempHardLimit = tempHardLimit,
-                onSoftLimitChange = viewModel::updateTempSoftLimit,
-                onHardLimitChange = viewModel::updateTempHardLimit,
-                onSave = viewModel::saveLimits,
-                onDismiss = { viewModel.hideLimitsAlert() }
-            )
-        }
-        
-        if (showUserProfile) {
-            UserProfileView(
-                authViewModel = authViewModel,
-                onBackClick = { viewModel.hideUserProfile() },
-                onStatisticsClick = { viewModel.showStatistics() },
-                onHealthSettingsClick = { viewModel.showHealthSettings() },
-                onHealthDisclaimerClick = { viewModel.showHealthDisclaimer() },
-                onOnboardingClick = { viewModel.showOnboarding() },
-                onFeedbackClick = { viewModel.showFeedback() }
-            )
-        }
-        
-        if (showHealthDisclaimer) {
-            HealthDisclaimerView(
-                isPresented = true,
-                onDismiss = { viewModel.hideHealthDisclaimer() }
-            )
-        }
-        
-        if (showOnboarding) {
-            OnboardingView(
-                isPresented = true,
-                onComplete = { healthData, notificationsEnabled ->
-                    viewModel.hideOnboarding()
-                    authViewModel.setHasSeenOnboarding(true)
-                    val reminderService = com.singularis.eateria.services.ReminderService(context)
-                    scope.launch {
-                        reminderService.setNotificationsEnabled(notificationsEnabled)
-                    }
-                    
-                    // Save health data if provided and calculate calorie limits
-                    healthData?.let { data ->
-                        val healthDataService = com.singularis.eateria.services.HealthDataService.getInstance(context)
-                        healthDataService.saveHealthProfile(
-                            height = data.height,
-                            weight = data.weight,
-                            age = data.age,
-                            isMale = data.isMale,
-                            activityLevel = data.activityLevel
-                        )
-                        
-                        // Get the calculated recommended calories and save as limits
-                        val healthProfile = healthDataService.getHealthProfile()
-                        healthProfile?.let { profile ->
-                            viewModel.saveHealthBasedLimits(profile.recommendedCalories)
-                        }
-                    }
-                },
-                onChooseDisplayMode = { isFull -> authViewModel.setFullDisplayMode(isFull) }
-            )
-        }
-        
-        if (showStatistics) {
-            StatisticsView(
-                onBackClick = { viewModel.hideStatistics() }
-            )
-        }
-        
-        if (showHealthSettings) {
-            HealthSettingsView(
-                authViewModel = authViewModel,
-                onBackClick = { viewModel.hideHealthSettings() },
-                onLimitsChanged = { 
-                    // Reload limits in MainViewModel when they're changed in health settings
-                    viewModel.reloadLimitsFromStorage()
-                }
-            )
-        }
-        
-        if (showFeedback) {
-            FeedbackView(
-                authViewModel = authViewModel,
-                onBackClick = { viewModel.hideFeedback() }
-            )
-        }
-        
-        if (showCalendarPicker) {
-            CalendarDatePickerView(
-                isVisible = true,
-                onDateSelected = { dateString ->
-                    viewModel.fetchCustomDateData(dateString)
-                },
-                onDismiss = { viewModel.hideCalendarPicker() }
-            )
-        }
 
-        if (showAlcoholCalendar) {
-            AlcoholCalendarView(
-                isVisible = true,
-                onDismiss = { viewModel.hideAlcoholCalendar() },
-                viewModel = viewModel
-            )
-        }
-        
-        if (showWeightActionSheet) {
-            WeightActionSheetDialog(
-                onTakePhoto = { 
-                    viewModel.hideWeightActionSheet()
-                    showWeightCamera = true
-                },
-                onManualEntry = { 
-                    viewModel.hideWeightActionSheet()
-                    viewModel.showManualWeightEntry()
-                },
-                onDismiss = { viewModel.hideWeightActionSheet() }
-            )
-        }
-        
-        // Manual weight entry dialog
-        if (showManualWeightEntry) {
-            ManualWeightDialog(
-                weightInput = manualWeightInput,
-                onWeightChange = viewModel::updateManualWeightInput,
-                onSubmit = {
-                    val weight = manualWeightInput.replace(",", ".").toFloatOrNull()
-                    if (weight != null && weight > 0) {
-                        userEmail?.let { email ->
-                            viewModel.sendManualWeight(weight, email)
+            // Dialog implementations
+            if (showLimitsAlert) {
+                CalorieLimitsDialog(
+                    tempSoftLimit = tempSoftLimit,
+                    tempHardLimit = tempHardLimit,
+                    onSoftLimitChange = viewModel::updateTempSoftLimit,
+                    onHardLimitChange = viewModel::updateTempHardLimit,
+                    onSave = viewModel::saveLimits,
+                    onDismiss = { viewModel.hideLimitsAlert() },
+                )
+            }
+
+            if (showUserProfile) {
+                UserProfileView(
+                    authViewModel = authViewModel,
+                    onBackClick = { viewModel.hideUserProfile() },
+                    onStatisticsClick = { viewModel.showStatistics() },
+                    onHealthSettingsClick = { viewModel.showHealthSettings() },
+                    onHealthDisclaimerClick = { viewModel.showHealthDisclaimer() },
+                    onOnboardingClick = { viewModel.showOnboarding() },
+                    onFeedbackClick = { viewModel.showFeedback() },
+                )
+            }
+
+            if (showHealthDisclaimer) {
+                HealthDisclaimerView(
+                    isPresented = true,
+                    onDismiss = { viewModel.hideHealthDisclaimer() },
+                )
+            }
+
+            if (showOnboarding) {
+                OnboardingView(
+                    isPresented = true,
+                    onComplete = { healthData, notificationsEnabled ->
+                        viewModel.hideOnboarding()
+                        authViewModel.setHasSeenOnboarding(true)
+                        val reminderService =
+                            com.singularis.eateria.services
+                                .ReminderService(context)
+                        scope.launch {
+                            reminderService.setNotificationsEnabled(notificationsEnabled)
                         }
-                        viewModel.hideManualWeightEntry()
-                    }
-                },
-                onDismiss = { viewModel.hideManualWeightEntry() }
-            )
-        }
-        
-        // Health Recommendation Alert (iOS behavior)
-        if (showRecommendationAlert) {
-            HealthRecommendationDialog(
-                recommendation = recommendationText,
-                onDismiss = { viewModel.hideRecommendationAlert() }
-            )
-        }
-        
-        // Photo Error Alert (iOS behavior)
-        if (showPhotoErrorAlert) {
-            PhotoErrorAlert(
-                title = photoErrorTitle,
-                message = photoErrorMessage,
-                onDismiss = { viewModel.hidePhotoErrorAlert() }
-            )
-        }
-        
-        // Sport Calories Dialog
-        if (showSportCaloriesDialog) {
-            SportCaloriesDialog(
-                sportCaloriesInput = sportCaloriesInput,
-                onSportCaloriesChange = viewModel::updateSportCaloriesInput,
-                onSave = viewModel::saveSportCalories,
-                onDismiss = { viewModel.hideSportCaloriesDialog() }
-            )
-        }
-        
-        // Food camera
-        if (showFoodCamera) {
-            FoodCameraView(
-                viewModel = viewModel,
-                onPhotoSuccess = { showFoodCamera = false },
-                onPhotoFailure = { showFoodCamera = false },
-                onPhotoStarted = { },
-                onDismiss = { showFoodCamera = false }
-            )
-        }
-        
-        if (showWeightCamera) {
-            WeightCameraView(
-                viewModel = viewModel,
-                onPhotoSuccess = {
-                    showWeightCamera = false
-                },
-                onPhotoFailure = {
-                    showWeightCamera = false
-                },
-                onPhotoStarted = {
-                    // Photo processing started - this will be handled by the camera view
-                },
-                onDismiss = {
-                    showWeightCamera = false
-                }
-            )
-        }
+
+                        // Save health data if provided and calculate calorie limits
+                        healthData?.let { data ->
+                            val healthDataService =
+                                com.singularis.eateria.services.HealthDataService
+                                    .getInstance(context)
+                            healthDataService.saveHealthProfile(
+                                height = data.height,
+                                weight = data.weight,
+                                age = data.age,
+                                isMale = data.isMale,
+                                activityLevel = data.activityLevel,
+                            )
+
+                            // Get the calculated recommended calories and save as limits
+                            val healthProfile = healthDataService.getHealthProfile()
+                            healthProfile?.let { profile ->
+                                viewModel.saveHealthBasedLimits(profile.recommendedCalories)
+                            }
+                        }
+                    },
+                    onChooseDisplayMode = { isFull -> authViewModel.setFullDisplayMode(isFull) },
+                )
+            }
+
+            if (showStatistics) {
+                StatisticsView(
+                    onBackClick = { viewModel.hideStatistics() },
+                )
+            }
+
+            if (showHealthSettings) {
+                HealthSettingsView(
+                    authViewModel = authViewModel,
+                    onBackClick = { viewModel.hideHealthSettings() },
+                    onLimitsChanged = {
+                        // Reload limits in MainViewModel when they're changed in health settings
+                        viewModel.reloadLimitsFromStorage()
+                    },
+                )
+            }
+
+            if (showFeedback) {
+                FeedbackView(
+                    authViewModel = authViewModel,
+                    onBackClick = { viewModel.hideFeedback() },
+                )
+            }
+
+            if (showCalendarPicker) {
+                CalendarDatePickerView(
+                    isVisible = true,
+                    onDateSelected = { dateString ->
+                        viewModel.fetchCustomDateData(dateString)
+                    },
+                    onDismiss = { viewModel.hideCalendarPicker() },
+                )
+            }
+
+            if (showAlcoholCalendar) {
+                AlcoholCalendarView(
+                    isVisible = true,
+                    onDismiss = { viewModel.hideAlcoholCalendar() },
+                    viewModel = viewModel,
+                )
+            }
+
+            if (showWeightActionSheet) {
+                WeightActionSheetDialog(
+                    onTakePhoto = {
+                        viewModel.hideWeightActionSheet()
+                        showWeightCamera = true
+                    },
+                    onManualEntry = {
+                        viewModel.hideWeightActionSheet()
+                        viewModel.showManualWeightEntry()
+                    },
+                    onDismiss = { viewModel.hideWeightActionSheet() },
+                )
+            }
+
+            // Manual weight entry dialog
+            if (showManualWeightEntry) {
+                ManualWeightDialog(
+                    weightInput = manualWeightInput,
+                    onWeightChange = viewModel::updateManualWeightInput,
+                    onSubmit = {
+                        val weight = manualWeightInput.replace(",", ".").toFloatOrNull()
+                        if (weight != null && weight > 0) {
+                            userEmail?.let { email ->
+                                viewModel.sendManualWeight(weight, email)
+                            }
+                            viewModel.hideManualWeightEntry()
+                        }
+                    },
+                    onDismiss = { viewModel.hideManualWeightEntry() },
+                )
+            }
+
+            // Health Recommendation Alert (iOS behavior)
+            if (showRecommendationAlert) {
+                HealthRecommendationDialog(
+                    recommendation = recommendationText,
+                    onDismiss = { viewModel.hideRecommendationAlert() },
+                )
+            }
+
+            // Photo Error Alert (iOS behavior)
+            if (showPhotoErrorAlert) {
+                PhotoErrorAlert(
+                    title = photoErrorTitle,
+                    message = photoErrorMessage,
+                    onDismiss = { viewModel.hidePhotoErrorAlert() },
+                )
+            }
+
+            // Sport Calories Dialog
+            if (showSportCaloriesDialog) {
+                SportCaloriesDialog(
+                    sportCaloriesInput = sportCaloriesInput,
+                    onSportCaloriesChange = viewModel::updateSportCaloriesInput,
+                    onSave = viewModel::saveSportCalories,
+                    onDismiss = { viewModel.hideSportCaloriesDialog() },
+                )
+            }
+
+            // Food camera
+            if (showFoodCamera) {
+                FoodCameraView(
+                    viewModel = viewModel,
+                    onPhotoSuccess = { showFoodCamera = false },
+                    onPhotoFailure = { showFoodCamera = false },
+                    onPhotoStarted = { },
+                    onDismiss = { showFoodCamera = false },
+                )
+            }
+
+            if (showWeightCamera) {
+                WeightCameraView(
+                    viewModel = viewModel,
+                    onPhotoSuccess = {
+                        showWeightCamera = false
+                    },
+                    onPhotoFailure = {
+                        showWeightCamera = false
+                    },
+                    onPhotoStarted = {
+                        // Photo processing started - this will be handled by the camera view
+                    },
+                    onDismiss = {
+                        showWeightCamera = false
+                    },
+                )
+            }
         }
     }
 }
@@ -480,30 +490,34 @@ fun ContentView(
 fun LoadingView(message: String) {
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = message,
             color = Color.White,
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
         )
     }
 }
 
 @Composable
-fun LoadingOverlay(isVisible: Boolean, message: String) {
+fun LoadingOverlay(
+    isVisible: Boolean,
+    message: String,
+) {
     if (isVisible) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = message,
                 color = Color.White,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
         }
     }
-} 
+}

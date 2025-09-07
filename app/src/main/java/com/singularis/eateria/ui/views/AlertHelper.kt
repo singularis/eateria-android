@@ -8,22 +8,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
-import com.singularis.eateria.services.Localization
-import androidx.compose.ui.platform.LocalContext
 
 object AlertHelper {
-    
     @Composable
     fun SimpleAlert(
         title: String,
         message: String,
         isVisible: Boolean,
-        onDismiss: () -> Unit
+        onDismiss: () -> Unit,
     ) {
         if (isVisible) {
             AlertDialog(
@@ -32,14 +31,14 @@ object AlertHelper {
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
+                        color = Color.White,
                     )
                 },
                 text = {
                     Text(
                         text = message,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                 },
                 confirmButton = {
@@ -47,27 +46,27 @@ object AlertHelper {
                         Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = DarkPrimary)
                     }
                 },
-                containerColor = Gray4
+                containerColor = Gray4,
             )
         }
     }
-    
+
     @Composable
     fun ErrorDialog(
         isVisible: Boolean,
         title: String = Localization.tr(LocalContext.current, "common.error", "Error"),
         message: String,
-        onDismiss: () -> Unit
+        onDismiss: () -> Unit,
     ) {
         SimpleAlert(title, message, isVisible, onDismiss)
     }
-    
+
     @Composable
     fun SuccessDialog(
         isVisible: Boolean,
-        title: String = Localization.tr(LocalContext.current, "common.success", "Success"), 
+        title: String = Localization.tr(LocalContext.current, "common.success", "Success"),
         message: String,
-        onDismiss: () -> Unit
+        onDismiss: () -> Unit,
     ) {
         SimpleAlert(title, message, isVisible, onDismiss)
     }

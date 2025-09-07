@@ -11,7 +11,11 @@ import java.util.concurrent.ConcurrentHashMap
 object Localization {
     private val cache: MutableMap<String, Map<String, String>> = ConcurrentHashMap()
 
-    fun tr(context: Context, key: String, defaultValue: String? = null): String {
+    fun tr(
+        context: Context,
+        key: String,
+        defaultValue: String? = null,
+    ): String {
         val code = LanguageService.getCurrentCode(context)
         val map = translations(context.assets, code)
         map[key]?.let { return it }
@@ -20,18 +24,25 @@ object Localization {
         return defaultValue ?: key
     }
 
-    private fun translations(assets: AssetManager, code: String): Map<String, String> {
+    private fun translations(
+        assets: AssetManager,
+        code: String,
+    ): Map<String, String> {
         cache[code]?.let { return it }
         val map = loadTranslations(assets, code)
         cache[code] = map
         return map
     }
 
-    private fun loadTranslations(assets: AssetManager, code: String): Map<String, String> {
-        val candidates = listOf(
-            "Localization/${code.lowercase(Locale.getDefault())}.json",
-            "${code.lowercase(Locale.getDefault())}.json"
-        )
+    private fun loadTranslations(
+        assets: AssetManager,
+        code: String,
+    ): Map<String, String> {
+        val candidates =
+            listOf(
+                "Localization/${code.lowercase(Locale.getDefault())}.json",
+                "${code.lowercase(Locale.getDefault())}.json",
+            )
         for (path in candidates) {
             try {
                 assets.open(path).use { input ->
@@ -56,5 +67,3 @@ object Localization {
         cache.clear()
     }
 }
-
-

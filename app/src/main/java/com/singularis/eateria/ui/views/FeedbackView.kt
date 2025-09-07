@@ -22,124 +22,151 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.singularis.eateria.services.GRPCService
-import com.singularis.eateria.ui.theme.*
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.ui.theme.*
 import com.singularis.eateria.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun FeedbackView(
     authViewModel: AuthViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
-    
+
     val userEmail by authViewModel.userEmail.collectAsState(initial = "")
-    
+
     var feedbackText by remember { mutableStateOf("") }
     var isSubmitting by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    
+
     val isValidFeedback = feedbackText.trim().isNotEmpty()
-    
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackground)
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .windowInsetsPadding(WindowInsets.navigationBars)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(DarkBackground)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(Dimensions.paddingM)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(Dimensions.paddingM),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
-                        tint = Color.White
+                        tint = Color.White,
                     )
                 }
-                
+
                 Text(
                     text = Localization.tr(LocalContext.current, "feedback.title", "Share Your Feedback"),
                     color = Color.White,
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall,
                 )
-                
+
                 Spacer(modifier = Modifier.width(Dimensions.paddingXL + Dimensions.paddingM))
             }
-            
+
             Spacer(modifier = Modifier.height(Dimensions.paddingL))
-            
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Gray4),
-                shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Dimensions.paddingM)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(Dimensions.paddingM),
                 ) {
                     Text(
                         text = Localization.tr(LocalContext.current, "feedback.subtitle", "Help us improve your experience"),
                         color = Color.White,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
-                    
+
                     Spacer(modifier = Modifier.height(Dimensions.paddingS))
-                    
+
                     Text(
                         text = Localization.tr(LocalContext.current, "feedback.subtitle", "Help us improve your experience"),
                         color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
-                    
+
                     Spacer(modifier = Modifier.height(Dimensions.paddingL))
-                    
+
                     OutlinedTextField(
                         value = feedbackText,
                         onValueChange = { feedbackText = it },
-                        label = { Text(Localization.tr(LocalContext.current, "feedback.field.label", "Your Feedback"), color = Color.Gray) },
-                        placeholder = { Text(Localization.tr(LocalContext.current, "feedback.placeholder", "Tell us what you think..."), color = Color.Gray) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = DarkPrimary,
-                            unfocusedBorderColor = Color.Gray,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            cursorColor = DarkPrimary
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Sentences,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { keyboardController?.hide() }
-                        ),
+                        label = {
+                            Text(
+                                Localization.tr(LocalContext.current, "feedback.field.label", "Your Feedback"),
+                                color = Color.Gray,
+                            )
+                        },
+                        placeholder = {
+                            Text(
+                                Localization.tr(LocalContext.current, "feedback.placeholder", "Tell us what you think..."),
+                                color = Color.Gray,
+                            )
+                        },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                        colors =
+                            OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = DarkPrimary,
+                                unfocusedBorderColor = Color.Gray,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = DarkPrimary,
+                            ),
+                        keyboardOptions =
+                            KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done,
+                            ),
+                        keyboardActions =
+                            KeyboardActions(
+                                onDone = { keyboardController?.hide() },
+                            ),
                         maxLines = 8,
-                        singleLine = false
+                        singleLine = false,
                     )
-                    
+
                     Spacer(modifier = Modifier.height(Dimensions.paddingL))
-                    
-                    val failedMsg = Localization.tr(LocalContext.current, "feedback.submit_failed", "Failed to submit feedback. Please try again.")
-                    val networkMsg = Localization.tr(LocalContext.current, "feedback.network_error", "Network error. Please check your connection and try again.")
+
+                    val failedMsg =
+                        Localization.tr(
+                            LocalContext.current,
+                            "feedback.submit_failed",
+                            "Failed to submit feedback. Please try again.",
+                        )
+                    val networkMsg =
+                        Localization.tr(
+                            LocalContext.current,
+                            "feedback.network_error",
+                            "Network error. Please check your connection and try again.",
+                        )
 
                     Button(
                         onClick = {
@@ -148,11 +175,12 @@ fun FeedbackView(
                                 coroutineScope.launch {
                                     try {
                                         val grpcService = GRPCService(context)
-                                        val success = grpcService.submitFeedback(
-                                            userEmail = userEmail ?: "",
-                                            feedback = feedbackText.trim()
-                                        )
-                                        
+                                        val success =
+                                            grpcService.submitFeedback(
+                                                userEmail = userEmail ?: "",
+                                                feedback = feedbackText.trim(),
+                                            )
+
                                         if (success) {
                                             feedbackText = ""
                                             keyboardController?.hide()
@@ -171,20 +199,21 @@ fun FeedbackView(
                             }
                         },
                         enabled = isValidFeedback && !isSubmitting,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = DarkPrimary,
-                            contentColor = Color.White,
-                            disabledContainerColor = Gray3,
-                            disabledContentColor = Color.Gray
-                        ),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = DarkPrimary,
+                                contentColor = Color.White,
+                                disabledContainerColor = Gray3,
+                                disabledContentColor = Color.Gray,
+                            ),
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(Dimensions.cornerRadiusS)
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                     ) {
                         if (isSubmitting) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(Dimensions.iconSizeS),
                                 color = Color.White,
-                                strokeWidth = 2.dp
+                                strokeWidth = 2.dp,
                             )
                             Spacer(modifier = Modifier.width(Dimensions.paddingS))
                             Text(Localization.tr(LocalContext.current, "feedback.submitting", "Submitting..."))
@@ -192,19 +221,19 @@ fun FeedbackView(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = null,
-                                modifier = Modifier.size(Dimensions.iconSizeS)
+                                modifier = Modifier.size(Dimensions.iconSizeS),
                             )
                             Spacer(modifier = Modifier.width(Dimensions.paddingS))
                             Text(
                                 text = Localization.tr(LocalContext.current, "feedback.submit", "Submit Feedback"),
-                                style = MaterialTheme.typography.titleSmall
+                                style = MaterialTheme.typography.titleSmall,
                             )
                         }
                     }
                 }
             }
         }
-        
+
         if (showSuccessDialog) {
             AlertDialog(
                 onDismissRequest = {
@@ -215,13 +244,18 @@ fun FeedbackView(
                     Text(
                         text = Localization.tr(LocalContext.current, "feedback.thanks", "Thank You!"),
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 text = {
                     Text(
-                        text = Localization.tr(LocalContext.current, "feedback.success.msg", "Your feedback has been submitted successfully. We appreciate your input!"),
-                        color = Color.Gray
+                        text =
+                            Localization.tr(
+                                LocalContext.current,
+                                "feedback.success.msg",
+                                "Your feedback has been submitted successfully. We appreciate your input!",
+                            ),
+                        color = Color.Gray,
                     )
                 },
                 confirmButton = {
@@ -229,15 +263,15 @@ fun FeedbackView(
                         onClick = {
                             showSuccessDialog = false
                             onBackClick()
-                        }
+                        },
                     ) {
                         Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = CalorieGreen)
                     }
                 },
-                containerColor = Gray4
+                containerColor = Gray4,
             )
         }
-        
+
         if (showErrorDialog) {
             AlertDialog(
                 onDismissRequest = { showErrorDialog = false },
@@ -245,24 +279,24 @@ fun FeedbackView(
                     Text(
                         text = Localization.tr(LocalContext.current, "common.error", "Error"),
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 text = {
                     Text(
                         text = errorMessage,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                 },
                 confirmButton = {
                     TextButton(
-                        onClick = { showErrorDialog = false }
+                        onClick = { showErrorDialog = false },
                     ) {
                         Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = CalorieRed)
                     }
                 },
-                containerColor = Gray4
+                containerColor = Gray4,
             )
         }
     }
-} 
+}

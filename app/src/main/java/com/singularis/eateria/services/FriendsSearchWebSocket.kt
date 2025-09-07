@@ -17,15 +17,17 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 class FriendsSearchWebSocket(
-    private val authTokenProvider: suspend () -> String?
+    private val authTokenProvider: suspend () -> String?,
 ) {
     enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, AUTHENTICATED, FAILED }
 
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private val client: OkHttpClient =
+        OkHttpClient
+            .Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
 
     private val url = "wss://chater.singularis.work/autocomplete"
     private var webSocket: WebSocket? = null
@@ -44,9 +46,11 @@ class FriendsSearchWebSocket(
     fun connect() {
         if (webSocket != null) return
         _state.value = ConnectionState.CONNECTING
-        val request = Request.Builder()
-            .url(url)
-            .build()
+        val request =
+            Request
+                .Builder()
+                .url(url)
+                .build()
         webSocket = client.newWebSocket(request, Listener())
     }
 
@@ -56,14 +60,18 @@ class FriendsSearchWebSocket(
         _state.value = ConnectionState.DISCONNECTED
     }
 
-    fun search(query: String, limit: Int = 10) {
+    fun search(
+        query: String,
+        limit: Int = 10,
+    ) {
         if (query.trim().isEmpty()) return
         connect()
         sendAuthIfNeeded()
-        val payload = JSONObject()
-            .put("type", "search")
-            .put("query", query)
-            .put("limit", limit)
+        val payload =
+            JSONObject()
+                .put("type", "search")
+                .put("query", query)
+                .put("limit", limit)
         send(payload)
     }
 
@@ -76,9 +84,10 @@ class FriendsSearchWebSocket(
                     _state.value = ConnectionState.FAILED
                     return@launch
                 }
-                val payload = JSONObject()
-                    .put("type", "auth")
-                    .put("token", token)
+                val payload =
+                    JSONObject()
+                        .put("type", "auth")
+                        .put("token", token)
                 send(payload)
             }
         }
@@ -90,12 +99,18 @@ class FriendsSearchWebSocket(
     }
 
     private inner class Listener : WebSocketListener() {
-        override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
+        override fun onOpen(
+            webSocket: WebSocket,
+            response: okhttp3.Response,
+        ) {
             _state.value = ConnectionState.CONNECTED
             sendAuthIfNeeded()
         }
 
-        override fun onMessage(webSocket: WebSocket, text: String) {
+        override fun onMessage(
+            webSocket: WebSocket,
+            text: String,
+        ) {
             try {
                 val obj = JSONObject(text)
                 val type = obj.optString("type")
@@ -118,15 +133,20 @@ class FriendsSearchWebSocket(
             }
         }
 
-        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+        override fun onMessage(
+            webSocket: WebSocket,
+            bytes: ByteString,
+        ) {
             onMessage(webSocket, bytes.utf8())
         }
 
-        override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+        override fun onFailure(
+            webSocket: WebSocket,
+            t: Throwable,
+            response: okhttp3.Response?,
+        ) {
             _state.value = ConnectionState.FAILED
             disconnect()
         }
     }
 }
-
-

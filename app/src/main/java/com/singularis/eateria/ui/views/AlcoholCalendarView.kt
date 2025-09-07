@@ -1,6 +1,7 @@
 package com.singularis.eateria.ui.views
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,26 +44,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.singularis.eateria.services.GRPCService
+import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.DarkBackground
+import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
-import com.singularis.eateria.ui.theme.Dimensions
 import eater.Alcohol
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.text.DateFormatSymbols
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import androidx.compose.foundation.clickable
-import com.singularis.eateria.services.Localization
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun AlcoholCalendarView(
     isVisible: Boolean,
     onDismiss: () -> Unit,
-    viewModel: com.singularis.eateria.viewmodels.MainViewModel
+    viewModel: com.singularis.eateria.viewmodels.MainViewModel,
 ) {
     if (!isVisible) return
 
@@ -102,35 +101,37 @@ fun AlcoholCalendarView(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true),
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimensions.paddingM),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(Dimensions.paddingM),
             shape = RoundedCornerShape(Dimensions.cornerRadiusL),
-            color = Gray4
+            color = Gray4,
         ) {
             Column(
-                modifier = Modifier
-                    .background(DarkBackground)
-                    .padding(Dimensions.paddingM)
-                    .pointerInput(anchorMonth) {
-                        detectHorizontalDragGestures { change, dragAmount ->
-                            change.consume()
-                            if (dragAmount > 40f) {
-                                anchorMonth = addMonths(anchorMonth, -1)
-                            } else if (dragAmount < -40f) {
-                                anchorMonth = addMonths(anchorMonth, 1)
+                modifier =
+                    Modifier
+                        .background(DarkBackground)
+                        .padding(Dimensions.paddingM)
+                        .pointerInput(anchorMonth) {
+                            detectHorizontalDragGestures { change, dragAmount ->
+                                change.consume()
+                                if (dragAmount > 40f) {
+                                    anchorMonth = addMonths(anchorMonth, -1)
+                                } else if (dragAmount < -40f) {
+                                    anchorMonth = addMonths(anchorMonth, 1)
+                                }
                             }
-                        }
-                    }
+                        },
             ) {
                 Header(
                     date = anchorMonth,
                     onPrev = { anchorMonth = addMonths(anchorMonth, -1) },
                     onNext = { anchorMonth = addMonths(anchorMonth, 1) },
-                    onClose = onDismiss
+                    onClose = onDismiss,
                 )
 
                 Spacer(modifier = Modifier.height(Dimensions.paddingS))
@@ -149,7 +150,7 @@ fun AlcoholCalendarView(
                             detailsMessage = formatEvents(events)
                             detailsVisible = true
                         }
-                    }
+                    },
                 )
 
                 Spacer(modifier = Modifier.height(Dimensions.paddingM))
@@ -157,7 +158,7 @@ fun AlcoholCalendarView(
                 Button(
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = Gray3, contentColor = Color.White),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(Localization.tr(LocalContext.current, "common.close", "Close"))
                 }
@@ -177,24 +178,29 @@ fun AlcoholCalendarView(
             confirmButton = {
                 Button(onClick = { detailsVisible = false }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
-            containerColor = Gray4
+            containerColor = Gray4,
         )
     }
 }
 
 @Composable
-private fun Header(date: Date, onPrev: () -> Unit, onNext: () -> Unit, onClose: () -> Unit) {
+private fun Header(
+    date: Date,
+    onPrev: () -> Unit,
+    onNext: () -> Unit,
+    onClose: () -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onPrev) { Text(Localization.tr(LocalContext.current, "calendar.prev", "<"), color = Color.White) }
         Text(
             text = monthTitle(date),
             style = MaterialTheme.typography.titleMedium,
             color = Color.White,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         IconButton(onClick = onNext) { Text(Localization.tr(LocalContext.current, "calendar.next", ">"), color = Color.White) }
     }
@@ -202,10 +208,11 @@ private fun Header(date: Date, onPrev: () -> Unit, onNext: () -> Unit, onClose: 
 
 @Composable
 private fun WeekdayHeader() {
-    val labels = remember {
-        val weekdays = DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays
-        (1..7).map { weekdays[it] }
-    }
+    val labels =
+        remember {
+            val weekdays = DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays
+            (1..7).map { weekdays[it] }
+        }
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         labels.forEach { label ->
             Text(
@@ -213,7 +220,7 @@ private fun WeekdayHeader() {
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 color = Color.White.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
             )
         }
     }
@@ -223,14 +230,18 @@ private fun WeekdayHeader() {
 private fun MonthGrid(
     monthDate: Date,
     eventsByDate: Map<String, Int>,
-    onDayClick: (String) -> Unit
+    onDayClick: (String) -> Unit,
 ) {
     val cal = Calendar.getInstance().apply { time = monthDate }
     cal.set(Calendar.DAY_OF_MONTH, 1)
     val firstDay = cal.time
     val firstWeekday = Calendar.getInstance().apply { time = firstDay }.get(Calendar.DAY_OF_WEEK) // 1..7
     val daysInMonth = Calendar.getInstance().apply { time = monthDate }.getActualMaximum(Calendar.DAY_OF_MONTH)
-    val prevMonth = Calendar.getInstance().apply { time = monthDate; add(Calendar.MONTH, -1) }
+    val prevMonth =
+        Calendar.getInstance().apply {
+            time = monthDate
+            add(Calendar.MONTH, -1)
+        }
     val prevDays = prevMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
 
     val cells = mutableListOf<DayCell>()
@@ -254,7 +265,11 @@ private fun MonthGrid(
     // Trailing padding to complete weeks
     while (cells.size % 7 != 0) {
         val nextIndex = cells.size - padding - daysInMonth + 1
-        val nextMonthCal = Calendar.getInstance().apply { time = monthDate; add(Calendar.MONTH, 1) }
+        val nextMonthCal =
+            Calendar.getInstance().apply {
+                time = monthDate
+                add(Calendar.MONTH, 1)
+            }
         val y = nextMonthCal.get(Calendar.YEAR)
         val m = nextMonthCal.get(Calendar.MONTH) + 1
         val date = ymd(y, m, nextIndex)
@@ -265,7 +280,7 @@ private fun MonthGrid(
         for (row in 0 until cells.size / 7) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 for (col in 0 until 7) {
                     val cell = cells[row * 7 + col]
@@ -277,31 +292,37 @@ private fun MonthGrid(
 }
 
 @Composable
-private fun RowScope.DayCellView(cell: DayCell, amount: Int, onClick: (String) -> Unit) {
+private fun RowScope.DayCellView(
+    cell: DayCell,
+    amount: Int,
+    onClick: (String) -> Unit,
+) {
     Box(
-        modifier = Modifier
-            .weight(1f)
-            .height(44.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (cell.isCurrentMonth) Gray3.copy(alpha = 0.2f) else Gray3.copy(alpha = 0.1f))
-            .clickable { onClick(cell.ymd) },
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .weight(1f)
+                .height(44.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (cell.isCurrentMonth) Gray3.copy(alpha = 0.2f) else Gray3.copy(alpha = 0.1f))
+                .clickable { onClick(cell.ymd) },
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = cell.dayNumber.toString(),
             color = if (cell.isCurrentMonth) Color.White else Color.White.copy(alpha = 0.3f),
             style = MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         if (amount > 0) {
             val size = dotSize(amount)
             Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 4.dp)
-                    .size(size)
-                    .clip(RoundedCornerShape(50))
-                    .background(Color.Red)
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 4.dp)
+                        .size(size)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.Red),
             )
         }
     }
@@ -310,7 +331,7 @@ private fun RowScope.DayCellView(cell: DayCell, amount: Int, onClick: (String) -
 private data class DayCell(
     val dayNumber: Int,
     val ymd: String, // yyyy-MM-dd
-    val isCurrentMonth: Boolean
+    val isCurrentMonth: Boolean,
 )
 
 private fun dotSize(amount: Int): androidx.compose.ui.unit.Dp {
@@ -321,15 +342,17 @@ private fun dotSize(amount: Int): androidx.compose.ui.unit.Dp {
     return if (scaled > max) max else scaled
 }
 
-private fun ymd(year: Int, month: Int, day: Int): String {
+private fun ymd(
+    year: Int,
+    month: Int,
+    day: Int,
+): String {
     val m = if (month < 10) "0$month" else "$month"
     val d = if (day < 10) "0$day" else "$day"
     return "$year-$m-$d"
 }
 
-private fun monthTitle(date: Date): String {
-    return SimpleDateFormat("LLLL yyyy", Locale.getDefault()).format(date)
-}
+private fun monthTitle(date: Date): String = SimpleDateFormat("LLLL yyyy", Locale.getDefault()).format(date)
 
 private fun monthStartEnd(date: Date): Pair<String, String> {
     val cal = Calendar.getInstance().apply { time = date }
@@ -342,7 +365,10 @@ private fun monthStartEnd(date: Date): Pair<String, String> {
     return Pair(fmt.format(first), fmt.format(last))
 }
 
-private fun addMonths(date: Date, delta: Int): Date {
+private fun addMonths(
+    date: Date,
+    delta: Int,
+): Date {
     val cal = Calendar.getInstance().apply { time = date }
     cal.add(Calendar.MONTH, delta)
     return cal.time
@@ -353,7 +379,9 @@ private fun prettyDate(ymd: String): String {
         val inFmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val outFmt = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
         outFmt.format(inFmt.parse(ymd) ?: return ymd)
-    } catch (_: Exception) { ymd }
+    } catch (_: Exception) {
+        ymd
+    }
 }
 
 private fun formatEvents(events: List<Alcohol.AlcoholEvent>): String {
@@ -364,8 +392,6 @@ private fun formatEvents(events: List<Alcohol.AlcoholEvent>): String {
         val name = e.drinkName
         val qty = e.quantity
         val cal = e.calories
-        "$tt • $name • ${qty}ml • ${cal} kcal"
+        "$tt • $name • ${qty}ml • $cal kcal"
     }
 }
-
-

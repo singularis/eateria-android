@@ -28,13 +28,13 @@ fun ShareFoodView(
     foodName: String,
     time: Long,
     onDismiss: () -> Unit,
-    onShareSuccess: () -> Unit = {}
+    onShareSuccess: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val grpcService = remember { GRPCService(context) }
     val authService = remember { AuthenticationService(context) }
     val coroutineScope = rememberCoroutineScope()
-    
+
     var friends by remember { mutableStateOf<List<String>>(emptyList()) }
     var totalCount by remember { mutableStateOf(0) }
     var isLoading by remember { mutableStateOf(false) }
@@ -42,72 +42,77 @@ fun ShareFoodView(
     var sharesCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var showShareConfirmation by remember { mutableStateOf<String?>(null) }
     var showPortionDialogFor by remember { mutableStateOf<String?>(null) }
-    
+
     LaunchedEffect(Unit) {
         sharesCounts = loadSharesCounts(context)
         fetchFriends(grpcService, reset = true) { friendsList, total ->
-            friends = friendsList.sortedWith(compareByDescending<String> { sharesCounts[it] ?: 0 }
-                .thenBy { it.lowercase() })
+            friends =
+                friendsList.sortedWith(
+                    compareByDescending<String> { sharesCounts[it] ?: 0 }
+                        .thenBy { it.lowercase() },
+                )
             totalCount = total
         }
     }
-    
+
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surface
+            color = MaterialTheme.colorScheme.surface,
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = Localization.tr(LocalContext.current, "share.title", "Share %@").replace("%@", foodName),
                         style = MaterialTheme.typography.headlineSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                     Row {
                         TextButton(
-                            onClick = { showAddFriends = true }
+                            onClick = { showAddFriends = true },
                         ) {
                             Text(Localization.tr(LocalContext.current, "friends.add", "Add Friend"))
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 if (isLoading) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator()
                     }
                 } else if (friends.isEmpty()) {
                     Box(
                         modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = Localization.tr(LocalContext.current, "friends.none", "No friends yet"),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             TextButton(onClick = { showAddFriends = true }) {
@@ -120,73 +125,81 @@ fun ShareFoodView(
 
                     LazyColumn(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(friends) { email ->
                             val sharesCount = sharesCounts[email] ?: 0
-                            
+
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { showPortionDialogFor = email },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clickable { showPortionDialogFor = email },
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    ),
                             ) {
                                 Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
                                 ) {
                                     Text(
                                         text = email,
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
                                     )
                                     if (sharesCount > 0) {
                                         Text(
                                             text = Localization.tr(LocalContext.current, "share.count", "Shared") + " ${sharesCount}x",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                 }
                             }
                         }
-                        
+
                         if (friends.size < totalCount) {
                             item {
                                 Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            coroutineScope.launch {
-                                                fetchFriends(grpcService, reset = false) { moreFriends, _ ->
-                                                    friends = (friends + moreFriends).distinct()
-                                                        .sortedWith(
-                                                            compareByDescending<String> { sharesCounts[it] ?: 0 }
-                                                                .thenBy { it.lowercase() }
-                                                        )
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                coroutineScope.launch {
+                                                    fetchFriends(grpcService, reset = false) { moreFriends, _ ->
+                                                        friends =
+                                                            (friends + moreFriends)
+                                                                .distinct()
+                                                                .sortedWith(
+                                                                    compareByDescending<String> { sharesCounts[it] ?: 0 }
+                                                                        .thenBy { it.lowercase() },
+                                                                )
+                                                    }
                                                 }
-                                            }
-                                        },
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                    )
+                                            },
+                                    colors =
+                                        CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                        ),
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        contentAlignment = Alignment.Center
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         Text(
                                             text = Localization.tr(LocalContext.current, "friends.more", "More friends"),
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.primary,
-                                            fontWeight = FontWeight.SemiBold
+                                            fontWeight = FontWeight.SemiBold,
                                         )
                                     }
                                 }
@@ -197,7 +210,7 @@ fun ShareFoodView(
                     Spacer(modifier = Modifier.height(12.dp))
                     TextButton(
                         onClick = onDismiss,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(Localization.tr(LocalContext.current, "common.close", "Close"))
                     }
@@ -218,36 +231,39 @@ fun ShareFoodView(
                             fromEmail = userEmail,
                             toEmail = toEmail,
                             percentage = percentage,
-                            context = context
+                            context = context,
                         ) {
                             incrementShareCount(context, toEmail)
                             sharesCounts = loadSharesCounts(context)
-                            friends = friends.sortedWith(
-                                compareByDescending<String> { sharesCounts[it] ?: 0 }
-                                    .thenBy { it.lowercase() }
-                            )
+                            friends =
+                                friends.sortedWith(
+                                    compareByDescending<String> { sharesCounts[it] ?: 0 }
+                                        .thenBy { it.lowercase() },
+                                )
                             onShareSuccess()
                             val successTemplate = Localization.tr(context, "share.success.msg", "Shared %d%% with %@")
                             showShareConfirmation = successTemplate.replace("%d", "$percentage").replace("%@", toEmail)
                             showPortionDialogFor = null
                         }
                     }
-                }
+                },
             )
         }
     }
-    
+
     if (showAddFriends) {
         AddFriendsView(
             onDismiss = { showAddFriends = false },
             onFriendAdded = { email ->
-                friends = (friends + email).distinct()
-                    .sortedWith(
-                        compareByDescending<String> { sharesCounts[it] ?: 0 }
-                            .thenBy { it.lowercase() }
-                    )
+                friends =
+                    (friends + email)
+                        .distinct()
+                        .sortedWith(
+                            compareByDescending<String> { sharesCounts[it] ?: 0 }
+                                .thenBy { it.lowercase() },
+                        )
                 totalCount += 1
-            }
+            },
         )
     }
 
@@ -265,7 +281,7 @@ fun ShareFoodView(
                     onDismiss()
                 }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
-            containerColor = com.singularis.eateria.ui.theme.Gray4
+            containerColor = com.singularis.eateria.ui.theme.Gray4,
         )
     }
 }
@@ -273,7 +289,7 @@ fun ShareFoodView(
 private suspend fun fetchFriends(
     grpcService: GRPCService,
     reset: Boolean = true,
-    onResult: (List<String>, Int) -> Unit
+    onResult: (List<String>, Int) -> Unit,
 ) {
     try {
         val offset = if (reset) 0 else 5
@@ -284,13 +300,12 @@ private suspend fun fetchFriends(
     }
 }
 
-private suspend fun getUserEmail(authService: AuthenticationService): String? {
-    return try {
+private suspend fun getUserEmail(authService: AuthenticationService): String? =
+    try {
         authService.getUserEmail()
     } catch (e: Exception) {
         null
     }
-}
 
 private suspend fun shareFood(
     grpcService: GRPCService,
@@ -299,7 +314,7 @@ private suspend fun shareFood(
     toEmail: String,
     percentage: Int,
     context: Context,
-    onSuccess: () -> Unit
+    onSuccess: () -> Unit,
 ) {
     try {
         val success = grpcService.shareFood(time, fromEmail, toEmail, percentage)
@@ -316,7 +331,7 @@ private suspend fun shareFood(
 @Composable
 private fun PortionChooserDialog(
     onDismiss: () -> Unit,
-    onSelect: (Int) -> Unit
+    onSelect: (Int) -> Unit,
 ) {
     val options = listOf(10, 25, 50, 75, 90)
     AlertDialog(
@@ -328,10 +343,11 @@ private fun PortionChooserDialog(
                     Button(
                         onClick = { onSelect(p) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White
-                        )
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White,
+                            ),
                     ) {
                         Text(text = "$p%")
                     }
@@ -340,11 +356,15 @@ private fun PortionChooserDialog(
         },
         confirmButton = {},
         dismissButton = { TextButton(onClick = onDismiss) { Text(Localization.tr(LocalContext.current, "common.close", "Close")) } },
-        containerColor = com.singularis.eateria.ui.theme.Gray4
+        containerColor = com.singularis.eateria.ui.theme.Gray4,
     )
 }
 
-private fun showConfirmation(context: Context, title: String, message: String) {
+private fun showConfirmation(
+    context: Context,
+    title: String,
+    message: String,
+) {
     // Placeholder no-op for now; UI shows success via dialog logic already
 }
 
@@ -354,7 +374,10 @@ private fun loadSharesCounts(context: Context): Map<String, Int> {
     return allEntries.mapValues { (_, value) -> value as? Int ?: 0 }
 }
 
-private fun incrementShareCount(context: Context, email: String) {
+private fun incrementShareCount(
+    context: Context,
+    email: String,
+) {
     val prefs = context.getSharedPreferences("friend_shares", Context.MODE_PRIVATE)
     val currentCount = prefs.getInt(email, 0)
     prefs.edit().putInt(email, currentCount + 1).apply()

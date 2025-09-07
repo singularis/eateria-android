@@ -20,31 +20,32 @@ import com.singularis.eateria.ui.theme.Dimensions
 fun LoadingOverlay(
     isVisible: Boolean,
     message: String = "Loading...",
-    backgroundColor: Color = Color.Black.copy(alpha = 0.7f)
+    backgroundColor: Color = Color.Black.copy(alpha = 0.7f),
 ) {
     if (isVisible) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundColor),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(backgroundColor),
+            contentAlignment = Alignment.Center,
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 CircularProgressIndicator(
                     color = Color.White,
-                    modifier = Modifier.size(Dimensions.loadingIndicatorSize + Dimensions.paddingM)
+                    modifier = Modifier.size(Dimensions.loadingIndicatorSize + Dimensions.paddingM),
                 )
-                
+
                 Spacer(modifier = Modifier.height(Dimensions.paddingM))
-                
+
                 Text(
                     text = message,
                     color = Color.White,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
                 )
             }
         }
     }
-} 
+}

@@ -23,34 +23,34 @@ import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
 
 class MainActivity : ComponentActivity() {
-    
     private lateinit var authService: AuthenticationService
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Enable edge-to-edge display
         enableEdgeToEdge()
-        
+
         // Ensure the app can draw behind system bars
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        
+
         authService = AuthenticationService(this)
         // Set process Locale to stored language at startup
-        com.singularis.eateria.services.LanguageService.applyCurrentLocale(this)
-        
+        com.singularis.eateria.services.LanguageService
+            .applyCurrentLocale(this)
+
         setContent {
             EateriaTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     EateriaApp()
                 }
             }
         }
     }
-    
+
     @Composable
     fun EateriaApp() {
         val context = this@MainActivity
@@ -62,14 +62,14 @@ class MainActivity : ComponentActivity() {
                 val mainViewModel: MainViewModel = viewModel { MainViewModel(this@MainActivity) }
                 ContentView(
                     viewModel = mainViewModel,
-                    authViewModel = authViewModel
+                    authViewModel = authViewModel,
                 )
             } else {
                 LoginView(
                     authViewModel = authViewModel,
-                    activity = this@MainActivity
+                    activity = this@MainActivity,
                 )
             }
         }
     }
-} 
+}

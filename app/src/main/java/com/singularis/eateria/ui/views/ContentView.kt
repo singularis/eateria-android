@@ -55,6 +55,7 @@ fun ContentView(
     val isLoadingData by viewModel.isLoadingData.collectAsState()
     val isViewingCustomDate by viewModel.isViewingCustomDate.collectAsState()
     val currentViewingDate by viewModel.currentViewingDate.collectAsState()
+    val currentViewingDateString by viewModel.currentViewingDateString.collectAsState()
     val isLoadingFoodPhoto by viewModel.isLoadingFoodPhoto.collectAsState()
     val isLoadingWeightPhoto by viewModel.isLoadingWeightPhoto.collectAsState()
     val isLoadingRecommendation by viewModel.isLoadingRecommendation.collectAsState()
@@ -174,7 +175,11 @@ fun ContentView(
             Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
             if (isFullMode) {
-                MacrosSummaryRow()
+                MacrosSummaryRow(
+                    products = products,
+                    isViewingCustomDate = isViewingCustomDate,
+                    currentViewingDateString = currentViewingDateString
+                )
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
             }
             

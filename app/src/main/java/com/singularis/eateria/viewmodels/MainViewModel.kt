@@ -273,6 +273,8 @@ class MainViewModel(private val context: Context) : ViewModel() {
     fun fetchDataWithLoading() {
         viewModelScope.launch {
             _isLoadingData.value = true
+            // Refresh alcohol icon color alongside food refresh
+            fetchAlcoholLatestAndUpdateIcon()
             productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
                 _products.value = fetchedProducts
                 // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
@@ -286,6 +288,8 @@ class MainViewModel(private val context: Context) : ViewModel() {
 
     fun fetchData() {
         viewModelScope.launch {
+            // Keep alcohol state fresh when data updates without full loading overlay
+            fetchAlcoholLatestAndUpdateIcon()
             productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
                 _products.value = fetchedProducts
                 // Recalculate caloriesLeft based on our local soft limit, not backend's calculation

@@ -364,19 +364,30 @@ fun StatButton(
 }
 
 @Composable
-fun MacrosSummaryRow() {
+fun MacrosSummaryRow(
+    products: List<Product>,
+    isViewingCustomDate: Boolean,
+    currentViewingDateString: String
+) {
     val context = LocalContext.current
     var summaryText by remember { mutableStateOf("") }
     var summaryColor by remember { mutableStateOf(Color.White) }
 
-    LaunchedEffect(Unit) {
+    // Recompute macros whenever products change or date context changes
+    LaunchedEffect(products, isViewingCustomDate, currentViewingDateString) {
         val statsService = StatisticsService.getInstance(context)
-        val today = statsService.getTodayStatistics()
-        if (today != null) {
-            val proteins = today.proteins
-            val fats = today.fats
-            val carbs = today.carbohydrates
-            val sugar = today.sugar
+        val stats = if (isViewingCustomDate && currentViewingDateString.isNotBlank()) {
+            // Force refresh so macros reflect the latest backend protobuf after food refresh
+            statsService.getStatisticsForDate(currentViewingDateString, forceRefresh = true)
+        } else {
+            // Force refresh so macros reflect the latest backend protobuf after food refresh
+            statsService.getTodayStatistics(forceRefresh = true)
+        }
+        if (stats != null) {
+            val proteins = stats.proteins
+            val fats = stats.fats
+            val carbs = stats.carbohydrates
+            val sugar = stats.sugar
             val proPart = "${Localization.tr(context, "macro.pro", "PRO")} ${"%.1f".format(proteins)}${Localization.tr(context, "units.g", "g")}"
             val fatPart = "${Localization.tr(context, "macro.fat", "FAT")} ${"%.1f".format(fats)}${Localization.tr(context, "units.g", "g")}"
             val carbPart = "${Localization.tr(context, "macro.car", "CAR")} ${"%.1f".format(carbs)}${Localization.tr(context, "units.g", "g")}"
@@ -384,7 +395,7 @@ fun MacrosSummaryRow() {
             summaryText = "$proPart • $fatPart • $carbPart • $sugPart"
             summaryColor = Color.White
         } else {
-                            summaryText = Localization.tr(context, "macro.no_data", "No macros yet")
+            summaryText = Localization.tr(context, "macro.no_data", "No macros yet")
             summaryColor = Color.Gray
         }
     }

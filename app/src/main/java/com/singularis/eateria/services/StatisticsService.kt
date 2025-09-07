@@ -188,21 +188,23 @@ class StatisticsService private constructor(private val context: Context) {
         }
     }
     
-    suspend fun getTodayStatistics(): DailyStatistics? {
+    suspend fun getTodayStatistics(forceRefresh: Boolean = false): DailyStatistics? {
         return withContext(Dispatchers.IO) {
             try {
                 val today = Date()
                 val todayString = dateFormatter.format(today)
                 
-                // Check cache first
-                cacheService.getCachedStatistics(todayString)?.let { cached ->
-                    if (!cacheService.isCacheExpired(todayString)) {
-                        val macrosSumZero = (cached.proteins + cached.fats + cached.carbohydrates + cached.sugar) == 0.0
-                        if (cached.hasData && !macrosSumZero) {
-                            Log.d("StatisticsService", "Returning cached today statistics")
-                            return@withContext cached
-                        } else {
-                            Log.d("StatisticsService", "Cached today statistics incomplete (hasData=${cached.hasData}, macrosZero=$macrosSumZero); fetching fresh")
+                if (!forceRefresh) {
+                    // Check cache first
+                    cacheService.getCachedStatistics(todayString)?.let { cached ->
+                        if (!cacheService.isCacheExpired(todayString)) {
+                            val macrosSumZero = (cached.proteins + cached.fats + cached.carbohydrates + cached.sugar) == 0.0
+                            if (cached.hasData && !macrosSumZero) {
+                                Log.d("StatisticsService", "Returning cached today statistics")
+                                return@withContext cached
+                            } else {
+                                Log.d("StatisticsService", "Cached today statistics incomplete (hasData=${cached.hasData}, macrosZero=$macrosSumZero); fetching fresh")
+                            }
                         }
                     }
                 }
@@ -220,14 +222,16 @@ class StatisticsService private constructor(private val context: Context) {
         }
     }
     
-    suspend fun getStatisticsForDate(date: String): DailyStatistics? {
+    suspend fun getStatisticsForDate(date: String, forceRefresh: Boolean = false): DailyStatistics? {
         return withContext(Dispatchers.IO) {
             try {
-                // Check cache first
-                cacheService.getCachedStatistics(date)?.let { cached ->
-                    if (!cacheService.isCacheExpired(date)) {
-                        Log.d("StatisticsService", "Returning cached statistics for $date")
-                        return@withContext cached
+                if (!forceRefresh) {
+                    // Check cache first
+                    cacheService.getCachedStatistics(date)?.let { cached ->
+                        if (!cacheService.isCacheExpired(date)) {
+                            Log.d("StatisticsService", "Returning cached statistics for $date")
+                            return@withContext cached
+                        }
                     }
                 }
                 

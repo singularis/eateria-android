@@ -73,6 +73,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
@@ -244,7 +245,10 @@ private fun CameraPreviewView(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onDismiss) {
+            IconButton(onClick = { 
+                HapticsService.getInstance().select()
+                onDismiss() 
+            }) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
@@ -272,6 +276,7 @@ private fun CameraPreviewView(
 
             IconButton(
                 onClick = {
+                    HapticsService.getInstance().select()
                     isFlashOn = !isFlashOn
                     camera?.cameraControl?.enableTorch(isFlashOn)
                 },
@@ -321,6 +326,7 @@ private fun CameraPreviewView(
             // Capture button
             FloatingActionButton(
                 onClick = {
+                    HapticsService.getInstance().heavyImpact()
                     if (!isCapturing) {
                         isCapturing = true
 
@@ -443,7 +449,10 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = onDismiss,
+                onClick = { 
+                    HapticsService.getInstance().mediumImpact()
+                    onDismiss() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = DarkPrimary,
@@ -460,7 +469,10 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                onClick = onDismiss,
+                onClick = { 
+                    HapticsService.getInstance().select()
+                    onDismiss() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
@@ -477,7 +489,10 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
 
         // Close button in top right
         IconButton(
-            onClick = onDismiss,
+            onClick = { 
+                HapticsService.getInstance().select()
+                onDismiss() 
+            },
             modifier =
                 Modifier
                     .align(Alignment.TopEnd)
@@ -527,7 +542,10 @@ fun FullScreenPhotoView(
             ) {
                 // Close button
                 IconButton(
-                    onClick = onDismiss,
+                    onClick = { 
+                        HapticsService.getInstance().select()
+                        onDismiss() 
+                    },
                     modifier =
                         Modifier
                             .align(Alignment.TopEnd)

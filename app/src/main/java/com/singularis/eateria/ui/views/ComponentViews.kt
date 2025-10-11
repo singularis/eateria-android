@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,6 +13,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -90,6 +92,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -101,14 +104,18 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.singularis.eateria.models.Product
+import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.StatisticsService
+import com.singularis.eateria.ui.theme.AppTheme
+import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
+import com.singularis.eateria.ui.theme.cardContainer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
@@ -129,28 +136,34 @@ fun TopBarView(
     alcoholIconColor: Color = Color.Green,
     onAlcoholClick: (() -> Unit)? = null,
 ) {
-    Box(
+    Row(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .padding(top = Dimensions.paddingS),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Left aligned: Profile + Alcohol button
+        // Left side: Profile + Alcohol
         Row(
-            modifier =
-                Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(top = Dimensions.paddingS),
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingL),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
             verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
         ) {
+            // Profile picture
             Box(
                 modifier =
                     Modifier
                         .size(Dimensions.iconSizeL)
                         .clip(CircleShape)
-                        .background(Gray3)
-                        .clickable { onProfileClick() },
+                        .background(AppTheme.surface())
+                        .clickable(
+                            indication = LocalIndication.current,
+                            interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                        ) { 
+                            HapticsService.getInstance().lightImpact()
+                            onProfileClick() 
+                        },
                 contentAlignment = Alignment.Center,
             ) {
                 if (!userProfilePictureURL.isNullOrEmpty()) {
@@ -165,16 +178,24 @@ fun TopBarView(
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Default.AccountCircle,
+                        imageVector = AppIcons.Navigation.profile,
                         contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
-                        tint = Color.White,
+                        tint = AppTheme.textPrimary(),
                         modifier = Modifier.size(Dimensions.iconSizeS),
                     )
                 }
             }
-            IconButton(onClick = { onAlcoholClick?.invoke() }) {
+            
+            // Alcohol button
+            IconButton(
+                onClick = { 
+                    HapticsService.getInstance().select()
+                    onAlcoholClick?.invoke() 
+                },
+                modifier = Modifier.size(Dimensions.iconSizeL)
+            ) {
                 Icon(
-                    imageVector = Icons.Default.WineBar,
+                    imageVector = AppIcons.FoodHealth.wineBar,
                     contentDescription = Localization.tr(LocalContext.current, "onboarding.alcohol.title", "Alcohol"),
                     tint = alcoholIconColor,
                     modifier = Modifier.size(Dimensions.iconSizeM),
@@ -182,83 +203,102 @@ fun TopBarView(
             }
         }
 
-        // Date display - Center aligned
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-                Modifier
-                    .align(Alignment.Center)
-                    .padding(top = Dimensions.paddingS)
-                    .clip(RoundedCornerShape(Dimensions.cornerRadiusL))
-                    .background(Color.Black.copy(alpha = 0.8f))
-                    .clickable { onDateClick() }
-                    .padding(Dimensions.paddingM),
+        // Center: Date display
+        Box(
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text =
-                    if (isViewingCustomDate) {
-                        currentViewingDate
-                    } else {
-                        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
-                    },
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-            )
-
-            if (isViewingCustomDate) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(Dimensions.cornerRadiusL))
+                        .background(AppTheme.surfaceAlt())
+                        .clickable(
+                            indication = LocalIndication.current,
+                            interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                        ) { 
+                            HapticsService.getInstance().select()
+                            onDateClick() 
+                        }
+                        .padding(Dimensions.paddingM),
+            ) {
                 Text(
-                    text = Localization.tr(LocalContext.current, "date.custom", "Custom Date"),
-                    color = Color.Yellow,
-                    style = MaterialTheme.typography.labelSmall,
+                    text =
+                        if (isViewingCustomDate) {
+                            currentViewingDate
+                        } else {
+                            SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
+                        },
+                    color = AppTheme.textPrimary(),
+                    style = MaterialTheme.typography.titleMedium,
                 )
 
-                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-
-                Button(
-                    onClick = onReturnToTodayClick,
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = DarkPrimary,
-                            contentColor = Color.White,
-                        ),
-                    modifier = Modifier.height(Dimensions.buttonHeight),
-                ) {
+                if (isViewingCustomDate) {
                     Text(
-                        text = Localization.tr(LocalContext.current, "date.today", "Today"),
-                        style = MaterialTheme.typography.labelMedium,
+                        text = Localization.tr(LocalContext.current, "date.custom", "Custom Date"),
+                        color = AppTheme.warning(),
+                        style = MaterialTheme.typography.labelSmall,
                     )
+
+                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+
+                    Button(
+                        onClick = {
+                            HapticsService.getInstance().select()
+                            onReturnToTodayClick()
+                        },
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = AppTheme.accent(),
+                                contentColor = AppTheme.textPrimary(),
+                            ),
+                        modifier = Modifier.height(Dimensions.buttonHeight),
+                        shape = RoundedCornerShape(AppTheme.smallRadius),
+                    ) {
+                        Text(
+                            text = Localization.tr(LocalContext.current, "date.today", "Today"),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                 }
             }
         }
 
-        // Right side buttons: Sport, Health info
+        // Right side: Sport + Health info
         Row(
-            modifier =
-                Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(top = Dimensions.paddingS),
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingL),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
         ) {
+            Spacer(modifier = Modifier.weight(1f))
             // Sport button
             IconButton(
-                onClick = onSportClick,
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onSportClick()
+                },
+                modifier = Modifier.size(Dimensions.iconSizeL)
             ) {
                 Icon(
-                    imageVector = Icons.Default.FitnessCenter,
+                    imageVector = AppIcons.FoodHealth.fitnessCentercompany,
                     contentDescription = Localization.tr(LocalContext.current, "sport.title", "Sport Calories"),
-                    tint = DarkPrimary,
+                    tint = AppTheme.warning(),
                     modifier = Modifier.size(Dimensions.iconSizeM),
                 )
             }
 
             // Health info button
             IconButton(
-                onClick = onHealthInfoClick,
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onHealthInfoClick()
+                },
+                modifier = Modifier.size(Dimensions.iconSizeL)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Info,
+                    imageVector = AppIcons.Status.info,
                     contentDescription = Localization.tr(LocalContext.current, "nav.health_settings", "Health Info"),
-                    tint = DarkPrimary,
+                    tint = AppTheme.accent(),
                     modifier = Modifier.size(Dimensions.iconSizeM),
                 )
             }
@@ -292,13 +332,13 @@ fun StatsButtonsView(
             isLoading = isLoadingWeightPhoto,
             modifier = Modifier.weight(1f),
         ) {
-            Text(
-                text = String.format("%.1f %s", personWeight, Localization.tr(LocalContext.current, "units.kg", "kg")),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White,
-                textAlign = TextAlign.Center,
-            )
+                Text(
+                    text = String.format("%.1f %s", personWeight, Localization.tr(LocalContext.current, "units.kg", "kg")),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppTheme.textPrimary(),
+                    textAlign = TextAlign.Center,
+                )
         }
 
         Spacer(modifier = Modifier.width(Dimensions.paddingXS))
@@ -322,7 +362,7 @@ fun StatsButtonsView(
                 Text(
                     text = "${Localization.tr(LocalContext.current, "calories.label", "Calories")}: $caloriesConsumed",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -340,7 +380,7 @@ fun StatsButtonsView(
                 text = Localization.tr(LocalContext.current, "stats.trend", "Trend"),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 textAlign = TextAlign.Center,
             )
         }
@@ -358,15 +398,19 @@ fun StatButton(
         modifier =
             modifier
                 .height(Dimensions.buttonHeight) // Keep height but remove fixed width
-                .clip(RoundedCornerShape(Dimensions.cornerRadiusM)) // Slightly smaller radius
-                .background(Gray3.copy(alpha = 0.9f)) // Slightly more opaque
-                .clickable { onClick() },
+                .clip(RoundedCornerShape(AppTheme.cornerRadius))
+                .background(AppTheme.surface())
+                .clickable { 
+                    HapticsService.getInstance().select()
+                    onClick() 
+                },
         contentAlignment = Alignment.Center,
     ) {
         if (isLoading) {
-            CircularProgressIndicator(
-                color = Color.White,
-                modifier = Modifier.size(Dimensions.loadingIndicatorSize), // Smaller loading indicator
+            com.singularis.eateria.ui.components.AnimatedLoadingIcon(
+                size = Dimensions.loadingIndicatorSize,
+                color = AppTheme.accent(),
+                strokeWidth = 2.dp
             )
         } else {
             content()
@@ -382,7 +426,7 @@ fun MacrosSummaryRow(
 ) {
     val context = LocalContext.current
     var summaryText by remember { mutableStateOf("") }
-    var summaryColor by remember { mutableStateOf(Color.White) }
+    var hasData by remember { mutableStateOf(true) }
 
     // Recompute macros whenever products change or date context changes
     LaunchedEffect(products, isViewingCustomDate, currentViewingDateString) {
@@ -421,21 +465,23 @@ fun MacrosSummaryRow(
                 "SUG",
             )} ${"%.1f".format(sugar)}${Localization.tr(context, "units.g", "g")}"
             summaryText = "$proPart • $fatPart • $carbPart • $sugPart"
-            summaryColor = Color.White
+            hasData = true
         } else {
             summaryText = Localization.tr(context, "macro.no_data", "No macros yet")
-            summaryColor = Color.Gray
+            hasData = false
         }
     }
+    
+    val summaryColor = if (hasData) AppTheme.textPrimary() else AppTheme.textSecondary()
 
     Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(Dimensions.cornerRadiusM))
-                .background(Gray3.copy(alpha = 0.9f))
-                .padding(vertical = Dimensions.paddingS),
-        contentAlignment = Alignment.Center,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(Dimensions.cornerRadiusM))
+                    .background(AppTheme.surfaceAlt())
+                    .padding(vertical = Dimensions.paddingS),
+            contentAlignment = Alignment.Center,
     ) {
         Text(
             text = summaryText,
@@ -453,7 +499,7 @@ fun ProductListView(
     onRefresh: () -> Unit,
     onDelete: (Long) -> Unit,
     onModify: (Long, String, Int) -> Unit,
-    onPhotoTap: (android.graphics.Bitmap?, String) -> Unit,
+    onPhotoTap: (Bitmap?, String) -> Unit,
     deletingProductTime: Long?,
     modifiedProductTime: Long?,
     onSuccessDialogDismissed: () -> Unit,
@@ -466,7 +512,10 @@ fun ProductListView(
     val pullRefreshState =
         rememberPullRefreshState(
             refreshing = false, // Always false since we use main loading state
-            onRefresh = onRefresh,
+            onRefresh = {
+                HapticsService.getInstance().mediumImpact()
+                onRefresh()
+            },
         )
 
     Box(
@@ -490,7 +539,7 @@ fun ProductListView(
                             "food.empty.message",
                             "No food entries yet.\nTake a photo to get started!\n\nPull down to refresh",
                         ),
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                 )
@@ -560,7 +609,7 @@ fun ProductCard(
         enableDismissFromEndToStart = true,
         backgroundContent = {
             val color by animateColorAsState(
-                targetValue = if (state.targetValue == SwipeToDismissBoxValue.Settled) Color.Transparent else Color.Red,
+                targetValue = if (state.targetValue == SwipeToDismissBoxValue.Settled) Color.Transparent else AppTheme.danger(),
                 label = Localization.tr(LocalContext.current, "common.background_animation", "background color animation"),
             )
             val scale by animateFloatAsState(
@@ -576,9 +625,9 @@ fun ProductCard(
                 contentAlignment = Alignment.CenterEnd,
             ) {
                 Icon(
-                    Icons.Default.Delete,
+                    AppIcons.Actions.delete,
                     contentDescription = Localization.tr(LocalContext.current, "common.remove", "Delete"),
-                    tint = Color.White,
+                    tint = AppTheme.textPrimary(),
                     modifier = Modifier.scale(scale),
                 )
             }
@@ -589,7 +638,7 @@ fun ProductCard(
                 Modifier
                     .fillMaxWidth()
                     .alpha(if (isDeleting) 0.6f else 1.0f),
-            colors = CardDefaults.cardColors(containerColor = Gray4),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
             Row(
@@ -605,9 +654,13 @@ fun ProductCard(
                         Modifier
                             .size(Dimensions.iconSizeL)
                             .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
-                            .background(Color.Gray.copy(alpha = 0.2f))
-                            .clickable {
+                            .background(AppTheme.divider())
+                            .clickable(
+                                indication = LocalIndication.current,
+                                interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                            ) {
                                 if (!isDeleting) {
+                                    HapticsService.getInstance().select()
                                     onPhotoTap()
                                 }
                             },
@@ -624,9 +677,9 @@ fun ProductCard(
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Default.PhotoLibrary,
+                            imageVector = AppIcons.Media.photoLibrary,
                             contentDescription = Localization.tr(LocalContext.current, "fs.no_photo", "No photo"),
-                            tint = Color.Gray,
+                            tint = AppTheme.textSecondary(),
                             modifier =
                                 Modifier
                                     .size(Dimensions.iconSizeM)
@@ -640,15 +693,19 @@ fun ProductCard(
                     modifier =
                         Modifier
                             .weight(1f)
-                            .clickable {
+                            .clickable(
+                                indication = LocalIndication.current,
+                                interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                            ) {
                                 if (!isDeleting) {
+                                    HapticsService.getInstance().select()
                                     showPortionDialog = true
                                 }
                             },
                 ) {
                     Text(
                         text = product.name,
-                        color = Color.White,
+                        color = AppTheme.textPrimary(),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -661,7 +718,7 @@ fun ProductCard(
                             "units.kcal",
                             "kcal",
                         )} • ${product.weight}${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                         style = MaterialTheme.typography.bodySmall,
                     )
 
@@ -669,7 +726,7 @@ fun ProductCard(
                         Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                         Text(
                             text = product.ingredients.joinToString(", "),
-                            color = Color.Gray,
+                            color = AppTheme.textSecondary(),
                             style = MaterialTheme.typography.bodySmall,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
@@ -679,13 +736,11 @@ fun ProductCard(
 
                 // Loading indicator when deleting
                 if (isDeleting) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier =
-                            Modifier
-                                .size(Dimensions.loadingIndicatorSize)
-                                .align(Alignment.CenterVertically),
+                    com.singularis.eateria.ui.components.AnimatedLoadingIcon(
+                        size = Dimensions.loadingIndicatorSize,
+                        color = AppTheme.accent(),
                         strokeWidth = Dimensions.loadingIndicatorStrokeWidth,
+                        modifier = Modifier.align(Alignment.CenterVertically)
                     )
                 }
             }
@@ -770,7 +825,7 @@ fun PortionSelectionDialog(
                     text = Localization.tr(LocalContext.current, "portion.updated.title", "Portion Updated!"),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                 )
             },
             text = {
@@ -784,23 +839,24 @@ fun PortionSelectionDialog(
                             ).replace("%@", foodName)
                             .replace("%d%%", "$selectedPortion%"),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     textAlign = TextAlign.Center,
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
+                    HapticsService.getInstance().select()
                     onDismiss()
                     resetSuccessState()
                 }) {
                     Text(
                         Localization.tr(LocalContext.current, "common.ok", "OK"),
-                        color = DarkPrimary,
+                        color = AppTheme.accent(),
                         style = MaterialTheme.typography.labelMedium,
                     )
                 }
             },
-            containerColor = Gray4,
+            containerColor = AppTheme.surface(),
         )
     } else {
         AlertDialog(
@@ -819,7 +875,7 @@ fun PortionSelectionDialog(
                         },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                 )
             },
             text = {
@@ -848,7 +904,7 @@ fun PortionSelectionDialog(
                                     ).replace("%dg", "${originalWeight}${Localization.tr(LocalContext.current, "units.g", "g")}")
                             },
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                         textAlign = TextAlign.Center,
                     )
 
@@ -865,13 +921,14 @@ fun PortionSelectionDialog(
 
                                 Button(
                                     onClick = {
+                                        HapticsService.getInstance().select()
                                         selectedPortionPercentage = percentage
                                         onPortionSelected(percentage)
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors =
                                         ButtonDefaults.buttonColors(
-                                            containerColor = DarkPrimary,
+                                            containerColor = AppTheme.accent(),
                                             contentColor = Color.White,
                                         ),
                                     shape = RoundedCornerShape(Dimensions.cornerRadiusS),
@@ -893,13 +950,14 @@ fun PortionSelectionDialog(
 
                                 Button(
                                     onClick = {
+                                        HapticsService.getInstance().select()
                                         selectedPortionPercentage = percentage
                                         onPortionSelected(percentage)
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors =
                                         ButtonDefaults.buttonColors(
-                                            containerColor = DarkPrimary,
+                                            containerColor = AppTheme.accent(),
                                             contentColor = Color.White,
                                         ),
                                     shape = RoundedCornerShape(Dimensions.cornerRadiusS),
@@ -1010,6 +1068,7 @@ fun PortionSelectionDialog(
                                 item {
                                     Button(
                                         onClick = {
+                                            HapticsService.getInstance().select()
                                             onShare()
                                             onDismiss()
                                         },
@@ -1017,7 +1076,7 @@ fun PortionSelectionDialog(
                                         colors =
                                             ButtonDefaults.buttonColors(
                                                 containerColor = CalorieGreen,
-                                                contentColor = Color.White,
+                                                contentColor = AppTheme.textPrimary(),
                                             ),
                                         shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                                         contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
@@ -1034,13 +1093,14 @@ fun PortionSelectionDialog(
                             item {
                                 Button(
                                     onClick = {
+                                        HapticsService.getInstance().select()
                                         showCustomSelection = true
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors =
                                         ButtonDefaults.buttonColors(
-                                            containerColor = Gray3,
-                                            contentColor = Color.White,
+                                            containerColor = AppTheme.surfaceAlt(),
+                                            contentColor = AppTheme.textPrimary(),
                                         ),
                                     shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                                     contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
@@ -1058,6 +1118,7 @@ fun PortionSelectionDialog(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = {
+                    HapticsService.getInstance().select()
                     if (showCustomSelection) {
                         showCustomSelection = false
                     } else {
@@ -1074,12 +1135,12 @@ fun PortionSelectionDialog(
                         } else {
                             Localization.tr(LocalContext.current, "common.cancel", "Cancel")
                         },
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
             },
-            containerColor = Gray4,
+            containerColor = AppTheme.surface(),
         )
     }
 }
@@ -1088,7 +1149,7 @@ fun PortionSelectionDialog(
 fun CameraButtonView(
     isLoadingFoodPhoto: Boolean,
     onCameraClick: () -> Unit,
-    onGalleryImageSelected: ((android.graphics.Bitmap) -> Unit)? = null,
+    onGalleryImageSelected: ((Bitmap) -> Unit)? = null,
 ) {
     val context = LocalContext.current
 
@@ -1132,16 +1193,17 @@ fun CameraButtonView(
                     .height(Dimensions.buttonHeight),
             colors =
                 ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF007AFF), // iOS blue color
+                    containerColor = AppTheme.accent(),
                     contentColor = Color.White,
                 ),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             enabled = !isLoadingFoodPhoto,
         ) {
             if (isLoadingFoodPhoto) {
-                CircularProgressIndicator(
+                com.singularis.eateria.ui.components.AnimatedLoadingIcon(
+                    size = Dimensions.loadingIndicatorSize,
                     color = Color.White,
-                    modifier = Modifier.size(Dimensions.loadingIndicatorSize),
+                    strokeWidth = 2.dp
                 )
             } else {
                 Column(
@@ -1149,7 +1211,7 @@ fun CameraButtonView(
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PhotoLibrary,
+                        imageVector = AppIcons.Media.photoLibrary,
                         contentDescription = Localization.tr(LocalContext.current, "camera.upload", "Upload"),
                         modifier = Modifier.size(Dimensions.iconSizeS),
                     )
@@ -1178,16 +1240,17 @@ fun CameraButtonView(
                     .height(Dimensions.buttonHeight),
             colors =
                 ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF34C759), // iOS green color
+                    containerColor = AppTheme.success(),
                     contentColor = Color.White,
                 ),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             enabled = !isLoadingFoodPhoto,
         ) {
             if (isLoadingFoodPhoto) {
-                CircularProgressIndicator(
+                com.singularis.eateria.ui.components.AnimatedLoadingIcon(
+                    size = Dimensions.loadingIndicatorSize,
                     color = Color.White,
-                    modifier = Modifier.size(Dimensions.loadingIndicatorSize),
+                    strokeWidth = 2.dp
                 )
             } else {
                 Row(
@@ -1195,7 +1258,7 @@ fun CameraButtonView(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PhotoCamera,
+                        imageVector = AppIcons.Media.photoCamera,
                         contentDescription = Localization.tr(LocalContext.current, "nav.camera", "Camera"),
                         modifier = Modifier.size(Dimensions.iconSizeS),
                     )
@@ -1236,7 +1299,7 @@ fun CalorieLimitsDialog(
                 text = Localization.tr(LocalContext.current, "limits.title", "Set Calorie Limits"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = AppTheme.textPrimary(),
             )
         },
         text = {
@@ -1249,7 +1312,7 @@ fun CalorieLimitsDialog(
                             "Set your daily calorie limits manually, or use health-based calculation if you have health data.\n\n⚠️ These are general guidelines. Consult a healthcare provider for personalized dietary advice.",
                         ),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                 )
 
@@ -1264,7 +1327,7 @@ fun CalorieLimitsDialog(
                                 Localization.tr(LocalContext.current, "units.calories", "calories") +
                                 ")",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray,
+                            color = AppTheme.textSecondary(),
                         )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -1272,10 +1335,10 @@ fun CalorieLimitsDialog(
                     isError = showValidationError,
                     colors =
                         OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = if (showValidationError) Color.Red else DarkPrimary,
-                            unfocusedBorderColor = if (showValidationError) Color.Red else Color.Gray,
+                            focusedTextColor = AppTheme.textPrimary(),
+                            unfocusedTextColor = AppTheme.textPrimary(),
+                            focusedBorderColor = if (showValidationError) AppTheme.danger() else AppTheme.accent(),
+                            unfocusedBorderColor = if (showValidationError) AppTheme.danger() else AppTheme.textSecondary(),
                         ),
                 )
 
@@ -1290,7 +1353,7 @@ fun CalorieLimitsDialog(
                                 Localization.tr(LocalContext.current, "units.calories", "calories") +
                                 ")",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray,
+                            color = AppTheme.textSecondary(),
                         )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -1298,10 +1361,10 @@ fun CalorieLimitsDialog(
                     isError = showValidationError,
                     colors =
                         OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = if (showValidationError) Color.Red else DarkPrimary,
-                            unfocusedBorderColor = if (showValidationError) Color.Red else Color.Gray,
+                            focusedTextColor = AppTheme.textPrimary(),
+                            unfocusedTextColor = AppTheme.textPrimary(),
+                            focusedBorderColor = if (showValidationError) AppTheme.danger() else AppTheme.accent(),
+                            unfocusedBorderColor = if (showValidationError) AppTheme.danger() else AppTheme.textSecondary(),
                         ),
                 )
 
@@ -1316,7 +1379,7 @@ fun CalorieLimitsDialog(
                                 "Please enter valid positive numbers. Soft limit must be less than or equal to hard limit.",
                             ),
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Red,
+                        color = AppTheme.danger(),
                         fontWeight = FontWeight.Medium,
                     )
                 }
@@ -1324,27 +1387,33 @@ fun CalorieLimitsDialog(
         },
         confirmButton = {
             Button(
-                onClick = onSave,
+                onClick = { 
+                    HapticsService.getInstance().mediumImpact()
+                    onSave() 
+                },
                 enabled = isValidLimits, // Disable save button if limits are invalid
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = if (isValidLimits) DarkPrimary else Color.Gray,
-                        contentColor = Color.White,
+                        containerColor = if (isValidLimits) AppTheme.accent() else AppTheme.textSecondary(),
+                        contentColor = AppTheme.textPrimary(),
                     ),
             ) {
                 Text(Localization.tr(LocalContext.current, "limits.save_manual", "Save Manual Limits"))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = { 
+                HapticsService.getInstance().select()
+                onDismiss() 
+            }) {
                 Text(
                     Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
         },
-        containerColor = Gray4,
+        containerColor = AppTheme.surface(),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     )
 }
@@ -1375,7 +1444,7 @@ fun WeightActionSheetDialog(
                     text = Localization.tr(LocalContext.current, "weight.record.title", "Record Weight"),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = AppTheme.textPrimary(),
                 )
 
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
@@ -1383,18 +1452,21 @@ fun WeightActionSheetDialog(
                 Text(
                     text = Localization.tr(LocalContext.current, "weight.record.msg", "Choose how you'd like to record your weight"),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     textAlign = TextAlign.Center,
                 )
 
                 Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
                 Button(
-                    onClick = onTakePhoto,
+                    onClick = { 
+                        HapticsService.getInstance().mediumImpact()
+                        onTakePhoto() 
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors =
                         ButtonDefaults.buttonColors(
-                            containerColor = DarkPrimary,
+                            containerColor = AppTheme.accent(),
                             contentColor = Color.White,
                         ),
                 ) {
@@ -1407,12 +1479,15 @@ fun WeightActionSheetDialog(
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
 
                 Button(
-                    onClick = onManualEntry,
+                    onClick = { 
+                        HapticsService.getInstance().mediumImpact()
+                        onManualEntry() 
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors =
                         ButtonDefaults.buttonColors(
-                            containerColor = Gray3,
-                            contentColor = Color.White,
+                            containerColor = AppTheme.surface(),
+                            contentColor = AppTheme.textPrimary(),
                         ),
                 ) {
                     Text(
@@ -1423,10 +1498,13 @@ fun WeightActionSheetDialog(
 
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
 
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = { 
+                    HapticsService.getInstance().select()
+                    onDismiss() 
+                }) {
                     Text(
                         Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -1456,7 +1534,7 @@ fun ManualWeightDialog(
                 Text(
                     text = Localization.tr(LocalContext.current, "weight.enter.msg", "Enter your weight in kilograms"),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                 )
 
                 Spacer(modifier = Modifier.height(Dimensions.paddingM))
@@ -1476,12 +1554,18 @@ fun ManualWeightDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onSubmit) {
+            TextButton(onClick = { 
+                HapticsService.getInstance().mediumImpact()
+                onSubmit() 
+            }) {
                 Text(Localization.tr(LocalContext.current, "feedback.submit", "Submit Feedback"))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = { 
+                HapticsService.getInstance().select()
+                onDismiss() 
+            }) {
                 Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"))
             }
         },
@@ -1500,7 +1584,7 @@ fun HealthRecommendationDialog(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(DarkBackground) // Solid background instead of overlay
+                .background(AppTheme.backgroundGradient()) // Solid background instead of overlay
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars),
         contentAlignment = Alignment.Center,
@@ -1511,7 +1595,7 @@ fun HealthRecommendationDialog(
                 Modifier
                     .fillMaxSize(),
             // Take entire screen
-            colors = CardDefaults.cardColors(containerColor = Gray4),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             shape = RoundedCornerShape(0.dp), // No rounded corners for full screen
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
@@ -1547,7 +1631,7 @@ fun HealthRecommendationDialog(
                             text = Localization.tr(LocalContext.current, "rec.title", "Health Recommendation"),
                             style = MaterialTheme.typography.titleLarge, // Much larger title
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = AppTheme.textPrimary(),
                         )
                     }
 
@@ -1559,7 +1643,7 @@ fun HealthRecommendationDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
-                            tint = Color.Gray,
+                            tint = AppTheme.textSecondary(),
                             modifier = Modifier.size(Dimensions.iconSizeS),
                         )
                     }
@@ -1580,7 +1664,7 @@ fun HealthRecommendationDialog(
                         // Recommendation content
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = Gray3),
+                            colors = CardDefaults.cardColors(containerColor = AppTheme.surfaceAlt()),
                             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                         ) {
                             Column(modifier = Modifier.padding(Dimensions.paddingM)) {
@@ -1595,7 +1679,7 @@ fun HealthRecommendationDialog(
                                 Text(
                                     text = recommendation,
                                     style = MaterialTheme.typography.bodyLarge, // Much larger body text
-                                    color = Color.White,
+                                    color = AppTheme.textPrimary(),
                                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight, // Better line spacing
                                 )
                             }
@@ -1609,7 +1693,7 @@ fun HealthRecommendationDialog(
                                 Modifier
                                     .fillMaxWidth()
                                     .clickable { showDisclaimerDialog = true },
-                            colors = CardDefaults.cardColors(containerColor = Gray3), // Same as trend button
+                            colors = CardDefaults.cardColors(containerColor = AppTheme.surfaceAlt()), // Same as trend button
                             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                         ) {
                             Row(
@@ -1629,7 +1713,7 @@ fun HealthRecommendationDialog(
                                         text = Localization.tr(LocalContext.current, "rec.disclaimer.title", "Important Health Disclaimer"),
                                         style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color.White, // Clean white text like trend button
+                                        color = AppTheme.textPrimary(), // Clean white text like trend button
                                     )
                                 }
                                 Icon(
@@ -1640,7 +1724,7 @@ fun HealthRecommendationDialog(
                                             "disc.title",
                                             "Health Information Disclaimer",
                                         ),
-                                    tint = Color.Gray,
+                                    tint = AppTheme.textSecondary(),
                                     modifier = Modifier.size(Dimensions.iconSizeS),
                                 )
                             }
@@ -1650,7 +1734,10 @@ fun HealthRecommendationDialog(
 
                 // Action button - now at the very bottom
                 Button(
-                    onClick = onDismiss,
+                    onClick = { 
+                        HapticsService.getInstance().success()
+                        onDismiss() 
+                    },
                     modifier =
                         Modifier
                             .fillMaxWidth()
@@ -1659,7 +1746,7 @@ fun HealthRecommendationDialog(
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF4CAF50),
-                            contentColor = Color.White,
+                            contentColor = AppTheme.textPrimary(),
                         ),
                     shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                 ) {
@@ -1698,13 +1785,13 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(DarkBackground),
+                .background(AppTheme.backgroundGradient()),
         contentAlignment = Alignment.Center,
     ) {
         // Full-screen content card
         Card(
             modifier = Modifier.fillMaxSize(),
-            colors = CardDefaults.cardColors(containerColor = Gray4),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             shape = RoundedCornerShape(0.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
@@ -1733,7 +1820,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                             text = Localization.tr(LocalContext.current, "disc.title", "Health Information Disclaimer"),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White, // Clean white text like trend button
+                            color = AppTheme.textPrimary(), // Clean white text like trend button
                         )
                     }
 
@@ -1745,7 +1832,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
-                            tint = Color.Gray,
+                            tint = AppTheme.textSecondary(),
                             modifier = Modifier.size(Dimensions.iconSizeS),
                         )
                     }
@@ -1774,7 +1861,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                             text = Localization.tr(LocalContext.current, "disc.section.notice", "Important Notice"),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
+                            color = AppTheme.textPrimary(),
                             textAlign = TextAlign.Center,
                         )
 
@@ -1788,7 +1875,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                                     "This app provides general nutritional information and dietary suggestions for educational purposes only. The information is not intended to replace professional medical advice, diagnosis, or treatment.",
                                 ),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray,
+                            color = AppTheme.textSecondary(),
                             lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                             textAlign = TextAlign.Center,
                         )
@@ -1803,7 +1890,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                                     "Always consult with a qualified healthcare provider before making any changes to your diet or nutrition plan, especially if you have medical conditions, allergies, or dietary restrictions.",
                                 ),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray,
+                            color = AppTheme.textSecondary(),
                             lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                             textAlign = TextAlign.Center,
                         )
@@ -1814,7 +1901,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                             text = Localization.tr(LocalContext.current, "rec.sources", "Data Sources"),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray.copy(alpha = 0.7f),
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontStyle = FontStyle.Italic,
                             textAlign = TextAlign.Center,
                         )
                     }
@@ -1824,15 +1911,18 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
 
                 // Confirmation button - trend style
                 Button(
-                    onClick = onDismiss,
+                    onClick = { 
+                        HapticsService.getInstance().mediumImpact()
+                        onDismiss() 
+                    },
                     modifier =
                         Modifier
                             .fillMaxWidth()
                             .height(Dimensions.buttonHeight),
                     colors =
                         ButtonDefaults.buttonColors(
-                            containerColor = Gray3, // Same as trend button background
-                            contentColor = Color.White,
+                            containerColor = AppTheme.surface(), // Same as trend button background
+                            contentColor = AppTheme.textPrimary(),
                         ),
                     shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                 ) {
@@ -1840,7 +1930,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                         text = Localization.tr(LocalContext.current, "onboarding.understand", "I Understand"),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White, // Same as trend button text
+                        color = AppTheme.textPrimary(), // Same as trend button text
                     )
                 }
             }
@@ -1861,35 +1951,38 @@ fun PhotoErrorAlert(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = AppTheme.textPrimary(),
             )
         },
         text = {
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = AppTheme.textSecondary(),
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
             )
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = { 
+                HapticsService.getInstance().select()
+                onDismiss() 
+            }) {
                 Text(
                     text = Localization.tr(LocalContext.current, "common.ok", "OK"),
-                    color = DarkPrimary,
+                    color = AppTheme.accent(),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                 )
             }
         },
-        containerColor = Gray4,
+        containerColor = AppTheme.surface(),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     )
 }
 
 @Composable
 fun FullScreenPhotoView(
-    bitmap: android.graphics.Bitmap,
+    bitmap: Bitmap,
     onDismiss: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -1968,7 +2061,7 @@ fun DeleteConfirmationDialog(
                 text = Localization.tr(LocalContext.current, "common.remove", "Remove"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = AppTheme.textPrimary(),
             )
         },
         text = {
@@ -1980,33 +2073,39 @@ fun DeleteConfirmationDialog(
                         "Are you sure you want to remove this food entry? This action cannot be undone.",
                     ),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = AppTheme.textSecondary(),
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
             )
         },
         confirmButton = {
             Button(
-                onClick = onConfirm,
+                onClick = { 
+                    HapticsService.getInstance().error()
+                    onConfirm() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = Color.Red, // Destructive action color
-                        contentColor = Color.White,
+                        containerColor = AppTheme.danger(), // Destructive action color
+                        contentColor = AppTheme.textPrimary(),
                     ),
             ) {
                 Text(Localization.tr(LocalContext.current, "common.remove", "Remove"))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = { 
+                HapticsService.getInstance().select()
+                onDismiss() 
+            }) {
                 Text(
                     Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                 )
             }
         },
-        containerColor = Gray4,
+        containerColor = AppTheme.surface(),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     )
 }
@@ -2024,7 +2123,7 @@ fun SportCaloriesDialog(
             Text(
                 text = Localization.tr(LocalContext.current, "sport.title", "Sport Calories Bonus"),
                 style = MaterialTheme.typography.titleMedium,
-                color = Color.White,
+                color = AppTheme.textPrimary(),
             )
         },
         text = {
@@ -2032,7 +2131,7 @@ fun SportCaloriesDialog(
                 Text(
                     text = Localization.tr(LocalContext.current, "sport.msg", "Add extra calories for your sport activities today:"),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
+                    color = AppTheme.textSecondary(),
                     modifier = Modifier.padding(bottom = Dimensions.paddingM),
                 )
 
@@ -2043,7 +2142,7 @@ fun SportCaloriesDialog(
                     placeholder = {
                         Text(
                             Localization.tr(LocalContext.current, "sport.placeholder", "Calories burned (e.g., 300)"),
-                            color = Color.Gray,
+                            color = AppTheme.textSecondary(),
                         )
                     },
                     keyboardOptions =
@@ -2054,9 +2153,9 @@ fun SportCaloriesDialog(
                     singleLine = true,
                     colors =
                         OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = DarkPrimary,
+                            focusedTextColor = AppTheme.textPrimary(),
+                            unfocusedTextColor = AppTheme.textPrimary(),
+                            focusedBorderColor = AppTheme.accent(),
                             unfocusedBorderColor = Color.Gray,
                         ),
                     modifier = Modifier.fillMaxWidth(),
@@ -2066,26 +2165,30 @@ fun SportCaloriesDialog(
         confirmButton = {
             TextButton(
                 onClick = {
+                    HapticsService.getInstance().mediumImpact()
                     val calories = sportCaloriesInput.toIntOrNull()
                     if (calories != null && calories > 0) {
                         onSave()
                     }
                 },
-                colors = ButtonDefaults.textButtonColors(contentColor = DarkPrimary),
+                colors = ButtonDefaults.textButtonColors(contentColor = AppTheme.accent()),
             ) {
                 Text(Localization.tr(LocalContext.current, "common.save", "Save"))
             }
         },
         dismissButton = {
             TextButton(
-                onClick = onDismiss,
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray),
+                onClick = { 
+                    HapticsService.getInstance().select()
+                    onDismiss() 
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = AppTheme.textSecondary()),
             ) {
                 Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"))
             }
         },
-        containerColor = Gray3,
-        titleContentColor = Color.White,
-        textContentColor = Color.White,
+        containerColor = AppTheme.surface(),
+        titleContentColor = AppTheme.textPrimary(),
+        textContentColor = AppTheme.textPrimary(),
     )
 }

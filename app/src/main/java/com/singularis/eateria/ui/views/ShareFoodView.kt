@@ -20,6 +20,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.services.HapticsService
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,7 +65,7 @@ fun ShareFoodView(
                 Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(com.singularis.eateria.ui.theme.Dimensions.cornerRadiusL),
             color = MaterialTheme.colorScheme.surface,
         ) {
             Column(
@@ -87,7 +88,10 @@ fun ShareFoodView(
                     )
                     Row {
                         TextButton(
-                            onClick = { showAddFriends = true },
+                            onClick = { 
+                                HapticsService.getInstance().select()
+                                showAddFriends = true 
+                            },
                         ) {
                             Text(Localization.tr(LocalContext.current, "friends.add", "Add Friend"))
                         }
@@ -115,7 +119,10 @@ fun ShareFoodView(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            TextButton(onClick = { showAddFriends = true }) {
+                            TextButton(onClick = { 
+                                HapticsService.getInstance().select()
+                                showAddFriends = true 
+                            }) {
                                 Text(Localization.tr(LocalContext.current, "friends.add_first", "Add your first friend"))
                             }
                         }
@@ -134,7 +141,10 @@ fun ShareFoodView(
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
-                                        .clickable { showPortionDialogFor = email },
+                                        .clickable { 
+                                            HapticsService.getInstance().select()
+                                            showPortionDialogFor = email 
+                                        },
                                 colors =
                                     CardDefaults.cardColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -171,6 +181,7 @@ fun ShareFoodView(
                                         Modifier
                                             .fillMaxWidth()
                                             .clickable {
+                                                HapticsService.getInstance().select()
                                                 coroutineScope.launch {
                                                     fetchFriends(grpcService, reset = false) { moreFriends, _ ->
                                                         friends =
@@ -209,7 +220,10 @@ fun ShareFoodView(
 
                     Spacer(modifier = Modifier.height(12.dp))
                     TextButton(
-                        onClick = onDismiss,
+                        onClick = { 
+                            HapticsService.getInstance().select()
+                            onDismiss() 
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(Localization.tr(LocalContext.current, "common.close", "Close"))
@@ -275,6 +289,7 @@ fun ShareFoodView(
             text = { Text(msg, color = Color.Gray) },
             confirmButton = {
                 TextButton(onClick = {
+                    HapticsService.getInstance().success()
                     showShareConfirmation = null
                     // After confirming, close the share screen and return to main
                     onShareSuccess()
@@ -341,7 +356,10 @@ private fun PortionChooserDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 options.forEach { p ->
                     Button(
-                        onClick = { onSelect(p) },
+                        onClick = { 
+                            HapticsService.getInstance().select()
+                            onSelect(p) 
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors =
                             ButtonDefaults.buttonColors(
@@ -355,7 +373,10 @@ private fun PortionChooserDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text(Localization.tr(LocalContext.current, "common.close", "Close")) } },
+        dismissButton = { TextButton(onClick = { 
+            HapticsService.getInstance().select()
+            onDismiss() 
+        }) { Text(Localization.tr(LocalContext.current, "common.close", "Close")) } },
         containerColor = com.singularis.eateria.ui.theme.Gray4,
     )
 }

@@ -4,6 +4,7 @@ package com.singularis.eateria.ui.views
 // ... other imports
 // ... rest of your codeKeyboardOptions
 import androidx.compose.foundation.background
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -102,7 +103,10 @@ fun HealthSettingsView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onBackClick) {
+                IconButton(onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onBackClick() 
+                }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
@@ -228,9 +232,12 @@ fun HealthSettingsView(
                                 )
                             }
 
-                            Switch(
-                                checked = useHealthBasedCalculation,
-                                onCheckedChange = { useHealthBasedCalculation = it },
+                Switch(
+                    checked = useHealthBasedCalculation,
+                    onCheckedChange = { 
+                        com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                        useHealthBasedCalculation = it 
+                    },
                                 colors =
                                     SwitchDefaults.colors(
                                         checkedThumbColor = Color.White,
@@ -322,7 +329,10 @@ fun HealthSettingsView(
                 // Save Button
                 item {
                     Button(
-                        onClick = { showSaveDialog = true },
+                        onClick = { 
+                            com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                            showSaveDialog = true 
+                        },
                         colors =
                             ButtonDefaults.buttonColors(
                                 containerColor = DarkPrimary,
@@ -562,7 +572,10 @@ fun HealthDisclaimerView(
                     Spacer(modifier = Modifier.height(Dimensions.paddingL))
 
                     Button(
-                        onClick = onDismiss,
+                        onClick = { 
+                            com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                            onDismiss() 
+                        },
                         colors =
                             ButtonDefaults.buttonColors(
                                 containerColor = DarkPrimary,

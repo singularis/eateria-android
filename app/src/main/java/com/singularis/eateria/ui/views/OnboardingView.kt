@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,8 +77,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.singularis.eateria.services.AppSettingsService
+import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.ui.theme.AppTheme
+import com.singularis.eateria.ui.theme.Dimensions
+import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.CalorieOrange
 import com.singularis.eateria.ui.theme.CalorieYellow
@@ -131,6 +137,18 @@ fun OnboardingView(
                 icon = Icons.Default.Language,
                 iconColor = Color(0xFF4CAF50),
                 anchor = "language_select",
+            ),
+            OnboardingPage(
+                title = Localization.tr(LocalContext.current, "onboarding.appearance.title", "Choose Appearance ✨"),
+                description =
+                    Localization.tr(
+                        LocalContext.current,
+                        "onboarding.appearance.desc",
+                        "Pick your theme and motion preference. You can change this later in profile.",
+                    ),
+                icon = Icons.Default.Settings,
+                iconColor = Color(0xFF9C27B0),
+                anchor = "appearance",
             ),
             OnboardingPage(
                 title = Localization.tr(LocalContext.current, "onboarding.welcome.title", "Welcome to Eateria! 🍎"),
@@ -328,7 +346,7 @@ fun OnboardingView(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(DarkBackground)
+                    .background(AppTheme.backgroundGradient())
                     .windowInsetsPadding(WindowInsets.statusBars)
                     .windowInsetsPadding(WindowInsets.navigationBars),
         ) {
@@ -346,6 +364,7 @@ fun OnboardingView(
                 ) {
                     TextButton(
                         onClick = {
+                            com.singularis.eateria.services.HapticsService.getInstance().select()
                             if (!LanguageService.hasPersistedLanguage(context)) {
                                 // If no language was chosen, default to English
                                 coroutineScope.launch { LanguageService.setLanguage(context, "en") }
@@ -354,7 +373,7 @@ fun OnboardingView(
                         },
                         colors =
                             ButtonDefaults.textButtonColors(
-                                contentColor = Color.Gray,
+                                contentColor = AppTheme.textSecondary(),
                             ),
                     ) {
                         Text(Localization.tr(LocalContext.current, "onboarding.skip", "Skip"), fontSize = 16.sp)
@@ -370,6 +389,7 @@ fun OnboardingView(
                 ) { page ->
                     when (onboardingPages[page].anchor) {
                         "language_select" -> LanguageSelectOnboardingView(page = onboardingPages[page])
+                        "appearance" -> AppearanceOnboardingView(page = onboardingPages[page])
                         "welcome" ->
                             WelcomeOnboardingView(
                                 page = onboardingPages[page],
@@ -499,13 +519,14 @@ fun OnboardingView(
                     if (pagerState.currentPage > 0) {
                         TextButton(
                             onClick = {
+                                com.singularis.eateria.services.HapticsService.getInstance().select()
                                 coroutineScope.launch {
                                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
                                 }
                             },
                             colors =
                                 ButtonDefaults.textButtonColors(
-                                    contentColor = Color.Gray,
+                                    contentColor = AppTheme.textSecondary(),
                                 ),
                         ) {
                             Text(Localization.tr(LocalContext.current, "common.back", "Previous"), fontSize = 16.sp)
@@ -518,6 +539,7 @@ fun OnboardingView(
                     if (onboardingPages[pagerState.currentPage].anchor != "health_setup") {
                         Button(
                             onClick = {
+                                com.singularis.eateria.services.HapticsService.getInstance().select()
                                 when (onboardingPages[pagerState.currentPage].anchor) {
                                     "health_form" -> {
                                         // Clear keyboard focus before validation
@@ -574,15 +596,15 @@ fun OnboardingView(
                                         when (onboardingPages[pagerState.currentPage].anchor) {
                                             "disclaimer" -> CalorieYellow
                                             "health_form" -> CalorieGreen
-                                            else -> DarkPrimary
+                                            else -> AppTheme.accent()
                                         },
                                     contentColor =
                                         when (onboardingPages[pagerState.currentPage].anchor) {
-                                            "disclaimer" -> Color.Red
-                                            else -> Color.White
+                                            "disclaimer" -> AppTheme.danger()
+                                            else -> AppTheme.textPrimary()
                                         },
                                 ),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                             modifier =
                                 Modifier
                                     .height(56.dp)
@@ -682,7 +704,7 @@ private fun DisplayModeOnboardingView(
 
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -693,7 +715,7 @@ private fun DisplayModeOnboardingView(
 
         Text(
             text = page.description,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
@@ -707,33 +729,39 @@ private fun DisplayModeOnboardingView(
             modifier = Modifier.padding(horizontal = 30.dp),
         ) {
             Button(
-                onClick = onSelectSimplified,
+                onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onSelectSimplified() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = if (!isFullMode) CalorieGreen else Gray3,
-                        contentColor = Color.White,
+                        containerColor = if (!isFullMode) CalorieGreen else AppTheme.surface(),
+                        contentColor = AppTheme.textPrimary(),
                     ),
                 modifier =
                     Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             ) {
                 Text(Localization.tr(LocalContext.current, "common.simplified", "Simplified"))
             }
 
             Button(
-                onClick = onSelectFull,
+                onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onSelectFull() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = if (isFullMode) CalorieGreen else Gray3,
-                        contentColor = Color.White,
+                        containerColor = if (isFullMode) CalorieGreen else AppTheme.surface(),
+                        contentColor = AppTheme.textPrimary(),
                     ),
                 modifier =
                     Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(Dimensions.cornerRadiusM),
             ) {
                 Text(Localization.tr(LocalContext.current, "common.full", "Full"))
             }
@@ -760,8 +788,8 @@ private fun NotificationsOnboardingView(
                     .background(page.iconColor.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
+                Icon(
+                    imageVector = AppIcons.Status.notifications,
                 contentDescription = null,
                 tint = page.iconColor,
                 modifier = Modifier.size(60.dp),
@@ -772,7 +800,7 @@ private fun NotificationsOnboardingView(
 
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -783,7 +811,7 @@ private fun NotificationsOnboardingView(
 
         Text(
             text = page.description,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
@@ -802,18 +830,21 @@ private fun NotificationsOnboardingView(
         ) {
             Text(
                 text = Localization.tr(LocalContext.current, "onboarding.notifications.enable", "Enable Reminders"),
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 fontSize = 16.sp,
             )
             Switch(
                 checked = notificationsOptIn,
-                onCheckedChange = onNotificationsChange,
+                onCheckedChange = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                    onNotificationsChange(it) 
+                },
                 colors =
                     SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
+                        checkedThumbColor = AppTheme.textPrimary(),
                         checkedTrackColor = CalorieGreen,
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color.Gray,
+                        uncheckedThumbColor = AppTheme.textPrimary(),
+                        uncheckedTrackColor = AppTheme.textSecondary(),
                     ),
             )
         }
@@ -854,7 +885,7 @@ private fun HealthSetupView(
         // Title
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -866,7 +897,7 @@ private fun HealthSetupView(
         // Description
         Text(
             text = page.description,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
@@ -881,11 +912,14 @@ private fun HealthSetupView(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Button(
-                onClick = onPersonalizeClick,
+                onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                    onPersonalizeClick() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = DarkPrimary,
+                        containerColor = AppTheme.textPrimary(),
+                        contentColor = AppTheme.accent(),
                     ),
                 modifier =
                     Modifier
@@ -902,11 +936,14 @@ private fun HealthSetupView(
             }
 
             Button(
-                onClick = onSkipClick,
+                onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onSkipClick() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = Color.White.copy(alpha = 0.2f),
-                        contentColor = Color.White,
+                        contentColor = AppTheme.textPrimary(),
                     ),
                 modifier =
                     Modifier
@@ -979,7 +1016,7 @@ private fun HealthFormView(
 
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -990,23 +1027,24 @@ private fun HealthFormView(
         // Calculate Button - moved to top
         Button(
             onClick = {
+                com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
                 focusManager.clearFocus()
                 onCalculateClick()
             },
             enabled = isFormValid,
             colors =
                 ButtonDefaults.buttonColors(
-                    containerColor = if (isFormValid) CalorieGreen else Gray3,
-                    contentColor = Color.White,
-                    disabledContainerColor = Gray3,
-                    disabledContentColor = Color.White.copy(alpha = 0.6f),
+                    containerColor = if (isFormValid) CalorieGreen else AppTheme.surface(),
+                    contentColor = AppTheme.textPrimary(),
+                    disabledContainerColor = AppTheme.surface(),
+                    disabledContentColor = AppTheme.textPrimary().copy(alpha = 0.6f),
                 ),
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .height(56.dp)
                     .padding(horizontal = 30.dp),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
             Text(
                 text = Localization.tr(LocalContext.current, "health.calc_plan", "Calculate My Plan"),
@@ -1029,7 +1067,7 @@ private fun HealthFormView(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "health.height", "Height (cm):"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp),
                 )
@@ -1040,12 +1078,12 @@ private fun HealthFormView(
                             onHeightChange(newValue.filter { it.isDigit() || it == '.' })
                         }
                     },
-                    placeholder = { Text(Localization.tr(LocalContext.current, "health.height.placeholder", "175"), color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "health.height.placeholder", "175"), color = AppTheme.textSecondary()) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors =
                         TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
+                            focusedTextColor = AppTheme.textPrimary(),
+                            unfocusedTextColor = AppTheme.textPrimary(),
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
                             cursorColor = CalorieGreen,
@@ -1055,7 +1093,7 @@ private fun HealthFormView(
                                 ) {
                                     CalorieGreen
                                 } else {
-                                    Color.Gray
+                                    AppTheme.textSecondary()
                                 },
                         ),
                     modifier = Modifier.weight(1f),
@@ -1069,7 +1107,7 @@ private fun HealthFormView(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "health.weight", "Weight (kg):"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp),
                 )
@@ -1080,12 +1118,12 @@ private fun HealthFormView(
                             onWeightChange(newValue.filter { it.isDigit() || it == '.' })
                         }
                     },
-                    placeholder = { Text(Localization.tr(LocalContext.current, "health.weight.placeholder", "70"), color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "health.weight.placeholder", "70"), color = AppTheme.textSecondary()) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors =
                         TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
+                            focusedTextColor = AppTheme.textPrimary(),
+                            unfocusedTextColor = AppTheme.textPrimary(),
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
                             cursorColor = CalorieGreen,
@@ -1095,7 +1133,7 @@ private fun HealthFormView(
                                 ) {
                                     CalorieGreen
                                 } else {
-                                    Color.Gray
+                                    AppTheme.textSecondary()
                                 },
                         ),
                     modifier = Modifier.weight(1f),
@@ -1109,7 +1147,7 @@ private fun HealthFormView(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "health.age", "Age (years):"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp),
                 )
@@ -1120,12 +1158,12 @@ private fun HealthFormView(
                             onAgeChange(newValue.filter { it.isDigit() })
                         }
                     },
-                    placeholder = { Text(Localization.tr(LocalContext.current, "health.age.placeholder", "25"), color = Color.Gray) },
+                    placeholder = { Text(Localization.tr(LocalContext.current, "health.age.placeholder", "25"), color = AppTheme.textSecondary()) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors =
                         TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
+                            focusedTextColor = AppTheme.textPrimary(),
+                            unfocusedTextColor = AppTheme.textPrimary(),
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
                             cursorColor = CalorieGreen,
@@ -1135,7 +1173,7 @@ private fun HealthFormView(
                                 ) {
                                     CalorieGreen
                                 } else {
-                                    Color.Gray
+                                    AppTheme.textSecondary()
                                 },
                         ),
                     modifier = Modifier.weight(1f),
@@ -1149,7 +1187,7 @@ private fun HealthFormView(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "health.gender", "Gender:"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp),
                 )
@@ -1158,11 +1196,14 @@ private fun HealthFormView(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(
-                        onClick = { onGenderChange(true) },
+                        onClick = { 
+                            com.singularis.eateria.services.HapticsService.getInstance().select()
+                            onGenderChange(true) 
+                        },
                         colors =
                             ButtonDefaults.buttonColors(
-                                containerColor = if (isMale) CalorieGreen else DarkPrimary,
-                                contentColor = Color.White,
+                                containerColor = if (isMale) CalorieGreen else AppTheme.accent(),
+                                contentColor = AppTheme.textPrimary(),
                             ),
                         modifier = Modifier.weight(1f),
                     ) {
@@ -1173,11 +1214,14 @@ private fun HealthFormView(
                         )
                     }
                     Button(
-                        onClick = { onGenderChange(false) },
+                        onClick = { 
+                            com.singularis.eateria.services.HapticsService.getInstance().select()
+                            onGenderChange(false) 
+                        },
                         colors =
                             ButtonDefaults.buttonColors(
-                                containerColor = if (!isMale) CalorieGreen else DarkPrimary,
-                                contentColor = Color.White,
+                                containerColor = if (!isMale) CalorieGreen else AppTheme.accent(),
+                                contentColor = AppTheme.textPrimary(),
                             ),
                         modifier = Modifier.weight(1f),
                     ) {
@@ -1197,7 +1241,7 @@ private fun HealthFormView(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "health.activity", "Activity Level:"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     fontSize = 14.sp,
                     modifier = Modifier.width(100.dp),
                 )
@@ -1222,11 +1266,14 @@ private fun HealthFormView(
                         items(activityLevels.size) { index ->
                             val level = activityLevels[index]
                             Button(
-                                onClick = { onActivityLevelChange(level) },
+                                onClick = { 
+                                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                                    onActivityLevelChange(level) 
+                                },
                                 colors =
                                     ButtonDefaults.buttonColors(
-                                        containerColor = if (activityLevel == level) CalorieGreen else Gray3,
-                                        contentColor = Color.White,
+                                        containerColor = if (activityLevel == level) CalorieGreen else AppTheme.surface(),
+                                        contentColor = AppTheme.textPrimary(),
                                     ),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp),
@@ -1291,7 +1338,7 @@ private fun HealthResultsView(
 
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -1321,7 +1368,7 @@ private fun HealthResultsView(
             ResultCard(
                 title = Localization.tr(LocalContext.current, "health.estimated_timeline", "⏰ Estimated Timeline"),
                 value = timeToOptimalWeight,
-                color = DarkPrimary,
+                color = AppTheme.accent(),
             )
         }
     }
@@ -1353,7 +1400,7 @@ private fun ResultCard(
 
             Text(
                 text = value,
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -1562,7 +1609,7 @@ private fun OnboardingPageContent(
         // Title
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -1574,7 +1621,7 @@ private fun OnboardingPageContent(
         // Description
         Text(
             text = page.description,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
@@ -1613,7 +1660,7 @@ private fun FriendsOnboardingView(
 
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -1624,7 +1671,7 @@ private fun FriendsOnboardingView(
 
         Text(
             text = page.description,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
@@ -1634,7 +1681,10 @@ private fun FriendsOnboardingView(
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = onAddFriendsClick,
+            onClick = { 
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                onAddFriendsClick() 
+            },
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = Color.White,
@@ -1644,7 +1694,7 @@ private fun FriendsOnboardingView(
                 Modifier
                     .height(48.dp)
                     .width(200.dp),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
             Text(
                 text = Localization.tr(LocalContext.current, "friends.add", "Add Friend"),
@@ -1698,7 +1748,7 @@ private fun LanguageSelectOnboardingView(page: OnboardingPage) {
 
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -1714,7 +1764,7 @@ private fun LanguageSelectOnboardingView(page: OnboardingPage) {
                     "onboarding.language.desc",
                     "Choose your preferred language. You can change this later in Profile.",
                 ),
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
@@ -1735,17 +1785,18 @@ private fun LanguageSelectOnboardingView(page: OnboardingPage) {
                 val isDeviceDefault = lang.code == deviceDefault
                 Button(
                     onClick = {
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
                         coroutineScope.launch {
                             val ok = LanguageService.setLanguage(context, lang.code)
                         }
                     },
                     colors =
                         ButtonDefaults.buttonColors(
-                            containerColor = if (isDeviceDefault) CalorieGreen else Gray3,
-                            contentColor = Color.White,
+                            containerColor = if (isDeviceDefault) CalorieGreen else AppTheme.surface(),
+                            contentColor = AppTheme.textPrimary(),
                         ),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = if (lang.flag.isNotEmpty()) lang.flag else "", fontSize = 20.sp)
@@ -1768,9 +1819,161 @@ private fun PageIndicator(
             modifier
                 .clip(CircleShape)
                 .background(
-                    if (isSelected) DarkPrimary else Gray3,
+                    if (isSelected) AppTheme.accent() else AppTheme.surface(),
                 ),
     )
+}
+
+@Composable
+private fun AppearanceOnboardingView(page: OnboardingPage) {
+    val context = LocalContext.current
+    val settingsService = AppSettingsService.getInstance()
+    val currentAppearance by settingsService.appearanceModeFlow.collectAsState()
+    val currentReduceMotion by settingsService.reduceMotionFlow.collectAsState()
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(page.iconColor.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = page.icon,
+                contentDescription = null,
+                tint = page.iconColor,
+                modifier = Modifier.size(60.dp),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = page.title,
+            color = AppTheme.textPrimary(),
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 34.sp,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = page.description,
+            color = AppTheme.textSecondary(),
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Theme selection
+        Column(
+            modifier = Modifier.padding(horizontal = 30.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = Localization.tr(context, "settings.appearance", "Appearance"),
+                color = AppTheme.textPrimary(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+
+            AppSettingsService.AppearanceMode.values().forEach { mode ->
+                val isSelected = currentAppearance == mode
+                Button(
+                    onClick = {
+                        HapticsService.getInstance().select()
+                        settingsService.appearanceMode = mode
+                    },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = if (isSelected) AppTheme.accent() else AppTheme.surface(),
+                            contentColor = if (isSelected) Color.White else AppTheme.textPrimary(),
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = when (mode) {
+                                AppSettingsService.AppearanceMode.SYSTEM -> 
+                                    Localization.tr(context, "settings.appearance.system", "System")
+                                AppSettingsService.AppearanceMode.LIGHT -> 
+                                    Localization.tr(context, "settings.appearance.light", "Light")
+                                AppSettingsService.AppearanceMode.DARK -> 
+                                    Localization.tr(context, "settings.appearance.dark", "Dark")
+                            }
+                        )
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Reduce motion toggle
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(Dimensions.cornerRadiusM))
+                        .background(AppTheme.surface())
+                        .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = Localization.tr(context, "settings.reduce_motion", "Reduce Motion"),
+                        color = AppTheme.textPrimary(),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = Localization.tr(context, "settings.reduce_motion.desc", "Minimize animations"),
+                        color = AppTheme.textSecondary(),
+                        fontSize = 14.sp,
+                    )
+                }
+                Switch(
+                    checked = currentReduceMotion,
+                    onCheckedChange = { 
+                        com.singularis.eateria.services.HapticsService.getInstance().lightImpact()
+                        settingsService.reduceMotion = it 
+                    },
+                    colors =
+                        SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = AppTheme.accent(),
+                            uncheckedThumbColor = AppTheme.textSecondary(),
+                            uncheckedTrackColor = AppTheme.divider(),
+                        ),
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -1803,7 +2006,7 @@ private fun WelcomeOnboardingView(
 
         Text(
             text = page.title,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -1814,7 +2017,7 @@ private fun WelcomeOnboardingView(
 
         Text(
             text = page.description,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,

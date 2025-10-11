@@ -3,7 +3,6 @@ package com.singularis.eateria.services
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.singularis.eateria.services.dataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -82,7 +81,7 @@ object LanguageService {
             val country =
                 representativeCountry[normalized]?.uppercase(Locale.getDefault())
                     ?: normalized.uppercase(Locale.getDefault())
-            Locale.setDefault(Locale(normalized, country))
+            Locale.setDefault(Locale.Builder().setLanguage(normalized).setRegion(country).build())
             Localization.clearCache()
             QuotesService.clearCache()
             return true
@@ -92,7 +91,7 @@ object LanguageService {
                 it[DISPLAY_NAME] = nativeName("en")
             }
             val fallbackCountry = representativeCountry["en"] ?: "US"
-            Locale.setDefault(Locale("en", fallbackCountry))
+            Locale.setDefault(Locale.Builder().setLanguage("en").setRegion(fallbackCountry).build())
             Localization.clearCache()
             QuotesService.clearCache()
             return false
@@ -121,7 +120,7 @@ object LanguageService {
         val country =
             representativeCountry[code]?.uppercase(Locale.getDefault())
                 ?: code.uppercase(Locale.getDefault())
-        Locale.setDefault(Locale(code, country))
+        Locale.setDefault(Locale.Builder().setLanguage(code).setRegion(country).build())
     }
 
     fun flagEmoji(code: String): String {
@@ -143,7 +142,7 @@ object LanguageService {
 
     fun nativeName(code: String): String {
         val norm = normalize(code)
-        return Locale(norm).getDisplayLanguage(Locale(norm)).replaceFirstChar {
+        return Locale.Builder().setLanguage(norm).build().getDisplayLanguage(Locale.Builder().setLanguage(norm).build()).replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
         }
     }
@@ -166,11 +165,11 @@ object LanguageService {
         try {
             context.assets.open("languages.txt").use { input ->
                 val names = BufferedReader(InputStreamReader(input)).readLines().map { it.trim() }.filter { it.isNotEmpty() }
-                val preferred = Locale("en")
+                val preferred = Locale.Builder().setLanguage("en").build()
                 names
                     .mapNotNull { name ->
                         Locale.getAvailableLocales().map { it.language }.distinct().firstOrNull { code ->
-                            preferred.getDisplayLanguage(Locale(code)).equals(name, ignoreCase = true)
+                            preferred.getDisplayLanguage(Locale.Builder().setLanguage(code).build()).equals(name, ignoreCase = true)
                         }
                     }.map { normalize(it) }
                     .distinct()

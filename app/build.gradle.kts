@@ -5,8 +5,8 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.google.services)
-    id("com.google.protobuf") version "0.9.4"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
+    id("com.google.protobuf") version "0.9.5"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
 }
 
 secrets {
@@ -15,7 +15,7 @@ secrets {
 
 android {
     namespace = "com.singularis.eateria"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.singularis.eateria"
@@ -133,7 +133,7 @@ dependencies {
     implementation(libs.gson)
     
     // Protobuf
-    implementation("com.google.protobuf:protobuf-kotlin-lite:3.21.12")
+    implementation("com.google.protobuf:protobuf-kotlin-lite:4.32.1")
     
     // Google Services
     implementation(libs.play.services.maps)
@@ -172,13 +172,13 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // Material Compose for pull-to-refresh and swipe gestures
-    implementation("androidx.compose.material:material:1.6.5")
+    implementation("androidx.compose.material:material:1.9.3")
     
     // Kotlinx Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     
     // Coil for image loading
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Accompanist - Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")

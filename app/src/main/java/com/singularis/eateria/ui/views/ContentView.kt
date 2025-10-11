@@ -2,6 +2,7 @@ package com.singularis.eateria.ui.views
 
 import android.Manifest
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,11 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
@@ -125,7 +129,7 @@ fun ContentView(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(DarkBackground)
+                    .background(AppTheme.backgroundGradient())
                     .windowInsetsPadding(WindowInsets.statusBars)
                     .windowInsetsPadding(WindowInsets.navigationBars),
         ) {
@@ -187,7 +191,8 @@ fun ContentView(
 
                 // Product List
                 if (isLoadingData) {
-                    LoadingView(message = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."))
+                    // Modern skeleton loading instead of text
+                    com.singularis.eateria.ui.components.SkeletonProductList(itemCount = 4)
                 } else {
                     Box(
                         modifier =
@@ -248,16 +253,16 @@ fun ContentView(
                 )
             }
 
-            // Loading overlays
+            // Loading overlays with modern animated icons
             if (isLoadingData) {
-                LoadingOverlay(
+                LoadingOverlayWithAnimation(
                     isVisible = true,
                     message = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."),
                 )
             }
 
             if (isLoadingFoodPhoto) {
-                LoadingOverlay(
+                LoadingOverlayWithAnimation(
                     isVisible = true,
                     message = Localization.tr(LocalContext.current, "loading.photo", "Analyzing food photo..."),
                 )
@@ -492,11 +497,21 @@ fun LoadingView(message: String) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = message,
-            color = Color.White,
-            style = MaterialTheme.typography.bodyLarge,
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            com.singularis.eateria.ui.components.AnimatedLoadingIcon(
+                size = 48.dp,
+                color = AppTheme.accent(),
+                strokeWidth = 4.dp
+            )
+            Text(
+                text = message,
+                color = AppTheme.textPrimary(),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
     }
 }
 
@@ -510,14 +525,60 @@ fun LoadingOverlay(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                    .background(AppTheme.surface().copy(alpha = 0.95f)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = message,
-                color = Color.White,
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                com.singularis.eateria.ui.components.AnimatedLoadingIcon(
+                    size = 48.dp,
+                    color = AppTheme.accent(),
+                    strokeWidth = 4.dp
+                )
+                Text(
+                    text = message,
+                    color = AppTheme.textPrimary(),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadingOverlayWithAnimation(
+    isVisible: Boolean,
+    message: String,
+) {
+    androidx.compose.animation.AnimatedVisibility(
+        visible = isVisible,
+        enter = com.singularis.eateria.ui.theme.AppAnimations.enterTransition(),
+        exit = com.singularis.eateria.ui.theme.AppAnimations.exitTransition()
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(AppTheme.surface().copy(alpha = 0.95f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                com.singularis.eateria.ui.components.AnimatedLoadingIcon(
+                    size = 48.dp,
+                    color = AppTheme.accent(),
+                    strokeWidth = 4.dp
+                )
+                Text(
+                    text = message,
+                    color = AppTheme.textPrimary(),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
     }
 }

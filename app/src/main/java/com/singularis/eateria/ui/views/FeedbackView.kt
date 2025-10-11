@@ -65,7 +65,10 @@ fun FeedbackView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onBackClick) {
+                IconButton(onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onBackClick() 
+                }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
@@ -171,6 +174,7 @@ fun FeedbackView(
                     Button(
                         onClick = {
                             if (isValidFeedback && !isSubmitting) {
+                                com.singularis.eateria.services.HapticsService.getInstance().select()
                                 isSubmitting = true
                                 coroutineScope.launch {
                                     try {

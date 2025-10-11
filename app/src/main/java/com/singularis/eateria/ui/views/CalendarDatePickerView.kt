@@ -2,6 +2,7 @@ package com.singularis.eateria.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,11 +50,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.singularis.eateria.services.Localization
-import com.singularis.eateria.ui.theme.DarkBackground
-import com.singularis.eateria.ui.theme.DarkPrimary
+import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.ui.theme.Gray3
-import com.singularis.eateria.ui.theme.Gray4
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -96,7 +94,7 @@ private fun CalendarContent(
                 .fillMaxWidth()
                 .padding(Dimensions.paddingM),
         shape = RoundedCornerShape(Dimensions.cornerRadiusL),
-        color = Gray4,
+        color = AppTheme.surface(),
     ) {
         Column(
             modifier = Modifier.padding(Dimensions.paddingL),
@@ -120,6 +118,7 @@ private fun CalendarContent(
             ) {
                 IconButton(
                     onClick = {
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
                         currentMonth =
                             (currentMonth.clone() as Calendar).apply {
                                 add(Calendar.MONTH, -1)
@@ -141,6 +140,7 @@ private fun CalendarContent(
 
                 IconButton(
                     onClick = {
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
                         // Don't allow future months
                         val nextMonth =
                             (currentMonth.clone() as Calendar).apply {
@@ -198,7 +198,10 @@ private fun CalendarContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onDismiss() 
+                }) {
                     Text(
                         text = Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
                         style = MaterialTheme.typography.bodyMedium,
@@ -208,13 +211,14 @@ private fun CalendarContent(
 
                 Button(
                     onClick = {
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
                         // Select today's date
                         val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(today.time)
                         onDateSelected(dateString)
                     },
                     colors =
                         ButtonDefaults.buttonColors(
-                            containerColor = DarkPrimary,
+                            containerColor = AppTheme.accent(),
                             contentColor = Color.White,
                         ),
                     modifier = Modifier.width(100.dp),
@@ -286,11 +290,18 @@ private fun CalendarDay(
                 .clip(CircleShape)
                 .background(
                     when {
-                        isSelected -> DarkPrimary
-                        isToday -> DarkPrimary.copy(alpha = 0.3f)
+                        isSelected -> AppTheme.accent()
+                        isToday -> AppTheme.accent().copy(alpha = 0.3f)
                         else -> Color.Transparent
                     },
-                ).clickable(enabled = isClickable) { onClick(day.day) },
+                ).clickable(
+                    enabled = isClickable,
+                    indication = LocalIndication.current,
+                    interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                ) { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onClick(day.day) 
+                },
         contentAlignment = Alignment.Center,
     ) {
         day.day?.let { dayNumber ->

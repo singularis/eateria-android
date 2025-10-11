@@ -48,6 +48,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -214,6 +215,15 @@ fun StatisticsView(onBackClick: () -> Unit) {
             }
 
             if (!isLoading) {
+                androidx.compose.animation.AnimatedContent(
+                    targetState = selectedChart,
+                    label = "chart_switch",
+                ) { _ ->
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = true,
+                    enter = com.singularis.eateria.ui.theme.AppAnimations.enterTransition(),
+                    exit = com.singularis.eateria.ui.theme.AppAnimations.exitTransition()
+                ) {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(Dimensions.paddingL),
                     modifier = Modifier.padding(top = Dimensions.paddingM),
@@ -275,6 +285,8 @@ fun StatisticsView(onBackClick: () -> Unit) {
                         Spacer(modifier = Modifier.height(Dimensions.paddingXL))
                     }
                 }
+                }
+                }
             }
         }
     }
@@ -295,7 +307,10 @@ private fun StatisticsHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
-                onClick = onBackClick,
+                onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onBackClick() 
+                },
                 modifier =
                     Modifier
                         .clip(CircleShape)
@@ -444,7 +459,7 @@ private fun InsightsView(
             Modifier
                 .fillMaxWidth()
                 .shadow(
-                    elevation = 8.dp,
+                    elevation = Dimensions.elevationM,
                     shape = organicCardShape,
                     ambientColor = DarkPrimary.copy(alpha = 0.1f),
                 ),
@@ -540,7 +555,7 @@ private fun TimeRangeButton(
         shape = organicButtonShape,
         modifier =
             Modifier.shadow(
-                elevation = if (isSelected) 6.dp else 3.dp,
+                elevation = if (isSelected) Dimensions.elevationM else Dimensions.elevationS,
                 shape = organicButtonShape,
             ),
     ) {

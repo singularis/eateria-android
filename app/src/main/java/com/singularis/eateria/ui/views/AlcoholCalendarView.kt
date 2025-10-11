@@ -2,6 +2,7 @@ package com.singularis.eateria.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -156,7 +157,10 @@ fun AlcoholCalendarView(
                 Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
                 Button(
-                    onClick = onDismiss,
+                    onClick = { 
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
+                        onDismiss() 
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Gray3, contentColor = Color.White),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -176,7 +180,10 @@ fun AlcoholCalendarView(
             title = { Text(detailsTitle, color = Color.White) },
             text = { Text(detailsMessage, color = Color.Gray) },
             confirmButton = {
-                Button(onClick = { detailsVisible = false }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
+                Button(onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    detailsVisible = false 
+                }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
             containerColor = Gray4,
         )
@@ -195,14 +202,20 @@ private fun Header(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onPrev) { Text(Localization.tr(LocalContext.current, "calendar.prev", "<"), color = Color.White) }
+        IconButton(onClick = { 
+            com.singularis.eateria.services.HapticsService.getInstance().select()
+            onPrev() 
+        }) { Text(Localization.tr(LocalContext.current, "calendar.prev", "<"), color = Color.White) }
         Text(
             text = monthTitle(date),
             style = MaterialTheme.typography.titleMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold,
         )
-        IconButton(onClick = onNext) { Text(Localization.tr(LocalContext.current, "calendar.next", ">"), color = Color.White) }
+        IconButton(onClick = { 
+            com.singularis.eateria.services.HapticsService.getInstance().select()
+            onNext() 
+        }) { Text(Localization.tr(LocalContext.current, "calendar.next", ">"), color = Color.White) }
     }
 }
 
@@ -304,7 +317,13 @@ private fun RowScope.DayCellView(
                 .height(44.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(if (cell.isCurrentMonth) Gray3.copy(alpha = 0.2f) else Gray3.copy(alpha = 0.1f))
-                .clickable { onClick(cell.ymd) },
+                .clickable(
+                    indication = LocalIndication.current,
+                    interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                ) { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onClick(cell.ymd) 
+                },
         contentAlignment = Alignment.Center,
     ) {
         Text(

@@ -2,6 +2,7 @@ package com.singularis.eateria.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
@@ -43,6 +44,7 @@ import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.QuotesService
 import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.ui.theme.*
+import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
 
@@ -105,7 +107,7 @@ fun UserProfileView(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(DarkBackground)
+                .background(AppTheme.backgroundGradient())
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars),
     ) {
@@ -126,17 +128,20 @@ fun UserProfileView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onBackClick) {
+                IconButton(onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onBackClick() 
+                }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
-                        tint = Color.White,
+                        tint = AppTheme.textPrimary(),
                     )
                 }
 
                 Text(
                     text = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     style = MaterialTheme.typography.headlineSmall,
                 )
 
@@ -161,10 +166,13 @@ fun UserProfileView(
                 // Statistics button (standalone like iOS)
                 item {
                     Button(
-                        onClick = onStatisticsClick,
+                        onClick = { 
+                            com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                            onStatisticsClick() 
+                        },
                         colors =
                             ButtonDefaults.buttonColors(
-                                containerColor = DarkPrimary,
+                                containerColor = AppTheme.accent(),
                                 contentColor = Color.White,
                             ),
                         modifier =
@@ -240,7 +248,7 @@ fun UserProfileView(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Gray4),
+                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
                         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                     ) {
                         Row(
@@ -254,7 +262,7 @@ fun UserProfileView(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = Localization.tr(LocalContext.current, "profile.datamode"),
-                                    color = Color.White,
+                                    color = AppTheme.textPrimary(),
                                     style = MaterialTheme.typography.bodyLarge,
                                 )
                                 Text(
@@ -274,6 +282,7 @@ fun UserProfileView(
                             Switch(
                                 checked = isFullMode,
                                 onCheckedChange = { checked ->
+                                    com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
                                     coroutineScope.launch { authViewModel.setFullDisplayMode(checked) }
                                 },
                             )
@@ -285,7 +294,7 @@ fun UserProfileView(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Gray4),
+                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
                         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                     ) {
                         Row(
@@ -299,7 +308,7 @@ fun UserProfileView(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = Localization.tr(LocalContext.current, "profile.language"),
-                                    color = Color.White,
+                                    color = AppTheme.textPrimary(),
                                     style = MaterialTheme.typography.bodyLarge,
                                 )
                                 Text(
@@ -309,12 +318,15 @@ fun UserProfileView(
                                 )
                             }
                             IconButton(
-                                onClick = { showLanguageSelector = true },
+                                onClick = { 
+                                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                                    showLanguageSelector = true 
+                                },
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Language,
                                     contentDescription = Localization.tr(LocalContext.current, "profile.language.select"),
-                                    tint = Color.White,
+                                    tint = AppTheme.textPrimary(),
                                 )
                             }
                         }
@@ -371,7 +383,7 @@ fun UserProfileView(
                 title = {
                     Text(
                         text = Localization.tr(LocalContext.current, "profile.logout"),
-                        color = Color.White,
+                        color = AppTheme.textPrimary(),
                         fontWeight = FontWeight.Bold,
                     )
                 },
@@ -384,6 +396,7 @@ fun UserProfileView(
                 confirmButton = {
                     TextButton(
                         onClick = {
+                            com.singularis.eateria.services.HapticsService.getInstance().warning()
                             showSignOutDialog = false
                             coroutineScope.launch {
                                 // Clear statistics cache before logging out
@@ -398,12 +411,15 @@ fun UserProfileView(
                 },
                 dismissButton = {
                     TextButton(
-                        onClick = { showSignOutDialog = false },
+                        onClick = { 
+                            com.singularis.eateria.services.HapticsService.getInstance().select()
+                            showSignOutDialog = false 
+                        },
                     ) {
                         Text(Localization.tr(LocalContext.current, "common.cancel"), color = Color.Gray)
                     }
                 },
-                containerColor = Gray4,
+                containerColor = AppTheme.surface(),
             )
         }
 
@@ -414,7 +430,7 @@ fun UserProfileView(
                 title = {
                     Text(
                         text = Localization.tr(LocalContext.current, "profile.delete"),
-                        color = Color.White,
+                        color = AppTheme.textPrimary(),
                         fontWeight = FontWeight.Bold,
                     )
                 },
@@ -427,6 +443,7 @@ fun UserProfileView(
                 confirmButton = {
                     TextButton(
                         onClick = {
+                            com.singularis.eateria.services.HapticsService.getInstance().error()
                             showDeleteAccountDialog = false
                             coroutineScope.launch {
                                 // Clear statistics cache and health data before deleting account
@@ -442,12 +459,15 @@ fun UserProfileView(
                 },
                 dismissButton = {
                     TextButton(
-                        onClick = { showDeleteAccountDialog = false },
+                        onClick = { 
+                            com.singularis.eateria.services.HapticsService.getInstance().select()
+                            showDeleteAccountDialog = false 
+                        },
                     ) {
                         Text(Localization.tr(LocalContext.current, "common.cancel"), color = Color.Gray)
                     }
                 },
-                containerColor = Gray4,
+                containerColor = AppTheme.surface(),
             )
         }
     }
@@ -478,7 +498,7 @@ private fun ProfileHeader(
                     Modifier
                         .size(Dimensions.iconSizeXL)
                         .clip(CircleShape)
-                        .background(Gray3),
+                        .background(AppTheme.divider()),
                 contentAlignment = Alignment.Center,
             ) {
                 if (!userProfilePictureURL.isNullOrEmpty()) {
@@ -496,7 +516,7 @@ private fun ProfileHeader(
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
-                        tint = Color.White,
+                        tint = AppTheme.textPrimary(),
                         modifier = Modifier.size(Dimensions.paddingXL + Dimensions.paddingM),
                     )
                 }
@@ -517,7 +537,7 @@ private fun ProfileHeader(
                     Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                     Text(
                         text = name,
-                        color = Color.White,
+                        color = AppTheme.textPrimary(),
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Spacer(modifier = Modifier.height(Dimensions.paddingS))
@@ -536,7 +556,7 @@ private fun ProfileHeader(
                 Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 Text(
                     text = userEmail ?: Localization.tr(LocalContext.current, "profile.no_email", "No email"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
@@ -595,12 +615,15 @@ private fun HealthDataCard(
 
             Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
-            Button(
-                onClick = onUpdateHealthClick,
-                colors =
+                Button(
+                    onClick = { 
+                        com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                        onUpdateHealthClick() 
+                    },
+                    colors =
                     ButtonDefaults.buttonColors(
                         containerColor = Color.White.copy(alpha = 0.9f),
-                        contentColor = DarkPrimary,
+                        contentColor = AppTheme.accent(),
                     ),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimensions.cornerRadiusS),
@@ -651,7 +674,10 @@ private fun PersonalizeCard(onSetupHealthClick: () -> Unit) {
             Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
             Button(
-                onClick = onSetupHealthClick,
+                onClick = { 
+                    com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                    onSetupHealthClick() 
+                },
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = DarkPrimary,
@@ -735,7 +761,10 @@ private fun ProfileMenuSection(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .clickable { item.onClick() }
+                                .clickable(
+                                    indication = LocalIndication.current,
+                                    interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                                ) { item.onClick() }
                                 .padding(Dimensions.paddingM),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -765,7 +794,7 @@ private fun ProfileMenuSection(
                         }
 
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            imageVector = AppIcons.System.arrowRight,
                             contentDescription = null,
                             tint = Color.Gray,
                             modifier = Modifier.size(Dimensions.iconSizeS),
@@ -855,14 +884,17 @@ internal fun LanguageSelectorDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = { 
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                onDismiss() 
+            }) {
                 Text(
                     Localization.tr(LocalContext.current, "common.close", "Close"),
                     color = Color.Gray,
                 )
             }
         },
-        containerColor = Gray4,
+        containerColor = AppTheme.surface(),
     )
 }
 

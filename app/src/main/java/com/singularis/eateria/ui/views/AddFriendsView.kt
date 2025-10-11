@@ -2,6 +2,7 @@ package com.singularis.eateria.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,7 +63,7 @@ fun AddFriendsView(
                 Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(com.singularis.eateria.ui.theme.Dimensions.cornerRadiusL),
             color = MaterialTheme.colorScheme.surface,
         ) {
             Column(
@@ -81,7 +82,12 @@ fun AddFriendsView(
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     IconButton(
-                        onClick = { if (!isAddingFriend) onDismiss() },
+                        onClick = { 
+                            if (!isAddingFriend) {
+                                com.singularis.eateria.services.HapticsService.getInstance().select()
+                                onDismiss()
+                            }
+                        },
                         enabled = !isAddingFriend,
                     ) {
                         Icon(Icons.Default.Close, contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"))
@@ -135,7 +141,12 @@ fun AddFriendsView(
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
-                                        .clickable(enabled = !isAddingFriend) {
+                                        .clickable(
+                                            enabled = !isAddingFriend,
+                                            indication = LocalIndication.current,
+                                            interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                                        ) {
+                                            com.singularis.eateria.services.HapticsService.getInstance().select()
                                             selectFriend(
                                                 email = email,
                                                 grpcService = grpcService,

@@ -152,13 +152,11 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
     
+    // Security Crypto for Token Storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.1")
-    
-    // JWT
-    implementation(libs.jjwt.api)
-    runtimeOnly(libs.jjwt.impl)
-    runtimeOnly(libs.jjwt.jackson)
     
     // Testing
     testImplementation(libs.junit)

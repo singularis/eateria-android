@@ -52,22 +52,12 @@ class GRPCService(
         OkHttpClient
             .Builder()
             .addInterceptor(loggingInterceptor)
-            .addInterceptor { chain ->
-                val original = chain.request()
-                val requestBuilder = original.newBuilder()
-
-                // Add authorization header if available
-                val token =
-                    runCatching {
-                        kotlinx.coroutines.runBlocking { authService.getAuthToken() }
-                    }.getOrNull()
-
-                if (!token.isNullOrEmpty()) {
-                    requestBuilder.header("Authorization", "Bearer $token")
+            .addInterceptor(AuthInterceptor(context))
+            .addInterceptor(AuthResponseInterceptor(context) {
+                kotlinx.coroutines.runBlocking {
+                    authService.signOut()
                 }
-
-                chain.proceed(requestBuilder.build())
-            }.connectTimeout(30, TimeUnit.SECONDS)
+            }).connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
@@ -329,25 +319,11 @@ class GRPCService(
                         .post(photoMessage.toByteArray().toRequestBody("application/protobuf".toMediaType()))
                         .build()
 
-                // Add authorization header if available
-                val token =
-                    runCatching {
-                        kotlinx.coroutines.runBlocking { authService.getAuthToken() }
-                    }.getOrNull()
-
                 val requestWithAuth =
-                    if (!token.isNullOrEmpty()) {
-                        request
-                            .newBuilder()
-                            .header("Authorization", "Bearer $token")
-                            .header("Content-Type", "application/protobuf")
-                            .build()
-                    } else {
-                        request
-                            .newBuilder()
-                            .header("Content-Type", "application/protobuf")
-                            .build()
-                    }
+                    request
+                        .newBuilder()
+                        .header("Content-Type", "application/protobuf")
+                        .build()
 
                 val response = client.newCall(requestWithAuth).execute()
 

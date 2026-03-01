@@ -25,9 +25,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.singularis.eateria.util.Secrets
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.security.Keys
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -39,9 +36,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
-import java.util.Base64
 import java.util.Date
-import javax.crypto.SecretKey
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -76,7 +71,6 @@ interface AuthApi {
 class AuthenticationService(
     private val context: Context,
 ) {
-    private val secretKey = "StingSecertGeneratorSalt"
     private val baseUrl = "https://chater.singularis.work/"
 
     private val client =
@@ -106,11 +100,9 @@ class AuthenticationService(
     private val credentialManager = CredentialManager.create(context)
 
     companion object {
-        private val AUTH_TOKEN = stringPreferencesKey("auth_token")
         private val USER_EMAIL = stringPreferencesKey("user_email")
         private val USER_NAME = stringPreferencesKey("user_name")
         private val PROFILE_PICTURE_URL = stringPreferencesKey("profile_picture_url")
-        private val TOKEN_CREATED_TIMESTAMP = floatPreferencesKey("token_created_timestamp")
         private val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
         private val SOFT_LIMIT = stringPreferencesKey("soft_limit")
         private val HARD_LIMIT = stringPreferencesKey("hard_limit")
@@ -163,7 +155,7 @@ class AuthenticationService(
         }
     }
 
-    suspend fun getAuthToken(): String? = context.dataStore.data.first()[AUTH_TOKEN]
+    suspend fun getAuthToken(): String? = TokenStore.read(context)
 
     suspend fun getUserEmail(): String? = context.dataStore.data.first()[USER_EMAIL]
 
@@ -358,10 +350,10 @@ class AuthenticationService(
     private suspend fun updateAuthenticationState(response: TokenResponse) {
         val currentTimestamp = System.currentTimeMillis() / 1000f
 
+        TokenStore.save(context, response.token)
+
         context.dataStore.edit { preferences ->
-            preferences[AUTH_TOKEN] = response.token
             preferences[USER_EMAIL] = response.userEmail
-            preferences[TOKEN_CREATED_TIMESTAMP] = currentTimestamp
 
             response.userName?.let { preferences[USER_NAME] = it }
             response.profilePictureURL?.let { preferences[PROFILE_PICTURE_URL] = it }
@@ -369,6 +361,7 @@ class AuthenticationService(
     }
 
     suspend fun signOut() {
+        TokenStore.clear(context)
         clearAllUserData()
     }
 
@@ -383,63 +376,11 @@ class AuthenticationService(
     }
 
     suspend fun isTokenValidForSecureOperations(): Boolean {
-        val preferences = context.dataStore.data.first()
-        val token = preferences[AUTH_TOKEN] ?: return false
-        val tokenCreatedTimestamp = preferences[TOKEN_CREATED_TIMESTAMP] ?: 0f
-
-        val currentTime = System.currentTimeMillis() / 1000f
-        val tokenAge = currentTime - tokenCreatedTimestamp
-        val oneHourInSeconds = 3600f
-
-        val isTokenFresh = tokenCreatedTimestamp > 0 && tokenAge < oneHourInSeconds
-
-        return if (isTokenFresh) {
-            validateTokenStructure(token)
-        } else {
-            try {
-                verifyHS256(token, secretKey)
-                true
-            } catch (e: Exception) {
-                validateTokenStructure(token)
-            }
-        }
+        // Tokens are valid for 3 years per new architecture. We can just check if it exists.
+        return TokenStore.read(context) != null
     }
 
     suspend fun requiresFreshAuthentication(): Boolean = !isTokenValidForSecureOperations()
-
-    private fun validateTokenStructure(token: String): Boolean {
-        return try {
-            val parts = token.split(".")
-            if (parts.size != 3) return false
-
-            val payload = String(Base64.getUrlDecoder().decode(parts[1]))
-            val claims = gson.fromJson(payload, Map::class.java)
-
-            // Check if token is expired
-            val exp = (claims["exp"] as? Double)?.toLong()
-            if (exp != null) {
-                val expDate = Date(exp * 1000)
-                expDate.after(Date())
-            } else {
-                true
-            }
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun verifyHS256(
-        token: String,
-        secret: String,
-    ): Claims {
-        val key: SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
-        return Jwts
-            .parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .payload
-    }
 
     // Calorie limits management
     suspend fun getSoftLimit(): Int {

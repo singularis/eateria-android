@@ -62,8 +62,9 @@ data class ErrorResponse(
 )
 
 interface AuthApi {
-    @POST("eater_auth")
+    @POST
     suspend fun authenticate(
+        @retrofit2.http.Url url: String,
         @Body tokenRequest: TokenRequest,
     ): TokenResponse
 }
@@ -183,6 +184,7 @@ class AuthenticationService(
             // Check if Google Play Services is available
             val googlePlayServicesAvailable = checkGooglePlayServicesAvailability()
             Log.e("AuthenticationService", "Google Play Services available: $googlePlayServicesAvailable")
+            Log.e("AuthenticationService", "Using Server Client ID: ${Secrets.googleClientId}")
 
             val googleIdOption =
                 GetGoogleIdOption
@@ -263,19 +265,16 @@ class AuthenticationService(
     private suspend fun tryAlternativeSignIn(activity: ComponentActivity): Boolean {
         Log.e("AuthenticationService", "Attempting alternative sign-in approach...")
         return try {
-            // Try with more permissive settings
-            val googleIdOption =
-                GetGoogleIdOption
-                    .Builder()
-                    .setServerClientId(Secrets.googleClientId)
-                    .setFilterByAuthorizedAccounts(false)
-                    .setAutoSelectEnabled(true) // Enable auto-select as fallback
+            // Fallback to explicit Sign in with Google UI for users who haven't authorized the app
+            val signInWithGoogleOption =
+                com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+                    .Builder(Secrets.googleClientId)
                     .build()
 
             val request =
                 GetCredentialRequest
                     .Builder()
-                    .addCredentialOption(googleIdOption)
+                    .addCredentialOption(signInWithGoogleOption)
                     .build()
 
             val result =
@@ -339,7 +338,8 @@ class AuthenticationService(
             )
 
         try {
-            val tokenResponse = authApi.authenticate(tokenRequest)
+            val endpoint = "eater_auth"
+            val tokenResponse = authApi.authenticate(endpoint, tokenRequest)
             updateAuthenticationState(tokenResponse)
         } catch (e: Exception) {
             Log.e("AuthenticationService", "Authentication failed", e)

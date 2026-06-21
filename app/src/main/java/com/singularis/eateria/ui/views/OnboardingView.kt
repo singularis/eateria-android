@@ -92,6 +92,8 @@ import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Gray3
 import kotlinx.coroutines.launch
 
+enum class OnboardingMode { INITIAL, HEALTH, SOCIAL }
+
 data class OnboardingPage(
     val title: String,
     val description: String,
@@ -112,6 +114,7 @@ data class OnboardingHealthData(
 @Composable
 fun OnboardingView(
     isPresented: Boolean,
+    mode: OnboardingMode = OnboardingMode.INITIAL,
     onComplete: (OnboardingHealthData?, Boolean) -> Unit,
     onChooseDisplayMode: (Boolean) -> Unit = {},
 ) {
@@ -124,190 +127,29 @@ fun OnboardingView(
         .languageFlow(
             LocalContext.current,
         ).collectAsState(initial = LanguageService.getCurrentCode(LocalContext.current))
-    val onboardingPages =
-        listOf(
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.language.select", "Select Language"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.language.desc",
-                        "Choose your preferred language. You can change this later in Profile.",
-                    ),
-                icon = Icons.Default.Language,
-                iconColor = Color(0xFF4CAF50),
-                anchor = "language_select",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.appearance.title", "Choose Appearance ✨"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.appearance.desc",
-                        "Pick your theme and motion preference. You can change this later in profile.",
-                    ),
-                icon = Icons.Default.Settings,
-                iconColor = Color(0xFF9C27B0),
-                anchor = "appearance",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.welcome.title", "Welcome to Eateria! 🍎"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.welcome.desc",
-                        "Your smart food companion that helps you track calories, monitor weight, and make healthier choices. Let's take a quick tour!",
-                    ),
-                icon = Icons.Default.Restaurant,
-                iconColor = Color(0xFF4CAF50),
-                anchor = "welcome",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.recognition.title", "Smart Food Recognition 📸"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.recognition.desc",
-                        "Simply take a photo of your food and our AI will automatically identify it and log the calories. No more manual searching!",
-                    ),
-                icon = Icons.Default.Camera,
-                iconColor = Color(0xFF2196F3),
-                anchor = "addfood",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.tracking.title", "Track Your Progress 📊"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.tracking.desc",
-                        "Monitor your daily calories with our color-coded system and track your weight by photographing your scale. Everything is automated!",
-                    ),
-                icon = Icons.Default.FitnessCenter,
-                iconColor = Color(0xFF9C27B0),
-                anchor = "tracking",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.alcohol.title", "Alcohol Tracking 🍷"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.alcohol.desc",
-                        "See your drinks on a monthly calendar. The top bar alcohol icon changes color based on recency (red ≤ 1 week, yellow ≤ 1 month, green otherwise).",
-                    ),
-                icon = Icons.Default.WineBar,
-                iconColor = Color(0xFFE53935),
-                anchor = "alcohol",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.insights.title", "Get Personalized Insights 💡"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.insights.desc",
-                        "View your trends, manage your profile, and access health information - all designed to help you reach your wellness goals.",
-                    ),
-                icon = Icons.AutoMirrored.Filled.TrendingUp,
-                iconColor = Color(0xFFFF9800),
-                anchor = "insights",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.friends.title", "Share Meals with Friends 🤝"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.friends.desc",
-                        "Add friends and share portions of your meals to split calories. Keep in touch and see who you share with most.",
-                    ),
-                icon = Icons.Default.PersonAdd,
-                iconColor = Color(0xFF03A9F4),
-                anchor = "friends",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.health_setup.title", "Personalized Health Setup 📋"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.health_setup.desc",
-                        "For the best experience, we can calculate personalized calorie recommendations based on your health data. This is completely optional!",
-                    ),
-                icon = Icons.Default.Person,
-                iconColor = Color(0xFF3F51B5),
-                anchor = "health_setup",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.health_form.title", "Your Health Data 📝"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.health_form.desc",
-                        "Please provide your basic health information to get personalized recommendations.",
-                    ),
-                icon = Icons.Default.Favorite,
-                iconColor = Color(0xFFE91E63),
-                anchor = "health_form",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.health_results.title", "Your Personalized Plan 🎯"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.health_results.desc",
-                        "Based on your data, here are your personalized recommendations for optimal health.",
-                    ),
-                icon = Icons.Default.CheckCircle,
-                iconColor = Color(0xFF4CAF50),
-                anchor = "health_results",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.disclaimer.title", "Important Health Disclaimer ⚠️"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.disclaimer.desc",
-                        "This app is for informational purposes only and not a substitute for professional medical advice. Always consult healthcare providers for personalized dietary guidance and medical decisions.",
-                    ),
-                icon = Icons.Default.Warning,
-                iconColor = Color(0xFFFF9800),
-                anchor = "disclaimer",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.datamode.title", "Choose Your Data Mode 📈"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.datamode.desc",
-                        "Pick how much detail you prefer on the main screen. You can change this later in Profile → Display Mode.",
-                    ),
-                icon = Icons.Default.Settings,
-                iconColor = Color(0xFF607D8B),
-                anchor = "display_mode",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.notifications.title", "Stay on Track with Gentle Reminders ⏰"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.notifications.desc",
-                        "Enable reminders to nudge you to log meals throughout the day. You can change this anytime in settings.",
-                    ),
-                icon = Icons.Default.Notifications,
-                iconColor = Color(0xFF03A9F4),
-                anchor = "notifications",
-            ),
-            OnboardingPage(
-                title = Localization.tr(LocalContext.current, "onboarding.complete.title", "You're All Set! 🎉"),
-                description =
-                    Localization.tr(
-                        LocalContext.current,
-                        "onboarding.complete.desc",
-                        "Ready to start your healthy journey? You can always revisit this tutorial from your profile settings if needed.",
-                    ),
-                icon = Icons.Default.CheckCircle,
-                iconColor = Color(0xFF4CAF50),
-                anchor = "complete",
-            ),
+    val allPages = listOf(
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.welcome.title", "Welcome to Eateria! 🍎"), description = Localization.tr(LocalContext.current, "onboarding.welcome.desc", "Your smart food companion that helps you track calories, monitor weight, and make healthier choices. Let's take a quick tour!"), icon = Icons.Default.Restaurant, iconColor = Color(0xFF4CAF50), anchor = "welcome"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.tools.title", "Your Essential Tools 🍽️"), description = Localization.tr(LocalContext.current, "onboarding.tools.desc", "Small steps that make a big difference."), icon = Icons.Default.Settings, iconColor = Color(0xFF607D8B), anchor = "tools"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.pets.title", "Meet Your Pet Companion 🐾"), description = Localization.tr(LocalContext.current, "onboarding.pets.desc", "Choose a pet that will motivate you on your journey."), icon = Icons.Default.Favorite, iconColor = Color(0xFFFF9800), anchor = "pets"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.plan.title", "Your Personal Plan 😎"), description = Localization.tr(LocalContext.current, "onboarding.plan.desc", "See how your goal and activity level turn into a safe, realistic plan."), icon = Icons.Default.FitnessCenter, iconColor = Color(0xFF9C27B0), anchor = "plan"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.smart_tips.title", "New Features ✨"), description = Localization.tr(LocalContext.current, "onboarding.smart_tips.desc", "Powerful tools to make your tracking even better."), icon = Icons.AutoMirrored.Filled.TrendingUp, iconColor = Color(0xFFFF9800), anchor = "smart_tips"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.team.title", "Let's Build Eateria Together"), description = Localization.tr(LocalContext.current, "onboarding.team.desc", "We'd love to grow with you."), icon = Icons.Default.Favorite, iconColor = Color(0xFFE91E63), anchor = "team"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.disclaimer.title", "Important Health Disclaimer ⚠️"), description = Localization.tr(LocalContext.current, "onboarding.disclaimer.desc", "This app is for informational purposes only and not a substitute for professional medical advice. Always consult healthcare providers for personalized dietary guidance and medical decisions."), icon = Icons.Default.Warning, iconColor = Color(0xFFFF9800), anchor = "disclaimer"),
+            
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.health_setup.title", "Personalized Health Setup 📋"), description = Localization.tr(LocalContext.current, "onboarding.health_setup.desc", "For the best experience, we can calculate personalized calorie recommendations based on your health data. This is completely optional!"), icon = Icons.Default.Person, iconColor = Color(0xFF3F51B5), anchor = "health_setup"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.health_form.title", "Your Health Data 📝"), description = Localization.tr(LocalContext.current, "onboarding.health_form.desc", "Please provide your basic health information to get personalized recommendations."), icon = Icons.Default.Favorite, iconColor = Color(0xFFE91E63), anchor = "health_form"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.health_results.title", "Your Personalized Plan 🎯"), description = Localization.tr(LocalContext.current, "onboarding.health_results.desc", "Based on your data, here are your personalized recommendations for optimal health."), icon = Icons.Default.CheckCircle, iconColor = Color(0xFF4CAF50), anchor = "health_results"),
+            
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.friends.title", "Share Meals with Friends 🤝"), description = Localization.tr(LocalContext.current, "onboarding.friends.desc", "Add friends and share portions of your meals to split calories. Keep in touch and see who you share with most."), icon = Icons.Default.PersonAdd, iconColor = Color(0xFF03A9F4), anchor = "friends")
         )
 
+    val onboardingPages = remember(mode) {
+        when (mode) {
+            OnboardingMode.INITIAL -> allPages.filter { it.anchor in listOf("welcome", "tools", "pets", "plan", "smart_tips", "team", "disclaimer") }
+            OnboardingMode.HEALTH -> allPages.filter { it.anchor in listOf("health_setup", "health_form", "health_results") }
+            OnboardingMode.SOCIAL -> allPages.filter { it.anchor in listOf("friends") }
+        }
+    }
     val pagerState = rememberPagerState(pageCount = { onboardingPages.size })
     val coroutineScope = rememberCoroutineScope()
 
@@ -390,6 +232,7 @@ fun OnboardingView(
                     when (onboardingPages[page].anchor) {
                         "language_select" -> LanguageSelectOnboardingView(page = onboardingPages[page])
                         "appearance" -> AppearanceOnboardingView(page = onboardingPages[page])
+                        "pets" -> PetsOnboardingView(page = onboardingPages[page])
                         "welcome" ->
                             WelcomeOnboardingView(
                                 page = onboardingPages[page],
@@ -2036,4 +1879,101 @@ fun OnboardingFlow(
         isPresented = shouldShow,
         onComplete = onDismiss,
     )
+}
+
+@Composable
+private fun PetsOnboardingView(page: OnboardingPage) {
+    val themeService = com.singularis.eateria.services.ThemeService.getInstance()
+    val currentMascot by themeService.currentMascotFlow.collectAsState()
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = page.title,
+            color = AppTheme.textPrimary(),
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 34.sp,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = page.description,
+            color = AppTheme.textSecondary(),
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Cat
+        Card(
+            modifier = Modifier.fillMaxWidth().clickable {
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                themeService.currentMascot = com.singularis.eateria.services.AppMascot.CAT
+                themeService.playSound("happy")
+            },
+            colors = CardDefaults.cardColors(containerColor = if (currentMascot == com.singularis.eateria.services.AppMascot.CAT) Color(0xFF9C27B0).copy(alpha=0.1f) else AppTheme.surface()),
+            border = if (currentMascot == com.singularis.eateria.services.AppMascot.CAT) androidx.compose.foundation.BorderStroke(2.dp, AppTheme.accent()) else null
+        ) {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("🐱", fontSize = 40.sp)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text("Cat", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.pets.cat.desc", "Elegant and opinionated. Purrs when you eat well, hisses when you don't."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Dog
+        Card(
+            modifier = Modifier.fillMaxWidth().clickable {
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                themeService.currentMascot = com.singularis.eateria.services.AppMascot.DOG
+                themeService.playSound("happy")
+            },
+            colors = CardDefaults.cardColors(containerColor = if (currentMascot == com.singularis.eateria.services.AppMascot.DOG) Color(0xFF9C27B0).copy(alpha=0.1f) else AppTheme.surface()),
+            border = if (currentMascot == com.singularis.eateria.services.AppMascot.DOG) androidx.compose.foundation.BorderStroke(2.dp, AppTheme.accent()) else null
+        ) {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("🐶", fontSize = 40.sp)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text("Root", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.pets.dog.desc", "Loyal and expressive. Barks with joy for healthy meals, growls at junk food."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Default
+        Card(
+            modifier = Modifier.fillMaxWidth().clickable {
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                themeService.currentMascot = com.singularis.eateria.services.AppMascot.NONE
+            },
+            colors = CardDefaults.cardColors(containerColor = if (currentMascot == com.singularis.eateria.services.AppMascot.NONE) Color(0xFFFF9800).copy(alpha=0.1f) else AppTheme.surface()),
+            border = if (currentMascot == com.singularis.eateria.services.AppMascot.NONE) androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFF9800)) else null
+        ) {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = androidx.compose.material.icons.Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(40.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(Localization.tr(context, "onboarding.pets.default.title", "Default Style"), fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.pets.default.desc", "Clean and simple. Standard icons without pet reactions."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                }
+            }
+        }
+    }
 }

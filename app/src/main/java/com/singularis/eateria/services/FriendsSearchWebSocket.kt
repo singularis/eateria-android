@@ -19,6 +19,11 @@ import java.util.concurrent.TimeUnit
 class FriendsSearchWebSocket(
     private val authTokenProvider: suspend () -> String?,
 ) {
+    data class UserSearchResult(
+        val email: String,
+        val nickname: String?
+    )
+
     enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, AUTHENTICATED, FAILED }
 
     private val client: OkHttpClient =
@@ -36,8 +41,8 @@ class FriendsSearchWebSocket(
     private val _state = MutableStateFlow(ConnectionState.DISCONNECTED)
     val state: StateFlow<ConnectionState> = _state
 
-    private val _resultsChannel = Channel<List<String>>(Channel.CONFLATED)
-    val resultsChannel: Channel<List<String>> = _resultsChannel
+    private val _resultsChannel = Channel<List<UserSearchResult>>(Channel.CONFLATED)
+    val resultsChannel: Channel<List<UserSearchResult>> = _resultsChannel
 
     fun attachScope(scope: CoroutineScope) {
         this.scope = scope
@@ -120,13 +125,16 @@ class FriendsSearchWebSocket(
                     }
                 } else if (type == "results") {
                     val results = obj.optJSONArray("results") ?: JSONArray()
-                    val emails = mutableListOf<String>()
+                    val userResults = mutableListOf<UserSearchResult>()
                     for (i in 0 until results.length()) {
                         val item = results.optJSONObject(i)
                         val email = item?.optString("email")
-                        if (!email.isNullOrEmpty()) emails.add(email)
+                        if (!email.isNullOrEmpty()) {
+                            val nickname = if (item.has("nickname") && !item.isNull("nickname")) item.optString("nickname") else null
+                            userResults.add(UserSearchResult(email, nickname))
+                        }
                     }
-                    scope?.launch { _resultsChannel.send(emails) }
+                    scope?.launch { _resultsChannel.send(userResults) }
                 }
             } catch (e: Exception) {
                 Log.e("FriendsWS", "Failed to parse message", e)

@@ -1,4 +1,7 @@
 package com.singularis.eateria.ui.views
+import com.singularis.eateria.ui.theme.AppTheme
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 
 import android.icu.text.MeasureFormat
 import android.icu.util.Measure
@@ -73,10 +76,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.singularis.eateria.models.DailyStatistics
+import com.singularis.eateria.models.StatisticsPeriod
 import com.singularis.eateria.services.CalorieTrend
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.NutritionAverages
-import com.singularis.eateria.services.StatisticsPeriod
+
 import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.services.WeightTrend
 import com.singularis.eateria.services.WeightTrendDirection
@@ -276,6 +280,7 @@ fun StatisticsView(onBackClick: () -> Unit) {
                             SummaryStatsView(
                                 averages = currentAverages,
                                 statistics = currentStatistics,
+                                timeRange = selectedTimeRange,
                             )
                         }
                     }
@@ -347,6 +352,13 @@ private fun StatisticsHeader(
 
         Spacer(modifier = Modifier.height(Dimensions.paddingL))
 
+        Text(
+            text = Localization.tr(LocalContext.current, "stats.timeperiod", "Time Period"),
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = Dimensions.paddingM)
+        )
+
         // Time range buttons with organic styling
         Row(
             modifier =
@@ -404,43 +416,38 @@ private fun ChartTypeSelector(
             Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         ChartType.values().forEach { chartType ->
-            FilterChip(
-                onClick = { onChartTypeChange(chartType) },
-                label = {
-                    Text(
-                        text =
-                            when (chartType) {
-                                ChartType.INSIGHTS -> Localization.tr(LocalContext.current, "stats.chart.insights", "Insights")
-                                ChartType.CALORIES -> Localization.tr(LocalContext.current, "stats.chart.calories", "Calories")
-                                ChartType.MACROS -> Localization.tr(LocalContext.current, "stats.chart.macros", "Macronutrients")
-                                ChartType.PERSON_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight")
-                                ChartType.FOOD_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight")
-                                ChartType.TRENDS -> Localization.tr(LocalContext.current, "stats.chart.trends", "Trends")
-                            },
-                        style =
-                            MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = if (selectedChart == chartType) FontWeight.SemiBold else FontWeight.Normal,
-                            ),
-                    )
+            val isSelected = selectedChart == chartType
+            Button(
+                onClick = {
+                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                    onChartTypeChange(chartType) 
                 },
-                selected = selectedChart == chartType,
-                shape = organicChipShape,
-                colors =
-                    FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = DarkPrimary.copy(alpha = 0.9f),
-                        selectedLabelColor = Color.White,
-                        containerColor = Gray3.copy(alpha = 0.7f),
-                        labelColor = Color.Gray,
-                    ),
-                modifier =
-                    Modifier.shadow(
-                        elevation = if (selectedChart == chartType) 4.dp else 2.dp,
-                        shape = organicChipShape,
-                    ),
-            )
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isSelected) AppTheme.accent() else AppTheme.surfaceAlt(),
+                    contentColor = if (isSelected) Color.Black.copy(alpha = 0.9f) else AppTheme.textPrimary()
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 1.dp)
+            ) {
+                Text(
+                    text = when (chartType) {
+                        ChartType.INSIGHTS -> Localization.tr(LocalContext.current, "stats.chart.insights", "Insights")
+                        ChartType.CALORIES -> Localization.tr(LocalContext.current, "stats.chart.calories", "Calories")
+                        ChartType.MACROS -> Localization.tr(LocalContext.current, "stats.chart.macros", "Macronutrients")
+                        ChartType.PERSON_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight")
+                        ChartType.FOOD_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight")
+                        ChartType.TRENDS -> Localization.tr(LocalContext.current, "stats.chart.trends", "Trends")
+                    },
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp
+                    )
+                )
+            }
         }
     }
 }
@@ -452,89 +459,70 @@ private fun InsightsView(
     timeRange: StatisticsTimeRange,
 ) {
     val validDays = statistics.filter { it.hasData }.size
-    val insightsTitle = Localization.tr(LocalContext.current, "stats.insights.title", "Insights Overview")
+    val context = LocalContext.current
+    val insightsTitle = Localization.tr(context, "stats.insights.title", "Insights Overview")
 
-    Card(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = Dimensions.elevationM,
-                    shape = organicCardShape,
-                    ambientColor = DarkPrimary.copy(alpha = 0.1f),
-                ),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = Gray4.copy(alpha = 0.95f),
-            ),
-        shape = organicCardShape,
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush =
-                            Brush.verticalGradient(
-                                colors =
-                                    listOf(
-                                        Gray4.copy(alpha = 0.4f),
-                                        Gray4.copy(alpha = 0.8f),
-                                    ),
-                            ),
-                    ),
-        ) {
-            Column(
-                modifier = Modifier.padding(Dimensions.paddingXL),
-            ) {
-                Text(
-                    text = insightsTitle,
-                    color = Color.White,
-                    style =
-                        MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                        ),
+        Text(
+            text = insightsTitle,
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        if (averages != null && validDays > 0) {
+            InsightCard(
+                title = Localization.tr(context, "stats.insights.active_days", "Active Days"),
+                value = "$validDays/${statistics.size}"
+            )
+            InsightCard(
+                title = Localization.tr(context, "stats.insights.avg_daily_calories", "Avg Daily Calories"),
+                value = "${averages.avgCalories.toInt()} ${Localization.tr(context, "units.kcal", "kcal")}"
+            )
+            InsightCard(
+                title = Localization.tr(context, "stats.insights.avg_food_weight", "Avg Food Weight"),
+                value = "${averages.avgWeight.toInt()} ${Localization.tr(context, "units.g", "g")}"
+            )
+            InsightCard(
+                title = Localization.tr(context, "stats.insights.avg_protein", "Avg Protein"),
+                value = "${averages.avgProteins.toInt()} ${Localization.tr(context, "units.g", "g")}"
+            )
+            InsightCard(
+                title = Localization.tr(context, "stats.insights.avg_fiber", "Avg Fiber"),
+                value = "${averages.avgFiber.toInt()} ${Localization.tr(context, "units.g", "g")}"
+            )
+            
+            if (averages.avgPersonWeight > 0) {
+                InsightCard(
+                    title = Localization.tr(context, "stats.insights.avg_body_weight", "Avg Body Weight"),
+                    value = String.format("%.1f %s", averages.avgPersonWeight, Localization.tr(context, "units.kg", "kg"))
                 )
-
-                Spacer(modifier = Modifier.height(Dimensions.paddingL))
-
-                if (averages != null) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
-                    ) {
-                        InsightRow(
-                            Localization.tr(LocalContext.current, "stats.insights.active_days", "Active Days"),
-                            "$validDays/${statistics.size}",
-                        )
-                        InsightRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"),
-                            "${averages.calories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
-                        )
-                        InsightRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"),
-                            "${String.format("%.1f", averages.weight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
-                        )
-                        InsightRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"),
-                            "${String.format("%.1f", averages.proteins)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        )
-                        InsightRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"),
-                            "${String.format("%.1f", averages.fats)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        )
-                        InsightRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"),
-                            "${String.format("%.1f", averages.carbohydrates)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        )
-                        InsightRow(
-                            Localization.tr(LocalContext.current, "stats.summary.avg_food", "Avg Food"),
-                            "${String.format("%.1f", averages.mealsPerDay)}",
-                        )
-                    }
-                } else {
-                    NoDataMessage(Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"))
-                }
             }
+        } else {
+            NoDataMessage(Localization.tr(context, "stats.no_data", "No data available for this period"))
+        }
+    }
+}
+
+@Composable
+private fun InsightCard(title: String, value: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Gray4.copy(alpha = 0.95f)),
+        shape = organicCardShape
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = title, color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodyMedium)
+            Text(text = value, color = AppTheme.textPrimary(), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
         }
     }
 }
@@ -597,6 +585,7 @@ private fun NoDataMessage(message: String) {
 private fun SummaryStatsView(
     averages: NutritionAverages?,
     statistics: List<DailyStatistics>,
+    timeRange: StatisticsTimeRange,
 ) {
     val validDays = statistics.filter { it.hasData }.size
 
@@ -663,23 +652,23 @@ private fun SummaryStatsView(
                         )
                         StatRow(
                             Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"),
-                            "${averages.calories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
+                            "${averages.avgCalories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
                         )
                         StatRow(
                             Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"),
-                            "${String.format("%.1f", averages.weight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
+                            "${String.format("%.1f", averages.avgPersonWeight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
                         )
                         StatRow(
                             Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"),
-                            "${String.format("%.1f", averages.proteins)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
+                            "${String.format("%.1f", averages.avgProteins)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
                         )
                         StatRow(
                             Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"),
-                            "${String.format("%.1f", averages.fats)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
+                            "${String.format("%.1f", averages.avgFats)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
                         )
                         StatRow(
                             Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"),
-                            "${String.format("%.1f", averages.carbohydrates)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
+                            "${String.format("%.1f", averages.avgCarbs)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
                         )
                         StatRow(
                             Localization.tr(LocalContext.current, "stats.summary.avg_food", "Avg Food"),
@@ -1260,97 +1249,73 @@ private fun TrendsView(
     weightTrend: WeightTrend?,
     calorieTrend: CalorieTrend?,
 ) {
-    Card(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 8.dp,
-                    shape = organicCardShape,
-                    ambientColor = DarkPrimary.copy(alpha = 0.1f),
-                ),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = Gray4.copy(alpha = 0.95f),
-            ),
-        shape = organicCardShape,
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush =
-                            Brush.verticalGradient(
-                                colors =
-                                    listOf(
-                                        Gray4.copy(alpha = 0.4f),
-                                        Gray4.copy(alpha = 0.8f),
-                                    ),
-                            ),
-                    ),
+        Text(
+            text = Localization.tr(context, "stats.trend.title", "Trend Analysis"),
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        weightTrend?.let { trend ->
+            TrendCard(
+                title = Localization.tr(context, "stats.trend.body_weight", "Body Weight Trend"),
+                value = "${if (trend.weeklyChange >= 0) "+" else ""}${String.format("%.1f", trend.weeklyChange)} ${Localization.tr(context, "units.kg", "kg")}",
+                color = when (trend.trend) {
+                    WeightTrendDirection.GAINING -> CalorieOrange
+                    WeightTrendDirection.LOSING -> CalorieGreen
+                    WeightTrendDirection.STABLE -> CalorieYellow
+                },
+                icon = when (trend.trend) {
+                    WeightTrendDirection.GAINING -> Icons.AutoMirrored.Filled.TrendingUp
+                    WeightTrendDirection.LOSING -> Icons.AutoMirrored.Filled.TrendingUp
+                    WeightTrendDirection.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
+                }
+            )
+        }
+
+        calorieTrend?.let { trend ->
+            TrendCard(
+                title = Localization.tr(context, "stats.calorie.consistency", "Calorie Consistency"),
+                value = "${(trend.consistency * 100).toInt()}%",
+                color = if (trend.consistency > 0.7f) CalorieGreen else CalorieOrange,
+                icon = if (trend.consistency > 0.7f) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingFlat
+            )
+
+            TrendCard(
+                title = Localization.tr(context, "stats.avg_calories", "Avg Daily Calories"),
+                value = "${trend.averageCalories.toInt()} ${Localization.tr(context, "units.kcal", "kcal")}",
+                color = AppTheme.textPrimary(),
+                icon = Icons.AutoMirrored.Filled.TrendingFlat
+            )
+        }
+    }
+}
+
+@Composable
+private fun TrendCard(title: String, value: String, color: Color, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Gray4.copy(alpha = 0.95f)),
+        shape = organicCardShape
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.padding(Dimensions.paddingXL),
-            ) {
-                Text(
-                    text = Localization.tr(LocalContext.current, "stats.trend.title", "Trend Analysis"),
-                    color = Color.White,
-                    style =
-                        MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                        ),
-                )
-
-                Spacer(modifier = Modifier.height(Dimensions.paddingL))
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Dimensions.paddingL),
-                ) {
-                    weightTrend?.let { trend ->
-                        TrendCard(
-                            title = Localization.tr(LocalContext.current, "stats.trend.body_weight", "Body Weight Trend"),
-                            value = "${if (trend.weeklyChange >= 0) "+" else ""}${String.format(
-                                "%.1f",
-                                trend.weeklyChange,
-                            )} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
-                            color =
-                                when (trend.trend) {
-                                    WeightTrendDirection.GAINING -> CalorieOrange
-                                    WeightTrendDirection.LOSING -> CalorieGreen
-                                    WeightTrendDirection.STABLE -> CalorieYellow
-                                },
-                            icon =
-                                when (trend.trend) {
-                                    WeightTrendDirection.GAINING -> Icons.AutoMirrored.Filled.TrendingUp
-                                    WeightTrendDirection.LOSING -> Icons.AutoMirrored.Filled.TrendingUp
-                                    WeightTrendDirection.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
-                                },
-                        )
-                    }
-
-                    calorieTrend?.let { trend ->
-                        TrendCard(
-                            title = Localization.tr(LocalContext.current, "stats.calorie.consistency", "Calorie Consistency"),
-                            value = "${(trend.consistency * 100).toInt()}%",
-                            color = if (trend.consistency > 0.7f) CalorieGreen else CalorieOrange,
-                            icon =
-                                if (trend.consistency >
-                                    0.7f
-                                ) {
-                                    Icons.AutoMirrored.Filled.TrendingUp
-                                } else {
-                                    Icons.AutoMirrored.Filled.TrendingFlat
-                                },
-                        )
-
-                        TrendCard(
-                            title = Localization.tr(LocalContext.current, "stats.avg_calories", "Avg Daily Calories"),
-                            value = "${trend.averageCalories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
-                            color = DarkPrimary,
-                            icon = Icons.AutoMirrored.Filled.TrendingFlat,
-                        )
-                    }
+            Column {
+                Text(text = title, color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodyMedium)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+                    Text(text = value, color = color, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
                 }
             }
         }
@@ -2003,51 +1968,6 @@ private fun LegendItem(
     }
 }
 
-@Composable
-private fun TrendCard(
-    title: String,
-    value: String,
-    color: Color,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray3),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-    ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.paddingL),
-            // More padding
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(Dimensions.iconSizeL), // Larger icon
-            )
-
-            Spacer(modifier = Modifier.width(Dimensions.paddingL)) // More space
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.bodyLarge, // Larger title
-                )
-                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-                Text(
-                    text = value,
-                    color = color,
-                    style = MaterialTheme.typography.headlineSmall, // Much larger value
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun MacroBarRow(

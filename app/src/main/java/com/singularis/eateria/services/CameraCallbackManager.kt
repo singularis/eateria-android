@@ -3,7 +3,7 @@ package com.singularis.eateria.services
 import android.graphics.Bitmap
 import android.util.Log
 
-class CameraCallbackManager {
+object CameraCallbackManager {
     private var onPhotoSuccessCallback: (() -> Unit)? = null
     private var onPhotoFailureCallback: ((String) -> Unit)? = null
     private var onPhotoStartedCallback: (() -> Unit)? = null
@@ -35,22 +35,30 @@ class CameraCallbackManager {
 
     fun onFoodPhotoSuccess() {
         Log.d("CameraCallbackManager", "Food photo capture successful")
-        onPhotoSuccessCallback?.invoke()
+        val callback = onPhotoSuccessCallback
+        clearCallbacks()
+        callback?.invoke()
     }
 
     fun onFoodPhotoFailure(error: String) {
         Log.e("CameraCallbackManager", "Food photo capture failed: $error")
-        onPhotoFailureCallback?.invoke(error)
+        val callback = onPhotoFailureCallback
+        clearCallbacks()
+        callback?.invoke(error)
     }
 
     fun onWeightPhotoSuccess() {
         Log.d("CameraCallbackManager", "Weight photo capture successful")
-        onWeightPhotoSuccessCallback?.invoke()
+        val callback = onWeightPhotoSuccessCallback
+        clearCallbacks()
+        callback?.invoke()
     }
 
     fun onWeightPhotoFailure(error: String) {
         Log.e("CameraCallbackManager", "Weight photo capture failed: $error")
-        onWeightPhotoFailureCallback?.invoke(error)
+        val callback = onWeightPhotoFailureCallback
+        clearCallbacks()
+        callback?.invoke(error)
     }
 
     fun clearCallbacks() {

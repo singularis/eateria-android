@@ -1,0 +1,29 @@
+@@ -165,8 +166,28 @@
+ 
+     Box(modifier = Modifier.fillMaxSize().background(AppTheme.surface())) {
++        // Dynamic Background blobs
++        Box(modifier = Modifier.fillMaxSize()) {
++            Box(
++                modifier = Modifier
++                    .size(200.dp)
++                    .offset(x = (-50).dp, y = (-50).dp)
++                    .blur(40.dp)
++                    .background(Color.Blue.copy(alpha = 0.1f), CircleShape)
++            )
++            Box(
++                modifier = Modifier
++                    .size(200.dp)
++                    .align(Alignment.BottomEnd)
++                    .offset(x = 50.dp, y = 50.dp)
++                    .blur(40.dp)
++                    .background(Color(0xFF9C27B0).copy(alpha = 0.1f), CircleShape) // Purple
++            )
++        }
++
+         Column(
+             modifier = Modifier
+                 .fillMaxSize()
+                 .systemBarsPadding(),
+             horizontalAlignment = Alignment.CenterHorizontally
+         ) {
++            // Drag Indicator

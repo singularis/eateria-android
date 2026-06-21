@@ -16,8 +16,10 @@ class EateriaApplication : Application() {
         super.onCreate()
 
         // Initialize services
+        com.singularis.eateria.services.AppEnvironment.initialize(this)
         AppSettingsService.initialize(this)
         HapticsService.initialize(this)
+        com.singularis.eateria.services.ThemeService.initialize(this)
 
         NotificationHelper.ensureChannel(this)
         CoroutineScope(Dispatchers.Default).launch {

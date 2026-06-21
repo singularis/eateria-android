@@ -1,5 +1,14 @@
 package com.singularis.eateria.ui.views
 
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.PhotoLibrary
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.AsyncImage
+import com.singularis.eateria.ui.theme.AppTheme
+import android.net.Uri
+
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
@@ -535,78 +544,194 @@ fun FullScreenPhotoView(
                 }
 
             Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(Color.Black),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(AppTheme.backgroundGradient()),
             ) {
-                // Close button
-                IconButton(
-                    onClick = { 
-                        HapticsService.getInstance().select()
-                        onDismiss() 
-                    },
-                    modifier =
-                        Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp),
-                    )
-                }
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Header with food name and close button
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = foodName,
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = AppTheme.textPrimary(),
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                        
+                        IconButton(
+                            onClick = { 
+                                HapticsService.getInstance().select()
+                                onDismiss() 
+                            },
+                            modifier = Modifier.padding(end = 16.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(AppTheme.surfaceAlt(), shape = androidx.compose.foundation.shape.CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
+                                    tint = AppTheme.textPrimary(),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.weight(1f))
 
-                // Image
-                if (image != null) {
-                    androidx.compose.foundation.Image(
-                        bitmap = image.asImageBitmap(),
-                        contentDescription = foodName,
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
+                    // Image
+                    if (image != null) {
+                        androidx.compose.foundation.Image(
+                            bitmap = image.asImageBitmap(),
+                            contentDescription = foodName,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(4f)
                                 .graphicsLayer(
                                     scaleX = scale,
                                     scaleY = scale,
                                     translationX = offset.x,
                                     translationY = offset.y,
-                                ).transformable(state = transformableState),
-                        contentScale = ContentScale.Fit,
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = Localization.tr(LocalContext.current, "camera.image_unavailable", "Image not available"),
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyLarge,
+                                )
+                                .transformable(state = transformableState),
+                            contentScale = ContentScale.Fit,
                         )
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().weight(4f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                painter = androidx.compose.ui.res.painterResource(android.R.drawable.ic_menu_gallery),
+                                contentDescription = null,
+                                tint = AppTheme.textSecondary(),
+                                modifier = Modifier.size(80.dp)
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                text = Localization.tr(LocalContext.current, "fs.no_photo", "No photo available"),
+                                color = AppTheme.textSecondary(),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
                     }
-                }
+                    
+                    Spacer(modifier = Modifier.weight(1f))
 
-                // Food name overlay
-                if (foodName.isNotEmpty()) {
-                    Box(
-                        modifier =
-                            Modifier
-                                .align(Alignment.BottomCenter)
-                                .fillMaxWidth()
-                                .background(Color.Black.copy(alpha = 0.7f))
-                                .padding(16.dp),
-                    ) {
-                        Text(
-                            text = foodName,
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
+                    // Instructions text
+                    Text(
+                        text = Localization.tr(LocalContext.current, "fs.hint", "Double tap to reset • Pinch to zoom • Drag to pan"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppTheme.textSecondary(),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp)
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun MultiplePhotoUploadButton(
+    onPhotosSelected: (List<Bitmap>) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var isUploading by remember { mutableStateOf(false) }
+
+    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            isUploading = true
+            val bitmaps = mutableListOf<Bitmap>()
+            for (uri in uris) {
+                try {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val bitmap = BitmapFactory.decodeStream(inputStream)
+                    inputStream?.close()
+                    if (bitmap != null) {
+                        bitmaps.add(bitmap)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            if (bitmaps.isNotEmpty()) {
+                onPhotosSelected(bitmaps)
+            }
+            isUploading = false
+        }
+    }
+
+    Button(
+        onClick = {
+            HapticsService.getInstance().select()
+            multiplePhotoPickerLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        },
+        enabled = !isUploading,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(AppTheme.cornerRadius),
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                        colors = listOf(
+                            Color.Blue.copy(alpha = 0.7f),
+                            Color.Magenta.copy(alpha = 0.6f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(AppTheme.cornerRadius)
+                )
+                .border(
+                    width = 2.dp,
+                    color = Color.Blue.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(AppTheme.cornerRadius)
+                )
+                .padding(vertical = 24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PhotoLibrary, // approximate "photo.on.rectangle.angled"
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = Localization.tr(context, "camera.upload_multiple", "Upload Multiple"),
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                    textAlign = TextAlign.Center,
+                    maxLines = 2
+                )
             }
         }
     }
@@ -624,21 +749,71 @@ fun ProfileImageView(
     val displaySize = size.dp
 
     if (!profilePictureURL.isNullOrEmpty()) {
-        // TODO: Use Image/Bitmap loading with Android APIs here
+        SubcomposeAsyncImage(
+            model = profilePictureURL,
+            contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
+            modifier = modifier
+                .size(displaySize)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
+            error = {
+                FallbackAvatarView(size, fallbackIconColor, userName, userEmail, modifier)
+            }
+        )
     } else {
-        Box(
-            modifier =
-                modifier
-                    .size(displaySize)
-                    .clip(CircleShape)
-                    .background(Gray3),
-            contentAlignment = Alignment.Center,
-        ) {
+        FallbackAvatarView(size, fallbackIconColor, userName, userEmail, modifier)
+    }
+}
+
+@Composable
+private fun FallbackAvatarView(
+    size: Int,
+    fallbackIconColor: Color,
+    userName: String?,
+    userEmail: String?,
+    modifier: Modifier = Modifier
+) {
+    val displaySize = size.dp
+    
+    val seed = (userEmail ?: userName ?: "").hashCode()
+    val colors = listOf(
+        Color.Blue, Color.Green, Color(0xFFFFA500), Color(0xFF800080), 
+        Color.Red, Color(0xFFFFC0CB), Color(0xFF4B0082), Color(0xFF008080)
+    )
+    val avatarBackgroundColor = colors[kotlin.math.abs(seed) % colors.size]
+
+    val initials = remember(userName, userEmail) {
+        if (!userName.isNullOrEmpty()) {
+            userName.split(" ").mapNotNull { it.firstOrNull() }.take(2).joinToString("").uppercase()
+        } else if (!userEmail.isNullOrEmpty()) {
+            userEmail.split("@").firstOrNull()?.take(2)?.uppercase()
+        } else {
+            null
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .size(displaySize)
+            .clip(CircleShape)
+            .background(avatarBackgroundColor),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (!initials.isNullOrEmpty()) {
+            Text(
+                text = initials,
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = androidx.compose.ui.unit.TextUnit((size * 0.4f), androidx.compose.ui.unit.TextUnitType.Sp),
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+        } else {
             Icon(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
                 tint = fallbackIconColor,
-                modifier = Modifier.size(displaySize * 0.8f),
+                modifier = Modifier.size(displaySize), // Matches iOS size filling circle
             )
         }
     }

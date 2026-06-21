@@ -11,6 +11,39 @@ import java.util.concurrent.ConcurrentHashMap
 object Localization {
     private val cache: MutableMap<String, Map<String, String>> = ConcurrentHashMap()
 
+    private val foodNameToKey: Map<String, String> = mapOf(
+        "Apple" to "food.apple",
+        "Banana" to "food.banana",
+        "Orange" to "food.orange",
+        "Bread" to "food.bread",
+        "Chicken" to "food.chicken",
+        "Egg" to "food.egg",
+        "Eggs" to "food.eggs",
+        "Milk" to "food.milk",
+        "Rice" to "food.rice",
+        "Salad" to "food.salad",
+        "Tomato" to "food.tomato",
+        "Cheese" to "food.cheese",
+        "Fish" to "food.fish",
+        "Meat" to "food.meat",
+        "Potato" to "food.potato",
+        "Potatoes" to "food.potatoes",
+        "Pasta" to "food.pasta",
+        "Yogurt" to "food.yogurt",
+        "Coffee" to "food.coffee",
+        "Tea" to "food.tea"
+    )
+
+    fun translateFoodName(context: Context, name: String): String {
+        val t = name.trim()
+        if (t.isEmpty()) return name
+        val key = foodNameToKey[t]
+        if (key != null) {
+            return tr(context, key, t)
+        }
+        return name
+    }
+
     fun tr(
         context: Context,
         key: String,

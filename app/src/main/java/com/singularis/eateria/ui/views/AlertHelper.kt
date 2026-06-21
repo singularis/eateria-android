@@ -30,6 +30,75 @@ object AlertHelper {
         SELECT
     }
 
+    data class HealthSummaryItem(
+        val ingredients: String? = null,
+        val ingredient: String? = null,
+        val description: String? = null,
+        val risk: String? = null,
+        val benefit: String? = null,
+        val impact: String? = null,
+        val impact_text: String? = null
+    )
+
+    private val healthPhraseToKey = mapOf(
+        "Wholesome fruit" to "health.phrase.wholesome_fruit",
+        "Mostly whole fruit with fiber and potassium." to "health.phrase.whole_fruit_fiber_potassium",
+        "Nutrient rich" to "health.phrase.nutrient_rich",
+        "Potassium vitamin B6 fiber" to "health.phrase.potassium_b6_fiber",
+        "Natural sugar" to "health.phrase.natural_sugar",
+        "Sugar spike !" to "health.phrase.sugar_spike",
+        "Sugar spike!" to "health.phrase.sugar_spike",
+        "Raises blood sugar if overeat" to "health.phrase.raises_blood_sugar",
+        "Fiber and key nutrients" to "health.phrase.fiber_and_nutrients",
+        "Moderate natural sugar" to "health.phrase.moderate_sugar",
+        "High sodium" to "health.phrase.high_sodium",
+        "Ultra-processed" to "health.phrase.ultra_processed",
+        "Added sugars" to "health.phrase.added_sugars",
+        "Healthy fats" to "health.phrase.healthy_fats",
+        "Good protein source" to "health.phrase.protein_source",
+        "Broccoli" to "health.phrase.broccoli",
+        "Carrot" to "health.phrase.carrot",
+        "Green bean" to "health.phrase.green_bean",
+        "Potato" to "health.phrase.potato",
+        "Vegetable oil" to "health.phrase.vegetable_oil",
+        "Salt" to "health.phrase.salt",
+        "Vegetables in general" to "health.phrase.vegetables_general",
+        "Lots of fiber and vitamins, but there is oil and salt." to "health.phrase.fiber_vitamins_oil_salt",
+        "Antioxidants" to "health.phrase.antioxidants",
+        "Vision and skin" to "health.phrase.vision_skin",
+        "Vitamin A beta carotene" to "health.phrase.vitamin_a_beta_carotene",
+        "Vitamins C K folate" to "health.phrase.vitamins_c_k_folate",
+        "Satiety" to "health.phrase.satiety",
+        "Fiber folate vitamin C" to "health.phrase.fiber_folate_vitamin_c",
+        "Energy" to "health.phrase.energy",
+        "Potassium carbohydrates for energy" to "health.phrase.potassium_carbs_energy",
+        "Excess calories" to "health.phrase.excess_calories",
+        "High calorie content" to "health.phrase.high_calorie",
+        "Excess salt" to "health.phrase.excess_salt",
+        "May increase sodium" to "health.phrase.may_increase_sodium",
+        "broccoli" to "health.phrase.broccoli",
+        "carrot" to "health.phrase.carrot",
+        "green bean" to "health.phrase.green_bean",
+        "potato" to "health.phrase.potato",
+        "vegetable oil" to "health.phrase.vegetable_oil",
+        "salt" to "health.phrase.salt",
+    )
+
+    private fun stripCandyEmoji(s: String): String {
+        return s.replace(" 🍬", "").replace("🍬", "")
+    }
+
+    fun translateHealthText(context: android.content.Context, text: String): String {
+        val t = text.trim()
+        if (t.isEmpty()) return text
+        val normalized = stripCandyEmoji(t)
+        val key = healthPhraseToKey[normalized] ?: healthPhraseToKey[t]
+        if (key != null) {
+            return stripCandyEmoji(Localization.tr(context, key, normalized))
+        }
+        return stripCandyEmoji(text)
+    }
+
     @Composable
     fun SimpleAlert(
         title: String,

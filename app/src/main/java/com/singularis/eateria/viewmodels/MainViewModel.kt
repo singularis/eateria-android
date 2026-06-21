@@ -12,6 +12,7 @@ import com.singularis.eateria.services.ImageStorageService
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.ProductStorageService
 import com.singularis.eateria.services.ReminderService
+import com.singularis.eateria.services.WeightMotivationService
 import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.CalorieYellow
@@ -141,6 +142,28 @@ class MainViewModel(
 
     private val _manualWeightInput = MutableStateFlow("")
     val manualWeightInput: StateFlow<String> = _manualWeightInput.asStateFlow()
+
+    // Weight Motivation
+    private val _showWeightMotivationAlert = MutableStateFlow(false)
+    val showWeightMotivationAlert: StateFlow<Boolean> = _showWeightMotivationAlert.asStateFlow()
+
+    private val _weightMotivationTitle = MutableStateFlow("")
+    val weightMotivationTitle: StateFlow<String> = _weightMotivationTitle.asStateFlow()
+
+    private val _weightMotivationMessage = MutableStateFlow("")
+    val weightMotivationMessage: StateFlow<String> = _weightMotivationMessage.asStateFlow()
+
+    private val _pendingWeightPhotoCheck = MutableStateFlow(false)
+    val pendingWeightPhotoCheck: StateFlow<Boolean> = _pendingWeightPhotoCheck
+
+    private val _showProgressiveOnboarding = MutableStateFlow(false)
+    val showProgressiveOnboarding: StateFlow<Boolean> = _showProgressiveOnboarding
+    
+    private val _progressiveStep = MutableStateFlow(com.singularis.eateria.ui.views.ProgressiveOnboardingStep.NONE)
+    val progressiveStep: StateFlow<com.singularis.eateria.ui.views.ProgressiveOnboardingStep> = _progressiveStep.asStateFlow()
+
+    private val _showActivitiesView = MutableStateFlow(false)
+    val showActivitiesView: StateFlow<Boolean> = _showActivitiesView.asStateFlow()
 
     private val _tempSoftLimit = MutableStateFlow("")
     val tempSoftLimit: StateFlow<String> = _tempSoftLimit.asStateFlow()
@@ -273,16 +296,28 @@ class MainViewModel(
 
     fun fetchDataWithLoading() {
         viewModelScope.launch {
-            _isLoadingData.value = true
-            // Refresh alcohol icon color alongside food refresh
-            fetchAlcoholLatestAndUpdateIcon()
-            productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
-                _products.value = fetchedProducts
-                // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
-                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
-                _caloriesLeft.value = actualCaloriesLeft
-                _personWeight.value = weight
-                _isLoadingData.value = false
+            // Load from cache first
+            val (cachedProducts, cachedCalories, cachedWeight) = productStorageService.loadProducts()
+            _products.value = cachedProducts
+            _caloriesLeft.value = getAdjustedSoftLimit() - cachedCalories
+            _personWeight.value = cachedWeight
+
+            if (productStorageService.isDataStale()) {
+                _isLoadingData.value = true
+                // Refresh alcohol icon color alongside food refresh
+                fetchAlcoholLatestAndUpdateIcon()
+                productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
+                    _products.value = fetchedProducts
+                    // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
+                    val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
+                    _caloriesLeft.value = actualCaloriesLeft
+                    _personWeight.value = weight
+                    _isLoadingData.value = false
+                    
+                    checkProgressiveOnboarding()
+                }
+            } else {
+                fetchAlcoholLatestAndUpdateIcon()
             }
         }
     }
@@ -297,6 +332,8 @@ class MainViewModel(
                 val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
+                
+                checkProgressiveOnboarding()
             }
         }
     }
@@ -445,6 +482,8 @@ class MainViewModel(
                 onSuccess = {
                     if (photoType == "weight_prompt") {
                         _isLoadingWeightPhoto.value = false
+                        _pendingWeightPhotoCheck.value = true
+                        com.singularis.eateria.services.StatisticsService.getInstance(context).clearExpiredCache()
                     } else {
                         _isLoadingFoodPhoto.value = false
                         viewModelScope.launch {
@@ -560,13 +599,85 @@ class MainViewModel(
     fun sendManualWeight(
         weight: Float,
         userEmail: String,
+        context: Context,
     ) {
         viewModelScope.launch {
             try {
                 val success = grpcService.sendManualWeight(weight, userEmail)
+                triggerWeightMotivation(context, weight)
                 returnToToday()
             } catch (e: Exception) {
                 // Handle error silently
+            }
+        }
+    }
+
+    fun triggerWeightMotivation(context: Context, newWeight: Float) {
+        val service = WeightMotivationService.getInstance(context)
+        val weightLossGrams = service.checkAndUpdateForMotivation(newWeight)
+        if (weightLossGrams != null) {
+            val (title, message) = service.getMotivationalMessage(weightLossGrams)
+            _weightMotivationTitle.value = title
+            _weightMotivationMessage.value = message
+            _showWeightMotivationAlert.value = true
+        } else {
+            // Show generic "Weight Recorded" message
+            _weightMotivationTitle.value = Localization.tr(context, "weight.recorded.title", "Weight Recorded")
+            _weightMotivationMessage.value = Localization.tr(context, "weight.recorded.desc", "Your weight has been successfully recorded!")
+            _showWeightMotivationAlert.value = true
+        }
+    }
+
+    fun dismissWeightMotivationAlert() {
+        _showWeightMotivationAlert.value = false
+    }
+
+    fun setPendingWeightPhotoCheck(value: Boolean) {
+        _pendingWeightPhotoCheck.value = value
+    }
+
+    fun dismissProgressiveOnboarding() {
+        val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val currentLevel = prefs.getInt("progressiveOnboardingLevel", 0)
+        prefs.edit().putInt("progressiveOnboardingLevel", currentLevel + 1).apply()
+        _showProgressiveOnboarding.value = false
+    }
+
+    fun checkProgressiveOnboarding() {
+        val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val hasHealthData = prefs.getBoolean("hasUserHealthData", false)
+        val count = prefs.getInt("foodSharedCount", 0)
+        val level = prefs.getInt("progressiveOnboardingLevel", 0)
+        
+        var nextStep = com.singularis.eateria.ui.views.ProgressiveOnboardingStep.NONE
+        var shouldTrigger = false
+        
+        if (hasHealthData) {
+            if (count >= 5 && level < 4) {
+                nextStep = com.singularis.eateria.ui.views.ProgressiveOnboardingStep.NOTIFICATIONS
+                shouldTrigger = true
+            }
+        } else {
+            if (count >= 1 && level < 1) {
+                nextStep = com.singularis.eateria.ui.views.ProgressiveOnboardingStep.DEMOGRAPHICS
+                shouldTrigger = true
+            } else if (count >= 2 && level < 2) {
+                nextStep = com.singularis.eateria.ui.views.ProgressiveOnboardingStep.MEASUREMENTS
+                shouldTrigger = true
+            } else if (count >= 3 && level < 3) {
+                nextStep = com.singularis.eateria.ui.views.ProgressiveOnboardingStep.ACTIVITY
+                shouldTrigger = true
+            } else if (count >= 5 && level < 4) {
+                nextStep = com.singularis.eateria.ui.views.ProgressiveOnboardingStep.NOTIFICATIONS
+                shouldTrigger = true
+            }
+        }
+        
+        if (shouldTrigger) {
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(1000)
+                _progressiveStep.value = nextStep
+                _showProgressiveOnboarding.value = true
             }
         }
     }
@@ -781,6 +892,14 @@ class MainViewModel(
 
     fun updateManualWeightInput(value: String) {
         _manualWeightInput.value = value
+    }
+
+    fun showActivitiesView() {
+        _showActivitiesView.value = true
+    }
+
+    fun hideActivitiesView() {
+        _showActivitiesView.value = false
     }
 
     fun showRecommendationAlert() {

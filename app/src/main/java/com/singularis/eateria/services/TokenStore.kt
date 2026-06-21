@@ -7,7 +7,7 @@ import androidx.security.crypto.MasterKey
 
 object TokenStore {
     private const val PREFS_FILE = "secure_prefs"
-    private const val KEY_JWT = "jwt_token"
+    const val KEY_JWT = "jwt_token"
 
     private fun prefs(context: Context): SharedPreferences {
         val masterKey = MasterKey.Builder(context)
@@ -22,14 +22,35 @@ object TokenStore {
         )
     }
 
+    // Generic string operations
+    fun save(context: Context, value: String, key: String) {
+        prefs(context).edit().putString(key, value).apply()
+    }
+
+    fun read(context: Context, key: String): String? =
+        prefs(context).getString(key, null)
+
+    // Legacy Token operations mapped to generic
     fun save(context: Context, token: String) {
-        prefs(context).edit().putString(KEY_JWT, token).apply()
+        save(context, token, KEY_JWT)
     }
 
     fun read(context: Context): String? =
-        prefs(context).getString(KEY_JWT, null)
+        read(context, KEY_JWT)
 
     fun clear(context: Context) {
         prefs(context).edit().remove(KEY_JWT).apply()
+    }
+
+    // Boolean operations matching iOS
+    fun setBool(context: Context, value: Boolean, key: String) {
+        save(context, if (value) "true" else "false", key)
+    }
+
+    fun getBool(context: Context, key: String): Boolean =
+        read(context, key) == "true"
+
+    fun clearAll(context: Context) {
+        prefs(context).edit().clear().apply()
     }
 }

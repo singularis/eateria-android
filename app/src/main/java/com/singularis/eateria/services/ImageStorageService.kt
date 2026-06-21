@@ -191,4 +191,89 @@ class ImageStorageService private constructor(
             Log.e("ImageStorage", "Failed to save image for name: $name", e)
             false
         }
+
+    // MARK: - Cached Remote Images (from backend)
+
+    private val cachedImagesDirectory: File by lazy {
+        val dir = File(context.filesDir, "CachedFoodImages")
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        dir
+    }
+
+    /** Convert an imageId to a safe filename */
+    private fun cacheFilename(imageId: String): String {
+        // imageId format might be: "user@email.com/20260121_143052.jpg"
+        // Convert to safe filename preserving uniqueness
+        val safeFilename = imageId
+            .replace("/", "_")
+            .replace("@", "_at_")
+        return if (safeFilename.endsWith(".jpg")) safeFilename else "$safeFilename.jpg"
+    }
+
+    /** Save an image fetched from backend to cache */
+    fun saveCachedImage(image: Bitmap, imageId: String): Boolean {
+        if (imageId.isEmpty()) return false
+        
+        return try {
+            val filename = cacheFilename(imageId)
+            val file = File(cachedImagesDirectory, filename)
+
+            FileOutputStream(file).use { out ->
+                image.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            }
+            Log.d("ImageStorage", "Saved cached image for ID: $imageId")
+            true
+        } catch (e: IOException) {
+            Log.e("ImageStorage", "Failed to save cached image for ID: $imageId", e)
+            false
+        }
+    }
+
+    /** Load an image from cache by its imageId */
+    fun loadCachedImage(imageId: String): Bitmap? {
+        if (imageId.isEmpty()) return null
+        
+        return try {
+            val filename = cacheFilename(imageId)
+            val file = File(cachedImagesDirectory, filename)
+
+            if (!file.exists()) {
+                return null
+            }
+
+            BitmapFactory.decodeFile(file.absolutePath)
+        } catch (e: Exception) {
+            Log.e("ImageStorage", "Failed to load cached image for ID: $imageId", e)
+            null
+        }
+    }
+
+    /** Check if a cached image exists for the given imageId */
+    fun cachedImageExists(imageId: String): Boolean {
+        if (imageId.isEmpty()) return false
+        
+        val filename = cacheFilename(imageId)
+        val file = File(cachedImagesDirectory, filename)
+        return file.exists()
+    }
+
+    /** Delete a cached image */
+    fun deleteCachedImage(imageId: String): Boolean {
+        if (imageId.isEmpty()) return false
+        
+        return try {
+            val filename = cacheFilename(imageId)
+            val file = File(cachedImagesDirectory, filename)
+            val deleted = file.delete()
+            if (deleted) {
+                Log.d("ImageStorage", "Deleted cached image for ID: $imageId")
+            }
+            deleted
+        } catch (e: Exception) {
+            Log.e("ImageStorage", "Failed to delete cached image for ID: $imageId", e)
+            false
+        }
+    }
 }

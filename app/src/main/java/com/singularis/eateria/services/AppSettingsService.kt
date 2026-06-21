@@ -42,6 +42,36 @@ class AppSettingsService private constructor(context: Context) {
             _reduceMotionFlow.value = value
         }
 
+    var savePhotosToLibrary: Boolean
+        get() = prefs.getBoolean("save_photos_to_library", true)
+        set(value) = prefs.edit().putBoolean("save_photos_to_library", value).apply()
+
+    var foodSharedCount: Int
+        get() = prefs.getInt("food_shared_count", 0)
+        set(value) = prefs.edit().putInt("food_shared_count", value).apply()
+
+    var foodScannedCount: Int
+        get() = prefs.getInt("food_scanned_count", 0)
+        set(value) = prefs.edit().putInt("food_scanned_count", value).apply()
+
+    var healthOnboardingShown: Boolean
+        get() = prefs.getBoolean("health_onboarding_shown", false)
+        set(value) = prefs.edit().putBoolean("health_onboarding_shown", value).apply()
+
+    var socialOnboardingShown: Boolean
+        get() = prefs.getBoolean("social_onboarding_shown", false)
+        set(value) = prefs.edit().putBoolean("social_onboarding_shown", value).apply()
+
+    val shouldShowHealthOnboarding: Boolean
+        get() = foodScannedCount >= 2 && !healthOnboardingShown
+
+    val shouldShowSocialOnboarding: Boolean
+        get() = foodScannedCount >= 5 && !socialOnboardingShown
+
+    var progressiveOnboardingLevel: Int
+        get() = prefs.getInt("progressive_onboarding_level", 0)
+        set(value) = prefs.edit().putInt("progressive_onboarding_level", value).apply()
+
     private fun loadAppearanceMode(): AppearanceMode {
         val value = prefs.getString(KEY_APPEARANCE_MODE, AppearanceMode.SYSTEM.value)
             ?: AppearanceMode.SYSTEM.value
@@ -76,4 +106,3 @@ class AppSettingsService private constructor(context: Context) {
         }
     }
 }
-

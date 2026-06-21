@@ -1,4 +1,6 @@
 package com.singularis.eateria.ui.views
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
@@ -134,12 +136,31 @@ fun LoginView(
                         strokeWidth = Dimensions.loadingIndicatorStrokeWidth
                     )
                 } else {
-                    Text(
-                        text = Localization.tr(context, "login.google", "Sign in with Google"),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                    )
+                    androidx.compose.foundation.layout.Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "G",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                        Text(
+                            text = Localization.tr(context, "login.google", "Sign in with Google"),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
+                        )
+                    }
                 }
             }
 

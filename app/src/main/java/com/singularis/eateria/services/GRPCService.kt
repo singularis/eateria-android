@@ -7,7 +7,9 @@ import com.singularis.eateria.models.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
@@ -29,7 +31,6 @@ import eater.ManualWeight
 import eater.ModifyFoodRecord
 import eater.Feedback
 import eater.AddFriend
-import eater.GetFriends
 import eater.ShareFood
 import eater.Alcohol
 import eater.SetLanguage
@@ -37,7 +38,8 @@ import eater.SetLanguage
 class GRPCService(
     private val context: Context,
 ) {
-    private val baseUrl = "https://chater.singularis.work/"
+    private val baseUrl: String
+        get() = com.singularis.eateria.services.AppEnvironment.getInstance().baseURL + "/"
     private val maxRetries = 10
     private val baseDelaySeconds = 10L
 
@@ -206,6 +208,8 @@ class GRPCService(
                                         calories = dish.estimatedAvgCalories,
                                         weight = dish.totalAvgWeight,
                                         ingredients = dish.ingredientsList,
+                                        healthRating = dish.healthRating,
+                                        imageId = dish.imageId,
                                     )
                                 }
 
@@ -257,6 +261,8 @@ class GRPCService(
                                         calories = dish.estimatedAvgCalories,
                                         weight = dish.totalAvgWeight,
                                         ingredients = dish.ingredientsList,
+                                        healthRating = dish.healthRating,
+                                        imageId = dish.imageId,
                                     )
                                 }
 
@@ -712,6 +718,42 @@ class GRPCService(
 
     suspend fun submitManualWeight(weight: Float): Boolean = sendManualWeight(weight, "")
 
+    suspend fun updateNickname(nickname: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                val jsonObject = org.json.JSONObject().apply {
+                    put("nickname", nickname)
+                }
+                
+                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                val requestBody = okhttp3.RequestBody.create(
+                    mediaType,
+                    jsonObject.toString()
+                )
+                
+                val request = Request.Builder()
+                    .url("$baseUrl/nickname_update")
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                
+                val response = client.newCall(request.build()).execute()
+                if (response.isSuccessful) {
+                    Result.success(Unit)
+                } else {
+                    val errorBody = response.body?.string()
+                    val errorMsg = try {
+                        val json = org.json.JSONObject(errorBody ?: "{}")
+                        json.optString("detail", json.optString("error", "Server returned status code ${response.code}"))
+                    } catch (e: Exception) {
+                        "Server returned status code ${response.code}"
+                    }
+                    Result.failure(Exception(errorMsg))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
     suspend fun submitFeedback(
         userEmail: String,
         feedback: String,
@@ -794,7 +836,7 @@ class GRPCService(
     suspend fun getFriends(
         offset: Int = 0,
         limit: Int = 5,
-    ): Pair<List<String>, Int> =
+    ): Pair<List<Pair<String, String>>, Int> =
         withContext(Dispatchers.IO) {
             try {
                 val response = sendRequest("autocomplete/getfriend", "GET")
@@ -806,7 +848,7 @@ class GRPCService(
                     if (responseBytes != null) {
                         try {
                             val getFriendsResponse = GetFriends.GetFriendsResponse.parseFrom(responseBytes)
-                            val allFriends = getFriendsResponse.friendsList.map { it.email }
+                            val allFriends = getFriendsResponse.friendsList.map { Pair(it.email, it.nickname) }
                             val totalCount = getFriendsResponse.count
 
                             val slicedFriends = allFriends.drop(offset).take(limit)
@@ -910,4 +952,433 @@ class GRPCService(
                 false
             }
         }
+
+    suspend fun deleteUser(email: String): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val request = eater.DeleteUser.DeleteUserRequest.newBuilder()
+                    .setEmail(email)
+                    .build()
+
+                val response = sendRequest("delete_user", "POST", request.toByteArray())
+
+                if (response?.isSuccessful == true) {
+                    val bytes = response.body?.bytes()
+                    response.close()
+                    if (bytes != null) {
+                        try {
+                            val resp = eater.DeleteUser.DeleteUserResponse.parseFrom(bytes)
+                            resp.success
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse delete user response", e)
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } else {
+                    response?.close()
+                    false
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to delete user", e)
+                false
+            }
+        }
+
+    suspend fun getFoodHealthLevel(time: Long, foodName: String): eater.FoodHealthLevel.FoodHealthLevelResponse? =
+        withContext(Dispatchers.IO) {
+            try {
+                val request = eater.FoodHealthLevel.FoodHealthLevelRequest.newBuilder()
+                    .setTime(time)
+                    .setFoodName(foodName)
+                    .build()
+
+                val response = sendRequest("food_health_level", "POST", request.toByteArray())
+
+                if (response?.isSuccessful == true) {
+                    val bytes = response.body?.bytes()
+                    response.close()
+                    if (bytes != null) {
+                        try {
+                            eater.FoodHealthLevel.FoodHealthLevelResponse.parseFrom(bytes)
+                        } catch (e: Exception) {
+                            Log.e("GRPCService", "Failed to parse food health level response", e)
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                } else {
+                    response?.close()
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to get food health level", e)
+                null
+            }
+        }
+
+    suspend fun renameFood(time: Long, userEmail: String, newName: String): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val jsonObject = org.json.JSONObject().apply {
+                    put("time", time)
+                    put("user_email", userEmail)
+                    put("manual_food_name", newName)
+                }
+                
+                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                
+                val request = Request.Builder()
+                    .url("${baseUrl}modify_food_manual")
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                
+                val response = client.newCall(request.build()).execute()
+                response.isSuccessful.also { response.close() }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to rename food", e)
+                false
+            }
+        }
+
+    suspend fun updateGoal(
+        targetWeight: Double,
+        goalMode: String,
+        goalMonths: Int,
+        recommendedCalories: Int
+    ): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val jsonObject = org.json.JSONObject().apply {
+                    put("target_weight", targetWeight)
+                    put("goal_mode", goalMode)
+                    put("goal_months", goalMonths)
+                    put("recommended_calories", recommendedCalories)
+                }
+                
+                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                
+                val request = Request.Builder()
+                    .url("${baseUrl}goal_update")
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                
+                val response = client.newCall(request.build()).execute()
+                response.isSuccessful.also { response.close() }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to update goal", e)
+                false
+            }
+        }
+
+    suspend fun logActivity(
+        activityType: String,
+        value: Int,
+        calories: Int,
+        dateISO: String
+    ): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val nowMs = System.currentTimeMillis()
+                val jsonObject = org.json.JSONObject().apply {
+                    put("activity_type", activityType)
+                    put("value", value)
+                    put("calories", calories)
+                    put("time", nowMs)
+                    put("date", dateISO)
+                }
+                
+                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                
+                val request = Request.Builder()
+                    .url("${baseUrl}activity_log")
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                
+                val response = client.newCall(request.build()).execute()
+                response.isSuccessful.also { response.close() }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to log activity", e)
+                false
+            }
+        }
+
+    @Suppress("DEPRECATION")
+    suspend fun getActivitySummary(dateISO: String): Pair<Int, List<String>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val url = "${baseUrl}activity_summary".toHttpUrlOrNull()?.newBuilder()
+                    ?.addQueryParameter("date", dateISO)
+                    ?.build()
+                    ?: throw IllegalArgumentException("Invalid URL")
+                
+                val request = Request.Builder()
+                    .url(url)
+                    .get()
+                    .build()
+                
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string()
+                    response.close()
+                    if (body != null) {
+                        val json = org.json.JSONObject(body)
+                        val total = json.optInt("total_calories", 0)
+                        val typesArray = json.optJSONArray("activity_types")
+                        val types = mutableListOf<String>()
+                        if (typesArray != null) {
+                            for (i in 0 until typesArray.length()) {
+                                types.add(typesArray.getString(i))
+                            }
+                        }
+                        Pair(total, types)
+                    } else {
+                        Pair(0, emptyList())
+                    }
+                } else {
+                    response.close()
+                    Pair(0, emptyList())
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to get activity summary", e)
+                Pair(0, emptyList())
+            }
+        }
+
+    suspend fun recordChessGame(
+        playerEmail: String,
+        opponentEmail: String,
+        result: String
+    ): Triple<Boolean, String?, String?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val jsonObject = org.json.JSONObject().apply {
+                    put("player_email", playerEmail)
+                    put("opponent_email", opponentEmail)
+                    put("result", result)
+                    put("timestamp", System.currentTimeMillis())
+                }
+                
+                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                
+                val request = Request.Builder()
+                    .url("${baseUrl}record_chess_game")
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                
+                val response = client.newCall(request.build()).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string()
+                    response.close()
+                    if (body != null) {
+                        val json = org.json.JSONObject(body)
+                        val success = json.optBoolean("success", false)
+                        if (success) {
+                            val playerWins = json.optInt("player_wins", 0)
+                            val playerLosses = json.optInt("player_losses", 0)
+                            val opponentWins = json.optInt("opponent_wins", 0)
+                            val opponentLosses = json.optInt("opponent_losses", 0)
+                            Triple(true, "$playerWins:$playerLosses", "$opponentWins:$opponentLosses")
+                        } else {
+                            Triple(false, null, null)
+                        }
+                    } else {
+                        Triple(false, null, null)
+                    }
+                } else {
+                    response.close()
+                    Triple(false, null, null)
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to record chess game", e)
+                Triple(false, null, null)
+            }
+        }
+
+    suspend fun getChessStats(
+        userEmail: String,
+        opponentEmail: String? = null
+    ): Result<Triple<String, String?, String?>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val jsonObject = org.json.JSONObject().apply {
+                    put("user_email", userEmail)
+                    opponentEmail?.let { put("opponent_email", it) }
+                }
+                
+                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                
+                val request = Request.Builder()
+                    .url("${baseUrl}autocomplete/get_chess_stats")
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                
+                val response = client.newCall(request.build()).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string()
+                    response.close()
+                    if (body != null) {
+                        val json = org.json.JSONObject(body)
+                        val score = json.optString("score", "0:0")
+                        val oppName = if (json.has("opponent_name") && !json.isNull("opponent_name")) json.getString("opponent_name") else null
+                        val lastDate = if (json.has("last_game_date") && !json.isNull("last_game_date")) json.getString("last_game_date") else null
+                        Result.success(Triple(score, oppName, lastDate))
+                    } else {
+                        Result.failure(Exception("Empty body"))
+                    }
+                } else {
+                    response.close()
+                    Result.failure(Exception("Failed request"))
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to get chess stats", e)
+                Result.failure(e)
+            }
+        }
+
+    suspend fun getChessHistory(
+        limit: Int = 50,
+        offset: Int = 0
+    ): Pair<Int, List<Map<String, Any>>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val url = "${baseUrl}autocomplete/get_chess_history".toHttpUrlOrNull()?.newBuilder()
+                    ?.addQueryParameter("limit", limit.toString())
+                    ?.addQueryParameter("offset", offset.toString())
+                    ?.build()
+                    ?: throw IllegalArgumentException("Invalid URL")
+                
+                val request = Request.Builder()
+                    .url(url)
+                    .get()
+                    .build()
+                
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string()
+                    response.close()
+                    if (body != null) {
+                        val json = org.json.JSONObject(body)
+                        val total = json.optInt("total", 0)
+                        val gamesArray = json.optJSONArray("games")
+                        val gamesList = mutableListOf<Map<String, Any>>()
+                        if (gamesArray != null) {
+                            val gson = com.google.gson.Gson()
+                            val type = object : com.google.gson.reflect.TypeToken<List<Map<String, Any>>>() {}.type
+                            val parsedList: List<Map<String, Any>> = gson.fromJson(gamesArray.toString(), type)
+                            gamesList.addAll(parsedList)
+                        }
+                        Pair(total, gamesList)
+                    } else {
+                        Pair(0, emptyList())
+                    }
+                } else {
+                    response.close()
+                    Pair(0, emptyList())
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to get chess history", e)
+                Pair(0, emptyList())
+            }
+        }
+
+    suspend fun getAllChessData(): Pair<Int, Map<String, String>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder()
+                    .url("${baseUrl}autocomplete/get_all_chess_data")
+                    .get()
+                    .build()
+                
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string()
+                    response.close()
+                    if (body != null) {
+                        val json = org.json.JSONObject(body)
+                        val totalWins = json.optInt("total_wins", 0)
+                        val simpleOpponents = mutableMapOf<String, String>()
+                        
+                        val opponentsObj = json.optJSONObject("opponents")
+                        if (opponentsObj != null) {
+                            val keys = opponentsObj.keys()
+                            while (keys.hasNext()) {
+                                val email = keys.next()
+                                val value = opponentsObj.get(email)
+                                if (value is String) {
+                                    simpleOpponents[email] = value
+                                } else if (value is org.json.JSONObject) {
+                                    simpleOpponents[email] = value.optString("score", "0:0")
+                                }
+                            }
+                        }
+                        Pair(totalWins, simpleOpponents)
+                    } else {
+                        Pair(0, emptyMap())
+                    }
+                } else {
+                    response.close()
+                    Pair(0, emptyMap())
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to get all chess data", e)
+                Pair(0, emptyMap())
+            }
+        }
+
+    suspend fun sendMultiplePhotos(
+        images: List<Bitmap>,
+        photoType: String,
+        timestampMillis: Long? = null,
+        onSuccess: (Int) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        if (images.isEmpty()) {
+            withContext(Dispatchers.Main) { onSuccess(0) }
+            return
+        }
+
+        withContext(Dispatchers.IO) {
+            var successCount = 0
+            var failed = false
+            var errorMessage = ""
+
+            for ((index, image) in images.withIndex()) {
+                kotlinx.coroutines.delay(index * 500L) // Small delay to avoid overwhelming backend
+
+                val deferred = kotlinx.coroutines.CompletableDeferred<Boolean>()
+                sendPhoto(
+                    bitmap = image,
+                    photoType = photoType,
+                    timestampMillis = timestampMillis,
+                    onSuccess = {
+                        successCount++
+                        deferred.complete(true)
+                    },
+                    onFailure = { error ->
+                        failed = true
+                        errorMessage = error
+                        deferred.complete(false)
+                    }
+                )
+                
+                deferred.await()
+            }
+
+            withContext(Dispatchers.Main) {
+                if (!failed) {
+                    onSuccess(successCount)
+                } else {
+                    onFailure(errorMessage)
+                }
+            }
+        }
+    }
 }

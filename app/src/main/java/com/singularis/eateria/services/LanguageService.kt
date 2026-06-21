@@ -178,6 +178,47 @@ object LanguageService {
         } catch (_: Exception) {
             emptyList()
         }
-}
 
-// Removed reflection-based client; using GRPCService.setLanguage instead
+    fun shortRecommendationLabel(context: Context): String {
+        val code = getCurrentCode(context)
+        val map = mapOf(
+            "ar" to "نصيحة",
+            "be" to "Пара",
+            "bg" to "Съвет",
+            "bn" to "পরামর্শ",
+            "cs" to "Rada",
+            "da" to "Råd",
+            "de" to "Rat",
+            "el" to "Συμβ",
+            "en" to "Advice",
+            "es" to "Cons",
+            "et" to "Nõu",
+            "fi" to "Neuvo",
+            "fr" to "Avis",
+            "ga" to "Comh",
+            "hi" to "सलाह",
+            "hr" to "Savj",
+            "hu" to "Tanács",
+            "it" to "Cons",
+            "ja" to "助言",
+            "ko" to "조언",
+            "lt" to "Patar",
+            "lv" to "Padom",
+            "mt" to "Parir",
+            "nl" to "Advies",
+            "pl" to "Rada",
+            "pt" to "Cons",
+            "ro" to "Sfat",
+            "sk" to "Rada",
+            "sl" to "Nasvet",
+            "sv" to "Råd",
+            "th" to "แนะนำ",
+            "tr" to "Tavsiye",
+            "uk" to "Порада",
+            "ur" to "مشورہ",
+            "vi" to "L.khuyên",
+            "zh" to "建议"
+        )
+        return map[code] ?: "Advice"
+    }
+}

@@ -100,6 +100,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.border
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
@@ -134,6 +137,10 @@ fun TopBarView(
     onSportClick: () -> Unit,
     onReturnToTodayClick: () -> Unit,
     alcoholIconColor: Color = Color.Green,
+    sportIconColor: Color = AppTheme.warning(),
+    healthScore: Int = 0,
+    healthColor: Color = AppTheme.textSecondary(),
+    hasFoods: Boolean = false,
     onAlcoholClick: (() -> Unit)? = null,
 ) {
     Row(
@@ -152,28 +159,36 @@ fun TopBarView(
         ) {
             // Profile picture
             Box(
-                modifier =
-                    Modifier
-                        .size(Dimensions.iconSizeL)
-                        .clip(CircleShape)
-                        .background(AppTheme.surface())
-                        .clickable(
-                            indication = LocalIndication.current,
-                            interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
-                        ) { 
-                            HapticsService.getInstance().lightImpact()
-                            onProfileClick() 
-                        },
+                modifier = Modifier
+                    .size(44.dp)
+                    .shadow(elevation = 4.dp, shape = CircleShape)
+                    .clip(CircleShape)
+                    .background(AppTheme.surface())
+                    .border(
+                        width = 2.dp,
+                        brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                            colors = listOf(Color.Green.copy(alpha = 0.9f), Color(0xFFA020F0).copy(alpha = 0.9f)),
+                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                            end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                        ),
+                        shape = CircleShape
+                    )
+                    .clickable(
+                        indication = LocalIndication.current,
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    ) { 
+                        HapticsService.getInstance().lightImpact()
+                        onProfileClick() 
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 if (!userProfilePictureURL.isNullOrEmpty()) {
                     AsyncImage(
                         model = userProfilePictureURL,
                         contentDescription = Localization.tr(LocalContext.current, "profile.name", "Profile Picture"),
-                        modifier =
-                            Modifier
-                                .size(Dimensions.iconSizeL)
-                                .clip(CircleShape),
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
                 } else {
@@ -181,24 +196,41 @@ fun TopBarView(
                         imageVector = AppIcons.Navigation.profile,
                         contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
                         tint = AppTheme.textPrimary(),
-                        modifier = Modifier.size(Dimensions.iconSizeS),
+                        modifier = Modifier.size(30.dp),
                     )
                 }
             }
             
             // Alcohol button
-            IconButton(
-                onClick = { 
-                    HapticsService.getInstance().select()
-                    onAlcoholClick?.invoke() 
-                },
-                modifier = Modifier.size(Dimensions.iconSizeL)
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .shadow(elevation = 4.dp, shape = CircleShape)
+                    .clip(CircleShape)
+                    .background(AppTheme.surface())
+                    .border(
+                        width = 2.dp,
+                        brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                            colors = listOf(alcoholIconColor.copy(alpha = 0.9f), alcoholIconColor.copy(alpha = 0.3f)),
+                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                            end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                        ),
+                        shape = CircleShape
+                    )
+                    .clickable(
+                        indication = LocalIndication.current,
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    ) {
+                        HapticsService.getInstance().select()
+                        onAlcoholClick?.invoke()
+                    },
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = AppIcons.FoodHealth.wineBar,
                     contentDescription = Localization.tr(LocalContext.current, "onboarding.alcohol.title", "Alcohol"),
                     tint = alcoholIconColor,
-                    modifier = Modifier.size(Dimensions.iconSizeM),
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -215,12 +247,12 @@ fun TopBarView(
                         .background(AppTheme.surfaceAlt())
                         .clickable(
                             indication = LocalIndication.current,
-                            interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
+                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                         ) { 
                             HapticsService.getInstance().select()
                             onDateClick() 
                         }
-                        .padding(Dimensions.paddingM),
+                        .padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingS),
             ) {
                 Text(
                     text =
@@ -230,7 +262,7 @@ fun TopBarView(
                             SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
                         },
                     color = AppTheme.textPrimary(),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 )
 
                 if (isViewingCustomDate) {
@@ -252,12 +284,13 @@ fun TopBarView(
                                 containerColor = AppTheme.accent(),
                                 contentColor = AppTheme.textPrimary(),
                             ),
-                        modifier = Modifier.height(Dimensions.buttonHeight),
+                        modifier = Modifier.height(28.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                         shape = RoundedCornerShape(AppTheme.smallRadius),
                     ) {
                         Text(
                             text = Localization.tr(LocalContext.current, "date.today", "Today"),
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         )
                     }
                 }
@@ -272,34 +305,84 @@ fun TopBarView(
         ) {
             Spacer(modifier = Modifier.weight(1f))
             // Sport button
-            IconButton(
-                onClick = {
-                    HapticsService.getInstance().select()
-                    onSportClick()
-                },
-                modifier = Modifier.size(Dimensions.iconSizeL)
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .shadow(elevation = 4.dp, shape = CircleShape)
+                    .clip(CircleShape)
+                    .background(AppTheme.surface())
+                    .border(
+                        width = 2.dp,
+                        brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                            colors = listOf(sportIconColor.copy(alpha = 0.9f), sportIconColor.copy(alpha = 0.3f)),
+                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                            end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                        ),
+                        shape = CircleShape
+                    )
+                    .clickable(
+                        indication = LocalIndication.current,
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    ) {
+                        HapticsService.getInstance().select()
+                        onSportClick()
+                    },
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = AppIcons.FoodHealth.fitnessCentercompany,
                     contentDescription = Localization.tr(LocalContext.current, "sport.title", "Sport Calories"),
-                    tint = AppTheme.warning(),
-                    modifier = Modifier.size(Dimensions.iconSizeM),
+                    tint = sportIconColor,
+                    modifier = Modifier.size(20.dp),
                 )
             }
 
             // Health info button
-            IconButton(
-                onClick = {
-                    HapticsService.getInstance().select()
-                    onHealthInfoClick()
-                },
-                modifier = Modifier.size(Dimensions.iconSizeL)
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .shadow(elevation = 4.dp, shape = CircleShape)
+                    .clip(CircleShape)
+                    .background(AppTheme.surface())
+                    .clickable(
+                        indication = LocalIndication.current,
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    ) {
+                        HapticsService.getInstance().select()
+                        onHealthInfoClick()
+                    },
+                contentAlignment = Alignment.Center
             ) {
+                if (hasFoods) {
+                    val surfaceAltColor = AppTheme.surfaceAlt()
+                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawArc(
+                            color = healthColor,
+                            startAngle = -90f,
+                            sweepAngle = 360f * (healthScore.toFloat() / 100f),
+                            useCenter = false,
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                width = 3.dp.toPx(),
+                                cap = androidx.compose.ui.graphics.StrokeCap.Round
+                            )
+                        )
+                    }
+                } else {
+                    val surfaceAltColor = AppTheme.surfaceAlt()
+                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawCircle(
+                            color = surfaceAltColor,
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                width = 2.dp.toPx()
+                            )
+                        )
+                    }
+                }
                 Icon(
                     imageVector = AppIcons.Status.info,
                     contentDescription = Localization.tr(LocalContext.current, "nav.health_settings", "Health Info"),
-                    tint = AppTheme.accent(),
-                    modifier = Modifier.size(Dimensions.iconSizeM),
+                    tint = if (hasFoods) healthColor else AppTheme.textSecondary(),
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -323,7 +406,7 @@ fun StatsButtonsView(
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = Dimensions.paddingS),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Weight button - Left aligned
@@ -332,25 +415,24 @@ fun StatsButtonsView(
             isLoading = isLoadingWeightPhoto,
             modifier = Modifier.weight(1f),
         ) {
-                Text(
-                    text = String.format("%.1f %s", personWeight, Localization.tr(LocalContext.current, "units.kg", "kg")),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.textPrimary(),
-                    textAlign = TextAlign.Center,
-                )
+            Text(
+                text = String.format(Locale.getDefault(), "%.1f %s", personWeight, Localization.tr(LocalContext.current, "units.kg", "kg")),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = AppTheme.textPrimary(),
+                textAlign = TextAlign.Center,
+            )
         }
-
-        Spacer(modifier = Modifier.width(Dimensions.paddingXS))
 
         // Calories button - Center
         StatButton(
             onClick = onCaloriesClick,
             isLoading = false,
-            modifier = Modifier.weight(2f),
+            modifier = Modifier.weight(1f),
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "$caloriesLeft ${Localization.tr(LocalContext.current, "calories.left", "left")}",
@@ -361,14 +443,12 @@ fun StatsButtonsView(
                 )
                 Text(
                     text = "${Localization.tr(LocalContext.current, "calories.label", "Calories")}: $caloriesConsumed",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                     color = AppTheme.textSecondary(),
                     textAlign = TextAlign.Center,
                 )
             }
         }
-
-        Spacer(modifier = Modifier.width(Dimensions.paddingXS))
 
         // Trend button - Right aligned
         StatButton(
@@ -492,790 +572,9 @@ fun MacrosSummaryRow(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun ProductListView(
-    products: List<Product>,
-    onRefresh: () -> Unit,
-    onDelete: (Long) -> Unit,
-    onModify: (Long, String, Int) -> Unit,
-    onPhotoTap: (Bitmap?, String) -> Unit,
-    deletingProductTime: Long?,
-    modifiedProductTime: Long?,
-    onSuccessDialogDismissed: () -> Unit,
-    onShare: ((Long, String) -> Unit)? = null,
-) {
-    // Sort products by time (most recent first) like iOS app
-    val sortedProducts = products.sortedByDescending { it.time }
 
-    // Pull to refresh state - no manual loading state needed since main loading is handled by parent
-    val pullRefreshState =
-        rememberPullRefreshState(
-            refreshing = false, // Always false since we use main loading state
-            onRefresh = {
-                HapticsService.getInstance().mediumImpact()
-                onRefresh()
-            },
-        )
 
-    Box(
-        modifier =
-            Modifier
-                .fillMaxSize() // Use fillMaxSize to allow pull-refresh from anywhere
-                .pullRefresh(pullRefreshState),
-    ) {
-        if (sortedProducts.isEmpty()) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize(),
-                // Also fill the size to center the text
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text =
-                        Localization.tr(
-                            LocalContext.current,
-                            "food.empty.message",
-                            "No food entries yet.\nTake a photo to get started!\n\nPull down to refresh",
-                        ),
-                    color = AppTheme.textSecondary(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
-                contentPadding = PaddingValues(vertical = Dimensions.paddingM),
-            ) {
-                items(
-                    items = sortedProducts,
-                    key = { product -> product.time },
-                ) { product ->
-                    val context = LocalContext.current
-                    ProductCard(
-                        product = product,
-                        onDelete = { onDelete(product.time) },
-                        onModify = { percentage -> onModify(product.time, product.name, percentage) },
-                        onPhotoTap = {
-                            val productImage = product.getImage(context)
-                            onPhotoTap(productImage, product.name)
-                        },
-                        isDeleting = deletingProductTime == product.time,
-                        showSuccessConfirmation = modifiedProductTime == product.time,
-                        onSuccessDialogDismissed = onSuccessDialogDismissed,
-                        onShare = onShare,
-                    )
-                }
-            }
-        }
 
-        // Pull refresh indicator removed since we use main loading state
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProductCard(
-    product: Product,
-    onDelete: () -> Unit,
-    onModify: (Int) -> Unit,
-    onPhotoTap: () -> Unit,
-    isDeleting: Boolean,
-    showSuccessConfirmation: Boolean,
-    onSuccessDialogDismissed: () -> Unit,
-    onShare: ((Long, String) -> Unit)? = null,
-) {
-    var showPortionDialog by remember { mutableStateOf(false) }
-    var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-
-    val state =
-        rememberSwipeToDismissBoxState(
-            confirmValueChange = {
-                if (it == SwipeToDismissBoxValue.EndToStart) {
-                    showDeleteConfirmationDialog = true
-                    return@rememberSwipeToDismissBoxState false
-                }
-                true
-            },
-        )
-
-    SwipeToDismissBox(
-        state = state,
-        enableDismissFromStartToEnd = false,
-        enableDismissFromEndToStart = true,
-        backgroundContent = {
-            val color by animateColorAsState(
-                targetValue = if (state.targetValue == SwipeToDismissBoxValue.Settled) Color.Transparent else AppTheme.danger(),
-                label = Localization.tr(LocalContext.current, "common.background_animation", "background color animation"),
-            )
-            val scale by animateFloatAsState(
-                if (state.targetValue == SwipeToDismissBoxValue.Settled) 0.8f else 1.2f,
-                label = Localization.tr(LocalContext.current, "common.icon_scale_animation", "icon scale animation"),
-            )
-
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(color, shape = RoundedCornerShape(Dimensions.cornerRadiusM))
-                    .padding(horizontal = Dimensions.paddingL),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                Icon(
-                    AppIcons.Actions.delete,
-                    contentDescription = Localization.tr(LocalContext.current, "common.remove", "Delete"),
-                    tint = AppTheme.textPrimary(),
-                    modifier = Modifier.scale(scale),
-                )
-            }
-        },
-    ) {
-        Card(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .alpha(if (isDeleting) 0.6f else 1.0f),
-            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
-            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-        ) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(Dimensions.paddingM),
-                horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
-            ) {
-                // Food photo - clickable for full screen (matches iOS)
-                Box(
-                    modifier =
-                        Modifier
-                            .size(Dimensions.iconSizeL)
-                            .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
-                            .background(AppTheme.divider())
-                            .clickable(
-                                indication = LocalIndication.current,
-                                interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
-                            ) {
-                                if (!isDeleting) {
-                                    HapticsService.getInstance().select()
-                                    onPhotoTap()
-                                }
-                            },
-                ) {
-                    val context = LocalContext.current
-                    val productImage = product.getImage(context)
-
-                    if (productImage != null) {
-                        Image(
-                            bitmap = productImage.asImageBitmap(),
-                            contentDescription = product.name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else {
-                        Icon(
-                            imageVector = AppIcons.Media.photoLibrary,
-                            contentDescription = Localization.tr(LocalContext.current, "fs.no_photo", "No photo"),
-                            tint = AppTheme.textSecondary(),
-                            modifier =
-                                Modifier
-                                    .size(Dimensions.iconSizeM)
-                                    .align(Alignment.Center),
-                        )
-                    }
-                }
-
-                // Food details - clickable for portion modification (matches iOS)
-                Column(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .clickable(
-                                indication = LocalIndication.current,
-                                interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
-                            ) {
-                                if (!isDeleting) {
-                                    HapticsService.getInstance().select()
-                                    showPortionDialog = true
-                                }
-                            },
-                ) {
-                    Text(
-                        text = product.name,
-                        color = AppTheme.textPrimary(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-
-                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-
-                    Text(
-                        text = "${product.calories} ${Localization.tr(
-                            LocalContext.current,
-                            "units.kcal",
-                            "kcal",
-                        )} • ${product.weight}${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        color = AppTheme.textSecondary(),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-
-                    if (product.ingredients.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-                        Text(
-                            text = product.ingredients.joinToString(", "),
-                            color = AppTheme.textSecondary(),
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-
-                // Loading indicator when deleting
-                if (isDeleting) {
-                    com.singularis.eateria.ui.components.AnimatedLoadingIcon(
-                        size = Dimensions.loadingIndicatorSize,
-                        color = AppTheme.accent(),
-                        strokeWidth = Dimensions.loadingIndicatorStrokeWidth,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                }
-            }
-        }
-    }
-
-    // Portion selection dialog
-    if (showPortionDialog || showSuccessConfirmation) {
-        PortionSelectionDialog(
-            foodName = product.name,
-            originalWeight = product.weight,
-            onPortionSelected = { percentage ->
-                onModify(percentage)
-            },
-            onDismiss = {
-                showPortionDialog = false
-                if (showSuccessConfirmation) {
-                    onSuccessDialogDismissed()
-                }
-            },
-            isSuccess = showSuccessConfirmation,
-            resetSuccessState = onSuccessDialogDismissed,
-            onShare =
-                onShare?.let { shareCallback ->
-                    { shareCallback(product.time, product.name) }
-                },
-        )
-    }
-
-    if (showDeleteConfirmationDialog) {
-        DeleteConfirmationDialog(
-            onConfirm = {
-                onDelete()
-                showDeleteConfirmationDialog = false
-            },
-            onDismiss = {
-                showDeleteConfirmationDialog = false
-                coroutineScope.launch {
-                    state.reset()
-                }
-            },
-        )
-    }
-}
-
-@Composable
-fun PortionSelectionDialog(
-    foodName: String,
-    originalWeight: Int,
-    onPortionSelected: (Int) -> Unit,
-    onDismiss: () -> Unit,
-    isSuccess: Boolean,
-    resetSuccessState: () -> Unit,
-    onShare: (() -> Unit)? = null,
-) {
-    var selectedPortionPercentage by remember { mutableStateOf<Int?>(null) }
-    var showConfirmation by remember { mutableStateOf(false) }
-    var showCustomSelection by remember { mutableStateOf(false) }
-
-    LaunchedEffect(isSuccess) {
-        if (isSuccess) {
-            showConfirmation = true
-        }
-    }
-
-    if (showConfirmation) {
-        val selectedPortion =
-            if (selectedPortionPercentage !=
-                null
-            ) {
-                "$selectedPortionPercentage%"
-            } else {
-                Localization.tr(LocalContext.current, "portion.selected", "the selected")
-            }
-        AlertDialog(
-            onDismissRequest = {
-                onDismiss()
-                resetSuccessState()
-            },
-            title = {
-                Text(
-                    text = Localization.tr(LocalContext.current, "portion.updated.title", "Portion Updated!"),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.textPrimary(),
-                )
-            },
-            text = {
-                Text(
-                    text =
-                        Localization
-                            .tr(
-                                LocalContext.current,
-                                "portion.updated.msg",
-                                "Successfully updated '%@' to %d%% portion.",
-                            ).replace("%@", foodName)
-                            .replace("%d%%", "$selectedPortion%"),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppTheme.textSecondary(),
-                    textAlign = TextAlign.Center,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    HapticsService.getInstance().select()
-                    onDismiss()
-                    resetSuccessState()
-                }) {
-                    Text(
-                        Localization.tr(LocalContext.current, "common.ok", "OK"),
-                        color = AppTheme.accent(),
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
-            },
-            containerColor = AppTheme.surface(),
-        )
-    } else {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = {
-                Text(
-                    text =
-                        if (showCustomSelection) {
-                            Localization.tr(
-                                LocalContext.current,
-                                "portion.custom.title",
-                                "Custom Portion",
-                            )
-                        } else {
-                            Localization.tr(LocalContext.current, "portion.modify.title", "Modify Portion")
-                        },
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.textPrimary(),
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        text =
-                            if (showCustomSelection) {
-                                Localization
-                                    .tr(
-                                        LocalContext.current,
-                                        "portion.custom.msg",
-                                        "Select the amount of '%@' you ate:\nOriginal weight: %dg",
-                                    ).replace(
-                                        "%@",
-                                        foodName,
-                                    ).replace("%dg", "${originalWeight}${Localization.tr(LocalContext.current, "units.g", "g")}")
-                            } else {
-                                Localization
-                                    .tr(
-                                        LocalContext.current,
-                                        "portion.modify.msg",
-                                        "How much of '%@' did you actually eat?\nOriginal weight: %dg",
-                                    ).replace(
-                                        "%@",
-                                        foodName,
-                                    ).replace("%dg", "${originalWeight}${Localization.tr(LocalContext.current, "units.g", "g")}")
-                            },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AppTheme.textSecondary(),
-                        textAlign = TextAlign.Center,
-                    )
-
-                    Spacer(modifier = Modifier.height(Dimensions.paddingM))
-
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = Dimensions.fixedHeight * 3),
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
-                    ) {
-                        if (showCustomSelection) {
-                            // Show custom percentages from 10% to 300% in 10% increments
-                            items((10..300 step 10).toList()) { percentage ->
-                                val calculatedWeight = originalWeight * percentage / 100
-
-                                Button(
-                                    onClick = {
-                                        HapticsService.getInstance().select()
-                                        selectedPortionPercentage = percentage
-                                        onPortionSelected(percentage)
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors =
-                                        ButtonDefaults.buttonColors(
-                                            containerColor = AppTheme.accent(),
-                                            contentColor = Color.White,
-                                        ),
-                                    shape = RoundedCornerShape(Dimensions.cornerRadiusS),
-                                    contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
-                                ) {
-                                    Text(
-                                        text = "$percentage% (${calculatedWeight}${Localization.tr(LocalContext.current, "units.g", "g")})",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
-                            }
-                        } else {
-                            // Show standard portion options
-                            val portions = listOf(200, 150, 125, 75, 50, 25)
-
-                            items(portions) { percentage ->
-                                val calculatedWeight = originalWeight * percentage / 100
-
-                                Button(
-                                    onClick = {
-                                        HapticsService.getInstance().select()
-                                        selectedPortionPercentage = percentage
-                                        onPortionSelected(percentage)
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors =
-                                        ButtonDefaults.buttonColors(
-                                            containerColor = AppTheme.accent(),
-                                            contentColor = Color.White,
-                                        ),
-                                    shape = RoundedCornerShape(Dimensions.cornerRadiusS),
-                                    contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
-                                ) {
-                                    val localizedDescription =
-                                        when (percentage) {
-                                            200 ->
-                                                Localization
-                                                    .tr(
-                                                        LocalContext.current,
-                                                        "portion.200",
-                                                        "200%% (%dg) - Double portion",
-                                                    ).replace(
-                                                        "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
-                                                            LocalContext.current,
-                                                            "units.g",
-                                                            "g",
-                                                        )}",
-                                                    )
-                                            150 ->
-                                                Localization
-                                                    .tr(
-                                                        LocalContext.current,
-                                                        "portion.150",
-                                                        "150%% (%dg) - One and a half portion",
-                                                    ).replace(
-                                                        "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
-                                                            LocalContext.current,
-                                                            "units.g",
-                                                            "g",
-                                                        )}",
-                                                    )
-                                            125 ->
-                                                Localization
-                                                    .tr(
-                                                        LocalContext.current,
-                                                        "portion.125",
-                                                        "125%% (%dg) - One and a quarter portion",
-                                                    ).replace(
-                                                        "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
-                                                            LocalContext.current,
-                                                            "units.g",
-                                                            "g",
-                                                        )}",
-                                                    )
-                                            75 ->
-                                                Localization
-                                                    .tr(
-                                                        LocalContext.current,
-                                                        "portion.75",
-                                                        "75%% (%dg) - Three quarters",
-                                                    ).replace(
-                                                        "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
-                                                            LocalContext.current,
-                                                            "units.g",
-                                                            "g",
-                                                        )}",
-                                                    )
-                                            50 ->
-                                                Localization
-                                                    .tr(
-                                                        LocalContext.current,
-                                                        "portion.50",
-                                                        "50%% (%dg) - Half portion",
-                                                    ).replace(
-                                                        "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
-                                                            LocalContext.current,
-                                                            "units.g",
-                                                            "g",
-                                                        )}",
-                                                    )
-                                            25 ->
-                                                Localization
-                                                    .tr(
-                                                        LocalContext.current,
-                                                        "portion.25",
-                                                        "25%% (%dg) - Quarter portion",
-                                                    ).replace(
-                                                        "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
-                                                            LocalContext.current,
-                                                            "units.g",
-                                                            "g",
-                                                        )}",
-                                                    )
-                                            else -> "$percentage% (${calculatedWeight.toInt()}${Localization.tr(
-                                                LocalContext.current,
-                                                "units.g",
-                                                "g",
-                                            )})"
-                                        }
-                                    Text(
-                                        text = localizedDescription,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
-                            }
-
-                            // Add share food with friend option
-                            if (onShare != null) {
-                                item {
-                                    Button(
-                                        onClick = {
-                                            HapticsService.getInstance().select()
-                                            onShare()
-                                            onDismiss()
-                                        },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors =
-                                            ButtonDefaults.buttonColors(
-                                                containerColor = CalorieGreen,
-                                                contentColor = AppTheme.textPrimary(),
-                                            ),
-                                        shape = RoundedCornerShape(Dimensions.cornerRadiusS),
-                                        contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
-                                    ) {
-                                        Text(
-                                            text = Localization.tr(LocalContext.current, "portion.share", "Share food with friend"),
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Add custom option
-                            item {
-                                Button(
-                                    onClick = {
-                                        HapticsService.getInstance().select()
-                                        showCustomSelection = true
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors =
-                                        ButtonDefaults.buttonColors(
-                                            containerColor = AppTheme.surfaceAlt(),
-                                            contentColor = AppTheme.textPrimary(),
-                                        ),
-                                    shape = RoundedCornerShape(Dimensions.cornerRadiusS),
-                                    contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
-                                ) {
-                                    Text(
-                                        text = Localization.tr(LocalContext.current, "portion.custom", "Custom..."),
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = {
-                    HapticsService.getInstance().select()
-                    if (showCustomSelection) {
-                        showCustomSelection = false
-                    } else {
-                        onDismiss()
-                    }
-                }) {
-                    Text(
-                        if (showCustomSelection) {
-                            Localization.tr(
-                                LocalContext.current,
-                                "common.back_to_edit",
-                                "Back",
-                            )
-                        } else {
-                            Localization.tr(LocalContext.current, "common.cancel", "Cancel")
-                        },
-                        color = AppTheme.textSecondary(),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-            },
-            containerColor = AppTheme.surface(),
-        )
-    }
-}
-
-@Composable
-fun CameraButtonView(
-    isLoadingFoodPhoto: Boolean,
-    onCameraClick: () -> Unit,
-    onGalleryImageSelected: ((Bitmap) -> Unit)? = null,
-) {
-    val context = LocalContext.current
-
-    // Image picker launcher
-    val imagePickerLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.PickVisualMedia(),
-        ) { uri: Uri? ->
-            uri?.let { imageUri ->
-                try {
-                    val inputStream = context.contentResolver.openInputStream(imageUri)
-                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                    inputStream?.close()
-
-                    if (bitmap != null) {
-                        onGalleryImageSelected?.invoke(bitmap)
-                    }
-                } catch (e: Exception) {
-                    // Handle error - could show a toast or error dialog
-                }
-            }
-        }
-
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(Dimensions.buttonHeight),
-        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
-    ) {
-        // Upload button (30% width)
-        Button(
-            onClick = {
-                if (!isLoadingFoodPhoto) {
-                    imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                }
-            },
-            modifier =
-                Modifier
-                    .weight(0.30f)
-                    .height(Dimensions.buttonHeight),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.accent(),
-                    contentColor = Color.White,
-                ),
-            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-            enabled = !isLoadingFoodPhoto,
-        ) {
-            if (isLoadingFoodPhoto) {
-                com.singularis.eateria.ui.components.AnimatedLoadingIcon(
-                    size = Dimensions.loadingIndicatorSize,
-                    color = Color.White,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Icon(
-                        imageVector = AppIcons.Media.photoLibrary,
-                        contentDescription = Localization.tr(LocalContext.current, "camera.upload", "Upload"),
-                        modifier = Modifier.size(Dimensions.iconSizeS),
-                    )
-
-                    Text(
-                        text = Localization.tr(LocalContext.current, "camera.upload", "Upload"),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                    )
-                }
-            }
-        }
-
-        // Take Photo button (65% width)
-        Button(
-            onClick = {
-                if (!isLoadingFoodPhoto) {
-                    onCameraClick()
-                }
-            },
-            modifier =
-                Modifier
-                    .weight(0.65f)
-                    .height(Dimensions.buttonHeight),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.success(),
-                    contentColor = Color.White,
-                ),
-            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-            enabled = !isLoadingFoodPhoto,
-        ) {
-            if (isLoadingFoodPhoto) {
-                com.singularis.eateria.ui.components.AnimatedLoadingIcon(
-                    size = Dimensions.loadingIndicatorSize,
-                    color = Color.White,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        imageVector = AppIcons.Media.photoCamera,
-                        contentDescription = Localization.tr(LocalContext.current, "nav.camera", "Camera"),
-                        modifier = Modifier.size(Dimensions.iconSizeS),
-                    )
-
-                    Spacer(modifier = Modifier.width(Dimensions.paddingXS))
-
-                    Text(
-                        text = Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo"),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun CalorieLimitsDialog(
@@ -1980,135 +1279,7 @@ fun PhotoErrorAlert(
     )
 }
 
-@Composable
-fun FullScreenPhotoView(
-    bitmap: Bitmap,
-    onDismiss: () -> Unit,
-) {
-    val coroutineScope = rememberCoroutineScope()
-    val offsetY = remember { Animatable(0f) }
-    val alpha = remember { Animatable(1f) }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = alpha.value))
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures(
-                            onDragEnd = {
-                                coroutineScope.launch {
-                                    // If dragged more than 1/4 of the screen height, dismiss
-                                    if (offsetY.value > size.height / 4) {
-                                        onDismiss()
-                                    } else {
-                                        // Animate back to original position
-                                        launch { offsetY.animateTo(0f, tween(250)) }
-                                        launch { alpha.animateTo(1f, tween(250)) }
-                                    }
-                                }
-                            },
-                        ) { change, dragAmount ->
-                            change.consume()
-                            coroutineScope.launch {
-                                offsetY.snapTo(offsetY.value + dragAmount)
-                                alpha.snapTo(1f - (offsetY.value / (size.height / 2)).coerceIn(0f, 1f))
-                            }
-                        }
-                    },
-        ) {
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = Localization.tr(LocalContext.current, "fs.hint", "Double tap to reset • Pinch to zoom • Drag to pan"),
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .offset { IntOffset(0, offsetY.value.roundToInt()) },
-                contentScale = ContentScale.Fit,
-            )
-            IconButton(
-                onClick = onDismiss,
-                modifier =
-                    Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(Dimensions.paddingM)
-                        .offset { IntOffset(0, offsetY.value.roundToInt()) },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
-                    tint = Color.White.copy(alpha = alpha.value),
-                    modifier = Modifier.size(Dimensions.iconSizeM),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun DeleteConfirmationDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = Localization.tr(LocalContext.current, "common.remove", "Remove"),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.textPrimary(),
-            )
-        },
-        text = {
-            Text(
-                text =
-                    Localization.tr(
-                        LocalContext.current,
-                        "food.remove.confirm",
-                        "Are you sure you want to remove this food entry? This action cannot be undone.",
-                    ),
-                style = MaterialTheme.typography.bodySmall,
-                color = AppTheme.textSecondary(),
-                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-            )
-        },
-        confirmButton = {
-            Button(
-                onClick = { 
-                    HapticsService.getInstance().error()
-                    onConfirm() 
-                },
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = AppTheme.danger(), // Destructive action color
-                        contentColor = AppTheme.textPrimary(),
-                    ),
-            ) {
-                Text(Localization.tr(LocalContext.current, "common.remove", "Remove"))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { 
-                HapticsService.getInstance().select()
-                onDismiss() 
-            }) {
-                Text(
-                    Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
-                    color = AppTheme.textSecondary(),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-        },
-        containerColor = AppTheme.surface(),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-    )
-}
 
 @Composable
 fun SportCaloriesDialog(
@@ -2191,4 +1362,48 @@ fun SportCaloriesDialog(
         titleContentColor = AppTheme.textPrimary(),
         textContentColor = AppTheme.textPrimary(),
     )
+}
+
+@Composable
+fun MascotAvatarView(
+    state: com.singularis.eateria.services.MascotState,
+    size: androidx.compose.ui.unit.Dp,
+    modifier: Modifier = Modifier
+) {
+    val themeService = com.singularis.eateria.services.ThemeService.getInstance()
+    
+    if (themeService.currentMascot != com.singularis.eateria.services.AppMascot.NONE) {
+        val imageName = themeService.getMascotImage(state)
+        if (imageName != null) {
+            val resourceId = LocalContext.current.resources.getIdentifier(imageName, "drawable", LocalContext.current.packageName)
+            if (resourceId != 0) {
+                Image(
+                    painter = androidx.compose.ui.res.painterResource(id = resourceId),
+                    contentDescription = null,
+                    modifier = modifier
+                        .size(size)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                // Fallback if image not found
+                Icon(
+                    imageVector = Icons.Default.AccountCircle, // "pawprint.circle.fill" approximation
+                    contentDescription = null,
+                    modifier = modifier.size(size),
+                    tint = AppTheme.textSecondary()
+                )
+            }
+        } else {
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = null,
+                modifier = modifier.size(size),
+                tint = AppTheme.textSecondary()
+            )
+        }
+    } else {
+        // Nothing if NONE? In iOS it shows pawprint if not none but image is missing.
+        // If currentMascot == .none it doesn't show anything in iOS either.
+    }
 }

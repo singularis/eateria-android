@@ -37,6 +37,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -72,11 +73,15 @@ interface AuthApi {
 class AuthenticationService(
     private val context: Context,
 ) {
-    private val baseUrl = "https://chater.singularis.work/"
+    private val baseUrl: String
+        get() = AppEnvironment.getInstance().baseURL + "/"
 
     private val client =
         OkHttpClient
             .Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor { chain ->
                 val original = chain.request()
                 val requestBuilder =

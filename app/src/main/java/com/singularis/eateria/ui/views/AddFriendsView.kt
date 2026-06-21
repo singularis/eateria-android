@@ -44,7 +44,7 @@ fun AddFriendsView(
     val coroutineScope = rememberCoroutineScope()
 
     var query by remember { mutableStateOf("") }
-    var suggestions by remember { mutableStateOf<List<String>>(emptyList()) }
+    var suggestions by remember { mutableStateOf<List<FriendsSearchWebSocket.UserSearchResult>>(emptyList()) }
     var statusText by remember { mutableStateOf("Type at least 3 letters to search") }
     var isSearching by remember { mutableStateOf(false) }
     var isAddingFriend by remember { mutableStateOf(false) }
@@ -136,7 +136,8 @@ fun AddFriendsView(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(suggestions) { email ->
+                        items(suggestions) { user ->
+                            val email = user.email
                             Card(
                                 modifier =
                                     Modifier
@@ -185,13 +186,34 @@ fun AddFriendsView(
                                     Icon(
                                         Icons.Default.PersonAdd,
                                         contentDescription = Localization.tr(LocalContext.current, "friends.add", "Add friend"),
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = com.singularis.eateria.ui.theme.AppTheme.accent(),
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = email,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                    )
+                                    Column {
+                                        val isAppleHiddenEmail = email.contains("@privaterelay.appleid.com")
+                                        if (!user.nickname.isNullOrEmpty()) {
+                                            Text(
+                                                text = user.nickname,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                                color = com.singularis.eateria.ui.theme.AppTheme.textPrimary()
+                                            )
+                                            if (!isAppleHiddenEmail) {
+                                                Text(
+                                                    text = email,
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    color = com.singularis.eateria.ui.theme.AppTheme.textSecondary()
+                                                )
+                                            }
+                                        } else {
+                                            Text(
+                                                text = email,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                                color = com.singularis.eateria.ui.theme.AppTheme.textPrimary()
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -274,7 +296,7 @@ private fun handleQueryChange(
     ws: FriendsSearchWebSocket,
     coroutineScope: CoroutineScope,
     context: android.content.Context,
-    onUpdate: (Boolean, List<String>, String) -> Unit,
+    onUpdate: (Boolean, List<FriendsSearchWebSocket.UserSearchResult>, String) -> Unit,
 ) {
     val trimmed = newValue.trim()
     if (trimmed.length < 3) {

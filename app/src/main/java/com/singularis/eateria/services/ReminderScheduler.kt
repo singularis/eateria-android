@@ -21,7 +21,7 @@ object ReminderScheduler {
     private const val TAG_DINNER = "tag_meal_dinner"
 
     fun scheduleAll(context: Context) {
-        scheduleNextNDays(context, days = 7)
+        scheduleNextNDays(context, days = 14)
     }
 
     fun cancelAll(context: Context) {

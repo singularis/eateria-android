@@ -92,8 +92,16 @@ fun ContentView(
     val showFeedback by viewModel.showFeedback.collectAsState()
     val showSportCaloriesDialog by viewModel.showSportCaloriesDialog.collectAsState()
     val sportCaloriesInput by viewModel.sportCaloriesInput.collectAsState()
-    val todaySportCalories by viewModel.todaySportCalories.collectAsState()
     val alcoholIconColor by viewModel.alcoholIconColor.collectAsState()
+    val showActivitiesView by viewModel.showActivitiesView.collectAsState()
+    
+    val showWeightMotivationAlert by viewModel.showWeightMotivationAlert.collectAsState()
+    val weightMotivationTitle by viewModel.weightMotivationTitle.collectAsState()
+    val weightMotivationMessage by viewModel.weightMotivationMessage.collectAsState()
+    val pendingWeightPhotoCheck by viewModel.pendingWeightPhotoCheck.collectAsState()
+    
+    val showProgressiveOnboarding by viewModel.showProgressiveOnboarding.collectAsState()
+    val progressiveStep by viewModel.progressiveStep.collectAsState()
 
     // Camera states
     var showFoodCamera by remember { mutableStateOf(false) }
@@ -113,6 +121,13 @@ fun ContentView(
         viewModel.triggerManualRefresh()
     }
 
+    LaunchedEffect(personWeight) {
+        if (pendingWeightPhotoCheck && personWeight > 0f) {
+            viewModel.setPendingWeightPhotoCheck(false)
+            viewModel.triggerWeightMotivation(context, personWeight)
+        }
+    }
+
     // Ask for notifications permission on first load if onboarding seen
     @OptIn(ExperimentalPermissionsApi::class)
     run {
@@ -121,6 +136,29 @@ fun ContentView(
             if (hasSeenOnboarding && !postNotifPermission.status.isGranted) {
                 postNotifPermission.launchPermissionRequest()
             }
+        }
+    }
+
+    // Pager state for TabView mimicking
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+        initialPage = 1,
+        pageCount = { 2 }
+    )
+
+    // Sync button clicks with pager
+    LaunchedEffect(showStatistics) {
+        if (showStatistics && pagerState.currentPage != 0) {
+            pagerState.animateScrollToPage(0)
+        } else if (!showStatistics && pagerState.currentPage != 1) {
+            pagerState.animateScrollToPage(1)
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        if (pagerState.currentPage == 0 && !showStatistics) {
+            viewModel.showStatistics()
+        } else if (pagerState.currentPage == 1 && showStatistics) {
+            viewModel.hideStatistics()
         }
     }
 
@@ -133,18 +171,54 @@ fun ContentView(
                     .windowInsetsPadding(WindowInsets.statusBars)
                     .windowInsetsPadding(WindowInsets.navigationBars),
         ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(
-                            start = Dimensions.paddingM,
-                            end = Dimensions.paddingM,
-                            bottom = Dimensions.paddingM,
-                            top = Dimensions.paddingM,
-                        ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
+            androidx.compose.foundation.pager.HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                when (page) {
+                    0 -> {
+                        StatisticsView(
+                            onBackClick = {
+                                scope.launch { pagerState.animateScrollToPage(1) }
+                            }
+                        )
+                    }
+                    1 -> {
+                        Column(
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(
+                                        start = Dimensions.paddingM,
+                                        end = Dimensions.paddingM,
+                                        bottom = Dimensions.paddingM,
+                                        top = Dimensions.paddingM,
+                                    ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                val scoredProducts = products.filter { it.healthRating >= 0 }
+                val averageHealthScore = if (scoredProducts.isNotEmpty()) {
+                    val sum = scoredProducts.sumOf { it.effectiveHealthRating }
+                    val avg = Math.round(sum.toDouble() / scoredProducts.size).toInt()
+                    maxOf(0, minOf(100, avg))
+                } else {
+                    null
+                }
+
+                val healthScoreColor = averageHealthScore?.let { rating ->
+                    when (rating) {
+                        in 0..39 -> Color(1.0f, 0.0f, 0.0f)
+                        in 40..59 -> Color(1.0f, 0.6f, 0.0f)
+                        in 60..79 -> Color(0.85f, 0.7f, 0.0f)
+                        in 80..94 -> Color(0.5f, 0.9f, 0.3f)
+                        in 95..100 -> Color(0.0f, 1.0f, 0.0f)
+                        else -> Color.Gray
+                    }
+                } ?: AppTheme.textSecondary()
+                
+                val todaySportCalories by viewModel.todaySportCalories.collectAsState()
+                val sportIconColor = if (todaySportCalories > 0) Color.Green else AppTheme.warning()
+
                 // Top Bar
                 TopBarView(
                     isViewingCustomDate = isViewingCustomDate,
@@ -157,9 +231,13 @@ fun ContentView(
                     },
                     onProfileClick = { viewModel.showUserProfile() },
                     onHealthInfoClick = { viewModel.showHealthDisclaimer() },
-                    onSportClick = { viewModel.showSportCaloriesDialog() },
+                    onSportClick = { viewModel.showActivitiesView() },
                     onReturnToTodayClick = { viewModel.returnToToday() },
                     alcoholIconColor = alcoholIconColor,
+                    sportIconColor = sportIconColor,
+                    healthScore = averageHealthScore ?: 0,
+                    healthColor = healthScoreColor,
+                    hasFoods = products.isNotEmpty(),
                     onAlcoholClick = { viewModel.showAlcoholCalendar() },
                 )
 
@@ -234,6 +312,10 @@ fun ContentView(
                 // Camera Button - Always visible at bottom
                 CameraButtonView(
                     isLoadingFoodPhoto = isLoadingFoodPhoto,
+                    isViewingCustomDate = isViewingCustomDate,
+                    selectedDate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(currentViewingDate) ?: java.util.Date(),
+                    onReturnToToday = { viewModel.returnToToday() },
+                    onRequestTutorial = null, // Tutorial logic not fully ported yet
                     onCameraClick = {
                         showFoodCamera = true
                     },
@@ -251,7 +333,10 @@ fun ContentView(
                         }
                     },
                 )
-            }
+                        } // End of Column
+                    } // End of Main Content Page (Page 1)
+                } // End of when (page)
+            } // End of HorizontalPager
 
             // Loading overlays with modern animated icons
             if (isLoadingData) {
@@ -358,11 +443,7 @@ fun ContentView(
                 )
             }
 
-            if (showStatistics) {
-                StatisticsView(
-                    onBackClick = { viewModel.hideStatistics() },
-                )
-            }
+            // showStatistics is now handled by the HorizontalPager
 
             if (showHealthSettings) {
                 HealthSettingsView(
@@ -423,7 +504,7 @@ fun ContentView(
                         val weight = manualWeightInput.replace(",", ".").toFloatOrNull()
                         if (weight != null && weight > 0) {
                             userEmail?.let { email ->
-                                viewModel.sendManualWeight(weight, email)
+                                viewModel.sendManualWeight(weight, email, context)
                             }
                             viewModel.hideManualWeightEntry()
                         }
@@ -456,6 +537,36 @@ fun ContentView(
                     onSportCaloriesChange = viewModel::updateSportCaloriesInput,
                     onSave = viewModel::saveSportCalories,
                     onDismiss = { viewModel.hideSportCaloriesDialog() },
+                )
+            }
+
+            // Weight Motivation Alert
+            if (showWeightMotivationAlert) {
+                AlertHelper.SimpleAlert(
+                    title = weightMotivationTitle,
+                    message = weightMotivationMessage,
+                    isVisible = true,
+                    onDismiss = { viewModel.dismissWeightMotivationAlert() }
+                )
+            }
+            
+            // Progressive Onboarding
+            if (showProgressiveOnboarding) {
+                ProgressiveOnboardingView(
+                    step = progressiveStep,
+                    onComplete = {
+                        viewModel.dismissProgressiveOnboarding()
+                    }
+                )
+            }
+
+            // Activities View
+            if (showActivitiesView) {
+                // Determine date to pass (either custom or today)
+                val dateISO = if (isViewingCustomDate) currentViewingDateString else ""
+                ActivitiesView(
+                    dateISO = dateISO,
+                    onDismiss = { viewModel.hideActivitiesView() }
                 )
             }
 

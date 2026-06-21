@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.singularis.eateria.services.GRPCService
@@ -128,6 +129,10 @@ fun AlcoholCalendarView(
                             }
                         },
             ) {
+                AddictionModeExplanation()
+                
+                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+
                 Header(
                     date = anchorMonth,
                     onPrev = { anchorMonth = addMonths(anchorMonth, -1) },
@@ -412,5 +417,42 @@ private fun formatEvents(events: List<Alcohol.AlcoholEvent>): String {
         val qty = e.quantity
         val cal = e.calories
         "$tt • $name • ${qty}ml • $cal kcal"
+    }
+}
+
+@Composable
+private fun AddictionModeExplanation() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimensions.paddingS)
+            .background(com.singularis.eateria.ui.theme.AppTheme.surface().copy(alpha = 0.8f), RoundedCornerShape(12.dp))
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = Localization.tr(LocalContext.current, "alcohol.addiction_mode.title", "🍷 Addiction Mode"),
+                fontWeight = FontWeight.Bold,
+                fontSize = 17.sp, // Using sp instead of dp for font size
+                color = com.singularis.eateria.ui.theme.AppTheme.textPrimary()
+            )
+            
+            val gradientColors = listOf(Color.Green, Color(0xFF800080)) // Purple
+            val brush = androidx.compose.ui.graphics.Brush.linearGradient(gradientColors)
+            
+            Text(
+                text = Localization.tr(LocalContext.current, "alcohol.addiction_mode.subtitle", "Track alcohol intake and stay mindful."),
+                fontWeight = FontWeight.Medium,
+                fontSize = 19.sp,
+                style = androidx.compose.ui.text.TextStyle(brush = brush)
+            )
+            Text(
+                text = Localization.tr(LocalContext.current, "alcohol.addiction_mode.desc", "Alcohol entries are automatically logged in your calendar, and the alcohol icon turns red to highlight the day."),
+                fontWeight = FontWeight.Normal,
+                fontSize = 18.sp,
+                lineHeight = 24.sp,
+                style = androidx.compose.ui.text.TextStyle(brush = brush)
+            )
+        }
     }
 }

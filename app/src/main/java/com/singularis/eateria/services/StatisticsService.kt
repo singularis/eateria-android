@@ -3,6 +3,7 @@ package com.singularis.eateria.services
 import android.content.Context
 import android.util.Log
 import com.singularis.eateria.models.DailyStatistics
+import com.singularis.eateria.models.StatisticsPeriod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -58,6 +59,13 @@ class StatisticsService private constructor(
 
                 // Clean up expired cache entries first
                 cacheService.clearExpiredCache()
+
+                val prefs = context.getSharedPreferences("eateria_prefs", Context.MODE_PRIVATE)
+                val hasCacheFix = prefs.getBoolean("hasDataLogicCacheFix", false)
+                if (!hasCacheFix) {
+                    cacheService.clearAllCache()
+                    prefs.edit().putBoolean("hasDataLogicCacheFix", true).apply()
+                }
 
                 // Get cached statistics
                 val cachedStatistics = cacheService.getCachedStatistics(allDateStrings)
@@ -286,11 +294,13 @@ class StatisticsService private constructor(
 
             if (validStats.isEmpty()) {
                 return@withContext NutritionAverages(
-                    calories = 0.0,
-                    proteins = 0.0,
-                    fats = 0.0,
-                    carbohydrates = 0.0,
-                    weight = 0f,
+                    avgCalories = 0.0,
+                    avgWeight = 0.0,
+                    avgPersonWeight = 0.0,
+                    avgProteins = 0.0,
+                    avgFats = 0.0,
+                    avgCarbs = 0.0,
+                    avgFiber = 0.0,
                     mealsPerDay = 0.0,
                     daysAnalyzed = 0,
                 )
@@ -306,17 +316,15 @@ class StatisticsService private constructor(
             val carbsSum = validStats.sumOf { it.carbohydrates }
             val mealsSum = validStats.sumOf { it.numberOfMeals }
 
+            val fiberSum = validStats.sumOf { it.fiber }
             NutritionAverages(
-                calories = caloriesSum.toDouble() / totalStats,
-                proteins = proteinsSum / totalStats,
-                fats = fatsSum / totalStats,
-                carbohydrates = carbsSum / totalStats,
-                weight =
-                    if (personWeightStats.isNotEmpty()) {
-                        (personWeightSum / personWeightStats.size).toFloat()
-                    } else {
-                        0f
-                    },
+                avgCalories = caloriesSum.toDouble() / totalStats,
+                avgWeight = weightSum.toDouble() / totalStats,
+                avgPersonWeight = if (personWeightStats.isNotEmpty()) personWeightSum / personWeightStats.size else 0.0,
+                avgProteins = proteinsSum / totalStats,
+                avgFats = fatsSum / totalStats,
+                avgCarbs = carbsSum / totalStats,
+                avgFiber = fiberSum / totalStats,
                 mealsPerDay = mealsSum.toDouble() / totalStats,
                 daysAnalyzed = totalStats,
             )
@@ -508,23 +516,17 @@ class StatisticsService private constructor(
     }
 }
 
-// Enum for statistics periods (matching iOS)
-enum class StatisticsPeriod(
-    val days: Int,
-) {
-    WEEK(7),
-    MONTH(30),
-    TWO_MONTHS(60),
-    THREE_MONTHS(90),
-}
+
 
 // Data classes for analysis results
 data class NutritionAverages(
-    val calories: Double,
-    val proteins: Double,
-    val fats: Double,
-    val carbohydrates: Double,
-    val weight: Float,
+    val avgCalories: Double,
+    val avgWeight: Double,
+    val avgPersonWeight: Double,
+    val avgProteins: Double,
+    val avgFats: Double,
+    val avgCarbs: Double,
+    val avgFiber: Double,
     val mealsPerDay: Double,
     val daysAnalyzed: Int,
 )

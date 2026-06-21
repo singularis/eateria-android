@@ -103,7 +103,7 @@ private fun CalendarContent(
             Text(
                 text = Localization.tr(LocalContext.current, "calendar.selectdate", "Select Date"),
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 modifier = Modifier.padding(bottom = Dimensions.paddingM),
             )
 
@@ -128,14 +128,14 @@ private fun CalendarContent(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                         contentDescription = Localization.tr(LocalContext.current, "calendar.prev", "<"),
-                        tint = Color.White,
+                        tint = AppTheme.textPrimary(),
                     )
                 }
 
                 Text(
                     text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(currentMonth.time),
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                 )
 
                 IconButton(
@@ -156,7 +156,7 @@ private fun CalendarContent(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = Localization.tr(LocalContext.current, "calendar.next", ">"),
-                        tint = Color.White,
+                        tint = AppTheme.textPrimary(),
                     )
                 }
             }
@@ -175,7 +175,7 @@ private fun CalendarContent(
                     Text(
                         text = day,
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
                     )
@@ -205,7 +205,7 @@ private fun CalendarContent(
                     Text(
                         text = Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                     )
                 }
 
@@ -309,10 +309,10 @@ private fun CalendarDay(
                 text = dayNumber.toString(),
                 color =
                     when {
-                        !isClickable -> Color.Gray
+                        !isClickable -> AppTheme.textSecondary().copy(alpha = 0.5f)
                         isSelected -> Color.White
                         isToday -> Color.White
-                        else -> Color.White
+                        else -> AppTheme.textPrimary()
                     },
                 fontSize = 14.sp,
                 fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,

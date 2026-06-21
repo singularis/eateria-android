@@ -1,5 +1,11 @@
 package com.singularis.eateria.ui.views
+import androidx.compose.material.icons.filled.Add
 
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.VpnKey
+import androidx.compose.material.icons.filled.PlayCircleFilled
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.LocalIndication
@@ -24,6 +30,9 @@ import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -37,6 +46,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.Star
 import coil.compose.AsyncImage
 import com.singularis.eateria.services.HealthDataService
 import com.singularis.eateria.services.LanguageService
@@ -47,6 +58,14 @@ import com.singularis.eateria.ui.theme.*
 import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
+import com.singularis.eateria.ui.theme.CalorieGreen
+import com.singularis.eateria.ui.theme.CalorieYellow
+import com.singularis.eateria.ui.theme.CalorieRed
+import com.singularis.eateria.ui.theme.CalorieBlue
+import com.singularis.eateria.ui.theme.CalorieOrange
+import com.singularis.eateria.ui.theme.Gray3
+import com.singularis.eateria.ui.theme.Gray4
+import com.singularis.eateria.ui.theme.DarkPrimary
 
 @Composable
 fun UserProfileView(
@@ -71,6 +90,11 @@ fun UserProfileView(
     var showLanguageSelector by remember { mutableStateOf(false) }
     var currentLanguage by remember { mutableStateOf(LanguageService.getCurrentCode(context)) }
     val languageFlowCurrent by LanguageService.languageFlow(context).collectAsState(initial = currentLanguage)
+        val prefs = context.getSharedPreferences("eateria_prefs", android.content.Context.MODE_PRIVATE)
+    val appSettingsService = remember { com.singularis.eateria.services.AppSettingsService.getInstance() }
+val themeService = com.singularis.eateria.services.ThemeService.getInstance()
+    val currentMascot by themeService.currentMascotFlow.collectAsState()
+    val soundEnabled by themeService.soundEnabledFlow.collectAsState()
     LaunchedEffect(languageFlowCurrent) {
         currentLanguage = languageFlowCurrent
     }
@@ -83,6 +107,8 @@ fun UserProfileView(
     var userOptimalWeight by remember { mutableStateOf(0.0) }
     var userRecommendedCalories by remember { mutableStateOf(0) }
     var showAddFriends by remember { mutableStateOf(false) }
+    var showNicknameSettings by remember { mutableStateOf(false) }
+    var showMainAppTutorial by remember { mutableStateOf(false) }
 
     LaunchedEffect(languageFlowCurrent) {
         Localization.clearCache()
@@ -152,50 +178,88 @@ fun UserProfileView(
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
+                contentPadding = PaddingValues(bottom = Dimensions.paddingXL)
             ) {
-                // Profile header
+                // Profile Section
                 item {
+                    ProfileMenuSectionTitle(
+                        title = Localization.tr(LocalContext.current, "profile.header", "Profile"),
+                        icon = Icons.Default.AccountCircle,
+                        color = AppTheme.accent()
+                    )
                     ProfileHeader(
                         greeting = greeting,
                         userEmail = userEmail,
                         userName = userName,
                         userProfilePictureURL = userProfilePictureURL,
+                        onEditNickname = { showNicknameSettings = true },
+                        nickname = prefs.getString("user_nickname", "") ?: ""
                     )
                 }
 
-                // Statistics button (standalone like iOS)
                 item {
                     Button(
                         onClick = { 
                             com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
-                            onStatisticsClick() 
+                            onOnboardingClick() 
                         },
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = AppTheme.accent(),
-                                contentColor = Color.White,
-                            ),
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .height(Dimensions.paddingXL + Dimensions.paddingM),
-                        shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .background(
+                                brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                    colors = listOf(CalorieGreen, Color(0xFF9C27B0))
+                                ),
+                                shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                            )
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                            contentDescription = null,
-                            modifier = Modifier.size(Dimensions.iconSizeS),
-                        )
-                        Spacer(modifier = Modifier.width(Dimensions.paddingS))
-                        Text(
-                            text = Localization.tr(LocalContext.current, "profile.viewstats"),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.PlayCircleFilled,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(Dimensions.paddingS))
+                            Text(
+                                text = Localization.tr(LocalContext.current, "profile.watch_me_first", "Watch me first!"),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                     }
+                }
+
+                // Theme Section
+                item {
+                    ProfileMenuSectionTitle(
+                        title = Localization.tr(LocalContext.current, "profile.theme", "Theme"),
+                        icon = Icons.Default.Palette,
+                        color = Color(0xFF9C27B0)
+                    )
+                    ThemeSectionCard(
+                        currentMascot = currentMascot,
+                        themeService = themeService,
+                        soundEnabled = soundEnabled,
+                        context = context
+                    )
                 }
 
                 // Health Data Section
                 item {
+                    ProfileMenuSectionTitle(
+                        title = Localization.tr(LocalContext.current, "profile.health", "Health"),
+                        icon = androidx.compose.material.icons.Icons.Default.Favorite,
+                        color = Color(0xFFE91E63)
+                    )
                     if (hasHealthData) {
                         HealthDataCard(
                             userHeight = userHeight,
@@ -210,151 +274,156 @@ fun UserProfileView(
                     }
                 }
 
-                // App Features section
+                // Actions Section
                 item {
-                    ProfileMenuSection(
-                        title = Localization.tr(LocalContext.current, "profile.features"),
-                        items =
-                            listOf(
-                                ProfileMenuItem(
-                                    icon = Icons.Default.PersonAdd,
-                                    title = Localization.tr(LocalContext.current, "profile.addfriends"),
-                                    subtitle = Localization.tr(LocalContext.current, "profile.addfriends.desc"),
-                                    onClick = { showAddFriends = true },
-                                ),
-                                ProfileMenuItem(
-                                    icon = Icons.Default.Info,
-                                    title = Localization.tr(LocalContext.current, "profile.tutorial"),
-                                    subtitle = Localization.tr(LocalContext.current, "profile.tutorial.desc"),
-                                    onClick = onOnboardingClick,
-                                ),
-                                ProfileMenuItem(
-                                    icon = Icons.Default.Feedback,
-                                    title = Localization.tr(LocalContext.current, "profile.sharefeedback"),
-                                    subtitle = Localization.tr(LocalContext.current, "profile.sharefeedback.desc"),
-                                    onClick = onFeedbackClick,
-                                ),
-                                ProfileMenuItem(
-                                    icon = Icons.Default.Info,
-                                    title = Localization.tr(LocalContext.current, "disc.title"),
-                                    subtitle = Localization.tr(LocalContext.current, "disc.subtitle"),
-                                    onClick = onHealthDisclaimerClick,
-                                ),
-                            ),
+                    ProfileMenuSectionTitle(
+                        title = Localization.tr(LocalContext.current, "profile.actions", "Actions"),
+                        icon = androidx.compose.material.icons.Icons.Default.Bolt,
+                        color = CalorieGreen
                     )
-                }
-
-                // Display Mode section
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
-                        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-                    ) {
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimensions.paddingM),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = Localization.tr(LocalContext.current, "profile.datamode"),
-                                    color = AppTheme.textPrimary(),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                )
-                                Text(
-                                    text =
-                                        if (isFullMode) {
-                                            Localization.tr(
-                                                LocalContext.current,
-                                                "common.full",
-                                            )
-                                        } else {
-                                            Localization.tr(LocalContext.current, "common.simplified")
-                                        },
-                                    color = Color.Gray,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS)) {
+                        ActionButton(
+                            icon = Icons.AutoMirrored.Filled.TrendingUp,
+                            title = Localization.tr(LocalContext.current, "profile.viewstats", "View Statistics"),
+                            onClick = {
+                                com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                                onStatisticsClick()
                             }
-                            Switch(
-                                checked = isFullMode,
-                                onCheckedChange = { checked ->
-                                    com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
-                                    coroutineScope.launch { authViewModel.setFullDisplayMode(checked) }
-                                },
-                            )
-                        }
+                        )
+                        ActionButton(
+                            icon = Icons.Default.Feedback,
+                            title = Localization.tr(LocalContext.current, "profile.sharefeedback", "Share Feedback"),
+                            onClick = {
+                                com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                                onFeedbackClick()
+                            }
+                        )
+                        ActionButton(
+                            icon = Icons.Default.PersonAdd,
+                            title = Localization.tr(LocalContext.current, "profile.addfriends", "Add Friends"),
+                            onClick = {
+                                com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                                showAddFriends = true
+                            }
+                        )
                     }
                 }
 
-                // Language Selection section
+                // Preferences Section
                 item {
+                    ProfileMenuSectionTitle(
+                        title = Localization.tr(LocalContext.current, "profile.preferences", "Preferences"),
+                        icon = androidx.compose.material.icons.Icons.Default.Settings,
+                        color = Color(0xFF9C27B0)
+                    )
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+                        colors = CardDefaults.cardColors(containerColor = Gray4),
                         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                     ) {
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimensions.paddingM),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = Localization.tr(LocalContext.current, "profile.language"),
-                                    color = AppTheme.textPrimary(),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                )
-                                Text(
-                                    text = LanguageService.nativeName(currentLanguage),
-                                    color = Color.Gray,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            }
-                            IconButton(
-                                onClick = { 
+                        Column {
+                            // Language
+                            PreferenceRow(
+                                title = Localization.tr(LocalContext.current, "profile.language", "Language"),
+                                value = LanguageService.nativeName(currentLanguage),
+                                onClick = {
                                     com.singularis.eateria.services.HapticsService.getInstance().select()
-                                    showLanguageSelector = true 
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Language,
-                                    contentDescription = Localization.tr(LocalContext.current, "profile.language.select"),
-                                    tint = AppTheme.textPrimary(),
-                                )
-                            }
+                                    showLanguageSelector = true
+                                }
+                            )
+                            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+                            
+                            // Appearance
+                            PreferenceSegmentedRow(
+                                title = Localization.tr(LocalContext.current, "profile.appearance", "Appearance"),
+                                options = listOf(
+                                    Localization.tr(LocalContext.current, "appearance.system", "System") to com.singularis.eateria.services.AppSettingsService.AppearanceMode.SYSTEM,
+                                    Localization.tr(LocalContext.current, "appearance.light", "Light") to com.singularis.eateria.services.AppSettingsService.AppearanceMode.LIGHT,
+                                    Localization.tr(LocalContext.current, "appearance.dark", "Dark") to com.singularis.eateria.services.AppSettingsService.AppearanceMode.DARK
+                                ),
+                                selected = appSettingsService.appearanceMode,
+                                onSelected = { 
+                                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                                    appSettingsService.appearanceMode = it 
+                                }
+                            )
+                            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+                            
+                            // Reduce Motion
+                            PreferenceToggleRow(
+                                title = Localization.tr(LocalContext.current, "profile.reduce_motion", "Reduce Motion"),
+                                checked = appSettingsService.reduceMotion,
+                                onCheckedChange = { 
+                                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                                    appSettingsService.reduceMotion = it 
+                                }
+                            )
+                            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+
+                            // Data Mode
+                            PreferenceSegmentedRow(
+                                title = Localization.tr(LocalContext.current, "profile.datamode", "Data Mode"),
+                                options = listOf(
+                                    Localization.tr(LocalContext.current, "common.simplified", "Simplified") to false,
+                                    Localization.tr(LocalContext.current, "common.full", "Full") to true
+                                ),
+                                selected = isFullMode,
+                                onSelected = { 
+                                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                                    coroutineScope.launch { authViewModel.setFullDisplayMode(it) } 
+                                }
+                            )
+                            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+
+                            // Save Photos
+                            PreferenceToggleRow(
+                                title = Localization.tr(LocalContext.current, "profile.save_photos", "Save to Photo Library"),
+                                checked = appSettingsService.savePhotosToLibrary,
+                                onCheckedChange = { 
+                                    com.singularis.eateria.services.HapticsService.getInstance().select()
+                                    appSettingsService.savePhotosToLibrary = it 
+                                }
+                            )
                         }
                     }
                 }
 
                 // Account section
                 item {
-                    ProfileMenuSection(
-                        title = Localization.tr(LocalContext.current, "profile.account"),
-                        items =
-                            listOf(
-                                ProfileMenuItem(
-                                    icon = Icons.AutoMirrored.Filled.ExitToApp,
-                                    title = Localization.tr(LocalContext.current, "profile.logout"),
-                                    subtitle = Localization.tr(LocalContext.current, "profile.logout.desc"),
-                                    onClick = { showSignOutDialog = true },
-                                    textColor = CalorieYellow,
-                                ),
-                                ProfileMenuItem(
-                                    icon = Icons.Default.Delete,
-                                    title = Localization.tr(LocalContext.current, "profile.delete"),
-                                    subtitle = Localization.tr(LocalContext.current, "profile.delete.desc"),
-                                    onClick = { showDeleteAccountDialog = true },
-                                    textColor = CalorieRed,
-                                ),
-                            ),
+                    ProfileMenuSectionTitle(
+                        title = Localization.tr(LocalContext.current, "profile.account", "Account"),
+                        icon = androidx.compose.material.icons.Icons.Default.VpnKey,
+                        color = CalorieOrange
                     )
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS)) {
+                        Button(
+                            onClick = { showSignOutDialog = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White,
+                                contentColor = Color(0xFF6B000D)
+                            ),
+                            shape = RoundedCornerShape(25.dp),
+                            modifier = Modifier.fillMaxWidth().height(50.dp)
+                        ) {
+                            Icon(imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
+                            Spacer(modifier = Modifier.width(Dimensions.paddingS))
+                            Text(Localization.tr(LocalContext.current, "profile.logout", "Logout"), fontWeight = FontWeight.SemiBold)
+                        }
+                        
+                        Button(
+                            onClick = { showDeleteAccountDialog = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = CalorieRed,
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(25.dp),
+                            modifier = Modifier.fillMaxWidth().height(50.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                            Spacer(modifier = Modifier.width(Dimensions.paddingS))
+                            Text(Localization.tr(LocalContext.current, "profile.delete", "Delete Account"), fontWeight = FontWeight.SemiBold)
+                        }
+                    }
                 }
             }
         }
@@ -362,6 +431,20 @@ fun UserProfileView(
         // Add Friends dialog trigger from profile
         if (showAddFriends) {
             AddFriendsView(onDismiss = { showAddFriends = false })
+        }
+
+        if (showNicknameSettings) {
+            NicknameSettingsView(
+                authViewModel = authViewModel,
+                onBackClick = { showNicknameSettings = false }
+            )
+        }
+
+        if (showMainAppTutorial) {
+            MainAppTutorialView(
+                isPresented = showMainAppTutorial,
+                onDismiss = { showMainAppTutorial = false }
+            )
         }
 
         // Language Selector Dialog
@@ -479,87 +562,67 @@ private fun ProfileHeader(
     userEmail: String?,
     userName: String?,
     userProfilePictureURL: String? = null,
+    onEditNickname: () -> Unit,
+    nickname: String
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onEditNickname() },
         colors = CardDefaults.cardColors(containerColor = Gray4),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusL),
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.paddingL),
+            modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Profile picture
             Box(
-                modifier =
-                    Modifier
-                        .size(Dimensions.iconSizeXL)
-                        .clip(CircleShape)
-                        .background(AppTheme.divider()),
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(CircleShape)
+                    .background(AppTheme.divider()),
                 contentAlignment = Alignment.Center,
             ) {
                 if (!userProfilePictureURL.isNullOrEmpty()) {
                     AsyncImage(
                         model = userProfilePictureURL,
-                        contentDescription = Localization.tr(LocalContext.current, "profile.name", "Profile Picture"),
-                        modifier =
-                            Modifier
-                                .size(Dimensions.iconSizeXL)
-                                .clip(CircleShape),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                     )
                 } else {
-                    // Fallback icon when no profile picture
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
-                        contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
+                        contentDescription = null,
                         tint = AppTheme.textPrimary(),
-                        modifier = Modifier.size(Dimensions.paddingXL + Dimensions.paddingM),
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimensions.paddingS))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Name section (if available)
-            userName?.takeIf { it.isNotEmpty() }?.let { name ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "profile.name", "Name"),
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-                    Text(
-                        text = name,
-                        color = AppTheme.textPrimary(),
-                        style = MaterialTheme.typography.headlineSmall,
-                    )
-                    Spacer(modifier = Modifier.height(Dimensions.paddingS))
+            if (nickname.isNotEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Text(text = nickname, color = AppTheme.textPrimary(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
+                }
+                if (!userName.isNullOrEmpty()) {
+                    Text(text = userName, color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
+                }
+            } else if (!userName.isNullOrEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Text(text = userName, color = AppTheme.textPrimary(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
+                }
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Text(text = Localization.tr(LocalContext.current, "profile.set_nickname", "Set Nickname"), color = AppTheme.accent(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(imageVector = androidx.compose.material.icons.Icons.Default.Add, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
                 }
             }
-
-            // Email section
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = Localization.tr(LocalContext.current, "profile.email", "Email"),
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.labelMedium,
-                )
-                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-                Text(
-                    text = userEmail ?: Localization.tr(LocalContext.current, "profile.no_email", "No email"),
-                    color = AppTheme.textPrimary(),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
+            Text(text = userEmail ?: "No email", color = Color.Gray, style = MaterialTheme.typography.labelMedium)
         }
     }
 }
@@ -827,35 +890,59 @@ internal fun LanguageSelectorDialog(
                 }.sortedBy { it.nativeName.lowercase() }
         }
 
-    AlertDialog(
+    androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = Localization.tr(LocalContext.current, "profile.language.select", "Select Language"),
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-            )
-        },
-        text = {
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        androidx.compose.material3.Scaffold(
+            topBar = {
+                @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+                androidx.compose.material3.TopAppBar(
+                    title = {
+                        Text(
+                            text = Localization.tr(LocalContext.current, "profile.language", "Language"),
+                            color = AppTheme.textPrimary()
+                        )
+                    },
+                    navigationIcon = {
+                        TextButton(onClick = {
+                            com.singularis.eateria.services.HapticsService.getInstance().select()
+                            onDismiss()
+                        }) {
+                            Text(
+                                text = Localization.tr(LocalContext.current, "common.close", "Close"),
+                                color = AppTheme.textPrimary()
+                            )
+                        }
+                    },
+                    colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            },
+            containerColor = Color.Transparent,
+            modifier = Modifier.fillMaxSize().background(AppTheme.backgroundGradient())
+        ) { paddingValues ->
             LazyColumn(
-                modifier = Modifier.height(400.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
             ) {
                 items(languages) { language ->
                     Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    coroutineScope.launch {
-                                        val ok = LanguageService.setLanguage(context, language.code)
-                                        if (ok) {
-                                            onLanguageSelected(language.code)
-                                        } else {
-                                            onLanguageSelected("en")
-                                        }
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                coroutineScope.launch {
+                                    val ok = LanguageService.setLanguage(context, language.code)
+                                    if (ok) {
+                                        onLanguageSelected(language.code)
+                                    } else {
+                                        onLanguageSelected("en")
                                     }
-                                }.padding(vertical = 12.dp, horizontal = 16.dp),
+                                }
+                            }
+                            .padding(vertical = 12.dp, horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
@@ -863,39 +950,26 @@ internal fun LanguageSelectorDialog(
                             fontSize = 24.sp,
                             modifier = Modifier.width(40.dp),
                         )
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = language.nativeName,
-                            color = if (currentLanguage == language.code) CalorieGreen else Color.White,
+                            color = AppTheme.textPrimary(),
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (currentLanguage == language.code) FontWeight.Bold else FontWeight.Normal,
                         )
                         if (currentLanguage == language.code) {
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = CalorieGreen,
+                                tint = AppTheme.success(),
                                 modifier = Modifier.size(20.dp),
                             )
                         }
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = { 
-                com.singularis.eateria.services.HapticsService.getInstance().select()
-                onDismiss() 
-            }) {
-                Text(
-                    Localization.tr(LocalContext.current, "common.close", "Close"),
-                    color = Color.Gray,
-                )
-            }
-        },
-        containerColor = AppTheme.surface(),
-    )
+        }
+    }
 }
 
 internal data class LanguageOption(
@@ -903,3 +977,265 @@ internal data class LanguageOption(
     val flag: String,
     val nativeName: String,
 )
+
+@Composable
+private fun ProfileMenuSectionTitle(title: String, icon: ImageVector, color: Color) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = Dimensions.paddingXS, vertical = Dimensions.paddingS)
+    ) {
+        Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = title,
+            color = AppTheme.textPrimary(),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun MascotButton(
+    mascot: com.singularis.eateria.services.AppMascot,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(
+            indication = null,
+            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+            onClick = onClick
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(
+                    brush = if (isSelected) androidx.compose.ui.graphics.Brush.linearGradient(
+                        colors = listOf(AppTheme.accent(), AppTheme.accent().copy(alpha = 0.7f))
+                    ) else androidx.compose.ui.graphics.Brush.linearGradient(
+                        colors = listOf(Color.Gray.copy(alpha = 0.2f), Color.Gray.copy(alpha = 0.1f))
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .border(
+                    width = if (isSelected) 2.dp else 1.dp,
+                    color = if (isSelected) AppTheme.accent() else Color.Gray.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(16.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (mascot == com.singularis.eateria.services.AppMascot.NONE) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = if (isSelected) Color.White else Color.Gray,
+                    modifier = Modifier.size(32.dp)
+                )
+            } else {
+                val context = LocalContext.current
+                val imageName = mascot.images(com.singularis.eateria.services.MascotState.HAPPY).firstOrNull()
+                if (imageName != null) {
+                    val resId = context.resources.getIdentifier(imageName, "drawable", context.packageName)
+                    if (resId != 0) {
+                        AsyncImage(
+                            model = resId,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    } else {
+                        Text(mascot.icon, fontSize = 32.sp)
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = Localization.tr(LocalContext.current, "profile.theme.name.${mascot.value}", mascot.displayName),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) AppTheme.accent() else Color.Gray
+        )
+    }
+}
+
+@Composable
+private fun ThemeSectionCard(
+    currentMascot: com.singularis.eateria.services.AppMascot,
+    themeService: com.singularis.eateria.services.ThemeService,
+    soundEnabled: Boolean,
+    context: android.content.Context
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Gray4),
+        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM)) {
+            if (currentMascot != com.singularis.eateria.services.AppMascot.NONE) {
+                val previews = themeService.getUniquePreviewImageNames(5)
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = Dimensions.paddingM)
+                ) {
+                    items(previews.size) { index ->
+                        val imageName = previews[index]
+                        val resId = context.resources.getIdentifier(imageName, "drawable", context.packageName)
+                        if (resId != 0) {
+                            AsyncImage(
+                                model = resId,
+                                contentDescription = null,
+                                modifier = Modifier.size(56.dp).clip(CircleShape)
+                            )
+                        }
+                    }
+                }
+            }
+            
+            Text(
+                text = Localization.tr(LocalContext.current, "profile.friend", "Choose Your Friend"),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.textPrimary()
+            )
+            Spacer(modifier = Modifier.height(Dimensions.paddingXS))
+            Text(
+                text = Localization.tr(LocalContext.current, "profile.friend.desc", "Get custom icons, sounds, and motivational messages!"),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                com.singularis.eateria.services.AppMascot.values().forEach { mascot ->
+                    MascotButton(
+                        mascot = mascot,
+                        isSelected = currentMascot == mascot,
+                        onClick = {
+                            com.singularis.eateria.services.HapticsService.getInstance().select()
+                            themeService.currentMascot = mascot
+                            themeService.playSound("happy")
+                        }
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
+            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider())
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                    contentDescription = null,
+                    tint = if (soundEnabled) AppTheme.accent() else Color.Gray
+                )
+                Spacer(modifier = Modifier.width(Dimensions.paddingS))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = Localization.tr(LocalContext.current, "profile.theme.sounds", "Theme Sounds"),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AppTheme.textPrimary()
+                    )
+                    if (currentMascot != com.singularis.eateria.services.AppMascot.NONE) {
+                        Text(
+                            text = if (currentMascot == com.singularis.eateria.services.AppMascot.CAT) Localization.tr(LocalContext.current, "profile.theme.sounds.cat", "Meow sounds")
+                                   else Localization.tr(LocalContext.current, "profile.theme.sounds.dog", "Woof sounds"),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+                Switch(
+                    checked = soundEnabled,
+                    onCheckedChange = { 
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
+                        themeService.soundEnabled = it 
+                    },
+                    enabled = currentMascot != com.singularis.eateria.services.AppMascot.NONE,
+                    colors = SwitchDefaults.colors(checkedThumbColor = AppTheme.accent(), checkedTrackColor = AppTheme.accent().copy(alpha = 0.5f))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionButton(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = CalorieGreen, contentColor = Color.White),
+        shape = RoundedCornerShape(25.dp),
+        modifier = Modifier.fillMaxWidth().height(50.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun PreferenceRow(title: String, value: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(Dimensions.paddingM),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = title, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = value, color = Color.White, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun <T> PreferenceSegmentedRow(title: String, options: List<Pair<String, T>>, selected: T, onSelected: (T) -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM)) {
+        Text(text = title, color = Color.Gray, style = MaterialTheme.typography.labelMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth().height(36.dp).clip(RoundedCornerShape(8.dp)).background(AppTheme.divider())) {
+            options.forEach { option ->
+                val isSelected = option.second == selected
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                        .padding(2.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (isSelected) Gray3 else Color.Transparent)
+                        .clickable { onSelected(option.second) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = option.first, color = if (isSelected) Color.White else Color.Gray, style = MaterialTheme.typography.bodyMedium, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PreferenceToggleRow(title: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = title, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(checkedThumbColor = AppTheme.accent(), checkedTrackColor = AppTheme.accent().copy(alpha = 0.5f))
+        )
+    }
+}

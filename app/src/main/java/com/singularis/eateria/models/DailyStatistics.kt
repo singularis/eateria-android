@@ -18,18 +18,27 @@ data class DailyStatistics(
     val numberOfMeals: Int,
     val hasData: Boolean,
 ) : Parcelable {
-    val averageCaloriesPerMeal: Int
-        get() = if (numberOfMeals > 0) totalCalories / numberOfMeals else 0
+    val id: String get() = dateString
 
-    val macronutrientTotalGrams: Double
-        get() = proteins + fats + carbohydrates
+    val caloriesPerGram: Double
+        get() = if (totalFoodWeight > 0) totalCalories.toDouble() / totalFoodWeight else 0.0
 
-    val proteinPercentage: Double
-        get() = if (macronutrientTotalGrams > 0) (proteins / macronutrientTotalGrams) * 100 else 0.0
+    val proteinCalories: Double
+        get() = proteins * 4.0
 
-    val fatPercentage: Double
-        get() = if (macronutrientTotalGrams > 0) (fats / macronutrientTotalGrams) * 100 else 0.0
+    val fatCalories: Double
+        get() = fats * 9.0
 
-    val carbPercentage: Double
-        get() = if (macronutrientTotalGrams > 0) (carbohydrates / macronutrientTotalGrams) * 100 else 0.0
+    val carbohydrateCalories: Double
+        get() = carbohydrates * 4.0
+
+    val fiber: Double
+        get() = carbohydrates * 0.15
+}
+
+enum class StatisticsPeriod(val title: String, val days: Int) {
+    WEEK("7 days", 7),
+    MONTH("30 days", 30),
+    TWO_MONTHS("2 months", 60),
+    THREE_MONTHS("3 months", 90)
 }

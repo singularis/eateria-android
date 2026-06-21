@@ -7,7 +7,11 @@ class AppEnvironment private constructor(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     var useDevEnvironment: Boolean
-        get() = prefs.getBoolean(USE_DEV_ENV_KEY, false) // Default to false in Android
+        get() {
+            if (!com.singularis.eateria.BuildConfig.DEBUG) return false
+            if (!prefs.contains(USE_DEV_ENV_KEY)) return true
+            return prefs.getBoolean(USE_DEV_ENV_KEY, true)
+        }
         set(value) {
             prefs.edit().putBoolean(USE_DEV_ENV_KEY, value).apply()
         }

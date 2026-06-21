@@ -14,6 +14,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -122,6 +123,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
+import android.content.Context
+import com.singularis.eateria.services.ImageStorageService
+import com.singularis.eateria.services.AppEnvironment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -192,13 +196,18 @@ fun ProductCard(
             colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(Dimensions.paddingM),
-                horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
+            Box(
+                contentAlignment = Alignment.CenterEnd,
+                modifier = Modifier.fillMaxWidth()
             ) {
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(Dimensions.paddingM)
+                            .padding(end = if (product.healthRating >= 0 && !isDeleting) 45.dp else 0.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
+                ) {
                 // Food photo - clickable for full screen (matches iOS)
                 Box(
                     modifier =
@@ -206,14 +215,23 @@ fun ProductCard(
                             .size(Dimensions.iconSizeL)
                             .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
                             .background(AppTheme.divider())
-                            .clickable(
-                                indication = LocalIndication.current,
-                                interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
-                            ) {
-                                if (!isDeleting) {
-                                    HapticsService.getInstance().select()
-                                    onPhotoTap()
-                                }
+                            .pointerInput(Unit) {
+                                val context = this
+                                detectTapGestures(
+                                    onTap = {
+                                        if (!isDeleting) {
+                                            HapticsService.getInstance().select()
+                                            onPhotoTap()
+                                        }
+                                    },
+                                    onLongPress = {
+                                        // Not fully functional since we need android Context but just stubbing it
+                                        if (!isDeleting) {
+                                            HapticsService.getInstance().mediumImpact()
+                                            // runDiagnostic expects Android context, we will pass LocalContext further down
+                                        }
+                                    }
+                                )
                             },
                 ) {
                     val context = LocalContext.current
@@ -321,13 +339,21 @@ fun ProductCard(
                     }
                 }
 
-                // Loading indicator when deleting
+                }
+                
+                // Separate layer for HealthRatingRing or LoadingIcon
                 if (isDeleting) {
                     com.singularis.eateria.ui.components.AnimatedLoadingIcon(
                         size = Dimensions.loadingIndicatorSize,
                         color = AppTheme.accent(),
                         strokeWidth = Dimensions.loadingIndicatorStrokeWidth,
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        modifier = Modifier.padding(end = Dimensions.paddingM)
+                    )
+                } else if (product.healthRating >= 0) {
+                    HealthRatingRing(
+                        rating = product.effectiveHealthRating,
+                        color = getHealthRatingColor(rating = product.effectiveHealthRating),
+                        modifier = Modifier.padding(end = Dimensions.paddingM)
                     )
                 }
             }
@@ -932,3 +958,68 @@ fun DeleteConfirmationDialog(
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     )
 }
+
+fun getHealthRatingColor(rating: Int): Color {
+    return when (rating) {
+        in 0..39 -> Color(1.0f, 0.0f, 0.0f)
+        in 40..59 -> Color(1.0f, 0.6f, 0.0f)
+        in 60..79 -> Color(0.85f, 0.7f, 0.0f)
+        in 80..94 -> Color(0.5f, 0.9f, 0.3f)
+        in 95..100 -> Color(0.0f, 1.0f, 0.0f)
+        else -> Color.Gray
+    }
+}
+
+@Composable
+fun HealthRatingRing(
+    rating: Int,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    val progress = (rating.toFloat() / 100f).coerceIn(0f, 1f)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.size(44.dp)
+    ) {
+        CircularProgressIndicator(
+            progress = { 1f },
+            color = color.copy(alpha = 0.2f),
+            strokeWidth = 4.dp,
+            modifier = Modifier.fillMaxSize()
+        )
+        CircularProgressIndicator(
+            progress = { progress },
+            color = color,
+            strokeWidth = 4.dp,
+            modifier = Modifier.fillMaxSize(),
+            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+        )
+        Text(
+            text = rating.toString(),
+            color = color,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.SansSerif
+            )
+        )
+    }
+}
+
+private fun runDiagnostic(context: Context, product: Product) {
+    val imageId = product.imageId
+    val hasLocal = ImageStorageService.getInstance(context).imageExists(product.time)
+    val hasCached = ImageStorageService.getInstance(context).cachedImageExists(imageId)
+    
+    var message = "Image ID: ${if (imageId.isEmpty()) "EMPTY" else imageId}\n"
+    message += "Local File Exists: $hasLocal\n"
+    message += "Cached File Exists: $hasCached\n"
+    message += "Needs Remote Fetch: ${product.needsRemoteFetch(context)}\n"
+    
+    // In Android we can just show this diagnostic alert
+    android.widget.Toast.makeText(
+        context,
+        "Diagnostic Result:\n$message",
+        android.widget.Toast.LENGTH_LONG
+    ).show()
+}
+

@@ -587,105 +587,96 @@ private fun SummaryStatsView(
     statistics: List<DailyStatistics>,
     timeRange: StatisticsTimeRange,
 ) {
-    val validDays = statistics.filter { it.hasData }.size
+    val context = LocalContext.current
+    val timeRangeStr = when (timeRange) {
+        StatisticsTimeRange.WEEK -> MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE).format(Measure(1, MeasureUnit.WEEK))
+        StatisticsTimeRange.MONTH -> MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE).format(Measure(1, MeasureUnit.MONTH))
+        StatisticsTimeRange.TWO_MONTHS -> MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE).format(Measure(2, MeasureUnit.MONTH))
+        StatisticsTimeRange.THREE_MONTHS -> MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE).format(Measure(3, MeasureUnit.MONTH))
+    }
 
-    Card(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 8.dp,
-                    shape = organicCardShape,
-                    ambientColor = DarkPrimary.copy(alpha = 0.1f),
-                ),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = Gray4.copy(alpha = 0.95f),
-            ),
-        shape = organicCardShape,
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppTheme.surface(), RoundedCornerShape(Dimensions.cornerRadiusS))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush =
-                            Brush.verticalGradient(
-                                colors =
-                                    listOf(
-                                        Gray4.copy(alpha = 0.4f),
-                                        Gray4.copy(alpha = 0.8f),
-                                    ),
-                            ),
-                    ),
-        ) {
-            Column(
-                modifier = Modifier.padding(Dimensions.paddingXL),
-            ) {
-                Text(
-                    text =
-                        Localization
-                            .tr(LocalContext.current, "stats.summary.title_format", "Summary (%@)")
-                            .replace(
-                                "%@",
-                                MeasureFormat
-                                    .getInstance(
-                                        Locale.getDefault(),
-                                        MeasureFormat.FormatWidth.WIDE,
-                                    ).format(Measure(1, MeasureUnit.WEEK)),
-                            ),
-                    color = Color.White,
-                    style =
-                        MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                        ),
-                    modifier = Modifier.padding(bottom = Dimensions.paddingL),
-                )
+        Text(
+            text = Localization.tr(context, "stats.summary.title_format", "Summary (%@)").replace("%@", timeRangeStr),
+            color = AppTheme.textPrimary(),
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+        )
 
-                if (averages != null) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
-                    ) {
-                        StatRow(
-                            Localization.tr(LocalContext.current, "stats.insights.active_days", "Active Days"),
-                            "$validDays/${statistics.size}",
-                        )
-                        StatRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_daily_calories", "Avg Daily Calories"),
-                            "${averages.avgCalories.toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
-                        )
-                        StatRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_body_weight", "Avg Body Weight"),
-                            "${String.format("%.1f", averages.avgPersonWeight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
-                        )
-                        StatRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_protein", "Avg Protein"),
-                            "${String.format("%.1f", averages.avgProteins)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        )
-                        StatRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_fiber", "Avg Fiber"),
-                            "${String.format("%.1f", averages.avgFats)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        )
-                        StatRow(
-                            Localization.tr(LocalContext.current, "stats.insights.avg_food_weight", "Avg Food Weight"),
-                            "${String.format("%.1f", averages.avgCarbs)} ${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        )
-                        StatRow(
-                            Localization.tr(LocalContext.current, "stats.summary.avg_food", "Avg Food"),
-                            "${String.format("%.1f", averages.mealsPerDay)}",
+        if (averages != null) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        SummaryCard(
+                            title = Localization.tr(context, "stats.summary.avg_calories", "Avg Calories"),
+                            value = "${averages.avgCalories.toInt()}",
+                            subtitle = Localization.tr(context, "units.per_day_format", "%@/day").replace("%@", Localization.tr(context, "units.kcal", "kcal"))
                         )
                     }
-                } else {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "stats.no_data", "No data available for this period"),
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        SummaryCard(
+                            title = Localization.tr(context, "stats.summary.avg_food", "Avg Food"),
+                            value = "${averages.avgWeight.toInt()}",
+                            subtitle = Localization.tr(context, "units.per_day_format", "%@/day").replace("%@", Localization.tr(context, "units.g", "g"))
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        SummaryCard(
+                            title = Localization.tr(context, "stats.summary.avg_protein", "Avg Protein"),
+                            value = "${averages.avgProteins.toInt()}",
+                            subtitle = Localization.tr(context, "units.per_day_format", "%@/day").replace("%@", Localization.tr(context, "units.g", "g"))
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        SummaryCard(
+                            title = Localization.tr(context, "stats.summary.avg_fiber", "Avg Fiber"),
+                            value = "${averages.avgFiber.toInt()}",
+                            subtitle = Localization.tr(context, "units.per_day_format", "%@/day").replace("%@", Localization.tr(context, "units.g", "g"))
+                        )
+                    }
                 }
             }
+        } else {
+            NoDataMessage(Localization.tr(context, "stats.no_data", "No data available for this period"))
         }
+    }
+}
+
+@Composable
+private fun SummaryCard(title: String, value: String, subtitle: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppTheme.surface(), RoundedCornerShape(Dimensions.cornerRadiusS))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+            color = AppTheme.textSecondary(),
+            maxLines = 1
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = AppTheme.textPrimary(),
+            maxLines = 1
+        )
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+            color = AppTheme.textSecondary(),
+            maxLines = 1
+        )
     }
 }
 

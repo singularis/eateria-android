@@ -116,6 +116,9 @@ import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
 import com.singularis.eateria.ui.theme.cardContainer
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
@@ -274,7 +277,12 @@ fun CameraButtonView(
             modifier =
                 Modifier
                     .weight(0.30f)
-                    .height(Dimensions.buttonHeight),
+                    .height(Dimensions.buttonHeight)
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
+                        spotColor = Color(0.2f, 0.8f, 0.5f, 0.4f)
+                    ),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent, // Will use gradient background
@@ -287,6 +295,16 @@ fun CameraButtonView(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(AppTheme.primaryButtonGradient())
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0.2f, 0.8f, 0.5f, 0.9f),
+                                Color(0.2f, 0.8f, 0.5f, 0.3f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                    )
                     .padding(4.dp), // Space for stroke
                 contentAlignment = Alignment.Center
             ) {
@@ -332,7 +350,12 @@ fun CameraButtonView(
             modifier =
                 Modifier
                     .weight(0.65f)
-                    .height(Dimensions.buttonHeight),
+                    .height(Dimensions.buttonHeight)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
+                        spotColor = Color(0.0f, 0.8f, 0.9f, 0.5f)
+                    ),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent, // Will use gradient background
@@ -345,6 +368,16 @@ fun CameraButtonView(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(AppTheme.primaryButtonGradient())
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0.0f, 0.8f, 0.9f, 0.9f),
+                                Color(0.0f, 0.8f, 0.9f, 0.3f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                    )
                     .padding(4.dp),
                 contentAlignment = Alignment.Center
             ) {

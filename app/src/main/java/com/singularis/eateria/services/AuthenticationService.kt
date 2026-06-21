@@ -366,6 +366,11 @@ class AuthenticationService(
     }
 
     suspend fun signOut() {
+        try {
+            credentialManager.clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+        } catch (e: Exception) {
+            Log.e("AuthenticationService", "Failed to clear credential state", e)
+        }
         TokenStore.clear(context)
         clearAllUserData()
     }
@@ -377,6 +382,12 @@ class AuthenticationService(
     }
 
     suspend fun deleteAccountAndClearData() {
+        try {
+            credentialManager.clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+        } catch (e: Exception) {
+            Log.e("AuthenticationService", "Failed to clear credential state", e)
+        }
+        TokenStore.clear(context)
         clearAllUserData()
     }
 

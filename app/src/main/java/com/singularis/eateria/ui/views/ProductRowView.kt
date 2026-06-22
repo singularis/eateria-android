@@ -149,6 +149,7 @@ fun ProductCard(
 
     val state =
         rememberSwipeToDismissBoxState(
+            positionalThreshold = { totalDistance -> totalDistance * 0.4f },
             confirmValueChange = {
                 if (it == SwipeToDismissBoxValue.EndToStart) {
                     showDeleteConfirmationDialog = true

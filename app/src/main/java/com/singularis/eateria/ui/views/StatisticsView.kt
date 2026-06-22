@@ -6,6 +6,12 @@ import androidx.compose.foundation.layout.defaultMinSize
 import android.icu.text.MeasureFormat
 import android.icu.util.Measure
 import android.icu.util.MeasureUnit
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -162,16 +168,8 @@ fun StatisticsView(onBackClick: () -> Unit) {
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(
-                    brush =
-                        Brush.verticalGradient(
-                            colors =
-                                listOf(
-                                    DarkBackground,
-                                    DarkBackground.copy(alpha = 0.95f),
-                                ),
-                        ),
-                ).windowInsetsPadding(WindowInsets.statusBars)
+                .background(AppTheme.backgroundGradient())
+                .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars),
     ) {
         Column(
@@ -182,16 +180,7 @@ fun StatisticsView(onBackClick: () -> Unit) {
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush =
-                                Brush.verticalGradient(
-                                    colors =
-                                        listOf(
-                                            DarkBackground,
-                                            DarkBackground.copy(alpha = 0.8f),
-                                        ),
-                                ),
-                        ).padding(
+                        .padding(
                             start = Dimensions.paddingM,
                             end = Dimensions.paddingM,
                             top = Dimensions.paddingM,
@@ -333,7 +322,7 @@ private fun StatisticsHeader(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
-                    tint = Color.White,
+                    tint = AppTheme.textPrimary(),
                     modifier = Modifier.size(Dimensions.iconSizeM),
                 )
             }
@@ -342,7 +331,7 @@ private fun StatisticsHeader(
 
             Text(
                 text = Localization.tr(LocalContext.current, "nav.statistics", "Statistics"),
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 style =
                     MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.SemiBold,
@@ -354,7 +343,7 @@ private fun StatisticsHeader(
 
         Text(
             text = Localization.tr(LocalContext.current, "stats.timeperiod", "Time Period"),
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = Dimensions.paddingM)
         )
@@ -468,7 +457,7 @@ private fun InsightsView(
     ) {
         Text(
             text = insightsTitle,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 4.dp)
         )
@@ -537,8 +526,8 @@ private fun TimeRangeButton(
         onClick = onClick,
         colors =
             ButtonDefaults.buttonColors(
-                containerColor = if (isSelected) DarkPrimary.copy(alpha = 0.9f) else Gray3.copy(alpha = 0.7f),
-                contentColor = if (isSelected) Color.White else Color.Gray,
+                containerColor = if (isSelected) AppTheme.accent() else AppTheme.surfaceAlt(),
+                contentColor = if (isSelected) AppTheme.textPrimary() else AppTheme.textSecondary(),
             ),
         shape = organicButtonShape,
         modifier =
@@ -564,7 +553,7 @@ private fun LoadingStatistics() {
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             modifier = Modifier.size(Dimensions.paddingXL),
         )
     }
@@ -574,7 +563,7 @@ private fun LoadingStatistics() {
 private fun NoDataMessage(message: String) {
     Text(
         text = message,
-        color = Color.Gray,
+        color = AppTheme.textSecondary(),
         style = MaterialTheme.typography.bodyMedium,
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth(),
@@ -692,13 +681,13 @@ private fun StatRow(
     ) {
         Text(
             text = label,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             style = MaterialTheme.typography.bodyMedium,
         )
 
         Text(
             text = value,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.bodyMedium,
         )
     }
@@ -716,13 +705,13 @@ private fun InsightRow(
     ) {
         Text(
             text = label,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             style = MaterialTheme.typography.bodyMedium,
         )
 
         Text(
             text = value,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.bodyMedium,
         )
     }
@@ -768,7 +757,7 @@ private fun CaloriesChartViewFullWidth(statistics: List<DailyStatistics>) {
                 ) {
                     Text(
                         text = Localization.tr(LocalContext.current, "stats.chart.calories", "Calories"),
-                        color = Color.White,
+                        color = AppTheme.textPrimary(),
                         style =
                             MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
@@ -802,9 +791,9 @@ private fun CaloriesChartViewFullWidth(statistics: List<DailyStatistics>) {
                             colors =
                                 FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = CalorieOrange.copy(alpha = 0.8f),
-                                    selectedLabelColor = Color.White,
+                                    selectedLabelColor = AppTheme.textPrimary(),
                                     containerColor = Gray3.copy(alpha = 0.6f),
-                                    labelColor = Color.Gray,
+                                    labelColor = AppTheme.textSecondary(),
                                 ),
                             modifier =
                                 Modifier.shadow(
@@ -887,7 +876,7 @@ private fun MacrosChartView(statistics: List<DailyStatistics>) {
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "stats.chart.macros", "Macronutrients"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     style =
                         MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
@@ -975,7 +964,7 @@ private fun PersonWeightChartViewFullWidth(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     style =
                         MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
@@ -1005,7 +994,7 @@ private fun PersonWeightChartViewFullWidth(
                                 "stats.weight.current",
                                 "Current",
                             )}: ${String.format("%.1f", latestWeight)} ${Localization.tr(LocalContext.current, "units.kg", "kg")}",
-                            color = Color.White,
+                            color = AppTheme.textPrimary(),
                             style =
                                 MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Medium,
@@ -1156,7 +1145,7 @@ private fun FoodWeightChartViewFullWidth(statistics: List<DailyStatistics>) {
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     style =
                         MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
@@ -1193,7 +1182,7 @@ private fun FoodWeightChartViewFullWidth(statistics: List<DailyStatistics>) {
                                 "units.per_day_format",
                                 "%@/day",
                             ).replace("%@", Localization.tr(LocalContext.current, "units.g", "g"))}",
-                            color = Color.White,
+                            color = AppTheme.textPrimary(),
                             style =
                                 MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Medium,
@@ -1248,7 +1237,7 @@ private fun TrendsView(
     ) {
         Text(
             text = Localization.tr(context, "stats.trend.title", "Trend Analysis"),
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 4.dp)
         )
@@ -1335,6 +1324,13 @@ private fun CalorieLineChart(
     // Remember data points for value labels
     var dataPoints by remember { mutableStateOf<List<Triple<Float, Float, Int>>>(emptyList()) }
 
+    val canvasTextPrimary = AppTheme.textPrimary()
+    val canvasTextSecondary = AppTheme.textSecondary()
+    val animationProgress = remember { Animatable(0f) }
+    LaunchedEffect(statistics) {
+        animationProgress.snapTo(0f)
+        animationProgress.animateTo(1f, animationSpec = tween(800, easing = FastOutSlowInEasing))
+    }
     Box(modifier = modifier) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
@@ -1349,7 +1345,7 @@ private fun CalorieLineChart(
             val xStep = if (chartData.size > 1) chartWidth / (chartData.size - 1) else 0f
 
             // Draw grid lines with better spacing
-            val gridColor = Color.Gray.copy(alpha = 0.15f) // Softer grid
+            val gridColor = canvasTextSecondary.copy(alpha = 0.15f) // Softer grid
 
             // Horizontal grid lines (span full chart width)
             for (i in 0..5) { // More grid lines
@@ -1390,14 +1386,21 @@ private fun CalorieLineChart(
                     } else {
                         0.5f
                     }
-                val y = height - bottomPadding - (chartHeight * normalizedValue)
+                val targetY = height - bottomPadding - (chartHeight * normalizedValue)
+                val y = height - bottomPadding - ((height - bottomPadding - targetY) * animationProgress.value)
 
                 points.add(Triple(x, y, stat.totalCalories.toInt()))
 
                 if (index == 0) {
                     path.moveTo(x, y)
                 } else {
-                    path.lineTo(x, y)
+                    val prevX = points[index - 1].first
+                    val prevY = points[index - 1].second
+                    val conX1 = (prevX + x) / 2f
+                    val conY1 = prevY
+                    val conX2 = (prevX + x) / 2f
+                    val conY2 = y
+                    path.cubicTo(conX1, conY1, conX2, conY2, x, y)
                 }
 
                 // Draw data points with better size and glow
@@ -1413,7 +1416,7 @@ private fun CalorieLineChart(
                 )
                 // Inner bright center
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = canvasTextPrimary.copy(alpha = 0.8f),
                     radius = 2.dp.toPx(),
                     center = Offset(x, y),
                 )
@@ -1422,10 +1425,27 @@ private fun CalorieLineChart(
             // Update data points for labels
             dataPoints = points
 
+            // Draw gradient fill under the smooth curve
+            if (points.isNotEmpty() && animationProgress.value > 0f) {
+                val fillPath = androidx.compose.ui.graphics.Path().apply { addPath(path) }
+                fillPath.lineTo(points.last().first, height - bottomPadding)
+                fillPath.lineTo(points.first().first, height - bottomPadding)
+                fillPath.close()
+
+                drawPath(
+                    path = fillPath,
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(CalorieOrange.copy(alpha = 0.4f * animationProgress.value), androidx.compose.ui.graphics.Color.Transparent),
+                        startY = topPadding,
+                        endY = height - bottomPadding
+                    )
+                )
+            }
+
             // Draw the line with better styling
             drawPath(
                 path = path,
-                color = CalorieOrange,
+                color = CalorieOrange.copy(alpha = animationProgress.value),
                 style = Stroke(width = 4.dp.toPx()), // Thicker line
             )
         }
@@ -1449,7 +1469,7 @@ private fun CalorieLineChart(
 
                 Text(
                     text = "${calorieValue.toInt()}",
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = AppTheme.textPrimary().copy(alpha = 0.9f),
                     style = MaterialTheme.typography.labelMedium, // Slightly larger
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(),
@@ -1469,7 +1489,7 @@ private fun CalorieLineChart(
                 } else {
                     Localization.tr(LocalContext.current, "units.kcal", "kcal")
                 },
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier =
                 Modifier
@@ -1509,7 +1529,7 @@ private fun CalorieLineChart(
 
                 Text(
                     text = dateLabel,
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = AppTheme.textPrimary().copy(alpha = 0.9f),
                     style = MaterialTheme.typography.labelMedium, // Larger date labels
                     maxLines = 1,
                     modifier =
@@ -1553,6 +1573,13 @@ private fun WeightLineChart(
     // Remember data points for value labels
     var dataPoints by remember { mutableStateOf<List<Triple<Float, Float, Float>>>(emptyList()) }
 
+    val canvasTextPrimary = AppTheme.textPrimary()
+    val canvasTextSecondary = AppTheme.textSecondary()
+    val animationProgress = remember { Animatable(0f) }
+    LaunchedEffect(statistics) {
+        animationProgress.snapTo(0f)
+        animationProgress.animateTo(1f, animationSpec = tween(800, easing = FastOutSlowInEasing))
+    }
     Box(modifier = modifier) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
@@ -1567,7 +1594,7 @@ private fun WeightLineChart(
             val xStep = if (chartData.size > 1) chartWidth / (chartData.size - 1) else 0f
 
             // Draw grid lines with better spacing
-            val gridColor = Color.Gray.copy(alpha = 0.15f) // Softer grid
+            val gridColor = canvasTextSecondary.copy(alpha = 0.15f) // Softer grid
 
             // Horizontal grid lines (span full chart width)
             for (i in 0..5) { // More grid lines
@@ -1606,14 +1633,21 @@ private fun WeightLineChart(
                     } else {
                         0.5f
                     }
-                val y = height - bottomPadding - (chartHeight * normalizedValue)
+                val targetY = height - bottomPadding - (chartHeight * normalizedValue)
+                val y = height - bottomPadding - ((height - bottomPadding - targetY) * animationProgress.value)
 
                 points.add(Triple(x, y, stat.personWeight))
 
                 if (index == 0) {
                     path.moveTo(x, y)
                 } else {
-                    path.lineTo(x, y)
+                    val prevX = points[index - 1].first
+                    val prevY = points[index - 1].second
+                    val conX1 = (prevX + x) / 2f
+                    val conY1 = prevY
+                    val conX2 = (prevX + x) / 2f
+                    val conY2 = y
+                    path.cubicTo(conX1, conY1, conX2, conY2, x, y)
                 }
 
                 // Draw data points with better size and glow
@@ -1629,7 +1663,7 @@ private fun WeightLineChart(
                 )
                 // Inner bright center
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = canvasTextPrimary.copy(alpha = 0.8f),
                     radius = 2.dp.toPx(),
                     center = Offset(x, y),
                 )
@@ -1662,7 +1696,7 @@ private fun WeightLineChart(
 
                 Text(
                     text = "${String.format("%.1f", weightValue)}",
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = AppTheme.textPrimary().copy(alpha = 0.9f),
                     style = MaterialTheme.typography.labelMedium, // Slightly larger
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(),
@@ -1673,7 +1707,7 @@ private fun WeightLineChart(
         // Y-axis unit label with better positioning
         Text(
             text = Localization.tr(LocalContext.current, "units.kg", "kg"),
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier =
                 Modifier
@@ -1714,7 +1748,7 @@ private fun WeightLineChart(
 
                     Text(
                         text = dateLabel,
-                        color = Color.White.copy(alpha = 0.9f),
+                        color = AppTheme.textPrimary().copy(alpha = 0.9f),
                         style = MaterialTheme.typography.labelMedium, // Larger date labels
                         maxLines = 1,
                         modifier =
@@ -1754,6 +1788,13 @@ private fun FoodWeightLineChart(
     // Remember data points for value labels
     var dataPoints by remember { mutableStateOf<List<Triple<Float, Float, Int>>>(emptyList()) }
 
+    val canvasTextPrimary = AppTheme.textPrimary()
+    val canvasTextSecondary = AppTheme.textSecondary()
+    val animationProgress = remember { Animatable(0f) }
+    LaunchedEffect(statistics) {
+        animationProgress.snapTo(0f)
+        animationProgress.animateTo(1f, animationSpec = tween(800, easing = FastOutSlowInEasing))
+    }
     Box(modifier = modifier) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
@@ -1768,7 +1809,7 @@ private fun FoodWeightLineChart(
             val xStep = if (chartData.size > 1) chartWidth / (chartData.size - 1) else 0f
 
             // Draw grid lines with better spacing
-            val gridColor = Color.Gray.copy(alpha = 0.15f) // Softer grid
+            val gridColor = canvasTextSecondary.copy(alpha = 0.15f) // Softer grid
 
             // Horizontal grid lines (span full chart width)
             for (i in 0..5) { // More grid lines
@@ -1830,7 +1871,7 @@ private fun FoodWeightLineChart(
                 )
                 // Inner bright center
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = canvasTextPrimary.copy(alpha = 0.8f),
                     radius = 2.dp.toPx(),
                     center = Offset(x, y),
                 )
@@ -1861,7 +1902,7 @@ private fun FoodWeightLineChart(
 
                 Text(
                     text = "${weightValue.toInt()}",
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = AppTheme.textPrimary().copy(alpha = 0.9f),
                     style = MaterialTheme.typography.labelMedium, // Slightly larger
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(),
@@ -1872,7 +1913,7 @@ private fun FoodWeightLineChart(
         // Y-axis unit label with better positioning
         Text(
             text = Localization.tr(LocalContext.current, "units.g", "g"),
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             modifier =
                 Modifier
@@ -1912,7 +1953,7 @@ private fun FoodWeightLineChart(
 
                 Text(
                     text = dateLabel,
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = AppTheme.textPrimary().copy(alpha = 0.9f),
                     style = MaterialTheme.typography.labelMedium, // Larger date labels
                     maxLines = 1,
                     modifier =
@@ -1953,7 +1994,7 @@ private fun LegendItem(
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = label,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.labelMedium,
         )
     }
@@ -1974,7 +2015,7 @@ private fun MacroBarRow(
         // Label with better spacing
         Text(
             text = label,
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.bodyLarge, // Larger text
             modifier = Modifier.width(100.dp), // Wider label area
         )
@@ -2000,7 +2041,7 @@ private fun MacroBarRow(
             // Percentage text with better styling
             Text(
                 text = "$percentage%",
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.align(Alignment.Center),
             )
@@ -2011,7 +2052,7 @@ private fun MacroBarRow(
         // Value with better styling
         Text(
             text = "${value}${Localization.tr(LocalContext.current, "units.g", "g")}",
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.width(60.dp), // Wider value area
         )
@@ -2045,7 +2086,7 @@ private fun MacroCompositionChart(
         // Title with better spacing
         Text(
             text = Localization.tr(LocalContext.current, "stats.macro.distribution", "Average Macro Distribution"),
-            color = Color.White,
+            color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = Dimensions.paddingM),
         )
@@ -2091,7 +2132,7 @@ private fun MacroCompositionChart(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "stats.daily.averages", "Daily Averages"),
-                    color = Color.White,
+                    color = AppTheme.textPrimary(),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                 )
 
@@ -2117,7 +2158,7 @@ private fun MacroCompositionChart(
                 }
 
                 HorizontalDivider(
-                    color = Color.Gray.copy(alpha = 0.3f),
+                    color = AppTheme.textSecondary().copy(alpha = 0.3f),
                     modifier = Modifier.padding(vertical = Dimensions.paddingS),
                 )
 
@@ -2128,12 +2169,12 @@ private fun MacroCompositionChart(
                 ) {
                     Text(
                         text = Localization.tr(LocalContext.current, "stats.total.calories", "Total Calories"),
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     Text(
                         text = "${(totalCalories / chartData.size).toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
-                        color = Color.White,
+                        color = AppTheme.textPrimary(),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )
                 }
@@ -2154,7 +2195,7 @@ private fun MacroSummaryItem(
     ) {
         Text(
             text = label,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             style = MaterialTheme.typography.labelLarge,
         )
         Text(
@@ -2182,7 +2223,7 @@ private fun TrendIcon(direction: WeightTrendDirection) {
             when (direction) {
                 WeightTrendDirection.GAINING -> CalorieRed
                 WeightTrendDirection.LOSING -> CalorieGreen
-                WeightTrendDirection.STABLE -> Color.Gray
+                WeightTrendDirection.STABLE -> AppTheme.textSecondary()
             },
         modifier = Modifier.size(Dimensions.iconSizeS),
     )

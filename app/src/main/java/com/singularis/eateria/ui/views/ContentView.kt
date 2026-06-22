@@ -173,7 +173,8 @@ fun ContentView(
         ) {
             androidx.compose.foundation.pager.HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                userScrollEnabled = false
             ) { page ->
                 when (page) {
                     0 -> {
@@ -313,7 +314,15 @@ fun ContentView(
                 CameraButtonView(
                     isLoadingFoodPhoto = isLoadingFoodPhoto,
                     isViewingCustomDate = isViewingCustomDate,
-                    selectedDate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(currentViewingDate) ?: java.util.Date(),
+                    selectedDate = if (currentViewingDate.isNotEmpty()) {
+                        try {
+                            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(currentViewingDate) ?: java.util.Date()
+                        } catch (e: Exception) {
+                            java.util.Date()
+                        }
+                    } else {
+                        java.util.Date()
+                    },
                     onReturnToToday = { viewModel.returnToToday() },
                     onRequestTutorial = null, // Tutorial logic not fully ported yet
                     onCameraClick = {

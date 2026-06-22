@@ -63,9 +63,7 @@ import com.singularis.eateria.ui.theme.CalorieYellow
 import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.CalorieBlue
 import com.singularis.eateria.ui.theme.CalorieOrange
-import com.singularis.eateria.ui.theme.Gray3
 import com.singularis.eateria.ui.theme.Gray4
-import com.singularis.eateria.ui.theme.DarkPrimary
 
 @Composable
 fun UserProfileView(
@@ -218,22 +216,40 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             )
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = Dimensions.paddingM)
                         ) {
-                            Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Default.PlayCircleFilled,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(Dimensions.paddingS))
-                            Text(
-                                text = Localization.tr(LocalContext.current, "profile.watch_me_first", "Watch me first!"),
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            val catImage = com.singularis.eateria.services.AppMascot.CAT.images(com.singularis.eateria.services.MascotState.HAPPY).firstOrNull()
+                            if (catImage != null) {
+                                val resId = context.resources.getIdentifier(catImage, "drawable", context.packageName)
+                                if (resId != 0) {
+                                    AsyncImage(model = resId, contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+                                } else Spacer(modifier = Modifier.size(44.dp))
+                            } else Spacer(modifier = Modifier.size(44.dp))
+                            
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.PlayCircleFilled,
+                                    contentDescription = null,
+                                    tint = AppTheme.textPrimary()
+                                )
+                                Spacer(modifier = Modifier.width(Dimensions.paddingS))
+                                Text(
+                                    text = Localization.tr(LocalContext.current, "profile.watch_me_first", "Watch me first!"),
+                                    color = AppTheme.textPrimary(),
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            
+                            val dogImage = com.singularis.eateria.services.AppMascot.DOG.images(com.singularis.eateria.services.MascotState.HAPPY).firstOrNull()
+                            if (dogImage != null) {
+                                val resId = context.resources.getIdentifier(dogImage, "drawable", context.packageName)
+                                if (resId != 0) {
+                                    AsyncImage(model = resId, contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+                                } else Spacer(modifier = Modifier.size(44.dp))
+                            } else Spacer(modifier = Modifier.size(44.dp))
                         }
                     }
                 }
@@ -317,8 +333,8 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         color = Color(0xFF9C27B0)
                     )
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Gray4),
+                        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
+                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
                         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                     ) {
                         Column {
@@ -375,6 +391,26 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             )
                             androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
 
+                            if (com.singularis.eateria.BuildConfig.DEBUG) {
+                                PreferenceSegmentedRow(
+                                    title = Localization.tr(LocalContext.current, "profile.dev_environment", "Dev Environment"),
+                                    options = listOf(
+                                        Localization.tr(LocalContext.current, "env.production", "Production") to false,
+                                        Localization.tr(LocalContext.current, "env.development", "Development") to true
+                                    ),
+                                    selected = com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment,
+                                    onSelected = { isDev ->
+                                        com.singularis.eateria.services.HapticsService.getInstance().warning()
+                                        com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment = isDev
+                                        
+                                        // Clear caches
+                                        com.singularis.eateria.services.StatisticsService.getInstance(context).clearAllCache()
+                                        android.widget.Toast.makeText(context, "Environment changed. Please restart app.", android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                                androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+                            }
+
                             // Save Photos
                             PreferenceToggleRow(
                                 title = Localization.tr(LocalContext.current, "profile.save_photos", "Save to Photo Library"),
@@ -399,7 +435,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         Button(
                             onClick = { showSignOutDialog = true },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
+                                containerColor = AppTheme.textPrimary(),
                                 contentColor = Color(0xFF6B000D)
                             ),
                             shape = RoundedCornerShape(25.dp),
@@ -414,7 +450,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             onClick = { showDeleteAccountDialog = true },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = CalorieRed,
-                                contentColor = Color.White
+                                contentColor = AppTheme.textPrimary()
                             ),
                             shape = RoundedCornerShape(25.dp),
                             modifier = Modifier.fillMaxWidth().height(50.dp)
@@ -473,7 +509,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                 text = {
                     Text(
                         text = Localization.tr(LocalContext.current, "profile.logout.confirm"),
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                     )
                 },
                 confirmButton = {
@@ -499,7 +535,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             showSignOutDialog = false 
                         },
                     ) {
-                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = Color.Gray)
+                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = AppTheme.textSecondary())
                     }
                 },
                 containerColor = AppTheme.surface(),
@@ -520,7 +556,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                 text = {
                     Text(
                         text = Localization.tr(LocalContext.current, "alert.delete.message"),
-                        color = Color.Gray,
+                        color = AppTheme.textSecondary(),
                     )
                 },
                 confirmButton = {
@@ -547,7 +583,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             showDeleteAccountDialog = false 
                         },
                     ) {
-                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = Color.Gray)
+                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = AppTheme.textSecondary())
                     }
                 },
                 containerColor = AppTheme.surface(),
@@ -566,8 +602,8 @@ private fun ProfileHeader(
     nickname: String
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onEditNickname() },
-        colors = CardDefaults.cardColors(containerColor = Gray4),
+        modifier = Modifier.fillMaxWidth().clickable { onEditNickname() }.border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(
@@ -607,7 +643,7 @@ private fun ProfileHeader(
                     Icon(imageVector = Icons.Default.Edit, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
                 }
                 if (!userName.isNullOrEmpty()) {
-                    Text(text = userName, color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
+                    Text(text = userName, color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodyMedium)
                 }
             } else if (!userName.isNullOrEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
@@ -622,7 +658,7 @@ private fun ProfileHeader(
                     Icon(imageVector = androidx.compose.material.icons.Icons.Default.Add, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
                 }
             }
-            Text(text = userEmail ?: "No email", color = Color.Gray, style = MaterialTheme.typography.labelMedium)
+            Text(text = userEmail ?: "No email", color = AppTheme.textSecondary(), style = MaterialTheme.typography.labelMedium)
         }
     }
 }
@@ -635,8 +671,8 @@ private fun HealthDataCard(
     onUpdateHealthClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
+        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(
@@ -647,7 +683,7 @@ private fun HealthDataCard(
         ) {
             Text(
                 text = Localization.tr(LocalContext.current, "profile.healthprofile", "Your Health Profile"),
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 style = MaterialTheme.typography.titleLarge,
             )
 
@@ -660,7 +696,7 @@ private fun HealthDataCard(
                 HealthMetricRow(
                     label = Localization.tr(LocalContext.current, "health.height.label", "Height:"),
                     value = "${userHeight.toInt()} ${Localization.tr(LocalContext.current, "units.cm", "cm")}",
-                    valueColor = Color.White,
+                    valueColor = AppTheme.textPrimary(),
                 )
 
                 HealthMetricRow(
@@ -685,7 +721,7 @@ private fun HealthDataCard(
                     },
                     colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = Color.White.copy(alpha = 0.9f),
+                        containerColor = AppTheme.textPrimary().copy(alpha = 0.9f),
                         contentColor = AppTheme.accent(),
                     ),
                 modifier = Modifier.fillMaxWidth(),
@@ -703,8 +739,8 @@ private fun HealthDataCard(
 @Composable
 private fun PersonalizeCard(onSetupHealthClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
+        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(
@@ -716,7 +752,7 @@ private fun PersonalizeCard(onSetupHealthClick: () -> Unit) {
         ) {
             Text(
                 text = Localization.tr(LocalContext.current, "profile.personalize", "Personalize Your Experience"),
-                color = Color.White,
+                color = AppTheme.textPrimary(),
                 style = MaterialTheme.typography.titleLarge,
             )
 
@@ -729,7 +765,7 @@ private fun PersonalizeCard(onSetupHealthClick: () -> Unit) {
                         "profile.setuphealth",
                         "Set up your health profile to get personalized calorie recommendations",
                     ),
-                color = Color.Gray,
+                color = AppTheme.textSecondary(),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
@@ -743,8 +779,8 @@ private fun PersonalizeCard(onSetupHealthClick: () -> Unit) {
                 },
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = DarkPrimary,
-                        contentColor = Color.White,
+                        containerColor = AppTheme.accent(),
+                        contentColor = AppTheme.textPrimary(),
                     ),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimensions.cornerRadiusS),
@@ -780,7 +816,7 @@ private fun HealthMetricRow(
     ) {
         Text(
             text = label,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -797,7 +833,7 @@ data class ProfileMenuItem(
     val title: String,
     val subtitle: String,
     val onClick: () -> Unit,
-    val textColor: Color = Color.White,
+    val textColor: Color = Color.Unspecified,
 )
 
 @Composable
@@ -808,14 +844,14 @@ private fun ProfileMenuSection(
     Column {
         Text(
             text = title,
-            color = Color.Gray,
+            color = AppTheme.textSecondary(),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(horizontal = Dimensions.paddingXS, vertical = Dimensions.paddingS),
         )
 
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Gray4),
+            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
             Column {
@@ -834,7 +870,7 @@ private fun ProfileMenuSection(
                         Icon(
                             imageVector = item.icon,
                             contentDescription = null,
-                            tint = item.textColor,
+                            tint = if (item.textColor == Color.Unspecified) AppTheme.textPrimary() else item.textColor,
                             modifier = Modifier.size(Dimensions.iconSizeM),
                         )
 
@@ -845,13 +881,13 @@ private fun ProfileMenuSection(
                         ) {
                             Text(
                                 text = item.title,
-                                color = item.textColor,
+                                color = if (item.textColor == Color.Unspecified) AppTheme.textPrimary() else item.textColor,
                                 style = MaterialTheme.typography.bodyLarge,
                             )
 
                             Text(
                                 text = item.subtitle,
-                                color = Color.Gray,
+                                color = AppTheme.textSecondary(),
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
@@ -859,7 +895,7 @@ private fun ProfileMenuSection(
                         Icon(
                             imageVector = AppIcons.System.arrowRight,
                             contentDescription = null,
-                            tint = Color.Gray,
+                            tint = AppTheme.textSecondary(),
                             modifier = Modifier.size(Dimensions.iconSizeS),
                         )
                     }
@@ -1016,13 +1052,13 @@ private fun MascotButton(
                     brush = if (isSelected) androidx.compose.ui.graphics.Brush.linearGradient(
                         colors = listOf(AppTheme.accent(), AppTheme.accent().copy(alpha = 0.7f))
                     ) else androidx.compose.ui.graphics.Brush.linearGradient(
-                        colors = listOf(Color.Gray.copy(alpha = 0.2f), Color.Gray.copy(alpha = 0.1f))
+                        colors = listOf(AppTheme.textSecondary().copy(alpha = 0.2f), AppTheme.textSecondary().copy(alpha = 0.1f))
                     ),
                     shape = RoundedCornerShape(16.dp)
                 )
                 .border(
                     width = if (isSelected) 2.dp else 1.dp,
-                    color = if (isSelected) AppTheme.accent() else Color.Gray.copy(alpha = 0.3f),
+                    color = if (isSelected) AppTheme.accent() else AppTheme.textSecondary().copy(alpha = 0.3f),
                     shape = RoundedCornerShape(16.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -1031,7 +1067,7 @@ private fun MascotButton(
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = if (isSelected) Color.White else Color.Gray,
+                    tint = if (isSelected) AppTheme.textPrimary() else AppTheme.textSecondary(),
                     modifier = Modifier.size(32.dp)
                 )
             } else {
@@ -1056,7 +1092,7 @@ private fun MascotButton(
             text = Localization.tr(LocalContext.current, "profile.theme.name.${mascot.value}", mascot.displayName),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) AppTheme.accent() else Color.Gray
+            color = if (isSelected) AppTheme.accent() else AppTheme.textSecondary()
         )
     }
 }
@@ -1069,8 +1105,8 @@ private fun ThemeSectionCard(
     context: android.content.Context
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4),
+        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM)) {
@@ -1104,7 +1140,7 @@ private fun ThemeSectionCard(
             Text(
                 text = Localization.tr(LocalContext.current, "profile.friend.desc", "Get custom icons, sounds, and motivational messages!"),
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = AppTheme.textSecondary()
             )
             Spacer(modifier = Modifier.height(Dimensions.paddingM))
             
@@ -1136,7 +1172,7 @@ private fun ThemeSectionCard(
                 Icon(
                     imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
                     contentDescription = null,
-                    tint = if (soundEnabled) AppTheme.accent() else Color.Gray
+                    tint = if (soundEnabled) AppTheme.accent() else AppTheme.textSecondary()
                 )
                 Spacer(modifier = Modifier.width(Dimensions.paddingS))
                 Column(modifier = Modifier.weight(1f)) {
@@ -1150,7 +1186,7 @@ private fun ThemeSectionCard(
                             text = if (currentMascot == com.singularis.eateria.services.AppMascot.CAT) Localization.tr(LocalContext.current, "profile.theme.sounds.cat", "Meow sounds")
                                    else Localization.tr(LocalContext.current, "profile.theme.sounds.dog", "Woof sounds"),
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
+                            color = AppTheme.textSecondary()
                         )
                     }
                 }
@@ -1172,7 +1208,7 @@ private fun ThemeSectionCard(
 private fun ActionButton(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = CalorieGreen, contentColor = Color.White),
+        colors = ButtonDefaults.buttonColors(containerColor = CalorieGreen, contentColor = AppTheme.textPrimary()),
         shape = RoundedCornerShape(25.dp),
         modifier = Modifier.fillMaxWidth().height(50.dp)
     ) {
@@ -1194,9 +1230,9 @@ private fun PreferenceRow(title: String, value: String, onClick: () -> Unit) {
     ) {
         Text(text = title, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = value, color = Color.White, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+            Text(text = value, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.width(4.dp))
-            Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+            Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = AppTheme.textSecondary(), modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -1204,7 +1240,7 @@ private fun PreferenceRow(title: String, value: String, onClick: () -> Unit) {
 @Composable
 private fun <T> PreferenceSegmentedRow(title: String, options: List<Pair<String, T>>, selected: T, onSelected: (T) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM)) {
-        Text(text = title, color = Color.Gray, style = MaterialTheme.typography.labelMedium)
+        Text(text = title, color = AppTheme.textSecondary(), style = MaterialTheme.typography.labelMedium)
         Spacer(modifier = Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth().height(36.dp).clip(RoundedCornerShape(8.dp)).background(AppTheme.divider())) {
             options.forEach { option ->
@@ -1213,11 +1249,11 @@ private fun <T> PreferenceSegmentedRow(title: String, options: List<Pair<String,
                     modifier = Modifier.weight(1f).fillMaxHeight()
                         .padding(2.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(if (isSelected) Gray3 else Color.Transparent)
+                        .background(if (isSelected) AppTheme.surfaceAlt() else Color.Transparent)
                         .clickable { onSelected(option.second) },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = option.first, color = if (isSelected) Color.White else Color.Gray, style = MaterialTheme.typography.bodyMedium, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                    Text(text = option.first, color = if (isSelected) AppTheme.textPrimary() else AppTheme.textSecondary(), style = MaterialTheme.typography.bodyMedium, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
                 }
             }
         }

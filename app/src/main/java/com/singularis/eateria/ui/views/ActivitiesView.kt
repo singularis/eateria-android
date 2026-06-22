@@ -1,5 +1,7 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.singularis.eateria.ui.theme.AppTheme
+import com.singularis.eateria.ui.theme.materialPress
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -322,13 +325,20 @@ private fun HoneycombCell(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+
     Box(
         modifier = modifier
             .size(width = 106.dp, height = 91.dp)
             .shadow(4.dp, HexagonShape())
             .background(AppTheme.surface(), HexagonShape())
             .clip(HexagonShape())
-            .clickable { onClick() },
+            .materialPress()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {

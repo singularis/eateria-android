@@ -1,9 +1,20 @@
 package com.singularis.eateria.ui.views
 
 import android.content.Context
+import androidx.compose.animation.core.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import kotlinx.coroutines.delay
+import com.singularis.eateria.R
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -128,13 +139,14 @@ fun OnboardingView(
             LocalContext.current,
         ).collectAsState(initial = LanguageService.getCurrentCode(LocalContext.current))
     val allPages = listOf(
-            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.welcome.title", "Welcome to Eateria! 🍎"), description = Localization.tr(LocalContext.current, "onboarding.welcome.desc", "Your smart food companion that helps you track calories, monitor weight, and make healthier choices. Let's take a quick tour!"), icon = Icons.Default.Restaurant, iconColor = Color(0xFF4CAF50), anchor = "welcome"),
+            OnboardingPage(title = "", description = "", icon = Icons.Default.Restaurant, iconColor = Color(0xFF4CAF50), anchor = "intro"),
             OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.tools.title", "Your Essential Tools 🍽️"), description = Localization.tr(LocalContext.current, "onboarding.tools.desc", "Small steps that make a big difference."), icon = Icons.Default.Settings, iconColor = Color(0xFF607D8B), anchor = "tools"),
             OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.pets.title", "Meet Your Pet Companion 🐾"), description = Localization.tr(LocalContext.current, "onboarding.pets.desc", "Choose a pet that will motivate you on your journey."), icon = Icons.Default.Favorite, iconColor = Color(0xFFFF9800), anchor = "pets"),
             OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.plan.title", "Your Personal Plan 😎"), description = Localization.tr(LocalContext.current, "onboarding.plan.desc", "See how your goal and activity level turn into a safe, realistic plan."), icon = Icons.Default.FitnessCenter, iconColor = Color(0xFF9C27B0), anchor = "plan"),
-            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.smart_tips.title", "New Features ✨"), description = Localization.tr(LocalContext.current, "onboarding.smart_tips.desc", "Powerful tools to make your tracking even better."), icon = Icons.AutoMirrored.Filled.TrendingUp, iconColor = Color(0xFFFF9800), anchor = "smart_tips"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.plates.title", "Balanced Plate and Score"), description = Localization.tr(LocalContext.current, "onboarding.plates.desc", "See how a balanced plate leads to a higher health score."), icon = Icons.Default.Restaurant, iconColor = Color(0xFF4CAF50), anchor = "balanced_plate"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.new_features.title", "New Features ✨"), description = Localization.tr(LocalContext.current, "onboarding.new_features.subtitle", "Powerful tools to make your tracking even better."), icon = Icons.AutoMirrored.Filled.TrendingUp, iconColor = Color(0xFFFF9800), anchor = "smart_tips"),
             OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.team.title", "Let's Build Eateria Together"), description = Localization.tr(LocalContext.current, "onboarding.team.desc", "We'd love to grow with you."), icon = Icons.Default.Favorite, iconColor = Color(0xFFE91E63), anchor = "team"),
-            OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.disclaimer.title", "Important Health Disclaimer ⚠️"), description = Localization.tr(LocalContext.current, "onboarding.disclaimer.desc", "This app is for informational purposes only and not a substitute for professional medical advice. Always consult healthcare providers for personalized dietary guidance and medical decisions."), icon = Icons.Default.Warning, iconColor = Color(0xFFFF9800), anchor = "disclaimer"),
+            OnboardingPage(title = Localization.tr(LocalContext.current, "disc.title", "Health Information Disclaimer"), description = Localization.tr(LocalContext.current, "disc.notice.text", "This app is for informational purposes only and not a substitute for professional medical advice. Always consult healthcare providers for personalized dietary guidance and medical decisions."), icon = Icons.Default.Warning, iconColor = Color(0xFFFF9800), anchor = "disclaimer"),
             
             OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.health_setup.title", "Personalized Health Setup 📋"), description = Localization.tr(LocalContext.current, "onboarding.health_setup.desc", "For the best experience, we can calculate personalized calorie recommendations based on your health data. This is completely optional!"), icon = Icons.Default.Person, iconColor = Color(0xFF3F51B5), anchor = "health_setup"),
             OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.health_form.title", "Your Health Data 📝"), description = Localization.tr(LocalContext.current, "onboarding.health_form.desc", "Please provide your basic health information to get personalized recommendations."), icon = Icons.Default.Favorite, iconColor = Color(0xFFE91E63), anchor = "health_form"),
@@ -145,7 +157,7 @@ fun OnboardingView(
 
     val onboardingPages = remember(mode) {
         when (mode) {
-            OnboardingMode.INITIAL -> allPages.filter { it.anchor in listOf("welcome", "tools", "pets", "plan", "smart_tips", "team", "disclaimer") }
+            OnboardingMode.INITIAL -> allPages.filter { it.anchor in listOf("intro", "tools", "pets", "plan", "balanced_plate", "smart_tips", "team", "disclaimer") }
             OnboardingMode.HEALTH -> allPages.filter { it.anchor in listOf("health_setup", "health_form", "health_results") }
             OnboardingMode.SOCIAL -> allPages.filter { it.anchor in listOf("friends") }
         }
@@ -232,12 +244,23 @@ fun OnboardingView(
                     when (onboardingPages[page].anchor) {
                         "language_select" -> LanguageSelectOnboardingView(page = onboardingPages[page])
                         "appearance" -> AppearanceOnboardingView(page = onboardingPages[page])
-                        "pets" -> PetsOnboardingView(page = onboardingPages[page])
-                        "welcome" ->
-                            WelcomeOnboardingView(
+                        "intro" ->
+                            IntroStepView(
                                 page = onboardingPages[page],
-                                onLanguageSelect = { showLanguageSelector = true },
                             )
+                        "tools" -> ToolsStepView(page = onboardingPages[page])
+                        "pets" -> PetsStepView(page = onboardingPages[page])
+                        "plan" -> {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                OnboardingPageContent(
+                                    page = onboardingPages[page],
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+                        "balanced_plate" -> BalancedPlateStepView(page = onboardingPages[page])
+                        "smart_tips" -> SmartTipsStepView(page = onboardingPages[page])
+                        "team" -> TeamStepView(page = onboardingPages[page])
                         "friends" ->
                             FriendsOnboardingView(
                                 page = onboardingPages[page],
@@ -1975,5 +1998,459 @@ private fun PetsOnboardingView(page: OnboardingPage) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun IntroStepView(page: OnboardingPage) {
+    var typedText by remember { mutableStateOf("") }
+    val fullText = Localization.tr(LocalContext.current, "onboarding.intro.full", "Hello and welcome to Eateria!\nWe’re here to help you build a healthier lifestyle. Balance your meals, track daily activity, and work toward your personal goals step by step.\n\nWe’ll support you along the way.\nLet’s begin your journey to feeling your best!")
+    
+    val infiniteTransition = rememberInfiniteTransition()
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.97f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1600, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    LaunchedEffect(Unit) {
+        typedText = ""
+        for (i in fullText.indices) {
+            typedText += fullText[i]
+            delay(60)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Image(
+            painter = painterResource(id = R.drawable.onboarding_intro_pets),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(230.dp)
+                .scale(scale)
+                .shadow(14.dp, CircleShape)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = typedText,
+            fontSize = 19.sp,
+            lineHeight = 28.sp,
+            modifier = Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
+            style = androidx.compose.ui.text.TextStyle(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFF4CAF50), Color(0xFF9C27B0))
+                )
+            )
+        )
+        Spacer(modifier = Modifier.height(40.dp))
+    }
+}
+
+@Composable
+fun ToolsStepView(page: OnboardingPage) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = page.title,
+            color = AppTheme.textPrimary(),
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+        )
+        Text(
+            text = page.description,
+            color = AppTheme.textSecondary(),
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Kitchen Scales
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.onboarding_kitchen_scales),
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp).clip(RoundedCornerShape(16.dp)).background(AppTheme.surfaceAlt()).padding(6.dp)
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Column {
+                    Text(Localization.tr(context, "onboarding.tools.scales.title", "Kitchen Scales"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(Localization.tr(context, "onboarding.tools.scales.desc", "Weigh your food to understand real portions. You will be surprised how much a \"small\" serving actually weighs."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Food Containers
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.onboarding_food_containers),
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp).clip(RoundedCornerShape(16.dp)).background(AppTheme.surfaceAlt()).padding(6.dp)
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Column {
+                    Text(Localization.tr(context, "onboarding.tools.containers.title", "Food Containers"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(Localization.tr(context, "onboarding.tools.containers.desc", "Organize meals so nothing goes to waste. Containers make meal prep effortless and keep your eating structured."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Track Everything
+        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFF4CAF50).copy(alpha = 0.06f)).border(1.dp, Color(0xFF4CAF50).copy(alpha = 0.2f), RoundedCornerShape(16.dp)).padding(14.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(Localization.tr(context, "onboarding.tools.track.title", "Track Everything"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = Localization.tr(context, "onboarding.tools.track.desc", "Even if something seems less healthy, keep tracking! No judgment, no stopping. That is the path to a balanced relationship with food. Every step toward awareness matters."),
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                    style = androidx.compose.ui.text.TextStyle(brush = Brush.linearGradient(colors = listOf(Color(0xFF4CAF50), Color(0xFF9C27B0)))),
+                    lineHeight = 24.sp
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(40.dp))
+    }
+}
+
+@Composable
+fun PetMoodBubble(imageRes: Int, label: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Image(painter = painterResource(id = imageRes), contentDescription = null, modifier = Modifier.size(48.dp))
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(label, fontSize = 12.sp, color = AppTheme.textSecondary())
+    }
+}
+
+@Composable
+fun PetsStepView(page: OnboardingPage) {
+    val themeService = com.singularis.eateria.services.ThemeService.getInstance()
+    val currentMascot by themeService.currentMascotFlow.collectAsState()
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = page.title,
+            color = AppTheme.textPrimary(),
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+        )
+
+        Text(
+            text = page.description,
+            color = AppTheme.textSecondary(),
+            fontSize = 17.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Cat
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).clickable {
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                themeService.currentMascot = com.singularis.eateria.services.AppMascot.CAT
+                themeService.playSound("happy")
+            },
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+            border = if (currentMascot == com.singularis.eateria.services.AppMascot.CAT) androidx.compose.foundation.BorderStroke(2.dp, AppTheme.accent()) else null,
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(painter = painterResource(id = R.drawable.british_cat_happy), contentDescription = null, modifier = Modifier.size(64.dp).clip(CircleShape))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text("Cat", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                        Text(Localization.tr(context, "onboarding.pets.cat.desc", "Elegant and opinionated. Purrs when you eat well, hisses when you don't."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                    }
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    PetMoodBubble(R.drawable.british_cat_happy, Localization.tr(context, "onboarding.pets.mood.happy", "Happy"))
+                    PetMoodBubble(R.drawable.british_cat_gym, Localization.tr(context, "onboarding.pets.mood.gym", "Gym"))
+                    PetMoodBubble(R.drawable.british_cat_bad_food, Localization.tr(context, "onboarding.pets.mood.upset", "Upset"))
+                    PetMoodBubble(R.drawable.british_cat_alcohol, Localization.tr(context, "onboarding.pets.mood.alcohol_tracking", "Alcohol"))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Dog
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).clickable {
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                themeService.currentMascot = com.singularis.eateria.services.AppMascot.DOG
+                themeService.playSound("happy")
+            },
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+            border = if (currentMascot == com.singularis.eateria.services.AppMascot.DOG) androidx.compose.foundation.BorderStroke(2.dp, AppTheme.accent()) else null,
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(painter = painterResource(id = R.drawable.french_bulldog_happy), contentDescription = null, modifier = Modifier.size(64.dp).clip(CircleShape))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text("Root", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                        Text(Localization.tr(context, "onboarding.pets.dog.desc", "Loyal and expressive. Barks with joy for healthy meals, growls at junk food."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                    }
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    PetMoodBubble(R.drawable.french_bulldog_happy, Localization.tr(context, "onboarding.pets.mood.happy", "Happy"))
+                    PetMoodBubble(R.drawable.french_bulldog_gym, Localization.tr(context, "onboarding.pets.mood.gym", "Gym"))
+                    PetMoodBubble(R.drawable.french_bulldog_bad_food, Localization.tr(context, "onboarding.pets.mood.upset", "Upset"))
+                    PetMoodBubble(R.drawable.french_bulldog_alcohol, Localization.tr(context, "onboarding.pets.mood.alcohol_tracking", "Alcohol"))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Default
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).clickable {
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                themeService.currentMascot = com.singularis.eateria.services.AppMascot.NONE
+            },
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+            border = if (currentMascot == com.singularis.eateria.services.AppMascot.NONE) androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFF9800)) else null,
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = androidx.compose.material.icons.Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(32.dp).background(Color(0xFFFF9800).copy(alpha=0.1f), CircleShape).padding(6.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(Localization.tr(context, "onboarding.pets.default.title", "Default Style"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                        Text(Localization.tr(context, "onboarding.pets.default.desc", "Clean and simple. Standard icons without pet reactions."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(40.dp))
+    }
+}
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+fun BalancedPlateStepView(page: OnboardingPage) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = page.title,
+            color = AppTheme.textPrimary(),
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+        )
+        Text(
+            text = page.description,
+            color = AppTheme.textSecondary(),
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+
+        val pagerState = rememberPagerState(pageCount = { 3 })
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { pageIndex ->
+            val imageRes = when(pageIndex) {
+                0 -> R.drawable.onboarding_plate1
+                1 -> R.drawable.onboarding_plate2
+                else -> R.drawable.onboarding_plate3
+            }
+            val title = when(pageIndex) {
+                0 -> Localization.tr(context, "onboarding.plates.slide1.title", "Processed Foods")
+                1 -> Localization.tr(context, "onboarding.plates.slide2.title", "Unbalanced Meal")
+                else -> Localization.tr(context, "onboarding.plates.slide3.title", "Balanced Plate")
+            }
+            val score = when(pageIndex) { 0 -> "42 / 100"; 1 -> "71 / 100"; else -> "95 / 100" }
+            val desc = when(pageIndex) {
+                0 -> Localization.tr(context, "onboarding.plates.slide1.desc", "Fast food provides energy but lacks essential nutrients.")
+                1 -> Localization.tr(context, "onboarding.plates.slide2.desc", "Better, but lacks sufficient protein and vegetables.")
+                else -> Localization.tr(context, "onboarding.plates.slide3.desc", "A perfect mix of complex carbs, lean protein, and fiber.")
+            }
+            
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(20.dp)) {
+                    Image(painter = painterResource(id = imageRes), contentDescription = null, modifier = Modifier.size(200.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Score: $score", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(desc, fontSize = 16.sp, color = AppTheme.textSecondary(), textAlign = TextAlign.Center)
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+            repeat(3) { i ->
+                Box(modifier = Modifier.padding(4.dp).size(8.dp).clip(CircleShape).background(if (pagerState.currentPage == i) AppTheme.accent() else AppTheme.textSecondary().copy(alpha = 0.5f)))
+            }
+        }
+    }
+}
+
+@Composable
+fun SmartTipsStepView(page: OnboardingPage) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = page.title,
+            color = AppTheme.textPrimary(),
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+        )
+        Text(
+            text = page.description,
+            fontSize = 19.sp,
+            textAlign = TextAlign.Center,
+            style = androidx.compose.ui.text.TextStyle(brush = Brush.linearGradient(colors = listOf(Color(0xFF4CAF50), Color(0xFF9C27B0)))),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Default.Settings, contentDescription = null, tint = Color(0xFF9C27B0), modifier = Modifier.size(44.dp).background(Color(0xFF9C27B0).copy(alpha=0.12f), CircleShape).padding(10.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Activity & Sync", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("Sync your daily activity to adjust your calorie goals perfectly.", fontSize = 14.sp, color = AppTheme.textSecondary())
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(44.dp).background(Color(0xFF4CAF50).copy(alpha=0.12f), CircleShape).padding(10.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Health Score", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("Your daily meals are rated out of 100 to show true nutritional balance.", fontSize = 14.sp, color = AppTheme.textSecondary())
+            }
+        }
+    }
+}
+
+@Composable
+fun TeamStepView(page: OnboardingPage) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = page.title,
+            color = AppTheme.textPrimary(),
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+        )
+        Text(
+            text = Localization.tr(context, "onboarding.team.message", "Dear customers,\nThank you for using Eateria.\n\nWe're building the app actively and would love to grow it with you. If you'd like to join the team, contribute ideas, or simply share feedback, we'd be happy to hear from you.\n\nWith 💜,\nThe Eateria team"),
+            fontSize = 17.sp,
+            textAlign = TextAlign.Start,
+            style = androidx.compose.ui.text.TextStyle(brush = Brush.linearGradient(colors = listOf(Color(0xFF4CAF50), Color(0xFF9C27B0)))),
+            modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+            // Eugen
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                Image(painter = painterResource(id = R.drawable.team_eugen), contentDescription = null, modifier = Modifier.size(100.dp).clip(CircleShape))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Eugen", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), fontSize = 18.sp)
+                Text(Localization.tr(context, "onboarding.team.role.founder", "Cat"), color = AppTheme.textSecondary(), fontSize = 14.sp)
+            }
+            // Olha
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                Image(painter = painterResource(id = R.drawable.team_olha), contentDescription = null, modifier = Modifier.size(100.dp).clip(CircleShape))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Olha", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), fontSize = 18.sp)
+                Text(Localization.tr(context, "onboarding.team.role.co_founder", "Dog"), color = AppTheme.textSecondary(), fontSize = 14.sp)
+            }
+        }
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }

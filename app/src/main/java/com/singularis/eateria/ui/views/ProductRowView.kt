@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,6 +60,8 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -111,11 +114,8 @@ import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
-import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.ui.theme.Gray3
-import com.singularis.eateria.ui.theme.Gray4
 import com.singularis.eateria.ui.theme.cardContainer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -149,7 +149,7 @@ fun ProductCard(
 
     val state =
         rememberSwipeToDismissBoxState(
-            positionalThreshold = { totalDistance -> totalDistance * 0.4f },
+            positionalThreshold = { totalDistance -> totalDistance * 0.7f },
             confirmValueChange = {
                 if (it == SwipeToDismissBoxValue.EndToStart) {
                     showDeleteConfirmationDialog = true
@@ -405,6 +405,7 @@ fun ProductCard(
         )
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortionSelectionDialog(
     foodName: String,
@@ -425,6 +426,7 @@ fun PortionSelectionDialog(
     var showConfirmation by remember { mutableStateOf(false) }
     var showCustomSelection by remember { mutableStateOf(false) }
     var showAdditivesSelection by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(isSuccess) {
         if (isSuccess) {
@@ -563,27 +565,62 @@ fun PortionSelectionDialog(
             containerColor = AppTheme.surface()
         )
     } else {
-        AlertDialog(
+        ModalBottomSheet(
             onDismissRequest = onDismiss,
-            title = {
-                Text(
-                    text =
+            sheetState = sheetState,
+            containerColor = AppTheme.surface(),
+        ) {
+            // Fixed header — always visible, not scrolled away
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.7f)
+            ) {
+                // Header section (non-scrolling)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimensions.paddingL, vertical = Dimensions.paddingM)
+                ) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text =
+                                if (showCustomSelection) {
+                                    Localization.tr(
+                                        LocalContext.current,
+                                        "portion.custom.title",
+                                        "Custom Portion",
+                                    )
+                                } else {
+                                    Localization.tr(LocalContext.current, "portion.modify.title", "Modify Portion")
+                                },
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.textPrimary(),
+                        )
                         if (showCustomSelection) {
-                            Localization.tr(
-                                LocalContext.current,
-                                "portion.custom.title",
-                                "Custom Portion",
-                            )
+                            TextButton(onClick = { showCustomSelection = false }) {
+                                Text(
+                                    Localization.tr(LocalContext.current, "common.back", "Back"),
+                                    color = AppTheme.accent(),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
                         } else {
-                            Localization.tr(LocalContext.current, "portion.modify.title", "Modify Portion")
-                        },
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.textPrimary(),
-                )
-            },
-            text = {
-                Column {
+                            TextButton(onClick = onDismiss) {
+                                Text(
+                                    Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
+                                    color = AppTheme.textSecondary(),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
+                        }
+                    }
+
                     Text(
                         text =
                             if (showCustomSelection) {
@@ -609,15 +646,24 @@ fun PortionSelectionDialog(
                             },
                         style = MaterialTheme.typography.bodySmall,
                         color = AppTheme.textSecondary(),
-                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = Dimensions.paddingXS)
                     )
+                }
 
-                    Spacer(modifier = Modifier.height(Dimensions.paddingM))
+                // Divider
+                androidx.compose.material3.HorizontalDivider(
+                    color = AppTheme.textSecondary().copy(alpha = 0.15f),
+                    thickness = 0.5.dp,
+                )
 
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = Dimensions.fixedHeight * 3),
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
-                    ) {
+                // Scrollable action buttons — fills remaining space
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f), // take all remaining height so buttons start at top
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+                    contentPadding = PaddingValues(horizontal = Dimensions.paddingL, vertical = Dimensions.paddingM)
+                ) {
                         if (showCustomSelection) {
                             // Show custom percentages from 10% to 300% in 10% increments
                             items((10..300 step 10).toList()) { percentage ->
@@ -854,14 +900,14 @@ fun PortionSelectionDialog(
                                     modifier = Modifier.fillMaxWidth(),
                                     colors =
                                         ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFF9C27B0), // Purple
-                                            contentColor = Color.White,
+                                            containerColor = AppTheme.surface(),
+                                            contentColor = AppTheme.textPrimary(),
                                         ),
                                     shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                                     contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
                                 ) {
                                     Text(
-                                        text = Localization.tr(LocalContext.current, "portion.custom", "Custom grams"),
+                                        text = Localization.tr(LocalContext.current, "portion.custom", "Custom Portion"),
                                         style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
@@ -869,34 +915,7 @@ fun PortionSelectionDialog(
                         }
                     }
                 }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = {
-                    HapticsService.getInstance().select()
-                    if (showCustomSelection) {
-                        showCustomSelection = false
-                    } else {
-                        onDismiss()
-                    }
-                }) {
-                    Text(
-                        if (showCustomSelection) {
-                            Localization.tr(
-                                LocalContext.current,
-                                "common.back_to_edit",
-                                "Back",
-                            )
-                        } else {
-                            Localization.tr(LocalContext.current, "common.cancel", "Cancel")
-                        },
-                        color = AppTheme.textSecondary(),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-            },
-            containerColor = AppTheme.surface(),
-        )
+        }
     }
 }
 @Composable

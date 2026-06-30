@@ -13,57 +13,57 @@ val Typography =
         displayLarge =
             TextStyle(
                 fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 50.sp,
                 lineHeight = 58.sp,
-                letterSpacing = 0.sp,
+                letterSpacing = (-1.5).sp,
             ),
         displayMedium =
             TextStyle(
                 fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 38.sp,
                 lineHeight = 46.sp,
-                letterSpacing = 0.sp,
+                letterSpacing = (-1).sp,
             ),
         displaySmall =
             TextStyle(
                 fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 30.sp,
                 lineHeight = 38.sp,
-                letterSpacing = 0.sp,
+                letterSpacing = (-0.5).sp,
             ),
         // Headline styles
         headlineLarge =
             TextStyle(
                 fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 26.sp,
                 lineHeight = 34.sp,
-                letterSpacing = 0.sp,
+                letterSpacing = (-0.5).sp,
             ),
         headlineMedium =
             TextStyle(
                 fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 24.sp,
                 lineHeight = 30.sp,
-                letterSpacing = 0.sp,
+                letterSpacing = (-0.5).sp,
             ),
         headlineSmall =
             TextStyle(
                 fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 22.sp,
                 lineHeight = 30.sp,
-                letterSpacing = 0.sp,
+                letterSpacing = (-0.25).sp,
             ),
         // Title styles
         titleLarge =
             TextStyle(
                 fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 lineHeight = 26.sp,
                 letterSpacing = 0.sp,

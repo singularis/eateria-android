@@ -44,16 +44,16 @@ object AppTheme {
     @Composable fun textSecondary() = if (isInLightMode()) LightTextSecondary else DarkTextSecondary
     @Composable fun divider() = if (isInLightMode()) LightDivider else DarkDivider
 
-    val cornerRadius = 16.dp
-    val smallRadius = 12.dp
+    val cornerRadius = 24.dp
+    val smallRadius = 16.dp
     val cardPadding = 16.dp
 
     @Composable
     fun cardShadow(): CardShadow {
         return if (isInLightMode()) {
-            CardShadow(Color.Black.copy(alpha = 0.1f), 8.dp, 0.dp, 4.dp)
+            CardShadow(Color(0xFF6A85B6).copy(alpha = 0.15f), 12.dp, 0.dp, 6.dp)
         } else {
-            CardShadow(Color.Black.copy(alpha = 0.3f), 8.dp, 0.dp, 4.dp)
+            CardShadow(Color.Black.copy(alpha = 0.4f), 12.dp, 0.dp, 6.dp)
         }
     }
 
@@ -89,7 +89,7 @@ object AppTheme {
     @Composable
     private fun isInLightMode(): Boolean {
         val settingsService = AppSettingsService.getInstance()
-        val appearanceMode = settingsService.appearanceMode
+        val appearanceMode by settingsService.appearanceModeFlow.collectAsState(initial = settingsService.appearanceMode)
         return when (appearanceMode) {
             AppSettingsService.AppearanceMode.LIGHT -> true
             AppSettingsService.AppearanceMode.DARK -> false
@@ -122,9 +122,9 @@ fun Modifier.cardContainer(padding: Dp = 12.dp): Modifier {
 @Composable
 fun Modifier.liquidGlass(padding: Dp = 12.dp, cornerRadius: Dp = AppTheme.cornerRadius): Modifier {
     return this
-        .shadow(elevation = 10.dp, shape = RoundedCornerShape(cornerRadius), ambientColor = Color.Black.copy(alpha = 0.1f), spotColor = Color.Black.copy(alpha = 0.1f))
+        .shadow(elevation = 12.dp, shape = RoundedCornerShape(cornerRadius), ambientColor = Color.Black.copy(alpha = 0.15f), spotColor = Color.Black.copy(alpha = 0.15f))
         .clip(RoundedCornerShape(cornerRadius))
-        .background(Color.White.copy(alpha = 0.1f)) // Simulated ultraThinMaterial
+        .background(Color.White.copy(alpha = 0.15f)) // Enhanced frosted glass
         .border(1.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(cornerRadius))
         .padding(padding)
 }
@@ -183,13 +183,13 @@ private fun BaseButton(
             }
             .shadow(
                 elevation = if (isPressed) shadow.radius - 2.dp else shadow.radius,
-                shape = RoundedCornerShape(25.dp),
-                ambientColor = if (isPressed) shadow.color.copy(alpha = 0.3f) else shadow.color,
-                spotColor = if (isPressed) shadow.color.copy(alpha = 0.3f) else shadow.color
+                shape = RoundedCornerShape(32.dp),
+                ambientColor = if (isPressed) shadow.color.copy(alpha = 0.4f) else shadow.color,
+                spotColor = if (isPressed) shadow.color.copy(alpha = 0.4f) else shadow.color
             )
-            .clip(RoundedCornerShape(25.dp))
+            .clip(RoundedCornerShape(32.dp))
             .background(backgroundBrush)
-            .border(1.5.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(25.dp))
+            .border(1.5.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(32.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -244,10 +244,10 @@ fun SecondaryButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled:
                 scaleX = scale
                 scaleY = scale
             }
-            .clip(RoundedCornerShape(25.dp))
-            .background(Color.White.copy(alpha = 0.1f)) // Simulated ultraThinMaterial
+            .clip(RoundedCornerShape(32.dp))
+            .background(Color.White.copy(alpha = 0.15f)) // Enhanced frosted glass
             .background(AppTheme.surface().copy(alpha = 0.5f))
-            .border(1.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(25.dp))
+            .border(1.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(32.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,

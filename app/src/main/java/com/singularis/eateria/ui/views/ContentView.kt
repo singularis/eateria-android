@@ -14,8 +14,12 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,7 +41,6 @@ import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.AppTheme
-import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
@@ -102,6 +105,7 @@ fun ContentView(
     
     val showProgressiveOnboarding by viewModel.showProgressiveOnboarding.collectAsState()
     val progressiveStep by viewModel.progressiveStep.collectAsState()
+    val isPullRefreshing by viewModel.isPullRefreshing.collectAsState()
 
     // Camera states
     var showFoodCamera by remember { mutableStateOf(false) }
@@ -174,7 +178,7 @@ fun ContentView(
             androidx.compose.foundation.pager.HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                userScrollEnabled = false
+                userScrollEnabled = true // Allow swipe right to Statistics
             ) { page ->
                 when (page) {
                     0 -> {
@@ -281,7 +285,8 @@ fun ContentView(
                     ) {
                         ProductListView(
                             products = products,
-                            onRefresh = { viewModel.returnToToday() },
+                            isRefreshing = isPullRefreshing,
+                            onRefresh = { viewModel.pullToRefresh() },
                             onDelete = { time -> viewModel.deleteProductWithLoading(time) },
                             onModify = { time, foodName, percentage ->
                                 userEmail?.let { email ->
@@ -298,12 +303,24 @@ fun ContentView(
                                     }
                                 fullScreenPhotoData = Pair(imageToShow, foodName)
                             },
-                            deletingProductTime = deletingProductTime,
-                            modifiedProductTime = modifiedProductTime,
-                            onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
+                            onTryAgain = { time, foodName ->
+                                android.widget.Toast.makeText(context, "Try Manual: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            onAddSugar = { time, foodName ->
+                                android.widget.Toast.makeText(context, "Add Sugar: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            onAddDrinkExtra = { time, foodName, extra ->
+                                android.widget.Toast.makeText(context, "Add $extra: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            onAddFoodExtra = { time, foodName, extra ->
+                                android.widget.Toast.makeText(context, "Add $extra: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                            },
                             onShare = { time, foodName ->
                                 showShareFoodDialog = Pair(time, foodName)
                             },
+                            deletingProductTime = deletingProductTime,
+                            modifiedProductTime = modifiedProductTime,
+                            onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
                         )
                     }
                 }

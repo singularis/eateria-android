@@ -53,9 +53,8 @@ import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.WineBar
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -110,11 +109,8 @@ import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
-import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.ui.theme.Gray3
-import com.singularis.eateria.ui.theme.Gray4
 import com.singularis.eateria.ui.theme.cardContainer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -123,7 +119,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProductListView(
     products: List<Product>,
@@ -135,6 +131,7 @@ fun ProductListView(
     onAddDrinkExtra: ((Long, String, String) -> Unit)? = null,
     onAddFoodExtra: ((Long, String, String) -> Unit)? = null,
     onPhotoTap: (Bitmap?, String) -> Unit,
+    isRefreshing: Boolean = false,
     deletingProductTime: Long?,
     modifiedProductTime: Long?,
     onSuccessDialogDismissed: () -> Unit,
@@ -142,22 +139,16 @@ fun ProductListView(
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
+    val pullRefreshState = rememberPullToRefreshState()
 
-    // Pull to refresh state - no manual loading state needed since main loading is handled by parent
-    val pullRefreshState =
-        rememberPullRefreshState(
-            refreshing = false, // Always false since we use main loading state
-            onRefresh = {
-                HapticsService.getInstance().mediumImpact()
-                onRefresh()
-            },
-        )
-
-    Box(
-        modifier =
-            Modifier
-                .fillMaxSize() // Use fillMaxSize to allow pull-refresh from anywhere
-                .pullRefresh(pullRefreshState),
+    PullToRefreshBox(
+        state = pullRefreshState,
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            HapticsService.getInstance().mediumImpact()
+            onRefresh()
+        },
+        modifier = Modifier.fillMaxSize(),
     ) {
         if (sortedProducts.isEmpty()) {
             Column(
@@ -224,7 +215,5 @@ fun ProductListView(
                 }
             }
         }
-
-        // Pull refresh indicator removed since we use main loading state
     }
 }

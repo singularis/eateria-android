@@ -48,17 +48,16 @@ fun LivingOrbsView(
     val context = LocalContext.current
     val density = LocalDensity.current.density
 
-    // We need continuous animation phase
-    val infiniteTransition = rememberInfiniteTransition(label = "orb_orbit")
-    val phase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "phase"
-    )
+    // Continuous animation phase matching iOS timeIntervalSinceReferenceDate
+    var phase by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(Unit) {
+        val startTime = androidx.compose.runtime.withFrameNanos { it }
+        while (true) {
+            androidx.compose.runtime.withFrameNanos { frameTime ->
+                phase = (frameTime - startTime) / 1_000_000_000f
+            }
+        }
+    }
     
     // Scale pulse for selected orb
     val pulseTransition = rememberInfiniteTransition(label = "orb_pulse")
@@ -367,6 +366,13 @@ fun OrbItem(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
+            style = androidx.compose.ui.text.TextStyle(
+                shadow = androidx.compose.ui.graphics.Shadow(
+                    color = Color.Black.copy(alpha = 0.4f),
+                    offset = Offset(0f, 1f),
+                    blurRadius = 2f
+                )
+            ),
             modifier = Modifier.align(Alignment.Center).padding(horizontal = 4.dp)
         )
     }

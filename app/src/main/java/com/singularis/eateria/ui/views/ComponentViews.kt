@@ -113,11 +113,8 @@ import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
-import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.ui.theme.Gray3
-import com.singularis.eateria.ui.theme.Gray4
 import com.singularis.eateria.ui.theme.cardContainer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -733,7 +730,7 @@ fun WeightActionSheetDialog(
                     .fillMaxWidth()
                     .padding(Dimensions.paddingM),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-            color = Color.White,
+            color = AppTheme.surface(),
         ) {
             Column(
                 modifier = Modifier.padding(Dimensions.paddingL),
@@ -1145,7 +1142,7 @@ fun HealthDisclaimerDialog(onDismiss: () -> Unit) {
                         Modifier
                             .weight(1f)
                             .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Gray3), // Same as trend button
+                    colors = CardDefaults.cardColors(containerColor = AppTheme.surfaceAlt()),
                     shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                 ) {
                     Column(

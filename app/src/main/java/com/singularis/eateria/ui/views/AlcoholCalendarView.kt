@@ -58,6 +58,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import com.singularis.eateria.ui.theme.liquidGlass
 
 @Composable
 fun AlcoholCalendarView(
@@ -103,21 +104,18 @@ fun AlcoholCalendarView(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true),
+        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true, usePlatformDefaultWidth = false),
     ) {
-        Surface(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.paddingM),
-            shape = RoundedCornerShape(Dimensions.cornerRadiusL),
-            color = Gray4,
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(com.singularis.eateria.ui.theme.AppTheme.backgroundGradient())
         ) {
             Column(
                 modifier =
                     Modifier
-                        .background(DarkBackground)
-                        .padding(Dimensions.paddingM)
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 24.dp)
                         .pointerInput(anchorMonth) {
                             detectHorizontalDragGestures { change, dragAmount ->
                                 change.consume()
@@ -129,9 +127,10 @@ fun AlcoholCalendarView(
                             }
                         },
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
                 AddictionModeExplanation()
                 
-                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Header(
                     date = anchorMonth,
@@ -140,11 +139,11 @@ fun AlcoholCalendarView(
                     onClose = onDismiss,
                 )
 
-                Spacer(modifier = Modifier.height(Dimensions.paddingS))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 WeekdayHeader()
 
-                Spacer(modifier = Modifier.height(Dimensions.paddingS))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 MonthGrid(
                     monthDate = anchorMonth,
@@ -159,17 +158,31 @@ fun AlcoholCalendarView(
                     },
                 )
 
-                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+                Spacer(modifier = Modifier.weight(1f))
 
                 Button(
                     onClick = { 
                         com.singularis.eateria.services.HapticsService.getInstance().select()
                         onDismiss() 
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Gray3, contentColor = Color.White),
-                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(
+                            androidx.compose.ui.graphics.Brush.linearGradient(
+                                colors = listOf(Color.Green, Color(0xFF800080))
+                            )
+                        )
                 ) {
-                    Text(Localization.tr(LocalContext.current, "common.close", "Close"))
+                    Text(
+                        text = Localization.tr(LocalContext.current, "common.done", "Done"),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                 }
             }
         }
@@ -182,15 +195,16 @@ fun AlcoholCalendarView(
     if (detailsVisible) {
         AlertDialog(
             onDismissRequest = { detailsVisible = false },
-            title = { Text(detailsTitle, color = Color.White) },
-            text = { Text(detailsMessage, color = Color.Gray) },
+            title = { Text(detailsTitle, color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(), fontWeight = FontWeight.Bold) },
+            text = { Text(detailsMessage, color = com.singularis.eateria.ui.theme.AppTheme.textSecondary()) },
             confirmButton = {
                 Button(onClick = { 
                     com.singularis.eateria.services.HapticsService.getInstance().select()
                     detailsVisible = false 
                 }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
-            containerColor = Gray4,
+            containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
+            shape = RoundedCornerShape(24.dp)
         )
     }
 }
@@ -210,17 +224,21 @@ private fun Header(
         IconButton(onClick = { 
             com.singularis.eateria.services.HapticsService.getInstance().select()
             onPrev() 
-        }) { Text(Localization.tr(LocalContext.current, "calendar.prev", "<"), color = Color.White) }
+        }) { 
+            Text("<", color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(), style = MaterialTheme.typography.titleLarge) 
+        }
         Text(
             text = monthTitle(date),
             style = MaterialTheme.typography.titleMedium,
-            color = Color.White,
+            color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(),
             fontWeight = FontWeight.Bold,
         )
         IconButton(onClick = { 
             com.singularis.eateria.services.HapticsService.getInstance().select()
             onNext() 
-        }) { Text(Localization.tr(LocalContext.current, "calendar.next", ">"), color = Color.White) }
+        }) { 
+            Text(">", color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(), style = MaterialTheme.typography.titleLarge) 
+        }
     }
 }
 
@@ -237,8 +255,8 @@ private fun WeekdayHeader() {
                 text = label,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                color = Color.White.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.bodySmall,
+                color = com.singularis.eateria.ui.theme.AppTheme.textSecondary(),
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
             )
         }
     }
@@ -321,7 +339,7 @@ private fun RowScope.DayCellView(
                 .weight(1f)
                 .height(44.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(if (cell.isCurrentMonth) Gray3.copy(alpha = 0.2f) else Gray3.copy(alpha = 0.1f))
+                .background(if (cell.isCurrentMonth) com.singularis.eateria.ui.theme.AppTheme.surface() else Color.Transparent)
                 .clickable(
                     indication = LocalIndication.current,
                     interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
@@ -333,8 +351,9 @@ private fun RowScope.DayCellView(
     ) {
         Text(
             text = cell.dayNumber.toString(),
-            color = if (cell.isCurrentMonth) Color.White else Color.White.copy(alpha = 0.3f),
-            style = MaterialTheme.typography.bodySmall,
+            color = if (cell.isCurrentMonth) com.singularis.eateria.ui.theme.AppTheme.textPrimary() else com.singularis.eateria.ui.theme.AppTheme.textSecondary().copy(alpha = 0.4f),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
         )
         if (amount > 0) {
@@ -426,8 +445,10 @@ private fun AddictionModeExplanation() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Dimensions.paddingS)
-            .background(com.singularis.eateria.ui.theme.AppTheme.surface().copy(alpha = 0.8f), RoundedCornerShape(12.dp))
-            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .liquidGlass(
+                padding = 16.dp,
+                cornerRadius = 12.dp
+            )
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(

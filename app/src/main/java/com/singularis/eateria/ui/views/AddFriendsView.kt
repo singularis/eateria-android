@@ -286,7 +286,7 @@ fun AddFriendsView(
                     onDismiss()
                 }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
             },
-            containerColor = com.singularis.eateria.ui.theme.Gray4,
+            containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
         )
     }
 }

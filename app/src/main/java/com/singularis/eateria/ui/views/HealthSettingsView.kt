@@ -420,34 +420,37 @@ fun HealthSettingsView(
                                 )
                             }
                             
-                            // Goal Mode Segmented Button Alternative (Dropdown for simplicity)
-                            Text("Goal Mode", color = Color.Gray)
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                GoalMode.values().forEach { mode ->
+                            Text(Localization.tr(context, "health.goal.mode", "Goal Mode"), color = Color.Gray)
+                            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                GoalMode.values().forEachIndexed { index, mode ->
                                     val label = when(mode) {
                                         GoalMode.LOSE -> Localization.tr(context, "health.goal.lose", "Lose")
                                         GoalMode.MAINTAIN -> Localization.tr(context, "health.goal.maintain_mode", "Maintain")
                                         GoalMode.GAIN -> Localization.tr(context, "health.goal.gain", "Gain")
                                         GoalMode.ACTIVITY_ONLY -> Localization.tr(context, "health.goal.activity_only", "Activity")
                                     }
-                                    FilterChip(
+                                    SegmentedButton(
                                         selected = goalMode == mode,
                                         onClick = { goalMode = mode; recalcFromInputs() },
-                                        label = { Text(label, fontSize = 12.sp) }
-                                    )
+                                        shape = SegmentedButtonDefaults.itemShape(index = index, count = GoalMode.values().size)
+                                    ) {
+                                        Text(label, fontSize = 11.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    }
                                 }
                             }
 
                             if (goalMode == GoalMode.LOSE || goalMode == GoalMode.GAIN) {
-                                Text("Period (Months)", color = Color.Gray)
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    val suggested = if (goalMode == GoalMode.GAIN) listOf(2, 4, 6) else listOf(2, 4, 6, 9, 12).filter { it >= 2 }.take(3)
-                                    suggested.forEach { m ->
-                                        FilterChip(
+                                Text(Localization.tr(context, "health.goal.period", "Period (Months)"), color = Color.Gray)
+                                val suggested = if (goalMode == GoalMode.GAIN) listOf(2, 4, 6) else listOf(2, 4, 6, 9, 12).filter { it >= 2 }.take(3)
+                                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                    suggested.forEachIndexed { index, m ->
+                                        SegmentedButton(
                                             selected = selectedMonths == m,
                                             onClick = { selectedMonths = m; recalcFromInputs() },
-                                            label = { Text("$m") }
-                                        )
+                                            shape = SegmentedButtonDefaults.itemShape(index = index, count = suggested.size)
+                                        ) {
+                                            Text(String.format(Localization.tr(context, "health.goal.months", "%d months"), m), fontSize = 12.sp)
+                                        }
                                     }
                                 }
                             } else if (goalMode == GoalMode.ACTIVITY_ONLY) {
@@ -514,8 +517,24 @@ fun HealthSettingsView(
 
             } else {
                 item {
+                    val infiniteTransition = rememberInfiniteTransition(label = "heart_pulse")
+                    val heartScale by infiniteTransition.animateFloat(
+                        initialValue = 1f,
+                        targetValue = 1.12f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(450, easing = EaseInOut),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "heart_scale"
+                    )
+
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                        Icon(Icons.Default.Favorite, contentDescription = null, tint = CalorieRed, modifier = Modifier.size(60.dp))
+                        Icon(
+                            Icons.Default.Favorite, 
+                            contentDescription = null, 
+                            tint = CalorieRed, 
+                            modifier = Modifier.size(60.dp).scale(heartScale)
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = Localization.tr(context, "health.update.title", "Update Your Health Data"),
@@ -577,13 +596,24 @@ fun HealthSettingsView(
                                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                             )
                             
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(Localization.tr(context, "health.gender", "Gender: "), color = Color.White)
-                                RadioButton(selected = isMale, onClick = { isMale = true }, colors = RadioButtonDefaults.colors(selectedColor = AppTheme.accent()))
-                                Text(Localization.tr(context, "health.gender.male", "Male"), color = Color.White)
-                                Spacer(modifier = Modifier.width(16.dp))
-                                RadioButton(selected = !isMale, onClick = { isMale = false }, colors = RadioButtonDefaults.colors(selectedColor = AppTheme.accent()))
-                                Text(Localization.tr(context, "health.gender.female", "Female"), color = Color.White)
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(Localization.tr(context, "health.gender", "Gender:"), color = Color.Gray)
+                                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                    SegmentedButton(
+                                        selected = isMale,
+                                        onClick = { isMale = true },
+                                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                                    ) {
+                                        Text(Localization.tr(context, "health.gender.male", "Male"))
+                                    }
+                                    SegmentedButton(
+                                        selected = !isMale,
+                                        onClick = { isMale = false },
+                                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                                    ) {
+                                        Text(Localization.tr(context, "health.gender.female", "Female"))
+                                    }
+                                }
                             }
                             
                             var expanded by remember { mutableStateOf(false) }

@@ -63,7 +63,6 @@ import com.singularis.eateria.ui.theme.CalorieYellow
 import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.CalorieBlue
 import com.singularis.eateria.ui.theme.CalorieOrange
-import com.singularis.eateria.ui.theme.Gray4
 
 @Composable
 fun UserProfileView(
@@ -392,23 +391,28 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
 
                             if (com.singularis.eateria.BuildConfig.DEBUG) {
-                                PreferenceSegmentedRow(
-                                    title = Localization.tr(LocalContext.current, "profile.dev_environment", "Dev Environment"),
-                                    options = listOf(
-                                        Localization.tr(LocalContext.current, "env.production", "Production") to false,
-                                        Localization.tr(LocalContext.current, "env.development", "Development") to true
-                                    ),
-                                    selected = com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment,
-                                    onSelected = { isDev ->
-                                        com.singularis.eateria.services.HapticsService.getInstance().warning()
-                                        com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment = isDev
-                                        
-                                        // Clear caches
-                                        com.singularis.eateria.services.StatisticsService.getInstance(context).clearAllCache()
-                                        android.widget.Toast.makeText(context, "Environment changed. Please restart app.", android.widget.Toast.LENGTH_LONG).show()
-                                    }
-                                )
-                                androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+                                var isDev by remember { mutableStateOf(com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment) }
+                                Column(
+                                    modifier = Modifier.background(if (isDev) Color.Red.copy(alpha = 0.3f) else Color.Green.copy(alpha = 0.3f))
+                                ) {
+                                    PreferenceSegmentedRow(
+                                        title = Localization.tr(LocalContext.current, "profile.dev_environment", "Dev Environment"),
+                                        options = listOf(
+                                            Localization.tr(LocalContext.current, "env.production", "Production") to false,
+                                            Localization.tr(LocalContext.current, "env.development", "Development") to true
+                                        ),
+                                        selected = isDev,
+                                        onSelected = { isDevSelected ->
+                                            com.singularis.eateria.services.HapticsService.getInstance().warning()
+                                            com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment = isDevSelected
+                                            isDev = isDevSelected
+                                            // Clear caches
+                                            com.singularis.eateria.services.StatisticsService.getInstance(context).clearAllCache()
+                                            android.widget.Toast.makeText(context, "Environment changed. Please restart app.", android.widget.Toast.LENGTH_LONG).show()
+                                        }
+                                    )
+                                    androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+                                }
                             }
 
                             // Save Photos

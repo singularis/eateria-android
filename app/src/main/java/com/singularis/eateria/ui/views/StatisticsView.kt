@@ -95,11 +95,8 @@ import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.CalorieOrange
 import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.CalorieYellow
-import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.ui.theme.Gray3
-import com.singularis.eateria.ui.theme.Gray4
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -313,8 +310,8 @@ private fun StatisticsHeader(
                                 Brush.radialGradient(
                                     colors =
                                         listOf(
-                                            Gray4.copy(alpha = 0.3f),
-                                            Gray4.copy(alpha = 0.1f),
+                                            AppTheme.surface().copy(alpha = 0.3f),
+                                            AppTheme.surface().copy(alpha = 0.1f),
                                         ),
                                 ),
                         ),
@@ -500,7 +497,7 @@ private fun InsightsView(
 private fun InsightCard(title: String, value: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4.copy(alpha = 0.95f)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.95f)),
         shape = organicCardShape
     ) {
         Row(
@@ -741,8 +738,8 @@ private fun CaloriesChartViewFullWidth(statistics: List<DailyStatistics>) {
                             Brush.verticalGradient(
                                 colors =
                                     listOf(
-                                        Gray4.copy(alpha = 0.4f),
-                                        Gray4.copy(alpha = 0.8f),
+                                        AppTheme.surface().copy(alpha = 0.4f),
+                                        AppTheme.surface().copy(alpha = 0.8f),
                                     ),
                             ),
                     ),
@@ -792,7 +789,7 @@ private fun CaloriesChartViewFullWidth(statistics: List<DailyStatistics>) {
                                 FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = CalorieOrange.copy(alpha = 0.8f),
                                     selectedLabelColor = AppTheme.textPrimary(),
-                                    containerColor = Gray3.copy(alpha = 0.6f),
+                                    containerColor = AppTheme.surfaceAlt().copy(alpha = 0.6f),
                                     labelColor = AppTheme.textSecondary(),
                                 ),
                             modifier =
@@ -823,8 +820,8 @@ private fun CaloriesChartViewFullWidth(statistics: List<DailyStatistics>) {
                                 Brush.verticalGradient(
                                     colors =
                                         listOf(
-                                            Gray4.copy(alpha = 0.8f),
-                                            Gray4.copy(alpha = 0.95f),
+                                            AppTheme.surface().copy(alpha = 0.8f),
+                                            AppTheme.surface().copy(alpha = 0.95f),
                                         ),
                                 ),
                         ),
@@ -852,7 +849,7 @@ private fun MacrosChartView(statistics: List<DailyStatistics>) {
                 ),
         colors =
             CardDefaults.cardColors(
-                containerColor = Gray4.copy(alpha = 0.95f),
+                containerColor = AppTheme.surface().copy(alpha = 0.95f),
             ),
         shape = organicCardShape,
     ) {
@@ -865,8 +862,8 @@ private fun MacrosChartView(statistics: List<DailyStatistics>) {
                             Brush.verticalGradient(
                                 colors =
                                     listOf(
-                                        Gray4.copy(alpha = 0.4f),
-                                        Gray4.copy(alpha = 0.8f),
+                                        AppTheme.surface().copy(alpha = 0.4f),
+                                        AppTheme.surface().copy(alpha = 0.8f),
                                     ),
                             ),
                     ),
@@ -953,8 +950,8 @@ private fun PersonWeightChartViewFullWidth(
                             Brush.verticalGradient(
                                 colors =
                                     listOf(
-                                        Gray4.copy(alpha = 0.4f),
-                                        Gray4.copy(alpha = 0.8f),
+                                        AppTheme.surface().copy(alpha = 0.4f),
+                                        AppTheme.surface().copy(alpha = 0.8f),
                                     ),
                             ),
                     ),
@@ -1028,8 +1025,8 @@ private fun PersonWeightChartViewFullWidth(
                                 Brush.verticalGradient(
                                     colors =
                                         listOf(
-                                            Gray4.copy(alpha = 0.8f),
-                                            Gray4.copy(alpha = 0.95f),
+                                            AppTheme.surface().copy(alpha = 0.8f),
+                                            AppTheme.surface().copy(alpha = 0.95f),
                                         ),
                                 ),
                         ),
@@ -1060,8 +1057,8 @@ private fun PersonWeightChartViewFullWidth(
                                     Brush.verticalGradient(
                                         colors =
                                             listOf(
-                                                Gray4.copy(alpha = 0.4f),
-                                                Gray4.copy(alpha = 0.8f),
+                                                AppTheme.surface().copy(alpha = 0.4f),
+                                                AppTheme.surface().copy(alpha = 0.8f),
                                             ),
                                     ),
                             ),
@@ -1134,8 +1131,8 @@ private fun FoodWeightChartViewFullWidth(statistics: List<DailyStatistics>) {
                             Brush.verticalGradient(
                                 colors =
                                     listOf(
-                                        Gray4.copy(alpha = 0.4f),
-                                        Gray4.copy(alpha = 0.8f),
+                                        AppTheme.surface().copy(alpha = 0.4f),
+                                        AppTheme.surface().copy(alpha = 0.8f),
                                     ),
                             ),
                     ),
@@ -1209,8 +1206,8 @@ private fun FoodWeightChartViewFullWidth(statistics: List<DailyStatistics>) {
                                 Brush.verticalGradient(
                                     colors =
                                         listOf(
-                                            Gray4.copy(alpha = 0.8f),
-                                            Gray4.copy(alpha = 0.95f),
+                                            AppTheme.surface().copy(alpha = 0.8f),
+                                            AppTheme.surface().copy(alpha = 0.95f),
                                         ),
                                 ),
                         ),
@@ -1281,7 +1278,7 @@ private fun TrendsView(
 private fun TrendCard(title: String, value: String, color: Color, icon: androidx.compose.ui.graphics.vector.ImageVector) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Gray4.copy(alpha = 0.95f)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.95f)),
         shape = organicCardShape
     ) {
         Row(
@@ -2028,7 +2025,7 @@ private fun MacroBarRow(
                 Modifier
                     .weight(1f)
                     .height(36.dp) // Taller bars
-                    .background(Gray3, RoundedCornerShape(Dimensions.cornerRadiusM)),
+                    .background(AppTheme.surfaceAlt(), RoundedCornerShape(Dimensions.cornerRadiusM)),
         ) {
             Box(
                 modifier =
@@ -2123,7 +2120,7 @@ private fun MacroCompositionChart(
                 Modifier
                     .fillMaxWidth()
                     .padding(top = Dimensions.paddingL),
-            colors = CardDefaults.cardColors(containerColor = Gray3),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surfaceAlt()),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
             Column(

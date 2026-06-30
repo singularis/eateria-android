@@ -83,10 +83,8 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.HapticsService
-import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.ui.theme.Gray3
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -200,7 +198,7 @@ private fun CameraPreviewView(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(DarkBackground)
+                .background(Color.Black)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars),
     ) {
@@ -415,7 +413,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(DarkBackground)
+                .background(Color.Black)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars),
         contentAlignment = Alignment.Center,

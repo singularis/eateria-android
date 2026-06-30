@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.DailyRefreshManager
+import com.singularis.eateria.services.FoodPhotoService
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.ImageStorageService
 import com.singularis.eateria.services.Localization
@@ -37,6 +38,7 @@ class MainViewModel(
     private val authService = AuthenticationService(context)
     private val dailyRefreshManager = DailyRefreshManager.getInstance(context)
     private val reminderService = ReminderService(context)
+    private val foodPhotoService = FoodPhotoService.getInstance(context)
 
     // State flows for UI
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -59,6 +61,9 @@ class MainViewModel(
 
     private val _isLoadingRecommendation = MutableStateFlow(false)
     val isLoadingRecommendation: StateFlow<Boolean> = _isLoadingRecommendation.asStateFlow()
+
+    private val _isPullRefreshing = MutableStateFlow(false)
+    val isPullRefreshing: StateFlow<Boolean> = _isPullRefreshing.asStateFlow()
 
     private val _deletingProductTime = MutableStateFlow<Long?>(null)
     val deletingProductTime: StateFlow<Long?> = _deletingProductTime.asStateFlow()
@@ -294,7 +299,7 @@ class MainViewModel(
         }
     }
 
-    fun fetchDataWithLoading() {
+    fun fetchDataWithLoading(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             // Load from cache first
             val (cachedProducts, cachedCalories, cachedWeight) = productStorageService.loadProducts()
@@ -302,22 +307,55 @@ class MainViewModel(
             _caloriesLeft.value = getAdjustedSoftLimit() - cachedCalories
             _personWeight.value = cachedWeight
 
-            if (productStorageService.isDataStale()) {
+            if (forceRefresh || productStorageService.isDataStale()) {
                 _isLoadingData.value = true
                 // Refresh alcohol icon color alongside food refresh
                 fetchAlcoholLatestAndUpdateIcon()
-                productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
+                productStorageService.fetchAndProcessProducts(forceRefresh = forceRefresh) { fetchedProducts, totalCaloriesConsumed, weight ->
                     _products.value = fetchedProducts
                     // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
                     val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                     _caloriesLeft.value = actualCaloriesLeft
                     _personWeight.value = weight
                     _isLoadingData.value = false
-                    
+                    // Prefetch remote photos for products missing local images (iOS parity)
+                    foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) { imageId, bitmap ->
+                        injectPhotoIntoProduct(imageId, bitmap)
+                    }
                     checkProgressiveOnboarding()
                 }
             } else {
                 fetchAlcoholLatestAndUpdateIcon()
+            }
+        }
+    }
+
+    fun pullToRefresh() {
+        viewModelScope.launch {
+            _isPullRefreshing.value = true
+            
+            // Re-select today if we were on a custom date
+            _isViewingCustomDate.value = false
+            _currentViewingDate.value = ""
+            _currentViewingDateString.value = ""
+            loadTodaySportCalories()
+
+            // Keep alcohol state fresh when data updates without full loading overlay
+            fetchAlcoholLatestAndUpdateIcon()
+            
+            // Force fetch from network
+            productStorageService.fetchAndProcessProducts(forceRefresh = true) { fetchedProducts, totalCaloriesConsumed, weight ->
+                _products.value = fetchedProducts
+                // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
+                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
+                _caloriesLeft.value = actualCaloriesLeft
+                _personWeight.value = weight
+                // Prefetch remote photos for products missing local images (iOS parity)
+                foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) { imageId, bitmap ->
+                    injectPhotoIntoProduct(imageId, bitmap)
+                }
+                checkProgressiveOnboarding()
+                _isPullRefreshing.value = false
             }
         }
     }
@@ -332,10 +370,25 @@ class MainViewModel(
                 val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
-                
+                // Prefetch remote photos for products missing local images (iOS parity)
+                foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) { imageId, bitmap ->
+                    injectPhotoIntoProduct(imageId, bitmap)
+                }
                 checkProgressiveOnboarding()
             }
         }
+    }
+
+    /** Injects a downloaded photo into the matching product so the UI refreshes without a full re-fetch */
+    private fun injectPhotoIntoProduct(imageId: String, bitmap: Bitmap) {
+        val updated = _products.value.map { product ->
+            if (product.imageId == imageId) {
+                product.also { it.setImage(bitmap) }
+            } else {
+                product
+            }
+        }
+        _products.value = updated
     }
 
     // New method for image synchronization (iOS logic)
@@ -735,12 +788,12 @@ class MainViewModel(
         }
     }
 
-    fun returnToToday() {
+    fun returnToToday(forceRefresh: Boolean = false) {
         _isViewingCustomDate.value = false
         _currentViewingDate.value = ""
         _currentViewingDateString.value = ""
         loadTodaySportCalories()
-        fetchDataWithLoading()
+        fetchDataWithLoading(forceRefresh = forceRefresh)
     }
 
     fun getColor(caloriesLeft: Int): androidx.compose.ui.graphics.Color {

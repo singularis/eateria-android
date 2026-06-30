@@ -16,8 +16,6 @@ import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.DarkPrimary
-import com.singularis.eateria.ui.theme.Gray3
-import com.singularis.eateria.ui.theme.Gray4
 
 object AlertHelper {
     enum class HapticKind {

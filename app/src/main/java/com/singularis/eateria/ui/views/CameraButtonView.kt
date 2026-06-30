@@ -110,11 +110,8 @@ import com.singularis.eateria.services.StatisticsService
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
-import com.singularis.eateria.ui.theme.DarkBackground
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
-import com.singularis.eateria.ui.theme.Gray3
-import com.singularis.eateria.ui.theme.Gray4
 import com.singularis.eateria.ui.theme.cardContainer
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.border

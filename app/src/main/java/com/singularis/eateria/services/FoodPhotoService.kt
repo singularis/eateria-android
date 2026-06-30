@@ -109,14 +109,25 @@ class FoodPhotoService private constructor(private val context: Context) {
     }
 
     /**
-     * Prefetch photos for a list of products that need remote images
+     * Prefetch photos for a list of products that need remote images.
+     * Matches iOS FoodPhotoService.shared.prefetchPhotos(for:)
+     * @param onPhotoFetched called on main thread after each photo is downloaded so the UI can refresh
      */
-    fun prefetchPhotos(products: List<Product>, scope: CoroutineScope) {
+    fun prefetchPhotos(
+        products: List<Product>,
+        scope: CoroutineScope,
+        onPhotoFetched: ((imageId: String, bitmap: Bitmap) -> Unit)? = null,
+    ) {
         scope.launch {
             for (product in products) {
-                val needsRemoteFetch = product.imageId.isNotEmpty() && product.imageId.contains("/")
-                if (needsRemoteFetch) {
-                    fetchPhoto(product.imageId)
+                // Use the same logic as iOS: needsRemoteFetch = has imageId + no local image
+                if (product.needsRemoteFetch(context)) {
+                    val bitmap = fetchPhoto(product.imageId)
+                    if (bitmap != null) {
+                        withContext(Dispatchers.Main) {
+                            onPhotoFetched?.invoke(product.imageId, bitmap)
+                        }
+                    }
                 }
             }
         }

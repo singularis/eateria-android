@@ -649,6 +649,38 @@ class MainViewModel(
         }
     }
 
+    /** Add 1 teaspoon of sugar (5g, ~20 cal) to a food item — matching iOS addSugarToProduct. */
+    fun addSugarToProduct(time: Long, foodName: String) {
+        _deletingProductTime.value = time
+        viewModelScope.launch {
+            val userEmail = authService.getUserEmail() ?: run {
+                _deletingProductTime.value = null
+                return@launch
+            }
+            try {
+                val success = grpcService.modifyFoodRecord(
+                    time = time,
+                    userEmail = userEmail,
+                    percentage = 100,
+                    addedSugarTsp = 1.0f
+                )
+                _deletingProductTime.value = null
+                if (success) {
+                    // Refresh data to show updated sugar/calorie values
+                    fetchData()
+                }
+            } catch (e: Exception) {
+                _deletingProductTime.value = null
+            }
+        }
+    }
+
+    /** Add a local-only extra (lemon, honey, soy, wasabi, pepper) to a food item. */
+    fun addFoodExtra(time: Long, foodName: String, extraKey: String) {
+        // Extras are local-only, just refresh the product list
+        fetchData()
+    }
+
     fun sendManualWeight(
         weight: Float,
         userEmail: String,

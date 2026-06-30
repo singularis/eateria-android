@@ -44,8 +44,8 @@ object AppTheme {
     @Composable fun textSecondary() = if (isInLightMode()) LightTextSecondary else DarkTextSecondary
     @Composable fun divider() = if (isInLightMode()) LightDivider else DarkDivider
 
-    val cornerRadius = 24.dp
-    val smallRadius = 16.dp
+    val cornerRadius = 20.dp  // Compromise: iOS 16dp, was 24dp
+    val smallRadius = 14.dp    // Compromise: iOS 12dp, was 16dp
     val cardPadding = 16.dp
 
     @Composable

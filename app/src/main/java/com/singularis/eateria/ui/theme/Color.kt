@@ -16,10 +16,10 @@ val MacroCarb = Color(0xFF3399FF) // (0.2, 0.6, 1.0)
 val MacroFiber = SuccessColor
 
 val LightSurface = Color.White.copy(alpha = 0.9f)
-val DarkSurface = Color(0xFF1C1C1E).copy(alpha = 0.95f)
+val DarkSurface = Color(0xFF262630).copy(alpha = 0.95f) // iOS: (0.15, 0.15, 0.18)
 
 val LightSurfaceVariant = Color.White.copy(alpha = 0.7f)
-val DarkSurfaceVariant = Color(0xFF2C2C2E).copy(alpha = 0.8f)
+val DarkSurfaceVariant = Color(0xFF1F1F26).copy(alpha = 0.8f) // iOS: (0.12, 0.12, 0.15)
 
 val LightTextPrimary = Color(0xFF1A1A1A)
 val DarkTextPrimary = Color.White
@@ -29,10 +29,10 @@ val DarkTextSecondary = Color(0xFFB3B3B3)
 val LightDivider = Color.Black.copy(alpha = 0.12f)
 val DarkDivider = Color.White.copy(alpha = 0.15f)
 
-val LightBgStart = Color(0xFFF2F2F7) // Neutral Light Gray
-val LightBgEnd = Color(0xFFFFFFFF) // White
-val DarkBgStart = Color(0xFF000000) // OLED Black
-val DarkBgEnd = Color(0xFF121212) // Deep Gray
+val LightBgStart = Color(0xFFFAFAFF) // iOS: (0.98, 0.98, 1.0)
+val LightBgEnd = Color(0xFFE6F0FF)   // iOS: (0.9, 0.95, 1.0)
+val DarkBgStart = Color(0xFF0D0D14)  // iOS: (0.05, 0.05, 0.08)
+val DarkBgEnd = Color(0xFF141A26)    // iOS: (0.08, 0.1, 0.15)
 
 val LightBtnStart = Color(0xFF007AFF) // Premium Blue
 val LightBtnEnd = Color(0xFF5856D6) // Indigo

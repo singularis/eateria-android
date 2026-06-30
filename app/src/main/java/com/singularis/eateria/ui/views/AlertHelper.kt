@@ -1,5 +1,10 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -8,9 +13,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
@@ -169,5 +181,116 @@ object AlertHelper {
         onDismiss: () -> Unit,
     ) {
         SimpleAlert(title, message, isVisible, onDismiss, haptic = HapticKind.SUCCESS)
+    }
+
+    /**
+     * Full-screen celebration overlay with confetti animation.
+     * Matches iOS AlertHelper.showCelebration().
+     */
+    @Composable
+    fun CelebrationOverlay(
+        title: String,
+        message: String,
+        isVisible: Boolean,
+        onDismiss: () -> Unit,
+    ) {
+        if (!isVisible) return
+
+        LaunchedEffect(Unit) {
+            HapticsService.getInstance().success()
+        }
+
+        val confettiColors = listOf(
+            Color(0xFFFF6B6B), Color(0xFF4ECDC4), Color(0xFF45B7D1),
+            Color(0xFFFFA07A), Color(0xFF98D8C8), Color(0xFFF7DC6F),
+            Color(0xFFBB8FCE), Color(0xFF85C1E9)
+        )
+
+        data class ConfettiParticle(
+            val x: Float, val y: Float,
+            val vx: Float, val vy: Float,
+            val color: Color, val size: Float,
+            val rotation: Float
+        )
+
+        var particles by remember {
+            mutableStateOf(
+                (0 until 80).map {
+                    ConfettiParticle(
+                        x = (Math.random() * 1000).toFloat(),
+                        y = -(Math.random() * 400).toFloat(),
+                        vx = ((Math.random() - 0.5) * 6).toFloat(),
+                        vy = ((Math.random() * 4) + 2).toFloat(),
+                        color = confettiColors.random(),
+                        size = ((Math.random() * 8) + 4).toFloat(),
+                        rotation = (Math.random() * 360).toFloat()
+                    )
+                }
+            )
+        }
+
+        val animProgress = remember { androidx.compose.animation.core.Animatable(0f) }
+
+        LaunchedEffect(Unit) {
+            animProgress.animateTo(
+                1f,
+                animationSpec = androidx.compose.animation.core.tween(3000)
+            )
+        }
+
+        // Auto-dismiss after 3 seconds
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(3000)
+            onDismiss()
+        }
+
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = onDismiss,
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            androidx.compose.foundation.layout.Box(
+                modifier = androidx.compose.ui.Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable { onDismiss() },
+                contentAlignment = Alignment.Center
+            ) {
+                // Confetti Canvas
+                androidx.compose.foundation.Canvas(
+                    modifier = androidx.compose.ui.Modifier.fillMaxSize()
+                ) {
+                    val progress = animProgress.value
+                    particles.forEach { p ->
+                        val currentX = p.x + p.vx * progress * 200
+                        val currentY = p.y + p.vy * progress * 300
+                        drawCircle(
+                            color = p.color.copy(alpha = 1f - progress * 0.7f),
+                            radius = p.size,
+                            center = androidx.compose.ui.geometry.Offset(currentX, currentY)
+                        )
+                    }
+                }
+
+                // Center content
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White,
+                    )
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White.copy(alpha = 0.9f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                }
+            }
+        }
     }
 }

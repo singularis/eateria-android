@@ -268,6 +268,7 @@ fun ContentView(
                         products = products,
                         isViewingCustomDate = isViewingCustomDate,
                         currentViewingDateString = currentViewingDateString,
+                        softLimit = softLimit,
                     )
                     Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 }
@@ -304,16 +305,17 @@ fun ContentView(
                                 fullScreenPhotoData = Pair(imageToShow, foodName)
                             },
                             onTryAgain = { time, foodName ->
+                                // TODO: Wire try manual flow
                                 android.widget.Toast.makeText(context, "Try Manual: $foodName", android.widget.Toast.LENGTH_SHORT).show()
                             },
                             onAddSugar = { time, foodName ->
-                                android.widget.Toast.makeText(context, "Add Sugar: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                                viewModel.addSugarToProduct(time, foodName)
                             },
                             onAddDrinkExtra = { time, foodName, extra ->
-                                android.widget.Toast.makeText(context, "Add $extra: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                                viewModel.addFoodExtra(time, foodName, extra)
                             },
                             onAddFoodExtra = { time, foodName, extra ->
-                                android.widget.Toast.makeText(context, "Add $extra: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                                viewModel.addFoodExtra(time, foodName, extra)
                             },
                             onShare = { time, foodName ->
                                 showShareFoodDialog = Pair(time, foodName)

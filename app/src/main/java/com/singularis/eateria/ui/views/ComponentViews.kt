@@ -115,7 +115,10 @@ import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
+import com.singularis.eateria.ui.theme.PrimaryButton
 import com.singularis.eateria.ui.theme.cardContainer
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
@@ -500,72 +503,199 @@ fun MacrosSummaryRow(
     products: List<Product>,
     isViewingCustomDate: Boolean,
     currentViewingDateString: String,
+    softLimit: Int = 1900,
 ) {
     val context = LocalContext.current
-    var summaryText by remember { mutableStateOf("") }
-    var hasData by remember { mutableStateOf(true) }
+    var proteins by remember { mutableStateOf(0.0) }
+    var fats by remember { mutableStateOf(0.0) }
+    var carbs by remember { mutableStateOf(0.0) }
+    var sugar by remember { mutableStateOf(0.0) }
+    var hasData by remember { mutableStateOf(false) }
+    var showMacroTargets by remember { mutableStateOf(false) }
 
     // Recompute macros whenever products change or date context changes
     LaunchedEffect(products, isViewingCustomDate, currentViewingDateString) {
         val statsService = StatisticsService.getInstance(context)
         val stats =
             if (isViewingCustomDate && currentViewingDateString.isNotBlank()) {
-                // Force refresh so macros reflect the latest backend protobuf after food refresh
                 statsService.getStatisticsForDate(currentViewingDateString, forceRefresh = true)
             } else {
-                // Force refresh so macros reflect the latest backend protobuf after food refresh
                 statsService.getTodayStatistics(forceRefresh = true)
             }
         if (stats != null) {
-            val proteins = stats.proteins
-            val fats = stats.fats
-            val carbs = stats.carbohydrates
-            val sugar = stats.sugar
-            val proPart = "${Localization.tr(
-                context,
-                "macro.pro",
-                "PRO",
-            )} ${"%.1f".format(proteins)}${Localization.tr(context, "units.g", "g")}"
-            val fatPart = "${Localization.tr(
-                context,
-                "macro.fat",
-                "FAT",
-            )} ${"%.1f".format(fats)}${Localization.tr(context, "units.g", "g")}"
-            val carbPart = "${Localization.tr(
-                context,
-                "macro.car",
-                "CAR",
-            )} ${"%.1f".format(carbs)}${Localization.tr(context, "units.g", "g")}"
-            val sugPart = "${Localization.tr(
-                context,
-                "macro.sug",
-                "SUG",
-            )} ${"%.1f".format(sugar)}${Localization.tr(context, "units.g", "g")}"
-            summaryText = "$proPart • $fatPart • $carbPart • $sugPart"
-            hasData = true
+            proteins = stats.proteins
+            fats = stats.fats
+            carbs = stats.carbohydrates
+            sugar = stats.sugar
+            hasData = (proteins + fats + carbs + sugar) > 0
         } else {
-            summaryText = Localization.tr(context, "macro.no_data", "No macros yet")
+            proteins = 0.0; fats = 0.0; carbs = 0.0; sugar = 0.0
             hasData = false
         }
     }
-    
-    val summaryColor = if (hasData) AppTheme.textPrimary() else AppTheme.textSecondary()
+
+    // Macro targets from daily kcal (matching iOS formula)
+    val targets = macroTargetsFromDailyKcal(softLimit)
+    fun fmt(v: Double) = "%.1f".format(v)
+    val grams = Localization.tr(context, "units.g", "g")
+    val proLabel = Localization.tr(context, "macro.pro", "PRO")
+    val fatLabel = Localization.tr(context, "macro.fat", "FAT")
+    val carLabel = Localization.tr(context, "macro.car", "CAR")
+    val sugLabel = Localization.tr(context, "macro.sug", "SUG")
+
+    // Color logic matching iOS exactly
+    val proteinLower = targets.protein * 0.8
+    val fatLower = targets.fat * 0.8
+    val fatUpper = targets.fat * 1.2
+    val carbLower = targets.carbs * 0.8
+    val sugarLower = 40.0
+    val sugarUpper = 50.0
+
+    val proColor = if (proteins >= proteinLower) AppTheme.success() else AppTheme.warning()
+    val fatColor = when {
+        fats < fatLower -> AppTheme.warning()
+        fats <= fatUpper -> AppTheme.success()
+        else -> AppTheme.danger()
+    }
+    val carColor = if (carbs >= carbLower) AppTheme.success() else AppTheme.warning()
+    val sugColor = when {
+        sugar < sugarLower -> AppTheme.warning()
+        sugar <= sugarUpper -> AppTheme.success()
+        else -> AppTheme.danger()
+    }
+
+    val dotColor = AppTheme.textSecondary()
+
+    if (!hasData) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(Dimensions.cornerRadiusM))
+                .background(AppTheme.surfaceAlt())
+                .padding(vertical = Dimensions.paddingS),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = Localization.tr(context, "macro.no_data", "No macros yet"),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppTheme.textSecondary(),
+                textAlign = TextAlign.Center,
+            )
+        }
+        return
+    }
 
     Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(Dimensions.cornerRadiusM))
-                    .background(AppTheme.surfaceAlt())
-                    .padding(vertical = Dimensions.paddingS),
-            contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(AppTheme.cornerRadius))
+            .background(AppTheme.surface())
+            .clickable {
+                HapticsService.getInstance().select()
+                showMacroTargets = true
+            }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = summaryText,
-            style = MaterialTheme.typography.bodySmall,
-            color = summaryColor,
-            textAlign = TextAlign.Center,
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("$proLabel ${fmt(proteins)}$grams", color = proColor,
+                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                maxLines = 1)
+            Text(" • ", color = dotColor, fontSize = 14.sp)
+            Text("$fatLabel ${fmt(fats)}$grams", color = fatColor,
+                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                maxLines = 1)
+            Text(" • ", color = dotColor, fontSize = 14.sp)
+            Text("$carLabel ${fmt(carbs)}$grams", color = carColor,
+                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                maxLines = 1)
+            Text(" • ", color = dotColor, fontSize = 14.sp)
+            Text("$sugLabel ${fmt(sugar)}$grams", color = sugColor,
+                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                maxLines = 1)
+        }
+    }
+
+    if (showMacroTargets) {
+        MacroTargetsSheet(
+            softLimit = softLimit,
+            onDismiss = { showMacroTargets = false }
         )
+    }
+}
+
+/** Daily macro targets (g) from calorie target: protein 20%, fat 30%, carbs 50%, sugar max 40g. */
+private data class MacroTargets(val protein: Double, val fat: Double, val carbs: Double, val sugarMax: Double)
+
+private fun macroTargetsFromDailyKcal(kcal: Int): MacroTargets {
+    if (kcal <= 0) return MacroTargets(80.0, 53.0, 200.0, 40.0)
+    val k = kcal.toDouble()
+    val protein = (k * 0.20) / 4.0
+    val fat = (k * 0.30) / 9.0
+    val carbs = (k * 0.50) / 4.0
+    return MacroTargets(protein, fat, carbs, 40.0)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MacroTargetsSheet(
+    softLimit: Int,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val targets = macroTargetsFromDailyKcal(softLimit)
+    fun fmt(v: Double) = "%.1f".format(v)
+    val grams = Localization.tr(context, "units.g", "g")
+    val proLabel = Localization.tr(context, "macro.pro", "PRO")
+    val fatLabel = Localization.tr(context, "macro.fat", "FAT")
+    val carLabel = Localization.tr(context, "macro.car", "CAR")
+    val sugLabel = Localization.tr(context, "macro.sug", "SUG")
+    val macroGreenPurple = Color(0xFF388E8E) // ~(0.22, 0.55, 0.6)
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = AppTheme.surface(),
+        contentColor = AppTheme.textPrimary(),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = Localization.tr(context, "macro.targets.alert.title", "Macro goals"),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = macroGreenPurple,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("$proLabel ${fmt(targets.protein)}$grams", color = macroGreenPurple)
+            Text("$fatLabel ${fmt(targets.fat)}$grams", color = macroGreenPurple)
+            Text("$carLabel ${fmt(targets.carbs)}$grams", color = macroGreenPurple)
+            Text("$sugLabel 40–50$grams", color = macroGreenPurple)
+            Spacer(modifier = Modifier.height(8.dp))
+            PrimaryButton(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    Localization.tr(context, "common.ok", "OK"),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }
 

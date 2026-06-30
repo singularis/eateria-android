@@ -26,6 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.materialPress
+import com.singularis.eateria.services.GRPCService
+import com.singularis.eateria.services.HapticsService
+import com.singularis.eateria.services.Localization
+import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -68,9 +72,26 @@ fun ActivitiesView(
     var showChessWinnerSheet by remember { mutableStateOf(false) }
     var showChessHistory by remember { mutableStateOf(false) }
     var showStatistics by remember { mutableStateOf(false) }
+    var showOpponentPicker by remember { mutableStateOf(false) }
     var selectedActivityType by remember { mutableStateOf<ActivityType?>(null) }
     var inputValue by remember { mutableStateOf("") }
-    
+    var pendingGameResult by remember { mutableStateOf("") }
+    var summaryTotalCalories by remember { mutableIntStateOf(0) }
+    var summaryActivityTypes by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    val grpcService = remember { GRPCService(context) }
+
+    // Load activity summary on appear
+    LaunchedEffect(dateISO) {
+        try {
+            val (totalCal, types) = grpcService.getActivitySummary(dateISO)
+            summaryTotalCalories = totalCal
+            summaryActivityTypes = types
+        } catch (_: Exception) { }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -107,8 +128,8 @@ fun ActivitiesView(
                     .verticalScroll(scrollState)
                     .padding(horizontal = 16.dp)
             ) {
-                // Burned Calories Card (Placeholder)
-                BurnedCaloriesCard(dateISO = dateISO, totalCalories = 0)
+                // Burned Calories Card
+                BurnedCaloriesCard(dateISO = dateISO, totalCalories = summaryTotalCalories)
                 
                 Spacer(modifier = Modifier.height(20.dp))
                 HorizontalDivider(color = AppTheme.surfaceAlt())
@@ -148,8 +169,28 @@ fun ActivitiesView(
                     inputValue = inputValue,
                     onValueChange = { inputValue = it },
                     onSubmit = {
-                        // Submit logic placeholder
+                        val type = selectedActivityType ?: return@ActivityInputSheet
+                        val value = inputValue.toIntOrNull() ?: return@ActivityInputSheet
+                        val key = activityTypeKey(type)
+                        val calories = calculateActivityCalories(type, value)
+                        // Optimistically update UI
+                        summaryTotalCalories += calories
+                        if (key !in summaryActivityTypes) {
+                            summaryActivityTypes = summaryActivityTypes + key
+                        }
                         showInputSheet = false
+                        // Call GRPC in background
+                        scope.launch {
+                            try {
+                                grpcService.logActivity(
+                                    activityType = key,
+                                    value = value,
+                                    calories = calories,
+                                    dateISO = dateISO
+                                )
+                            } catch (_: Exception) { }
+                        }
+                        HapticsService.getInstance().success()
                     },
                     onDismiss = { showInputSheet = false }
                 )
@@ -198,12 +239,35 @@ fun ActivitiesView(
             ) {
                 ChessWinnerSheet(
                     onWinnerSelected = { winner ->
+                        pendingGameResult = winner
                         showChessWinnerSheet = false
-                        // TODO: Open opponent picker
+                        showOpponentPicker = true
                     },
                     onDismiss = { showChessWinnerSheet = false }
                 )
             }
+        }
+
+        // Opponent Picker
+        if (showOpponentPicker) {
+            ChessOpponentPickerView(
+                onOpponentSelected = { opponentNickname, opponentEmail ->
+                    showOpponentPicker = false
+                    // Record chess game with opponent via GRPC
+                    scope.launch {
+                        try {
+                            grpcService.logActivity(
+                                activityType = "chess",
+                                value = 1,
+                                calories = 0,
+                                dateISO = dateISO
+                            )
+                        } catch (_: Exception) { }
+                    }
+                    HapticsService.getInstance().success()
+                },
+                onDismiss = { showOpponentPicker = false }
+            )
         }
 
         // Chess History Sheet
@@ -529,5 +593,34 @@ private fun WinnerButton(title: String, icon: String, color: Color, modifier: Mo
             Text(icon, fontSize = 40.sp)
             Text(title, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
         }
+    }
+}
+
+/** Maps ActivityType enum to backend string key (matching iOS activityTypeKey). */
+private fun activityTypeKey(type: ActivityType): String = when (type) {
+    ActivityType.GYM -> "gym"
+    ActivityType.STEPS -> "steps"
+    ActivityType.TREADMILL -> "treadmill"
+    ActivityType.ELLIPTICAL -> "elliptical"
+    ActivityType.YOGA -> "yoga"
+    ActivityType.CHESS -> "chess"
+}
+
+/** Calculates calories burned for an activity (matching iOS calculateGymCalories etc.). */
+private fun calculateActivityCalories(type: ActivityType, value: Int): Int {
+    return when (type) {
+        ActivityType.GYM -> {
+            // MET 5.0 for moderate gym, default 70kg body weight
+            val weightKg = 70.0
+            val met = 5.0
+            val hours = value / 60.0
+            (met * weightKg * hours).toInt()
+        }
+        ActivityType.STEPS -> {
+            // ~0.04 calories per step (average)
+            (value * 0.04).toInt()
+        }
+        // For treadmill, elliptical, yoga: user enters calories directly
+        else -> value
     }
 }

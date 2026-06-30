@@ -507,16 +507,19 @@ class GRPCService(
         time: Long,
         userEmail: String,
         percentage: Int,
+        addedSugarTsp: Float = 0f,
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                val request =
-                    ModifyFoodRecord.ModifyFoodRecordRequest
+                val builder = ModifyFoodRecord.ModifyFoodRecordRequest
                         .newBuilder()
                         .setTime(time)
                         .setUserEmail(userEmail)
                         .setPercentage(percentage)
-                        .build()
+                if (addedSugarTsp > 0f) {
+                    builder.setAddedSugarTsp(addedSugarTsp)
+                }
+                val request = builder.build()
 
                 val response = sendRequest("modify_food_record", "POST", request.toByteArray())
 

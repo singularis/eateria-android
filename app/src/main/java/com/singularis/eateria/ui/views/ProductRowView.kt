@@ -253,6 +253,16 @@ fun ProductCard(
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
                         )
+                    } else if (product.needsRemoteFetch(context)) {
+                        Icon(
+                            imageVector = AppIcons.Actions.download,
+                            contentDescription = Localization.tr(LocalContext.current, "fs.downloading_photo", "Downloading photo"),
+                            tint = AppTheme.textSecondary(),
+                            modifier =
+                                Modifier
+                                    .size(Dimensions.iconSizeM)
+                                    .align(Alignment.Center),
+                        )
                     } else {
                         Icon(
                             imageVector = AppIcons.Media.photoLibrary,
@@ -313,13 +323,13 @@ fun ProductCard(
 
                     // Extras icons
                     val extrasIconsText = buildString {
-                        if (product.extras["lemon_5g"] != null) append("🍋 ")
-                        if (product.extras["honey_10g"] != null) append("🍯 ")
-                        if (product.extras["milk_50g"] != null) append("🥛 ")
-                        if (product.extras["soy_sauce_15g"] != null) append("🥢 ")
-                        if (product.extras["wasabi_3g"] != null) append("🌿 ")
-                        if (product.extras["spicy_pepper_5g"] != null) append("🌶 ")
-                    }.trim()
+                        product.extras["lemon_5g"]?.let { count -> repeat(count) { append("🍋") } }
+                        product.extras["honey_10g"]?.let { count -> repeat(count) { append("🍯") } }
+                        product.extras["milk_50g"]?.let { count -> repeat(count) { append("🥛") } }
+                        product.extras["soy_sauce_15g"]?.let { count -> repeat(count) { append("🥢") } }
+                        product.extras["wasabi_3g"]?.let { count -> repeat(count) { append("🌿") } }
+                        product.extras["spicy_pepper_5g"]?.let { count -> repeat(count) { append("🌶") } }
+                    }
 
                     val hasExtras = extrasIconsText.isNotEmpty() || product.addedSugarTsp > 0
                     if (hasExtras) {
@@ -338,8 +348,10 @@ fun ProductCard(
                                 )
                             }
                             if (product.addedSugarTsp > 0) {
+                                val cubeCount = product.addedSugarTsp.toInt().coerceAtLeast(1)
+                                val cubes = buildString { repeat(cubeCount) { append("🧊") } }
                                 Text(
-                                    text = "🧊",
+                                    text = cubes,
                                     color = AppTheme.textSecondary(),
                                     style = MaterialTheme.typography.labelSmall,
                                 )

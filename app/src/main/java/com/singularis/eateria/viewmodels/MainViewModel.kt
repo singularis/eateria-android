@@ -828,6 +828,8 @@ class MainViewModel(
     }
 
     fun getRecommendation(days: Int) {
+        if (_isLoadingRecommendation.value) return
+        
         viewModelScope.launch {
             _isLoadingRecommendation.value = true
             try {
@@ -1053,6 +1055,7 @@ class MainViewModel(
 
     fun hideRecommendationAlert() {
         _showRecommendationAlert.value = false
+        _isLoadingRecommendation.value = false
     }
 
     fun showPhotoErrorAlert(

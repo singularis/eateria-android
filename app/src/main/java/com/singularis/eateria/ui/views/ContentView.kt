@@ -472,26 +472,23 @@ fun ContentView(
                                 val email = userEmail ?: ""
                                 showTryManualDialog = null
                                 coroutineScope.launch {
-                                    val grpc = GRPCService(context)
-                                    val success = grpc.modifyFoodRecord(
+                                    viewModel.updateFoodManually(
                                         time = time,
                                         userEmail = email,
-                                        percentage = 100,
-                                        isTryManually = true,
                                         imageId = imageId,
                                         manualFoodName = trimmed,
+                                        onSuccess = {
+                                            HapticsService.getInstance().success()
+                                        },
+                                        onError = {
+                                            HapticsService.getInstance().error()
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                Localization.tr(context, "manual_food.error", "Failed to update. Please try again."),
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     )
-                                    if (success) {
-                                        HapticsService.getInstance().success()
-                                        viewModel.returnToToday()
-                                    } else {
-                                        HapticsService.getInstance().error()
-                                        android.widget.Toast.makeText(
-                                            context,
-                                            Localization.tr(context, "manual_food.error", "Failed to update. Please try again."),
-                                            android.widget.Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
                                 }
                             }
                         ) {

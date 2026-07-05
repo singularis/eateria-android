@@ -659,16 +659,52 @@ class MainViewModel(
         percentage: Int,
     ) {
         viewModelScope.launch {
+            _isLoadingData.value = true
             try {
                 val success = grpcService.modifyFoodRecord(time, userEmail, percentage)
                 if (success) {
                     _modifiedProductTime.value = time
-                    fetchData() // Refresh data after modification
+                    fetchDataWithLoading(forceRefresh = true) // Refresh data after modification
                 } else {
                     // Handle failure (e.g., show an error message)
+                    _isLoadingData.value = false
                 }
             } catch (e: Exception) {
                 // Handle exception
+                _isLoadingData.value = false
+            }
+        }
+    }
+
+    fun updateFoodManually(
+        time: Long,
+        userEmail: String,
+        imageId: String,
+        manualFoodName: String,
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) {
+        viewModelScope.launch {
+            _isLoadingData.value = true
+            try {
+                val success = grpcService.modifyFoodRecord(
+                    time = time,
+                    userEmail = userEmail,
+                    percentage = 100,
+                    isTryManually = true,
+                    imageId = imageId,
+                    manualFoodName = manualFoodName,
+                )
+                if (success) {
+                    onSuccess()
+                    returnToToday(forceRefresh = true)
+                } else {
+                    onError()
+                    _isLoadingData.value = false
+                }
+            } catch (e: Exception) {
+                onError()
+                _isLoadingData.value = false
             }
         }
     }

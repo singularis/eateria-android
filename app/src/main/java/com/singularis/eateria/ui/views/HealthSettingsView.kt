@@ -375,7 +375,7 @@ fun HealthSettingsView(
             containerColor = Color.Transparent
         ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).imePadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (showResults) {

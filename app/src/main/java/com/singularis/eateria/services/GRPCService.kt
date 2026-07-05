@@ -508,6 +508,9 @@ class GRPCService(
         userEmail: String,
         percentage: Int,
         addedSugarTsp: Float = 0f,
+        isTryManually: Boolean = false,
+        manualFoodName: String = "",
+        imageId: String = "",
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
@@ -518,6 +521,15 @@ class GRPCService(
                         .setPercentage(percentage)
                 if (addedSugarTsp > 0f) {
                     builder.setAddedSugarTsp(addedSugarTsp)
+                }
+                if (isTryManually) {
+                    builder.setIsTryManually(true)
+                    if (manualFoodName.isNotEmpty()) {
+                        builder.setManualFoodName(manualFoodName)
+                    }
+                    if (imageId.isNotEmpty()) {
+                        builder.setImageId(imageId)
+                    }
                 }
                 val request = builder.build()
 

@@ -439,8 +439,8 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         Button(
                             onClick = { showSignOutDialog = true },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = AppTheme.textPrimary(),
-                                contentColor = Color(0xFF6B000D)
+                                containerColor = AppTheme.surfaceAlt(),
+                                contentColor = AppTheme.danger()
                             ),
                             shape = RoundedCornerShape(25.dp),
                             modifier = Modifier.fillMaxWidth().height(50.dp)
@@ -529,7 +529,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             }
                         },
                     ) {
-                        Text(Localization.tr(LocalContext.current, "profile.logout"), color = CalorieYellow)
+                        Text(Localization.tr(LocalContext.current, "profile.logout"), color = AppTheme.danger())
                     }
                 },
                 dismissButton = {

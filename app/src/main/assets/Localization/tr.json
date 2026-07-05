@@ -578,7 +578,7 @@
   "rec.sources": "Veri Kaynakları",
   "rec.src.guidelines": "• Amerikalılar İçin Beslenme Kılavuzları",
   "rec.src.research": "• Kanıta dayalı beslenme araştırması",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "Kişiselleştirilmiş Öneriniz",
   "rec.title": "Sağlık Önerisi",
   "search.connected_authenticating": "Bağlandı. Kimlik doğrulanıyor...",
@@ -694,5 +694,12 @@
   "error.network.generic": "Özür dileriz. Ağ bağlantısı sorunu var. Lütfen daha sonra tekrar deneyin.",
   "common.apply": "Uygula",
   "portion.custom.manual_placeholder": "örn. 146.4",
-  "portion.updated.msg.grams": "'%@' başarıyla %g g olarak güncellendi."
+  "portion.updated.msg.grams": "'%@' başarıyla %g g olarak güncellendi.",
+  "login.let_me_try": "Denemek İstiyorum",
+  "login.try_description": "Cihazlar arası paylaşım özelliklerini kullanmak için daha sonra kimlik doğrulaması yapabilirsiniz.",
+  "login.scan_prompt_title": "Tüm Özelliklerin Kilidini Açın",
+  "login.scan_prompt_message": "Hazırsanız veya geçmiş yiyecekleri kurtarmak istiyorsanız lütfen Google'a giriş yapın.",
+  "activities.burned.sources": "Kaynak:",
+  "login.tagline": "Yemeklerinizi AI ile takip edin. Fotoğraf çekin ve anında beslenme bilgileri alın.",
+  "onboarding.tap_to_learn": " Her kartı daha fazla öğrenmek için dokunun"
 }

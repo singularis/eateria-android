@@ -73,6 +73,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -145,7 +146,14 @@ fun ProductCard(
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
+    var showHealthInfoDialog by remember { mutableStateOf(false) }
+    var healthInfoTitle by remember { mutableStateOf("") }
+    var healthInfoDescription by remember { mutableStateOf("") }
+    var healthInfoSummary by remember { mutableStateOf("") }
+    var isLoadingHealth by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val grpcService = remember { com.singularis.eateria.services.GRPCService(context) }
 
     val state =
         rememberSwipeToDismissBoxState(
@@ -354,7 +362,33 @@ fun ProductCard(
                     HealthRatingRing(
                         rating = product.effectiveHealthRating,
                         color = getHealthRatingColor(rating = product.effectiveHealthRating),
-                        modifier = Modifier.padding(end = Dimensions.paddingM)
+                        modifier = Modifier
+                            .padding(end = Dimensions.paddingM)
+                            .clickable {
+                                HapticsService.getInstance().select()
+                                if (healthInfoTitle.isNotEmpty()) {
+                                    // Cached — show immediately
+                                    showHealthInfoDialog = true
+                                    return@clickable
+                                }
+                                // Fetch from GRPC
+                                isLoadingHealth = true
+                                coroutineScope.launch {
+                                    try {
+                                        val response = grpcService.getFoodHealthLevel(
+                                            time = product.time,
+                                            foodName = product.name
+                                        )
+                                        if (response != null) {
+                                            healthInfoTitle = response.title
+                                            healthInfoDescription = response.description
+                                            healthInfoSummary = response.healthSummary
+                                            showHealthInfoDialog = true
+                                        }
+                                    } catch (_: Exception) { }
+                                    isLoadingHealth = false
+                                }
+                            }
                     )
                 }
             }
@@ -402,6 +436,16 @@ fun ProductCard(
                     state.reset()
                 }
             },
+        )
+    }
+
+    // Health Level Info Dialog
+    if (showHealthInfoDialog) {
+        HealthLevelInfoDialog(
+            title = healthInfoTitle,
+            description = healthInfoDescription,
+            healthSummaryJson = healthInfoSummary,
+            onDismiss = { showHealthInfoDialog = false }
         )
     }
 }
@@ -574,7 +618,7 @@ fun PortionSelectionDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.7f)
+                    .fillMaxHeight(0.85f)
             ) {
                 // Header section (non-scrolling)
                 Column(
@@ -665,6 +709,57 @@ fun PortionSelectionDialog(
                     contentPadding = PaddingValues(horizontal = Dimensions.paddingL, vertical = Dimensions.paddingM)
                 ) {
                         if (showCustomSelection) {
+                            // Manual gram input (matches iOS)
+                            item {
+                                var manualGrams by remember { mutableStateOf("") }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    OutlinedTextField(
+                                        value = manualGrams,
+                                        onValueChange = { manualGrams = it },
+                                        placeholder = {
+                                            Text(
+                                                Localization.tr(LocalContext.current, "portion.custom.manual_placeholder", "e.g. 146.4"),
+                                                style = MaterialTheme.typography.bodySmall,
+                                            )
+                                        },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f),
+                                        textStyle = MaterialTheme.typography.bodyMedium,
+                                    )
+                                    Button(
+                                        onClick = {
+                                            val grams = manualGrams.replace(",", ".").toDoubleOrNull()
+                                            if (grams != null && grams > 0 && originalWeight > 0) {
+                                                val pct = ((grams / originalWeight) * 100).toInt().coerceIn(1, 1000)
+                                                HapticsService.getInstance().select()
+                                                selectedPortionPercentage = pct
+                                                onPortionSelected(pct)
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = AppTheme.accent(),
+                                            contentColor = Color.White,
+                                        ),
+                                        shape = RoundedCornerShape(Dimensions.cornerRadiusS),
+                                    ) {
+                                        Text(
+                                            Localization.tr(LocalContext.current, "common.apply", "Apply"),
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                }
+                            }
+                            item {
+                                HorizontalDivider(
+                                    color = AppTheme.textSecondary().copy(alpha = 0.15f),
+                                    thickness = 0.5.dp,
+                                )
+                            }
                             // Show custom percentages from 10% to 300% in 10% increments
                             items((10..300 step 10).toList()) { percentage ->
                                 val calculatedWeight = originalWeight * percentage / 100
@@ -806,7 +901,7 @@ fun PortionSelectionDialog(
                                             )})"
                                         }
                                     Text(
-                                        text = localizedDescription,
+                                        text = localizedDescription.replace("%%", "%"),
                                         style = MaterialTheme.typography.bodySmall,
                                         textAlign = TextAlign.Center,
                                     )
@@ -1043,3 +1138,163 @@ private fun runDiagnostic(context: Context, product: Product) {
     ).show()
 }
 
+/**
+ * Dialog showing food health analysis — matches iOS AlertHelper.showHealthLevelInfo().
+ * Parses JSON health_summary into ingredient-level cards with color-coded risks/benefits.
+ */
+@Composable
+private fun HealthLevelInfoDialog(
+    title: String,
+    description: String,
+    healthSummaryJson: String,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val displayTitle = AlertHelper.translateHealthText(context, title)
+    val displayDescription = AlertHelper.translateHealthText(context, description)
+
+    // Parse healthSummary JSON
+    data class HealthItem(
+        val ingredient: String?,
+        val ingredients: String?,
+        val description: String?,
+        val risk: String?,
+        val benefit: String?,
+        val impact: String?,
+        val impact_text: String?,
+    )
+
+    val items = remember(healthSummaryJson) {
+        try {
+            val arr = org.json.JSONArray(healthSummaryJson)
+            (0 until arr.length()).map { i ->
+                val obj = arr.getJSONObject(i)
+                HealthItem(
+                    ingredient = obj.optString("ingredient", null),
+                    ingredients = obj.optString("ingredients", null),
+                    description = obj.optString("description", null),
+                    risk = obj.optString("risk", null),
+                    benefit = obj.optString("benefit", null),
+                    impact = obj.optString("impact", null),
+                    impact_text = obj.optString("impact_text", null),
+                )
+            }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = displayTitle,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.textPrimary(),
+            )
+        },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 400.dp),
+                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+            ) {
+                // Description
+                if (displayDescription.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = displayDescription,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AppTheme.textSecondary(),
+                        )
+                    }
+                }
+
+                // Health summary items
+                if (items.isNotEmpty()) {
+                    item { Spacer(modifier = Modifier.height(4.dp)) }
+                    items(items) { item ->
+                        Column(
+                            modifier = Modifier.padding(bottom = Dimensions.paddingXS)
+                        ) {
+                            // Ingredient name
+                            val name = item.ingredient ?: item.ingredients ?: ""
+                            if (name.isNotEmpty()) {
+                                Text(
+                                    text = AlertHelper.translateHealthText(context, name),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppTheme.textPrimary(),
+                                )
+                            }
+
+                            // Impact / risk / benefit
+                            val impactText = item.impact_text ?: item.risk ?: item.benefit ?: ""
+                            if (impactText.isNotEmpty()) {
+                                val isRisk = (item.impact?.lowercase()?.contains("risk") == true) || item.risk != null
+                                Text(
+                                    text = AlertHelper.translateHealthText(context, impactText),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (isRisk) Color(0xFFFF9800) else Color(0xFF4CAF50),
+                                )
+                            }
+
+                            // Description
+                            val desc = item.description ?: ""
+                            if (desc.isNotEmpty()) {
+                                Text(
+                                    text = AlertHelper.translateHealthText(context, desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = AppTheme.textSecondary(),
+                                )
+                            }
+                        }
+                    }
+                } else if (healthSummaryJson.isNotEmpty()) {
+                    // Fallback: show raw text if not JSON
+                    item {
+                        Text(
+                            text = healthSummaryJson,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AppTheme.textSecondary(),
+                        )
+                    }
+                }
+
+                // Health disclaimer
+                item {
+                    Spacer(modifier = Modifier.height(Dimensions.paddingM))
+                    Text(
+                        text = Localization.tr(context, "rec.disclaimer.title", "Important Health Disclaimer"),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.textSecondary(),
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = Localization.tr(
+                            context,
+                            "rec.disclaimer.text",
+                            "⚠️ This information is for educational purposes only and should not replace professional medical advice."
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AppTheme.textSecondary().copy(alpha = 0.7f),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                HapticsService.getInstance().select()
+                onDismiss()
+            }) {
+                Text(
+                    Localization.tr(context, "common.ok", "OK"),
+                    color = AppTheme.accent(),
+                )
+            }
+        },
+        containerColor = AppTheme.surface(),
+    )
+}

@@ -304,6 +304,17 @@ fun TopBarView(
             modifier = Modifier.weight(1f)
         ) {
             Spacer(modifier = Modifier.weight(1f))
+            // DEV badge when using dev environment
+            if (com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment) {
+                Text(
+                    text = "DEV",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold, fontSize = 10.sp),
+                    modifier = Modifier
+                        .background(Color.Red, RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
             // Sport button
             Box(
                 modifier = Modifier
@@ -353,8 +364,17 @@ fun TopBarView(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                if (hasFoods) {
                     val surfaceAltColor = AppTheme.surfaceAlt()
+                    // Background ring track
+                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawCircle(
+                            color = healthColor.copy(alpha = 0.25f),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                width = 3.dp.toPx()
+                            )
+                        )
+                    }
+                    // Foreground progress arc
                     androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
                         drawArc(
                             color = healthColor,
@@ -367,23 +387,15 @@ fun TopBarView(
                             )
                         )
                     }
-                } else {
-                    val surfaceAltColor = AppTheme.surfaceAlt()
-                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(
-                            color = surfaceAltColor,
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(
-                                width = 2.dp.toPx()
-                            )
-                        )
-                    }
-                }
-                Icon(
-                    imageVector = AppIcons.Status.info,
-                    contentDescription = Localization.tr(LocalContext.current, "nav.health_settings", "Health Info"),
-                    tint = if (hasFoods) healthColor else AppTheme.textSecondary(),
-                    modifier = Modifier.size(20.dp),
-                )
+                    // Score number (matches iOS)
+                    Text(
+                        text = "$healthScore",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                        ),
+                        color = healthColor,
+                    )
             }
         }
     }

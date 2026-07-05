@@ -47,6 +47,7 @@ data class TokenRequest(
     val email: String,
     val name: String?,
     @SerializedName("profilePictureURL") val profilePictureURL: String?,
+    @SerializedName("previous_anonymous_uuid") val previousAnonymousUuid: String? = null
 )
 
 data class TokenResponse(
@@ -114,6 +115,8 @@ class AuthenticationService(
         private val HARD_LIMIT = stringPreferencesKey("hard_limit")
         private val HAS_USER_HEALTH_DATA = booleanPreferencesKey("has_user_health_data")
         private val DISPLAY_MODE_FULL = booleanPreferencesKey("display_mode_full")
+        private val IS_ANONYMOUS = booleanPreferencesKey("is_anonymous")
+        private val ANONYMOUS_UUID = stringPreferencesKey("anonymous_uuid")
     }
 
     private fun getSportCaloriesKey(dateKey: String): Preferences.Key<String> = stringPreferencesKey("sport_calories_$dateKey")
@@ -147,6 +150,11 @@ class AuthenticationService(
     val isFullDisplayMode: Flow<Boolean> =
         context.dataStore.data.map { preferences ->
             preferences[DISPLAY_MODE_FULL] ?: false
+        }
+
+    val isAnonymous: Flow<Boolean> =
+        context.dataStore.data.map { preferences ->
+            preferences[IS_ANONYMOUS] ?: false
         }
 
     suspend fun setHasSeenOnboarding(seen: Boolean) {
@@ -244,6 +252,40 @@ class AuthenticationService(
         }
     }
 
+    suspend fun signInAnonymously(): Boolean {
+        return try {
+            val uuid = java.util.UUID.randomUUID().toString()
+            val fakeEmail = "anon_$uuid@anonymous.local"
+            
+            val tokenRequest = TokenRequest(
+                provider = "anonymous",
+                idToken = uuid,
+                email = fakeEmail,
+                name = "Guest",
+                profilePictureURL = null
+            )
+
+            val loginUrl = "anonymous_auth"
+            val response = authApi.authenticate(loginUrl, tokenRequest)
+            
+            TokenStore.save(context, response.token)
+            
+            context.dataStore.edit { preferences ->
+                preferences[USER_EMAIL] = response.userEmail
+                preferences[USER_NAME] = response.userName ?: "Guest"
+                if (response.profilePictureURL != null) {
+                    preferences[PROFILE_PICTURE_URL] = response.profilePictureURL
+                }
+                preferences[IS_ANONYMOUS] = true
+                preferences[ANONYMOUS_UUID] = uuid
+            }
+            true
+        } catch (e: Exception) {
+            Log.e("AuthenticationService", "Anonymous sign-in failed", e)
+            false
+        }
+    }
+
     private fun checkGooglePlayServicesAvailability(): Boolean =
         try {
             // Check if we can create credential manager successfully
@@ -333,6 +375,10 @@ class AuthenticationService(
         val name = googleIdTokenCredential.displayName
         val profilePictureURL = googleIdTokenCredential.profilePictureUri?.toString()
 
+        val preferences = context.dataStore.data.first()
+        val isAnon = preferences[IS_ANONYMOUS] == true
+        val prevUuid = if (isAnon) preferences[ANONYMOUS_UUID] else null
+
         val tokenRequest =
             TokenRequest(
                 provider = "google",
@@ -340,6 +386,7 @@ class AuthenticationService(
                 email = email,
                 name = name,
                 profilePictureURL = profilePictureURL,
+                previousAnonymousUuid = prevUuid
             )
 
         try {
@@ -362,6 +409,8 @@ class AuthenticationService(
 
             response.userName?.let { preferences[USER_NAME] = it }
             response.profilePictureURL?.let { preferences[PROFILE_PICTURE_URL] = it }
+            preferences[IS_ANONYMOUS] = false
+            preferences.remove(ANONYMOUS_UUID)
         }
     }
 

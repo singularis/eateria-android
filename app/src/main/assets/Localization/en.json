@@ -497,7 +497,7 @@
   "portion.125": "125%% (%dg) - One and a quarter portion",
   "portion.150": "150%% (%dg) - One and a half portion",
   "portion.200": "200%% (%dg) - Double portion",
-  "portion.25": "portion.25",
+  "portion.25": "25%% (%dg) - Quarter portion",
   "portion.50": "50%% (%dg) - Half portion",
   "portion.75": "75%% (%dg) - Three quarters",
   "portion.add_extra": "Add 1 tsp sugar ☕",
@@ -695,5 +695,14 @@
   "error.network.generic": "We are sorry. Network connection. Please try later.",
   "common.apply": "Apply",
   "portion.custom.manual_placeholder": "e.g. 146.4",
-  "portion.updated.msg.grams": "Successfully updated '%@' to %g g."
+  "portion.updated.msg.grams": "Successfully updated '%@' to %g g.",
+  "manual_food.title": "Fix food name",
+  "manual_food.msg": "Enter the correct dish name. This will replace the current name in your log.",
+  "manual_food.error": "Failed to update. Please try again.",
+  "login.tagline": "Track your meals with AI. Snap a photo and get instant nutrition insights.",
+  "onboarding.tap_to_learn": "👆 Tap each card to learn more",
+  "login.let_me_try": "Let Me Try",
+  "login.try_description": "You can authenticate later to use cross-device share features.",
+  "login.scan_prompt_title": "Unlock All Features",
+  "login.scan_prompt_message": "Please login to Google if you are ready or want to recover past food."
 }

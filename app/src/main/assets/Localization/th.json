@@ -579,7 +579,7 @@
   "rec.sources": "แหล่งข้อมูล",
   "rec.src.guidelines": "• แนวทางโภชนาการสำหรับชาวอเมริกัน",
   "rec.src.research": "• งานวิจัยโภชนาการที่อิงหลักฐาน",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "คำแนะนำส่วนบุคคลของคุณ",
   "rec.title": "คำแนะนำด้านสุขภาพ",
   "search.connected_authenticating": "เชื่อมต่อแล้ว กำลังยืนยันตัวตน...",
@@ -695,5 +695,11 @@
   "error.network.generic": "เราขออภัย มีปัญหาการเชื่อมต่อเครือข่าย โปรดลองอีกครั้งในภายหลัง",
   "common.apply": "นำไปใช้",
   "portion.custom.manual_placeholder": "เช่น 146.4",
-  "portion.updated.msg.grams": "อัปเดต '%@' เป็น %g กรัมเรียบร้อยแล้ว"
+  "portion.updated.msg.grams": "อัปเดต '%@' เป็น %g กรัมเรียบร้อยแล้ว",
+  "login.let_me_try": "ให้ฉันลอง",
+  "login.try_description": "คุณสามารถยืนยันตัวตนภายหลังเพื่อใช้คุณสมบัติการแชร์ข้ามอุปกรณ์",
+  "login.scan_prompt_title": "ปลดล็อกคุณสมบัติทั้งหมด",
+  "login.scan_prompt_message": "กรุณาเข้าสู่ระบบ Google หากคุณพร้อมหรือหากต้องการกู้คืนข้อมูลอาหารที่ผ่านมา",
+  "login.tagline": "ติดตามมื้ออาหารของคุณด้วย AI ถ่ายภาพแล้วรับข้อมูลโภชนาการทันที",
+  "onboarding.tap_to_learn": " แตะการ์ดแต่ละใบเพื่อเรียนรู้เพิ่มเติม"
 }

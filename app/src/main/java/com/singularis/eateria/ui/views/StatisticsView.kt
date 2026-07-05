@@ -146,14 +146,18 @@ fun StatisticsView(onBackClick: () -> Unit) {
                 }
 
             val statistics =
-                withContext(Dispatchers.IO) {
-                    statisticsService.fetchStatisticsForPeriod(period)
+                kotlinx.coroutines.withTimeoutOrNull(30_000L) {
+                    withContext(Dispatchers.IO) {
+                        statisticsService.fetchStatisticsForPeriod(period)
+                    }
                 }
 
-            currentStatistics = statistics
-            currentAverages = statisticsService.calculateAverages(statistics)
-            weightTrend = statisticsService.calculateWeightTrend(statistics)
-            calorieTrend = statisticsService.calculateCalorieTrend(statistics)
+            if (statistics != null) {
+                currentStatistics = statistics
+                currentAverages = statisticsService.calculateAverages(statistics)
+                weightTrend = statisticsService.calculateWeightTrend(statistics)
+                calorieTrend = statisticsService.calculateCalorieTrend(statistics)
+            }
         } catch (e: Exception) {
             // Handle error silently or show user-friendly message
         } finally {

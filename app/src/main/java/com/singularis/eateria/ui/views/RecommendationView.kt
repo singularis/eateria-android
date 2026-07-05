@@ -26,7 +26,15 @@ fun RecommendationView(
 ) {
     val context = LocalContext.current
     
-    val localizedRecommendationText = remember(recommendationText) {
+    val parsedJson = remember(recommendationText) {
+        try {
+            org.json.JSONObject(recommendationText)
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    val fallbackText = remember(recommendationText) {
         var text = recommendationText
         text = text.replace("Favorite dish:", Localization.tr(context, "rec.favorite_dish", "Favorite dish:"))
         text = text.replace("- Dish Name:", "- " + Localization.tr(context, "rec.dish_name_label", "Dish Name:"))
@@ -94,12 +102,47 @@ fun RecommendationView(
                 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = localizedRecommendationText,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = AppTheme.textPrimary(),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                if (parsedJson != null) {
+                    val keys = parsedJson.keys()
+                    while (keys.hasNext()) {
+                        val key = keys.next()
+                        val value = parsedJson.get(key)
+                        val formattedTitle = key.replace("_", " ").split(" ").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+                        val localizedTitle = Localization.tr(context, "rec.json.$key", formattedTitle)
+
+                        Text(
+                            text = localizedTitle,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = AppTheme.textPrimary(),
+                            modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+                        )
+
+                        if (value is org.json.JSONArray) {
+                            for (i in 0 until value.length()) {
+                                Text(
+                                    text = "• " + value.getString(i),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = AppTheme.textPrimary(),
+                                    modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = value.toString(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = AppTheme.textPrimary(),
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = fallbackText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = AppTheme.textPrimary(),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
 
             // Disclaimer Section

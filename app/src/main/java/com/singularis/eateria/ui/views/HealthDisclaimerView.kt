@@ -86,6 +86,11 @@ fun HealthDisclaimerView(
                             content = Localization.tr(context, "disc.medical.text", "Always consult with a qualified healthcare provider before making any changes to your diet or nutrition plan, especially if you have medical conditions, allergies, or dietary restrictions.")
                         )
 
+                        DisclaimerSection(
+                            title = Localization.tr(context, "disc.section.foodscore", "Average Food Score"),
+                            content = Localization.tr(context, "disc.foodscore.text", "Your average food score represents the nutritional quality of your meals. A score closer to 100 indicates a highly nutritious diet based on current data.")
+                        )
+
                         Column {
                             Text(
                                 text = Localization.tr(context, "disc.section.sources", "Data Sources & Citations"),

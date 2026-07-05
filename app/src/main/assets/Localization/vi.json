@@ -578,7 +578,7 @@
   "rec.sources": "Nguồn Dữ Liệu",
   "rec.src.guidelines": "• Hướng Dẫn Dinh Dưỡng cho Người Mỹ",
   "rec.src.research": "• Nghiên cứu dinh dưỡng dựa trên bằng chứng",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "Gợi Ý Cá Nhân Hóa",
   "rec.title": "Gợi Ý Sức Khỏe",
   "search.connected_authenticating": "Đã kết nối. Đang xác thực...",
@@ -694,5 +694,12 @@
   "error.network.generic": "Chúng tôi xin lỗi. Có vấn đề về kết nối mạng. Vui lòng thử lại sau.",
   "common.apply": "Áp dụng",
   "portion.custom.manual_placeholder": "vd 146.4",
-  "portion.updated.msg.grams": "Đã cập nhật thành công '%@' thành %g g."
+  "portion.updated.msg.grams": "Đã cập nhật thành công '%@' thành %g g.",
+  "login.let_me_try": "Cho Tôi Thử",
+  "login.try_description": "Bạn có thể xác thực sau để sử dụng tính năng chia sẻ giữa các thiết bị.",
+  "login.scan_prompt_title": "Mở Khóa Tất Cả Tính Năng",
+  "login.scan_prompt_message": "Vui lòng đăng nhập vào Google nếu bạn đã sẵn sàng hoặc muốn khôi phục thực phẩm trước đây.",
+  "activities.burned.sources": "Từ:",
+  "login.tagline": "Theo dõi bữa ăn của bạn với AI. Chụp ảnh và nhận thông tin dinh dưỡng ngay lập tức.",
+  "onboarding.tap_to_learn": " Nhấn vào mỗi thẻ để tìm hiểu thêm"
 }

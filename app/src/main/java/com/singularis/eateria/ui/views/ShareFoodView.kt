@@ -54,7 +54,8 @@ fun ShareFoodView(
     val coroutineScope = rememberCoroutineScope()
     val imageStorage = remember { ImageStorageService.getInstance(context) }
 
-    var friends by remember { mutableStateOf<List<String>>(emptyList()) }
+    // friends stored as Pair(email, nickname)
+    var friends by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var totalCount by remember { mutableStateOf(0) }
     var isLoading by remember { mutableStateOf(false) }
     var showAddFriends by remember { mutableStateOf(false) }
@@ -67,8 +68,8 @@ fun ShareFoodView(
         sharesCounts = loadSharesCounts(context)
         fetchFriends(grpcService, reset = true) { friendsList, total ->
             friends = friendsList.sortedWith(
-                compareByDescending<String> { sharesCounts[it] ?: 0 }
-                    .thenBy { it.lowercase() }
+                compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
+                    .thenBy { it.first.lowercase() }
             )
             totalCount = total
         }
@@ -179,8 +180,10 @@ fun ShareFoodView(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(1.dp)
                     ) {
-                        items(friends) { email ->
+                        items(friends) { friend ->
+                            val (email, nickname) = friend
                             val sharesCount = sharesCounts[email] ?: 0
+                            val displayName = if (nickname.isNotEmpty()) nickname else email
 
                             Surface(
                                 modifier = Modifier
@@ -200,17 +203,23 @@ fun ShareFoodView(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = email,
+                                            text = displayName,
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = AppTheme.textPrimary(),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
-                                        if (sharesCount > 0) {
+                                        // Build subtitle: shares count + email (if nickname is shown)
+                                        val details = mutableListOf<String>()
+                                        if (sharesCount > 0) details.add("Shared ${sharesCount}x")
+                                        if (nickname.isNotEmpty()) details.add(email)
+                                        if (details.isNotEmpty()) {
                                             Text(
-                                                text = "Shared ${sharesCount}x",
+                                                text = details.joinToString(" • "),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = AppTheme.textSecondary(),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
                                             )
                                         }
                                     }
@@ -233,12 +242,12 @@ fun ShareFoodView(
                                             HapticsService.getInstance().select()
                                             coroutineScope.launch {
                                                 fetchFriends(grpcService, reset = false) { moreFriends, _ ->
-                                                    friends = (friends + moreFriends)
-                                                        .distinct()
-                                                        .sortedWith(
-                                                            compareByDescending<String> { sharesCounts[it] ?: 0 }
-                                                                .thenBy { it.lowercase() }
-                                                        )
+                                    friends = (friends + moreFriends)
+                                        .distinctBy { it.first }
+                                        .sortedWith(
+                                            compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
+                                                .thenBy { it.first.lowercase() }
+                                        )
                                                 }
                                             }
                                         }
@@ -276,12 +285,15 @@ fun ShareFoodView(
                             incrementShareCount(context, toEmail)
                             sharesCounts = loadSharesCounts(context)
                             friends = friends.sortedWith(
-                                compareByDescending<String> { sharesCounts[it] ?: 0 }
-                                    .thenBy { it.lowercase() }
+                                compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
+                                    .thenBy { it.first.lowercase() }
                             )
                             onShareSuccess()
                             val successTemplate = Localization.tr(context, "share.success.msg", "Shared %d%% with %@")
-                            showShareConfirmation = successTemplate.replace("%d", "$percentage").replace("%@", toEmail)
+                            val displayName = friends.find { it.first == toEmail }?.let {
+                                if (it.second.isNotEmpty()) it.second else toEmail
+                            } ?: toEmail
+                            showShareConfirmation = successTemplate.replace("%d", "$percentage").replace("%@", displayName)
                             showPortionDialogFor = null
                         }
                     }
@@ -294,11 +306,11 @@ fun ShareFoodView(
         AddFriendsView(
             onDismiss = { showAddFriends = false },
             onFriendAdded = { email ->
-                friends = (friends + email)
-                    .distinct()
+                friends = (friends + Pair(email, ""))
+                    .distinctBy { it.first }
                     .sortedWith(
-                        compareByDescending<String> { sharesCounts[it] ?: 0 }
-                            .thenBy { it.lowercase() }
+                        compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
+                            .thenBy { it.first.lowercase() }
                     )
                 totalCount += 1
             },
@@ -326,13 +338,12 @@ fun ShareFoodView(
 private suspend fun fetchFriends(
     grpcService: GRPCService,
     reset: Boolean = true,
-    onResult: (List<String>, Int) -> Unit,
+    onResult: (List<Pair<String, String>>, Int) -> Unit,
 ) {
     try {
         val offset = if (reset) 0 else 5
         val (friendsListPairs, total) = grpcService.getFriends(offset = offset, limit = 5)
-        val friendsList = friendsListPairs.map { it.first }
-        onResult(friendsList, total)
+        onResult(friendsListPairs, total)
     } catch (e: Exception) {
         onResult(emptyList(), 0)
     }

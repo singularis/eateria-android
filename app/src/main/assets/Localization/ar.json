@@ -579,7 +579,7 @@
   "rec.sources": "مصادر البيانات",
   "rec.src.guidelines": "• الإرشادات الغذائية للأمريكيين",
   "rec.src.research": "• البحوث الغذائية القائمة على الأدلة",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "توصيتك المخصصة",
   "rec.title": "التوصية الصحية",
   "search.connected_authenticating": "متصل. جاري المصادقة...",
@@ -695,5 +695,11 @@
   "error.network.generic": "نحن نعتذر. يوجد مشكلة في الاتصال بالشبكة. يرجى المحاولة لاحقاً.",
   "common.apply": "تطبيق",
   "portion.custom.manual_placeholder": "مثال 146.4",
-  "portion.updated.msg.grams": "تم تحديث '%@' بنجاح إلى %g غرام."
+  "portion.updated.msg.grams": "تم تحديث '%@' بنجاح إلى %g غرام.",
+  "login.let_me_try": "دعني أجرب",
+  "login.try_description": "يمكنك المصادقة لاحقًا لاستخدام ميزات المشاركة عبر الأجهزة.",
+  "login.scan_prompt_title": "افتح جميع الميزات",
+  "login.scan_prompt_message": "يرجى تسجيل الدخول إلى Google إذا كنت مستعدًا أو ترغب في استعادة الطعام السابق.",
+  "login.tagline": "تتبع وجباتك باستخدام الذكاء الاصطناعي. التقط صورة واحصل على معلومات غذائية فورية.",
+  "onboarding.tap_to_learn": " اضغط على كل بطاقة لمعرفة المزيد"
 }

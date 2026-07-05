@@ -2051,6 +2051,8 @@ fun IntroStepView(page: OnboardingPage) {
 @Composable
 fun ToolsStepView(page: OnboardingPage) {
     val context = LocalContext.current
+    var expandedCards by remember { mutableStateOf(setOf<String>()) }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -2072,11 +2074,22 @@ fun ToolsStepView(page: OnboardingPage) {
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = Localization.tr(context, "onboarding.tap_to_learn", "👆 Tap each card to learn more"),
+            color = AppTheme.accent(),
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
         
         // Kitchen Scales
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+                .clickable {
+                    HapticsService.getInstance().select()
+                    expandedCards = if ("scales" in expandedCards) expandedCards - "scales" else expandedCards + "scales"
+                },
             colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
             shape = RoundedCornerShape(18.dp)
@@ -2090,8 +2103,12 @@ fun ToolsStepView(page: OnboardingPage) {
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
                     Text(Localization.tr(context, "onboarding.tools.scales.title", "Kitchen Scales"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(Localization.tr(context, "onboarding.tools.scales.desc", "Weigh your food to understand real portions. You will be surprised how much a \"small\" serving actually weighs."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                    AnimatedVisibility(visible = "scales" in expandedCards) {
+                        Column {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(Localization.tr(context, "onboarding.tools.scales.desc", "Weigh your food to understand real portions. You will be surprised how much a \"small\" serving actually weighs."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                        }
+                    }
                 }
             }
         }
@@ -2099,7 +2116,11 @@ fun ToolsStepView(page: OnboardingPage) {
 
         // Food Containers
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+                .clickable {
+                    HapticsService.getInstance().select()
+                    expandedCards = if ("containers" in expandedCards) expandedCards - "containers" else expandedCards + "containers"
+                },
             colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
             shape = RoundedCornerShape(18.dp)
@@ -2113,29 +2134,45 @@ fun ToolsStepView(page: OnboardingPage) {
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
                     Text(Localization.tr(context, "onboarding.tools.containers.title", "Food Containers"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(Localization.tr(context, "onboarding.tools.containers.desc", "Organize meals so nothing goes to waste. Containers make meal prep effortless and keep your eating structured."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                    AnimatedVisibility(visible = "containers" in expandedCards) {
+                        Column {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(Localization.tr(context, "onboarding.tools.containers.desc", "Organize meals so nothing goes to waste. Containers make meal prep effortless and keep your eating structured."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                        }
+                    }
                 }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
         
         // Track Everything
-        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFF4CAF50).copy(alpha = 0.06f)).border(1.dp, Color(0xFF4CAF50).copy(alpha = 0.2f), RoundedCornerShape(16.dp)).padding(14.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable {
+                HapticsService.getInstance().select()
+                expandedCards = if ("track" in expandedCards) expandedCards - "track" else expandedCards + "track"
+            }
+            .background(Color(0xFF4CAF50).copy(alpha = 0.06f))
+            .border(1.dp, Color(0xFF4CAF50).copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+            .padding(14.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(Localization.tr(context, "onboarding.tools.track.title", "Track Everything"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = Localization.tr(context, "onboarding.tools.track.desc", "Even if something seems less healthy, keep tracking! No judgment, no stopping. That is the path to a balanced relationship with food. Every step toward awareness matters."),
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center,
-                    style = androidx.compose.ui.text.TextStyle(brush = Brush.linearGradient(colors = listOf(Color(0xFF4CAF50), Color(0xFF9C27B0)))),
-                    lineHeight = 24.sp
-                )
+                AnimatedVisibility(visible = "track" in expandedCards) {
+                    Column {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = Localization.tr(context, "onboarding.tools.track.desc", "Even if something seems less healthy, keep tracking! No judgment, no stopping. That is the path to a balanced relationship with food. Every step toward awareness matters."),
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center,
+                            style = androidx.compose.ui.text.TextStyle(brush = Brush.linearGradient(colors = listOf(Color(0xFF4CAF50), Color(0xFF9C27B0)))),
+                            lineHeight = 24.sp
+                        )
+                    }
+                }
             }
         }
         Spacer(modifier = Modifier.height(40.dp))

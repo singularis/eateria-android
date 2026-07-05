@@ -4,6 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.datastore.preferences.core.edit
+import com.singularis.eateria.services.dataStore
+import kotlinx.coroutines.flow.first
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.DailyRefreshManager
@@ -135,6 +138,9 @@ class MainViewModel(
 
     private val _showFeedback = MutableStateFlow(false)
     val showFeedback: StateFlow<Boolean> = _showFeedback.asStateFlow()
+
+    private val _showAnonymousLoginPrompt = MutableStateFlow(false)
+    val showAnonymousLoginPrompt: StateFlow<Boolean> = _showAnonymousLoginPrompt.asStateFlow()
 
     private val _showSportCaloriesDialog = MutableStateFlow(false)
     val showSportCaloriesDialog: StateFlow<Boolean> = _showSportCaloriesDialog.asStateFlow()
@@ -399,6 +405,8 @@ class MainViewModel(
     ) {
         viewModelScope.launch {
             _isLoadingFoodPhoto.value = true
+            
+            checkAnonymousScanLimits()
 
             try {
                 // Send photo to backend
@@ -516,6 +524,21 @@ class MainViewModel(
         }
     }
 
+    private suspend fun checkAnonymousScanLimits() {
+        val prefs = context.dataStore.data.first()
+        val isAnon = prefs[androidx.datastore.preferences.core.booleanPreferencesKey("is_anonymous")] == true
+        if (isAnon) {
+            val countKey = androidx.datastore.preferences.core.intPreferencesKey("anonymous_scan_count")
+            val currentCount = prefs[countKey] ?: 0
+            val newCount = currentCount + 1
+            context.dataStore.edit { it[countKey] = newCount }
+            
+            if (newCount == 5 || (newCount > 5 && (newCount - 5) % 3 == 0)) {
+                _showAnonymousLoginPrompt.value = true
+            }
+        }
+    }
+
     fun sendPhoto(
         bitmap: Bitmap,
         photoType: String,
@@ -526,6 +549,7 @@ class MainViewModel(
                 _isLoadingWeightPhoto.value = true
             } else {
                 _isLoadingFoodPhoto.value = true
+                checkAnonymousScanLimits()
             }
 
             grpcService.sendPhoto(
@@ -1014,6 +1038,14 @@ class MainViewModel(
 
     fun hideFeedback() {
         _showFeedback.value = false
+    }
+
+    fun dismissFeedback() {
+        _showFeedback.value = false
+    }
+
+    fun dismissAnonymousLoginPrompt() {
+        _showAnonymousLoginPrompt.value = false
     }
 
     fun showSportCaloriesDialog() {

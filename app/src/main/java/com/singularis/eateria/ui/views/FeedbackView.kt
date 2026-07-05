@@ -3,6 +3,8 @@ package com.singularis.eateria.ui.views
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -61,7 +63,9 @@ fun FeedbackView(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .padding(horizontal = 20.dp, vertical = 10.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             // Header Top Bar
             Row(
@@ -170,7 +174,7 @@ fun FeedbackView(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(30.dp))
 
             // Submit button
             val failedMsg = Localization.tr(context, "feedback.fail", "Failed to submit feedback. Please check your internet connection and try again.")

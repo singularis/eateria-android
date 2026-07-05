@@ -697,8 +697,8 @@
   "portion.updated.msg.grams": "Atualizado com sucesso '%@' para %g g.",
   "login.let_me_try": "Deixe-me Tentar",
   "login.try_description": "Você pode autenticar mais tarde para usar recursos de compartilhamento entre dispositivos.",
-  "login.scan_prompt_title": "Desbloquear Todos os Recursos",
-  "login.scan_prompt_message": "Por favor, faça login no Google se estiver pronto ou quiser recuperar alimentos passados.",
+  "login.scan_prompt_title": "Desbloqueie Todos os Recursos",
+  "login.scan_prompt_message": "Por favor, faça login no Google se estiver pronto ou quiser recuperar alimentos anteriores.",
   "activities.burned.sources": "De:",
   "login.tagline": "Acompanhe suas refeições com IA. Tire uma foto e obtenha insights nutricionais instantâneos.",
   "onboarding.tap_to_learn": " Toque em cada cartão para saber mais"

@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +31,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,10 +46,14 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.services.Localization
+import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import kotlinx.coroutines.launch
 
 @Composable
@@ -93,6 +103,7 @@ fun ContentView(
     val photoErrorTitle by viewModel.photoErrorTitle.collectAsState()
     val photoErrorMessage by viewModel.photoErrorMessage.collectAsState()
     val showFeedback by viewModel.showFeedback.collectAsState()
+    val showAnonymousLoginPrompt by viewModel.showAnonymousLoginPrompt.collectAsState()
     val showSportCaloriesDialog by viewModel.showSportCaloriesDialog.collectAsState()
     val sportCaloriesInput by viewModel.sportCaloriesInput.collectAsState()
     val alcoholIconColor by viewModel.alcoholIconColor.collectAsState()
@@ -114,6 +125,8 @@ fun ContentView(
     // Full screen photo state
     var fullScreenPhotoData by remember { mutableStateOf<Pair<android.graphics.Bitmap?, String>?>(null) }
     var showShareFoodDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
+    // Try Manual state: Triple(time, currentName, imageId)
+    var showTryManualDialog by remember { mutableStateOf<Triple<Long, String, String>?>(null) }
 
     LaunchedEffect(hasSeenOnboarding) {
         if (!hasSeenOnboarding) {
@@ -146,7 +159,7 @@ fun ContentView(
     // Pager state for TabView mimicking
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(
         initialPage = 1,
-        pageCount = { 2 }
+        pageCount = { 3 }
     )
 
     // Sync button clicks with pager
@@ -257,7 +270,10 @@ fun ContentView(
                     isLoadingRecommendation = isLoadingRecommendation,
                     onWeightClick = { viewModel.showWeightActionSheet() },
                     onCaloriesClick = { viewModel.showLimitsAlert() },
-                    onRecommendationClick = { viewModel.getRecommendation(7) },
+                    onRecommendationClick = { 
+                        viewModel.getRecommendation(7) 
+                        scope.launch { pagerState.animateScrollToPage(2) }
+                    },
                     getColor = viewModel::getColor,
                 )
 
@@ -305,8 +321,8 @@ fun ContentView(
                                 fullScreenPhotoData = Pair(imageToShow, foodName)
                             },
                             onTryAgain = { time, foodName ->
-                                // TODO: Wire try manual flow
-                                android.widget.Toast.makeText(context, "Try Manual: $foodName", android.widget.Toast.LENGTH_SHORT).show()
+                                val product = products.find { it.time == time }
+                                showTryManualDialog = Triple(time, foodName, product?.imageId ?: "")
                             },
                             onAddSugar = { time, foodName ->
                                 viewModel.addSugarToProduct(time, foodName)
@@ -363,6 +379,14 @@ fun ContentView(
                 )
                         } // End of Column
                     } // End of Main Content Page (Page 1)
+                    2 -> {
+                        RecommendationView(
+                            recommendationText = recommendationText,
+                            onDismiss = {
+                                scope.launch { pagerState.animateScrollToPage(1) }
+                            }
+                        )
+                    }
                 } // End of when (page)
             } // End of HorizontalPager
 
@@ -403,6 +427,95 @@ fun ContentView(
                 )
             }
 
+            // Try Manual dialog — text input to correct food name
+            showTryManualDialog?.let { triple ->
+                val time = triple.first
+                val currentName = triple.second
+                val imageId = triple.third
+                var manualName by remember { mutableStateOf(currentName) }
+                val coroutineScope = rememberCoroutineScope()
+
+                AlertDialog(
+                    onDismissRequest = { showTryManualDialog = null },
+                    title = {
+                        Text(
+                            Localization.tr(context, "manual_food.title", "Fix food name"),
+                            color = AppTheme.textPrimary()
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                Localization.tr(
+                                    context,
+                                    "manual_food.msg",
+                                    "Enter the correct dish name. This will replace the current name in your log."
+                                ),
+                                color = AppTheme.textSecondary(),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            OutlinedTextField(
+                                value = manualName,
+                                onValueChange = { manualName = it },
+                                placeholder = { Text(currentName) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val trimmed = manualName.trim()
+                                if (trimmed.isEmpty()) return@TextButton
+                                HapticsService.getInstance().select()
+                                val email = userEmail ?: ""
+                                showTryManualDialog = null
+                                coroutineScope.launch {
+                                    val grpc = GRPCService(context)
+                                    val success = grpc.modifyFoodRecord(
+                                        time = time,
+                                        userEmail = email,
+                                        percentage = 100,
+                                        isTryManually = true,
+                                        imageId = imageId,
+                                        manualFoodName = trimmed,
+                                    )
+                                    if (success) {
+                                        HapticsService.getInstance().success()
+                                        viewModel.returnToToday()
+                                    } else {
+                                        HapticsService.getInstance().error()
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            Localization.tr(context, "manual_food.error", "Failed to update. Please try again."),
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(
+                                Localization.tr(context, "common.save", "Save"),
+                                color = AppTheme.accent()
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            HapticsService.getInstance().select()
+                            showTryManualDialog = null
+                        }) {
+                            Text(
+                                Localization.tr(context, "common.cancel", "Cancel"),
+                                color = AppTheme.textSecondary()
+                            )
+                        }
+                    },
+                    containerColor = AppTheme.surface(),
+                )
+            }
+
             // Dialog implementations
             if (showLimitsAlert) {
                 CalorieLimitsDialog(
@@ -419,7 +532,10 @@ fun ContentView(
                 UserProfileView(
                     authViewModel = authViewModel,
                     onBackClick = { viewModel.hideUserProfile() },
-                    onStatisticsClick = { viewModel.showStatistics() },
+                    onStatisticsClick = { 
+                        viewModel.hideUserProfile()
+                        viewModel.showStatistics() 
+                    },
                     onHealthSettingsClick = { viewModel.showHealthSettings() },
                     onHealthDisclaimerClick = { viewModel.showHealthDisclaimer() },
                     onOnboardingClick = { viewModel.showOnboarding() },
@@ -481,6 +597,49 @@ fun ContentView(
                         // Reload limits in MainViewModel when they're changed in health settings
                         viewModel.reloadLimitsFromStorage()
                     },
+                )
+            }
+
+
+
+            if (showAnonymousLoginPrompt) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.dismissAnonymousLoginPrompt() },
+                    title = {
+                        Text(
+                            text = Localization.tr(LocalContext.current, "login.scan_prompt_title", "Unlock All Features"),
+                            color = AppTheme.textPrimary(),
+                            fontWeight = FontWeight.Bold,
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = Localization.tr(LocalContext.current, "login.scan_prompt_message", "Please login to Google if you are ready or want to recover past food."),
+                            color = AppTheme.textSecondary(),
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.dismissAnonymousLoginPrompt()
+                                authViewModel.signOut() // This forces the login view to appear by clearing the anon state
+                            },
+                        ) {
+                            Text(Localization.tr(LocalContext.current, "login.prompt.confirm", "Login Now"), color = AppTheme.accent())
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { 
+                                viewModel.dismissAnonymousLoginPrompt() 
+                            },
+                        ) {
+                            Text(Localization.tr(LocalContext.current, "common.not_yet", "Not Yet"), color = AppTheme.textSecondary())
+                        }
+                    },
+                    containerColor = AppTheme.surface(),
+                    titleContentColor = AppTheme.textPrimary(),
+                    textContentColor = AppTheme.textSecondary(),
                 )
             }
 

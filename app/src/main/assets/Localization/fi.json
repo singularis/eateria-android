@@ -579,7 +579,7 @@
   "rec.sources": "Tietolähteet",
   "rec.src.guidelines": "• Yhdysvaltain ravitsemussuositukset",
   "rec.src.research": "• Näyttöön perustuva ravitsemustutkimus",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "Henkilökohtainen suosituksesi",
   "rec.title": "Terveyssuositus",
   "search.connected_authenticating": "Yhdistetty. Todennetaan...",
@@ -695,5 +695,11 @@
   "error.network.generic": "Olemme pahoillamme. Verkkoyhteysongelma. Yritä myöhemmin uudelleen.",
   "common.apply": "Käytä",
   "portion.custom.manual_placeholder": "esim. 146.4",
-  "portion.updated.msg.grams": "'%@' päivitettiin onnistuneesti %g g:aan."
+  "portion.updated.msg.grams": "'%@' päivitettiin onnistuneesti %g g:aan.",
+  "login.let_me_try": "Anna minun kokeilla",
+  "login.try_description": "Voit kirjautua myöhemmin käyttääksesi laitteiden välistä jakamista.",
+  "login.scan_prompt_title": "Avaa kaikki ominaisuudet",
+  "login.scan_prompt_message": "Kirjaudu Googleen, jos olet valmis tai haluat palauttaa aiemmat ruoat.",
+  "login.tagline": "Seuraa aterioitasi tekoälyn avulla. Ota kuva ja saat heti ravitsemustietoa.",
+  "onboarding.tap_to_learn": " Napauta kutakin korttia saadaksesi lisätietoja"
 }

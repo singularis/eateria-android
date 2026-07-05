@@ -151,38 +151,39 @@ fun ProductListView(
         modifier = Modifier.fillMaxSize(),
     ) {
         if (sortedProducts.isEmpty()) {
-            Column(
+            androidx.compose.foundation.lazy.LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = Dimensions.paddingXL),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .padding(horizontal = Dimensions.paddingXL, vertical = Dimensions.paddingXL)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.PhotoLibrary,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = AppTheme.textSecondary().copy(alpha = 0.5f)
-                )
-                
-                Spacer(modifier = Modifier.height(Dimensions.paddingM))
-                
-                Text(
-                    text = Localization.tr(LocalContext.current, "list.empty.title", "No meals yet"),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppTheme.textPrimary(),
-                    textAlign = TextAlign.Center
-                )
-                
-                Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-                
-                Text(
-                    text = Localization.tr(LocalContext.current, "list.empty.subtitle", "Add your first meal from the Home screen."),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AppTheme.textSecondary(),
-                    textAlign = TextAlign.Center
-                )
+                item {
+                    Column(
+                        modifier = Modifier.fillParentMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PhotoLibrary,
+                            contentDescription = "No photos",
+                            modifier = Modifier.size(Dimensions.iconSizeXL * 2),
+                            tint = AppTheme.accent().copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                        Text(
+                            text = Localization.tr(LocalContext.current, "list.empty.title", "No Meals Yet"),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = AppTheme.textPrimary()
+                        )
+                        Spacer(modifier = Modifier.height(Dimensions.paddingS))
+                        Text(
+                            text = Localization.tr(LocalContext.current, "list.empty.desc", "Tap the camera button below to snap your first meal and start tracking automatically!"),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AppTheme.textSecondary(),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
             }
         } else {
             LazyColumn(

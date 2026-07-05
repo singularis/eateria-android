@@ -579,7 +579,7 @@
   "rec.sources": "数据来源",
   "rec.src.guidelines": "• 美国人膳食指南",
   "rec.src.research": "• 基于证据的营养研究",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA食品数据中心",
   "rec.subtitle": "您的个性化建议",
   "rec.title": "健康建议",
   "search.connected_authenticating": "已连接。正在验证...",
@@ -695,5 +695,11 @@
   "error.network.generic": "很抱歉。网络连接出现问题。请稍后再试。",
   "common.apply": "应用",
   "portion.custom.manual_placeholder": "例如 146.4",
-  "portion.updated.msg.grams": "成功将 '%@' 更新为 %g 克。"
+  "portion.updated.msg.grams": "成功将 '%@' 更新为 %g 克。",
+  "login.let_me_try": "让我试试",
+  "login.try_description": "您可以稍后进行身份验证以使用跨设备共享功能。",
+  "login.scan_prompt_title": "解锁所有功能",
+  "login.scan_prompt_message": "如果您准备好了或想恢复过去的食物，请登录Google。",
+  "login.tagline": "用AI跟踪您的餐点。拍张照片即可获得即时营养信息。",
+  "onboarding.tap_to_learn": " 点击每张卡片以了解更多信息"
 }

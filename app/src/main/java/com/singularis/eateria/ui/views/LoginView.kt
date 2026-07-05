@@ -24,6 +24,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -76,13 +78,28 @@ fun LoginView(
                     onAnimationEnd = { triggerErrorShake = false }
                 ),
         ) {
-            // App icon
-            Icon(
-                imageVector = AppIcons.FoodHealth.restaurant,
-                contentDescription = null,
-                modifier = Modifier.size(100.dp),
-                tint = AppTheme.accent()
-            )
+            // App icon with vibrant gradient circle background
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                AppTheme.accent(),
+                                AppTheme.accent().copy(alpha = 0.7f),
+                            )
+                        ),
+                        shape = androidx.compose.foundation.shape.CircleShape
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = AppIcons.FoodHealth.restaurant,
+                    contentDescription = null,
+                    modifier = Modifier.size(60.dp),
+                    tint = Color.White
+                )
+            }
 
             Spacer(modifier = Modifier.height(Dimensions.paddingL))
 
@@ -97,12 +114,17 @@ fun LoginView(
 
             Spacer(modifier = Modifier.height(Dimensions.paddingS))
 
-            // Subtitle
+            // Tagline — explains what the app does
             Text(
-                text = Localization.tr(context, "login.subtitle", "Sign in to continue"),
+                text = Localization.tr(
+                    context,
+                    "login.tagline",
+                    "Track your meals with AI. Snap a photo and get instant nutrition insights."
+                ),
                 style = MaterialTheme.typography.bodyLarge,
                 color = AppTheme.textSecondary(),
                 textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp),
             )
 
             Spacer(modifier = Modifier.height(Dimensions.paddingXL + Dimensions.paddingL))
@@ -163,6 +185,47 @@ fun LoginView(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
+
+            // Anonymous Login Button
+            TextButton(
+                onClick = {
+                    if (!isSigningIn) {
+                        HapticsService.getInstance().mediumImpact()
+                        coroutineScope.launch {
+                            isSigningIn = true
+                            errorMessage = null
+                            try {
+                                authViewModel.signInAnonymously()
+                            } catch (e: Exception) {
+                                errorMessage = Localization.tr(context, "login.failed", "Sign-in failed. Please try again.")
+                                triggerErrorShake = true
+                            } finally {
+                                isSigningIn = false
+                            }
+                        }
+                    }
+                },
+                enabled = !isSigningIn,
+            ) {
+                Text(
+                    text = Localization.tr(context, "login.let_me_try", "Let Me Try"),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppTheme.accent(),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
+            
+            Text(
+                text = Localization.tr(context, "login.try_description", "You can authenticate later to use cross-device share features."),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppTheme.textSecondary(),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = Dimensions.paddingM),
+            )
 
             Spacer(modifier = Modifier.height(Dimensions.paddingL))
 

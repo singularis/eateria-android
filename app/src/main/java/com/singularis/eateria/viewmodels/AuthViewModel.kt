@@ -14,10 +14,13 @@ class AuthViewModel(
     val userEmail: Flow<String?> = authService.userEmail
     val userName: Flow<String?> = authService.userName
     val userProfilePictureURL: Flow<String?> = authService.userProfilePictureURL
+    val isAnonymous: Flow<Boolean> = authService.isAnonymous
     val hasSeenOnboarding: Flow<Boolean> = authService.hasSeenOnboarding
     val isFullDisplayMode: Flow<Boolean> = authService.isFullDisplayMode
 
     suspend fun signInWithCredentialManager(activity: ComponentActivity): Boolean = authService.signInWithCredentialManager(activity)
+    
+    suspend fun signInAnonymously(): Boolean = authService.signInAnonymously()
 
     fun signOut() {
         viewModelScope.launch {

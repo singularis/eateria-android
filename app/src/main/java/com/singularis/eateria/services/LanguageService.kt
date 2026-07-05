@@ -17,12 +17,13 @@ object LanguageService {
     // Representative country per language code for sensible defaults and flag rendering
     private val representativeCountry: Map<String, String> =
         mapOf(
-            "en" to "US",
+            "en" to "GB",
             "es" to "ES",
             "fr" to "FR",
             "de" to "DE",
             "it" to "IT",
             "pt" to "PT",
+            "pt-BR" to "BR",
             "ru" to "RU",
             "uk" to "UA",
             "zh" to "CN",
@@ -137,12 +138,26 @@ object LanguageService {
         return normalize(device)
     }
 
-    fun normalize(code: String): String =
-        code.lowercase(Locale.getDefault()).split("-").firstOrNull() ?: code.lowercase(Locale.getDefault())
+    fun normalize(code: String): String {
+        val lower = code.lowercase(Locale.getDefault())
+        // Preserve regional codes that are explicitly in our language map (e.g., pt-BR)
+        if (representativeCountry.keys.any { it.lowercase(Locale.getDefault()) == lower }) {
+            return lower
+        }
+        return lower.split("-").firstOrNull() ?: lower
+    }
 
     fun nativeName(code: String): String {
         val norm = normalize(code)
-        return Locale.Builder().setLanguage(norm).build().getDisplayLanguage(Locale.Builder().setLanguage(norm).build()).replaceFirstChar {
+        val parts = norm.split("-")
+        val locale = if (parts.size >= 2) {
+            Locale.Builder().setLanguage(parts[0]).setRegion(parts[1].uppercase(Locale.getDefault())).build()
+        } else {
+            Locale.Builder().setLanguage(norm).build()
+        }
+        val displayName = locale.getDisplayLanguage(locale)
+        val suffix = if (parts.size >= 2) " (${locale.getDisplayCountry(locale)})" else ""
+        return (displayName + suffix).replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
         }
     }

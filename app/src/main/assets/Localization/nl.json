@@ -578,7 +578,7 @@
   "rec.sources": "Gegevensbronnen",
   "rec.src.guidelines": "• Voedingsrichtlijnen voor Amerikanen",
   "rec.src.research": "• Op bewijs gebaseerd voedingsonderzoek",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "Uw Gepersonaliseerde Aanbeveling",
   "rec.title": "Gezondheidsaanbeveling",
   "search.connected_authenticating": "Verbonden. Authenticeren...",
@@ -694,5 +694,12 @@
   "error.network.generic": "Het spijt ons. Er is een probleem met de netwerkverbinding. Probeer het later opnieuw.",
   "common.apply": "Toepassen",
   "portion.custom.manual_placeholder": "bijv. 146.4",
-  "portion.updated.msg.grams": "'%@' succesvol bijgewerkt naar %g g."
+  "portion.updated.msg.grams": "'%@' succesvol bijgewerkt naar %g g.",
+  "login.let_me_try": "Laat me proberen",
+  "login.try_description": "Je kunt later authenticeren om functies voor delen tussen apparaten te gebruiken.",
+  "login.scan_prompt_title": "Ontgrendel alle functies",
+  "login.scan_prompt_message": "Log in bij Google als je klaar bent of eerder voedsel wilt herstellen.",
+  "activities.burned.sources": "Van:",
+  "login.tagline": "Volg je maaltijden met AI. Maak een foto en krijg direct voedingsinzichten.",
+  "onboarding.tap_to_learn": " Tik op elke kaart om meer te leren"
 }

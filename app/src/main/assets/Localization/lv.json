@@ -281,7 +281,7 @@
   "health.activity.very": "Ļoti aktīvs",
   "health.activity.very.desc": "Intensīvi treniņi lielāko daļu dienu vai fiziski prasīgs darbs",
   "health.age": "Vecums (gadi):",
-  "health.bmi.current": "BMI: %.1f",
+  "health.bmi.current": "ĶMI: %.1f",
   "health.bmi.label": "BMI:",
   "health.bmi.target": "Mērķa BMI: %.1f (min 18.5)",
   "health.bmi.target.range": "Mērķa BMI: %.1f (18.5–%.1f)",
@@ -579,7 +579,7 @@
   "rec.sources": "Datu avoti",
   "rec.src.guidelines": "• Uztura vadlīnijas amerikāņiem",
   "rec.src.research": "• Ar pierādījumiem pamatoti uztura pētījumi",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "Jūsu personalizētais ieteikums",
   "rec.title": "Veselības ieteikums",
   "search.connected_authenticating": "Savienots. Notiek autentifikācija...",
@@ -695,5 +695,11 @@
   "error.network.generic": "Atvainojiet. Tīkla savienojuma problēma. Lūdzu, vēlāk mēģiniet vēlreiz.",
   "common.apply": "Pielietot",
   "portion.custom.manual_placeholder": "piem. 146.4",
-  "portion.updated.msg.grams": "Veiksmīgi atjaunināts '%@' uz %g g."
+  "portion.updated.msg.grams": "Veiksmīgi atjaunināts '%@' uz %g g.",
+  "login.let_me_try": "Ļaujiet Man Izmēģināt",
+  "login.try_description": "Jūs varat autentificēties vēlāk, lai izmantotu starpierīču koplietošanas funkcijas.",
+  "login.scan_prompt_title": "Atbloķējiet Visas Funkcijas",
+  "login.scan_prompt_message": "Lūdzu, piesakieties Google, ja esat gatavs vai vēlaties atgūt iepriekšējo pārtiku.",
+  "login.tagline": "Izsekojiet savas maltītes ar AI. Uzņemiet fotoattēlu un saņemiet tūlītēju uztura ieskatu.",
+  "onboarding.tap_to_learn": " Pieskarieties katrai kartei, lai uzzinātu vairāk"
 }

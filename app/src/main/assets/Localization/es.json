@@ -232,7 +232,7 @@
   "feedback.success": "¡Gracias por tus comentarios! Apreciamos tu aportación y la usaremos para mejorar la aplicación.",
   "feedback.title": "Comparte tus Comentarios",
   "food.apple": "Manzana",
-  "food.banana": "Banana",
+  "food.banana": "Plátano",
   "food.bread": "Pan",
   "food.cheese": "Queso",
   "food.chicken": "Pollo",
@@ -579,7 +579,7 @@
   "rec.sources": "Fuentes de Datos",
   "rec.src.guidelines": "• Guías Dietéticas para Estadounidenses",
   "rec.src.research": "• Investigación nutricional basada en evidencia",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "Tu Recomendación Personalizada",
   "rec.title": "Recomendación de Salud",
   "search.connected_authenticating": "Conectado. Autenticando...",
@@ -695,5 +695,11 @@
   "error.network.generic": "Lo sentimos. Hay un problema con la red. Por favor, inténtelo más tarde.",
   "common.apply": "Aplicar",
   "portion.custom.manual_placeholder": "ej. 146.4",
-  "portion.updated.msg.grams": "Se actualizó correctamente '%@' a %g g."
+  "portion.updated.msg.grams": "Se actualizó correctamente '%@' a %g g.",
+  "login.let_me_try": "Déjame Intentar",
+  "login.try_description": "Puedes autenticarte más tarde para usar funciones de compartir entre dispositivos.",
+  "login.scan_prompt_title": "Desbloquea Todas las Funciones",
+  "login.scan_prompt_message": "Por favor inicia sesión en Google si estás listo o quieres recuperar alimentos anteriores.",
+  "login.tagline": "Rastrea tus comidas con IA. Toma una foto y obtén información nutricional instantánea.",
+  "onboarding.tap_to_learn": " Toca cada tarjeta para aprender más"
 }

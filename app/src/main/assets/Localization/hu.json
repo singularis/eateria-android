@@ -579,7 +579,7 @@
   "rec.sources": "Adatforrások",
   "rec.src.guidelines": "• Táplálkozási irányelvek az amerikaiak számára",
   "rec.src.research": "• Bizonyítékokon alapuló táplálkozási kutatás",
-  "rec.src.usda": "• USDA FoodData Central",
+  "rec.src.usda": " USDA FoodData Central",
   "rec.subtitle": "Az Ön személyre szabott ajánlása",
   "rec.title": "Egészségügyi ajánlás",
   "search.connected_authenticating": "Kapcsolódva. Hitelesítés...",
@@ -695,5 +695,11 @@
   "error.network.generic": "Sajnáljuk. Hálózati kapcsolati hiba. Kérjük, próbálja újra később.",
   "common.apply": "Alkalmaz",
   "portion.custom.manual_placeholder": "pl. 146.4",
-  "portion.updated.msg.grams": "'%@' sikeresen frissítve %g g-ra."
+  "portion.updated.msg.grams": "'%@' sikeresen frissítve %g g-ra.",
+  "login.let_me_try": "Hadd próbáljam ki",
+  "login.try_description": "Később is hitelesítheted magad, hogy használhasd a több eszköz közötti megosztási funkciókat.",
+  "login.scan_prompt_title": "Minden funkció feloldása",
+  "login.scan_prompt_message": "Kérjük, jelentkezz be a Google-ba, ha készen állsz, vagy ha szeretnéd visszaállítani a korábbi ételeket.",
+  "login.tagline": "Kövesd nyomon az étkezéseidet AI segítségével. Készíts egy fotót, és azonnal kapj táplálkozási betekintést.",
+  "onboarding.tap_to_learn": " Tapints minden kártyára, hogy többet megtudj"
 }

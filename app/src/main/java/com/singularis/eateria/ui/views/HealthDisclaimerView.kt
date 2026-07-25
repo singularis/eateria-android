@@ -152,7 +152,7 @@ fun HealthDisclaimerView(
                             Spacer(modifier = Modifier.height(8.dp))
                             val features = listOf(
                                 "disc.feature.calories" to "• Calorie Tracking: Estimates based on visual food analysis",
-                                "disc.feature.macros" to "• Nutritional Analysis: Macronutrient breakdown using AI image recognition",
+                                "disc.feature.macros" to "• Nutritional Analysis: Macronutrient breakdown using LLM image recognition",
                                 "disc.feature.recommendations" to "• Dietary Recommendations: General suggestions based on nutritional guidelines",
                                 "disc.feature.weight" to "• Weight Tracking: User-input data for personal monitoring",
                                 "disc.feature.limits" to "• Calorie Limits: Default values or personalized calculations based on health data",

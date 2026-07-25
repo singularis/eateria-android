@@ -28,6 +28,13 @@ class AuthViewModel(
         }
     }
 
+    /** Returns a guest to the login screen while keeping their history linkable. */
+    fun signOutForAccountUpgrade() {
+        viewModelScope.launch {
+            authService.signOutForAccountUpgrade()
+        }
+    }
+
     fun deleteAccount() {
         viewModelScope.launch {
             authService.deleteAccountAndClearData()

@@ -183,7 +183,7 @@ fun LoginView(
                     Localization.tr(
                         context,
                         "login.tagline",
-                        "Track your meals with AI. Snap a photo and get instant nutrition insights.",
+                        "Track your meals with Eateria. Snap a photo and get instant nutrition insights.",
                     ),
                 style = MaterialTheme.typography.bodyLarge,
                 color = textSecondary,
@@ -205,7 +205,7 @@ fun LoginView(
                 LoginFeatureRow(
                     icon = Icons.Default.CameraAlt,
                     tint = accent,
-                    text = Localization.tr(context, "login.feature.scan", "AI recognizes your meal from a single photo"),
+                    text = Localization.tr(context, "login.feature.scan", "Eateria recognizes your meal from a single photo"),
                     textColor = textPrimary,
                 )
                 LoginFeatureRow(
@@ -521,7 +521,7 @@ fun AppInfoSheet(onDismiss: () -> Unit) {
                         Localization.tr(
                             context,
                             "info.intro",
-                            "Eateria helps you build healthier habits with AI meal tracking, personalized insights, and tools that fit real life.",
+                            "Eateria helps you build healthier habits with smart meal tracking, personalized insights, and tools that fit real life.",
                         ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = textSecondary,
@@ -537,7 +537,7 @@ fun AppInfoSheet(onDismiss: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 NumberedInfoLine(1, Localization.tr(context, "info.how.step1", "Snap a photo of your meal"))
-                NumberedInfoLine(2, Localization.tr(context, "info.how.step2", "AI estimates nutrition and health score"))
+                NumberedInfoLine(2, Localization.tr(context, "info.how.step2", "Eateria estimates nutrition and health score"))
                 NumberedInfoLine(3, Localization.tr(context, "info.how.step3", "Track progress and adjust your plan over time"))
             }
 

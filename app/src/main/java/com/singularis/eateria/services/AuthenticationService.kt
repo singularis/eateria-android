@@ -427,6 +427,28 @@ class AuthenticationService(
         clearAllUserData()
     }
 
+    /**
+     * Ends the guest session so the login screen appears, but keeps the anonymous UUID
+     * so a later Google sign-in still sends [TokenRequest.previousAnonymousUuid] and the
+     * guest's food history is migrated instead of lost.
+     */
+    suspend fun signOutForAccountUpgrade() {
+        try {
+            credentialManager.clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+        } catch (e: Exception) {
+            Log.e("AuthenticationService", "Failed to clear credential state", e)
+        }
+        TokenStore.clear(context)
+        val anonymousUuid = context.dataStore.data.first()[ANONYMOUS_UUID]
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+            if (anonymousUuid != null) {
+                preferences[ANONYMOUS_UUID] = anonymousUuid
+                preferences[IS_ANONYMOUS] = true
+            }
+        }
+    }
+
     suspend fun clearAllUserData() {
         context.dataStore.edit { preferences ->
             preferences.clear()

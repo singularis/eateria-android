@@ -54,26 +54,28 @@ fun ShareFoodView(
     val coroutineScope = rememberCoroutineScope()
     val imageStorage = remember { ImageStorageService.getInstance(context) }
 
-    // friends stored as Pair(email, nickname)
-    var friends by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
-    var totalCount by remember { mutableStateOf(0) }
-    var isLoading by remember { mutableStateOf(false) }
+    // The full friend list, sorted by share count. Sorting must happen on the
+    // complete list before any pagination/slicing, otherwise a highly-shared
+    // friend who hasn't been fetched yet can be hidden behind less-shared ones.
+    var allFriends by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    var visibleFriendCount by remember { mutableStateOf(FRIEND_PAGE_SIZE) }
+    var isLoading by remember { mutableStateOf(true) }
     var showAddFriends by remember { mutableStateOf(false) }
     var sharesCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var showShareConfirmation by remember { mutableStateOf<String?>(null) }
     var showPortionDialogFor by remember { mutableStateOf<String?>(null) }
     var headerBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
+    val friends = allFriends.take(visibleFriendCount)
+
     LaunchedEffect(Unit) {
         sharesCounts = loadSharesCounts(context)
-        fetchFriends(grpcService, reset = true) { friendsList, total ->
-            friends = friendsList.sortedWith(
-                compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
-                    .thenBy { it.first.lowercase() }
-            )
-            totalCount = total
+        isLoading = true
+        fetchAllFriends(grpcService) { fetchedFriends ->
+            allFriends = fetchedFriends.sortedByShares(sharesCounts)
+            isLoading = false
         }
-        
+
         // Load Image
         withContext(Dispatchers.IO) {
             val bmp = imageStorage.loadImage(time)
@@ -109,7 +111,7 @@ fun ShareFoodView(
                             HapticsService.getInstance().select()
                             onDismiss()
                         }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
+                            Icon(Icons.Default.Close, contentDescription = Localization.tr(context, "common.close", "Close"))
                         }
                     },
                     actions = {
@@ -164,7 +166,7 @@ fun ShareFoodView(
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
-                } else if (friends.isEmpty()) {
+                } else if (allFriends.isEmpty()) {
                     Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -211,7 +213,13 @@ fun ShareFoodView(
                                         )
                                         // Build subtitle: shares count + email (if nickname is shown)
                                         val details = mutableListOf<String>()
-                                        if (sharesCount > 0) details.add("Shared ${sharesCount}x")
+                                        if (sharesCount > 0) {
+                                            details.add(
+                                                Localization
+                                                    .tr(context, "friends.shared_count", "Shared %dx")
+                                                    .replace("%d", "$sharesCount"),
+                                            )
+                                        }
                                         if (nickname.isNotEmpty()) details.add(email)
                                         if (details.isNotEmpty()) {
                                             Text(
@@ -233,23 +241,15 @@ fun ShareFoodView(
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                         }
 
-                        if (friends.size < totalCount) {
+                        if (visibleFriendCount < allFriends.size) {
                             item {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
                                             HapticsService.getInstance().select()
-                                            coroutineScope.launch {
-                                                fetchFriends(grpcService, reset = false) { moreFriends, _ ->
-                                    friends = (friends + moreFriends)
-                                        .distinctBy { it.first }
-                                        .sortedWith(
-                                            compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
-                                                .thenBy { it.first.lowercase() }
-                                        )
-                                                }
-                                            }
+                                            // Already fetched + sorted in full; just reveal more of the local list.
+                                            visibleFriendCount += FRIEND_PAGE_SIZE
                                         }
                                         .padding(16.dp),
                                     contentAlignment = Alignment.Center
@@ -284,16 +284,18 @@ fun ShareFoodView(
                         ) {
                             incrementShareCount(context, toEmail)
                             sharesCounts = loadSharesCounts(context)
-                            friends = friends.sortedWith(
-                                compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
-                                    .thenBy { it.first.lowercase() }
-                            )
+                            // Re-sort the full list (not just the visible slice) so a friend who just
+                            // moved up in share count is correctly ordered even beyond the current page.
+                            allFriends = allFriends.sortedByShares(sharesCounts)
                             onShareSuccess()
                             val successTemplate = Localization.tr(context, "share.success.msg", "Shared %d%% with %@")
-                            val displayName = friends.find { it.first == toEmail }?.let {
+                            val displayName = allFriends.find { it.first == toEmail }?.let {
                                 if (it.second.isNotEmpty()) it.second else toEmail
                             } ?: toEmail
-                            showShareConfirmation = successTemplate.replace("%d", "$percentage").replace("%@", displayName)
+                            showShareConfirmation =
+                                successTemplate
+                                    .replace("%d%%", "$percentage%")
+                                    .replace("%@", displayName)
                             showPortionDialogFor = null
                         }
                     }
@@ -306,13 +308,11 @@ fun ShareFoodView(
         AddFriendsView(
             onDismiss = { showAddFriends = false },
             onFriendAdded = { email ->
-                friends = (friends + Pair(email, ""))
+                allFriends = (allFriends + Pair(email, ""))
                     .distinctBy { it.first }
-                    .sortedWith(
-                        compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
-                            .thenBy { it.first.lowercase() }
-                    )
-                totalCount += 1
+                    .sortedByShares(sharesCounts)
+                // Guarantee the newly added friend is visible without requiring "More friends".
+                visibleFriendCount += 1
             },
         )
     }
@@ -320,7 +320,7 @@ fun ShareFoodView(
     showShareConfirmation?.let { msg ->
         AlertDialog(
             onDismissRequest = { showShareConfirmation = null },
-            title = { Text(Localization.tr(context, "portion.shared", "Shared"), color = AppTheme.textPrimary()) },
+            title = { Text(Localization.tr(context, "share.success.title", "Shared"), color = AppTheme.textPrimary()) },
             text = { Text(msg, color = AppTheme.textSecondary()) },
             confirmButton = {
                 TextButton(onClick = {
@@ -335,19 +335,29 @@ fun ShareFoodView(
     }
 }
 
-private suspend fun fetchFriends(
+private const val FRIEND_PAGE_SIZE = 5
+
+/**
+ * The backend has no real server-side pagination — it always returns the complete friend
+ * list — so we fetch everything once and paginate/sort locally instead of slicing per page.
+ */
+private suspend fun fetchAllFriends(
     grpcService: GRPCService,
-    reset: Boolean = true,
-    onResult: (List<Pair<String, String>>, Int) -> Unit,
+    onResult: (List<Pair<String, String>>) -> Unit,
 ) {
     try {
-        val offset = if (reset) 0 else 5
-        val (friendsListPairs, total) = grpcService.getFriends(offset = offset, limit = 5)
-        onResult(friendsListPairs, total)
+        val (friendsListPairs, _) = grpcService.getFriends(offset = 0, limit = Int.MAX_VALUE)
+        onResult(friendsListPairs)
     } catch (e: Exception) {
-        onResult(emptyList(), 0)
+        onResult(emptyList())
     }
 }
+
+private fun List<Pair<String, String>>.sortedByShares(sharesCounts: Map<String, Int>): List<Pair<String, String>> =
+    sortedWith(
+        compareByDescending<Pair<String, String>> { sharesCounts[it.first] ?: 0 }
+            .thenBy { it.first.lowercase() },
+    )
 
 private suspend fun getUserEmail(authService: AuthenticationService): String? =
     try {
@@ -387,13 +397,13 @@ private fun PortionChooserDialog(
     if (showCustom) {
         AlertDialog(
             onDismissRequest = { showCustom = false },
-            title = { Text("Custom percentage", color = AppTheme.textPrimary()) },
+            title = { Text(Localization.tr(context, "share.portion.custom.title", "Custom percentage"), color = AppTheme.textPrimary()) },
             text = {
                 OutlinedTextField(
                     value = customPercentage,
                     onValueChange = { customPercentage = it },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    placeholder = { Text("e.g. 40") },
+                    placeholder = { Text(Localization.tr(context, "share.portion.custom.placeholder", "e.g. 40")) },
                     singleLine = true
                 )
             },
@@ -407,7 +417,7 @@ private fun PortionChooserDialog(
                 }) { Text(Localization.tr(context, "common.ok", "OK")) }
             },
             dismissButton = {
-                TextButton(onClick = { showCustom = false }) { Text("Cancel") }
+                TextButton(onClick = { showCustom = false }) { Text(Localization.tr(context, "common.cancel", "Cancel")) }
             },
             containerColor = MaterialTheme.colorScheme.surface,
         )
@@ -415,7 +425,7 @@ private fun PortionChooserDialog(
         val options = listOf(25, 50, 75)
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("How much did your friend eat?", color = AppTheme.textPrimary()) },
+            title = { Text(Localization.tr(context, "share.portion.question", "How much did your friend eat?"), color = AppTheme.textPrimary()) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     options.forEach { p ->
@@ -433,6 +443,20 @@ private fun PortionChooserDialog(
                             Text(text = "$p%")
                         }
                     }
+                    // "Same amount" = 100%, called out in green since it's the most common choice
+                    Button(
+                        onClick = {
+                            HapticsService.getInstance().select()
+                            onSelect(100)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AppTheme.success(),
+                            contentColor = Color.White,
+                        ),
+                    ) {
+                        Text(text = Localization.tr(context, "share.portion.same_amount", "Same amount"))
+                    }
                     Button(
                         onClick = { 
                             HapticsService.getInstance().select()
@@ -444,7 +468,7 @@ private fun PortionChooserDialog(
                             contentColor = AppTheme.textPrimary(),
                         ),
                     ) {
-                        Text(text = "Custom...")
+                        Text(text = Localization.tr(context, "share.portion.custom.button", "Custom..."))
                     }
                 }
             },
@@ -453,7 +477,7 @@ private fun PortionChooserDialog(
                 TextButton(onClick = { 
                     HapticsService.getInstance().select()
                     onDismiss() 
-                }) { Text("Cancel") } 
+                }) { Text(Localization.tr(context, "common.cancel", "Cancel")) } 
             },
             containerColor = MaterialTheme.colorScheme.surface,
         )

@@ -90,6 +90,7 @@ fun ContentView(
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
     val userProfilePictureURL by authViewModel.userProfilePictureURL.collectAsState(initial = null)
     val isFullMode by authViewModel.isFullDisplayMode.collectAsState(initial = false)
+    val isAnonymous by authViewModel.isAnonymous.collectAsState(initial = false)
 
     // Dialog states
     val showLimitsAlert by viewModel.showLimitsAlert.collectAsState()
@@ -138,6 +139,8 @@ fun ContentView(
     var showTryManualDialog by remember { mutableStateOf<Triple<Long, String, String>?>(null) }
     // Increment to open camera via CameraButtonView (same path as Take Food Photo, incl. backdating)
     var cameraOpenRequest by remember { mutableStateOf(0) }
+    // Guests must sign in for share / try-manual; ask first instead of dropping them on login
+    var guestSignInPrompt by remember { mutableStateOf<GuestSignInReason?>(null) }
 
     LaunchedEffect(hasSeenOnboarding) {
         if (!hasSeenOnboarding) {
@@ -337,8 +340,12 @@ fun ContentView(
                                 fullScreenPhotoData = Pair(imageToShow, foodName)
                             },
                             onTryAgain = { time, foodName ->
-                                val product = products.find { it.time == time }
-                                showTryManualDialog = Triple(time, foodName, product?.imageId ?: "")
+                                if (isAnonymous) {
+                                    guestSignInPrompt = GuestSignInReason.TryManual
+                                } else {
+                                    val product = products.find { it.time == time }
+                                    showTryManualDialog = Triple(time, foodName, product?.imageId ?: "")
+                                }
                             },
                             onAddSugar = { time, foodName ->
                                 viewModel.addSugarToProduct(time, foodName)
@@ -350,8 +357,13 @@ fun ContentView(
                                 viewModel.addFoodExtra(time, foodName, extra)
                             },
                             onShare = { time, foodName ->
-                                showShareFoodDialog = Pair(time, foodName)
+                                if (isAnonymous) {
+                                    guestSignInPrompt = GuestSignInReason.Share
+                                } else {
+                                    showShareFoodDialog = Pair(time, foodName)
+                                }
                             },
+                            isAnonymous = isAnonymous,
                             onSwipeToCamera = { cameraOpenRequest++ },
                             deletingProductTime = deletingProductTime,
                             modifiedProductTime = modifiedProductTime,
@@ -445,7 +457,7 @@ fun ContentView(
                 )
             }
 
-            // Try Manual dialog — text input + AI suggested dish names
+            // Try Manual dialog — text input + LLM suggested dish names
             showTryManualDialog?.let { triple ->
                 FixFoodNameDialog(
                     time = triple.first,
@@ -552,6 +564,75 @@ fun ContentView(
 
 
 
+            guestSignInPrompt?.let { reason ->
+                val titleKey: String
+                val titleFallback: String
+                val messageKey: String
+                val messageFallback: String
+                when (reason) {
+                    GuestSignInReason.Share -> {
+                        titleKey = "share.login_required.title"
+                        titleFallback = "Sign in to share"
+                        messageKey = "share.login_required.message"
+                        messageFallback =
+                            "Sharing food with friends needs an account. Sign in now? Your guest food log stays linked to you."
+                    }
+                    GuestSignInReason.TryManual -> {
+                        titleKey = "manual.login_required.title"
+                        titleFallback = "Sign in to rename food"
+                        messageKey = "manual.login_required.message"
+                        messageFallback =
+                            "Fixing a food name needs an account. Sign in now? Your guest food log stays linked to you."
+                    }
+                }
+                AlertDialog(
+                    onDismissRequest = { guestSignInPrompt = null },
+                    title = {
+                        Text(
+                            text = Localization.tr(context, titleKey, titleFallback),
+                            color = AppTheme.textPrimary(),
+                            fontWeight = FontWeight.Bold,
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = Localization.tr(context, messageKey, messageFallback),
+                            color = AppTheme.textSecondary(),
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                HapticsService.getInstance().select()
+                                guestSignInPrompt = null
+                                authViewModel.signOutForAccountUpgrade()
+                            },
+                        ) {
+                            Text(
+                                Localization.tr(context, "login.prompt.confirm", "Login Now"),
+                                color = AppTheme.accent(),
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                HapticsService.getInstance().select()
+                                guestSignInPrompt = null
+                            },
+                        ) {
+                            Text(
+                                Localization.tr(context, "common.not_yet", "Not Yet"),
+                                color = AppTheme.textSecondary(),
+                            )
+                        }
+                    },
+                    containerColor = AppTheme.surface(),
+                    titleContentColor = AppTheme.textPrimary(),
+                    textContentColor = AppTheme.textSecondary(),
+                )
+            }
+
             if (showAnonymousLoginPrompt) {
                 AlertDialog(
                     onDismissRequest = { viewModel.dismissAnonymousLoginPrompt() },
@@ -572,7 +653,8 @@ fun ContentView(
                         TextButton(
                             onClick = {
                                 viewModel.dismissAnonymousLoginPrompt()
-                                authViewModel.signOut() // This forces the login view to appear by clearing the anon state
+                                // Shows the login view while keeping the guest history linkable
+                                authViewModel.signOutForAccountUpgrade()
                             },
                         ) {
                             Text(Localization.tr(LocalContext.current, "login.prompt.confirm", "Login Now"), color = AppTheme.accent())
@@ -946,6 +1028,11 @@ private fun FixFoodNameDialog(
         },
         containerColor = AppTheme.surface(),
     )
+}
+
+private enum class GuestSignInReason {
+    Share,
+    TryManual,
 }
 
 @Composable

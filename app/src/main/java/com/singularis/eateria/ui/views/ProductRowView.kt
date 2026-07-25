@@ -83,6 +83,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -146,6 +147,7 @@ fun ProductCard(
     onAddDrinkExtra: ((String) -> Unit)? = null,
     onAddFoodExtra: ((String) -> Unit)? = null,
     onSwipeToCamera: (() -> Unit)? = null,
+    isAnonymous: Boolean = false,
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
@@ -290,35 +292,38 @@ fun ProductCard(
                                 )
                             },
                 ) {
-                    val productImage = product.getImage(context)
+                    // imageRevision changes when a remote photo finishes downloading
+                    key(product.imageId, product.imageRevision) {
+                        val productImage = product.getImage(context)
 
-                    if (productImage != null) {
-                        Image(
-                            bitmap = productImage.asImageBitmap(),
-                            contentDescription = product.name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else if (product.needsRemoteFetch(context)) {
-                        Icon(
-                            imageVector = AppIcons.Actions.download,
-                            contentDescription = Localization.tr(context, "fs.downloading_photo", "Downloading photo"),
-                            tint = AppTheme.textSecondary(),
-                            modifier =
-                                Modifier
-                                    .size(Dimensions.iconSizeM)
-                                    .align(Alignment.Center),
-                        )
-                    } else {
-                        Icon(
-                            imageVector = AppIcons.Media.photoLibrary,
-                            contentDescription = Localization.tr(context, "fs.no_photo", "No photo"),
-                            tint = AppTheme.textSecondary(),
-                            modifier =
-                                Modifier
-                                    .size(Dimensions.iconSizeM)
-                                    .align(Alignment.Center),
-                        )
+                        if (productImage != null) {
+                            Image(
+                                bitmap = productImage.asImageBitmap(),
+                                contentDescription = product.name,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                            )
+                        } else if (product.needsRemoteFetch(context)) {
+                            Icon(
+                                imageVector = AppIcons.Actions.download,
+                                contentDescription = Localization.tr(context, "fs.downloading_photo", "Downloading photo"),
+                                tint = AppTheme.textSecondary(),
+                                modifier =
+                                    Modifier
+                                        .size(Dimensions.iconSizeM)
+                                        .align(Alignment.Center),
+                            )
+                        } else {
+                            Icon(
+                                imageVector = AppIcons.Media.photoLibrary,
+                                contentDescription = Localization.tr(context, "fs.no_photo", "No photo"),
+                                tint = AppTheme.textSecondary(),
+                                modifier =
+                                    Modifier
+                                        .size(Dimensions.iconSizeM)
+                                        .align(Alignment.Center),
+                            )
+                        }
                     }
                 }
 
@@ -482,6 +487,7 @@ fun ProductCard(
             onAddSugar = onAddSugar,
             onAddDrinkExtra = onAddDrinkExtra,
             onAddFoodExtra = onAddFoodExtra,
+            isAnonymous = isAnonymous,
         )
     }
 
@@ -526,6 +532,7 @@ fun PortionSelectionDialog(
     onAddSugar: (() -> Unit)? = null,
     onAddDrinkExtra: ((String) -> Unit)? = null,
     onAddFoodExtra: ((String) -> Unit)? = null,
+    isAnonymous: Boolean = false,
 ) {
     var selectedPortionPercentage by remember { mutableStateOf<Int?>(null) }
     var showConfirmation by remember { mutableStateOf(false) }
@@ -1020,7 +1027,7 @@ fun PortionSelectionDialog(
                                 }
                             }
 
-                            // Try Manually
+                            // Try Manually — gray for guests (login required); orange when signed in
                             if (onTryAgain != null) {
                                 item {
                                     Button(
@@ -1032,8 +1039,18 @@ fun PortionSelectionDialog(
                                         modifier = Modifier.fillMaxWidth(),
                                         colors =
                                             ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFFFF9800), // Orange
-                                                contentColor = Color.White,
+                                                containerColor =
+                                                    if (isAnonymous) {
+                                                        AppTheme.textSecondary().copy(alpha = 0.35f)
+                                                    } else {
+                                                        Color(0xFFFF9800) // Orange
+                                                    },
+                                                contentColor =
+                                                    if (isAnonymous) {
+                                                        AppTheme.textSecondary()
+                                                    } else {
+                                                        Color.White
+                                                    },
                                             ),
                                         shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                                         contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
@@ -1260,6 +1277,37 @@ private fun HealthLevelInfoDialog(
                 modifier = Modifier.heightIn(max = 400.dp),
                 verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
             ) {
+                // Always-shown explainer for what the score is and how it's generated,
+                // so first-time users understand the ring/number before reading per-meal notes.
+                item {
+                    Column(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
+                                .background(AppTheme.surfaceAlt())
+                                .padding(Dimensions.paddingS),
+                    ) {
+                        Text(
+                            text = Localization.tr(context, "health.score.explainer.title", "About this score"),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = AppTheme.textPrimary(),
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text =
+                                Localization.tr(
+                                    context,
+                                    "health.score.explainer.text",
+                                    "The 0-100 score is generated by analyzing this meal's ingredients, portion size, and nutritional balance from your photo. Higher scores mean healthier choices.",
+                                ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AppTheme.textSecondary(),
+                        )
+                    }
+                }
+
                 // Description
                 if (displayDescription.isNotEmpty()) {
                     item {

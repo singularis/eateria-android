@@ -17,7 +17,9 @@ data class Product(
     val healthRating: Int = -1,
     val imageId: String = "",
     val addedSugarTsp: Float = 0f,
-    val extras: Map<String, Int> = emptyMap()
+    val extras: Map<String, Int> = emptyMap(),
+    /** Bumped when a remote photo finishes downloading so Compose/StateFlow see a new value. */
+    val imageRevision: Int = 0,
 ) : Parcelable {
     val id: String get() = time.toString()
 

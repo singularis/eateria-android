@@ -429,14 +429,19 @@ class MainViewModel(
 
     /** Injects a downloaded photo into the matching product so the UI refreshes without a full re-fetch */
     private fun injectPhotoIntoProduct(imageId: String, bitmap: Bitmap) {
-        val updated = _products.value.map { product ->
-            if (product.imageId == imageId) {
-                product.also { it.setImage(bitmap) }
-            } else {
-                product
+        // Must change a data-class field (imageRevision). Mutating only the transient
+        // bitmap cache leaves Product.equals() unchanged, so StateFlow skips the emit
+        // and the list preview never redraws after a remote download.
+        _products.value =
+            _products.value.map { product ->
+                if (product.imageId == imageId) {
+                    product
+                        .copy(imageRevision = product.imageRevision + 1)
+                        .also { it.setImage(bitmap) }
+                } else {
+                    product
+                }
             }
-        }
-        _products.value = updated
     }
 
     // New method for image synchronization (iOS logic)

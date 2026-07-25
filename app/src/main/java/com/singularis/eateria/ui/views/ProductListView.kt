@@ -137,6 +137,7 @@ fun ProductListView(
     onSuccessDialogDismissed: () -> Unit,
     onShare: ((Long, String) -> Unit)? = null,
     onSwipeToCamera: (() -> Unit)? = null,
+    isAnonymous: Boolean = false,
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
@@ -214,6 +215,7 @@ fun ProductListView(
                         onAddDrinkExtra = onAddDrinkExtra?.let { { extra -> it(product.time, product.name, extra) } },
                         onAddFoodExtra = onAddFoodExtra?.let { { extra -> it(product.time, product.name, extra) } },
                         onSwipeToCamera = onSwipeToCamera,
+                        isAnonymous = isAnonymous,
                     )
                 }
             }

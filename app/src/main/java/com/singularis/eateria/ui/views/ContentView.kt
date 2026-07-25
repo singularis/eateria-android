@@ -2,9 +2,13 @@ package com.singularis.eateria.ui.views
 
 import android.Manifest
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,14 +16,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -31,29 +40,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.services.Localization
-import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextButton
 import kotlinx.coroutines.launch
 
 @Composable
@@ -69,6 +75,9 @@ fun ContentView(
     val caloriesLeft by viewModel.caloriesLeft.collectAsState()
     val personWeight by viewModel.personWeight.collectAsState()
     val softLimit by viewModel.softLimit.collectAsState()
+    val customProteinGoal by viewModel.customProteinGoal.collectAsState()
+    val customFatGoal by viewModel.customFatGoal.collectAsState()
+    val customCarbsGoal by viewModel.customCarbsGoal.collectAsState()
     val isLoadingData by viewModel.isLoadingData.collectAsState()
     val isViewingCustomDate by viewModel.isViewingCustomDate.collectAsState()
     val currentViewingDate by viewModel.currentViewingDate.collectAsState()
@@ -127,6 +136,8 @@ fun ContentView(
     var showShareFoodDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
     // Try Manual state: Triple(time, currentName, imageId)
     var showTryManualDialog by remember { mutableStateOf<Triple<Long, String, String>?>(null) }
+    // Increment to open camera via CameraButtonView (same path as Take Food Photo, incl. backdating)
+    var cameraOpenRequest by remember { mutableStateOf(0) }
 
     LaunchedEffect(hasSeenOnboarding) {
         if (!hasSeenOnboarding) {
@@ -285,6 +296,11 @@ fun ContentView(
                         isViewingCustomDate = isViewingCustomDate,
                         currentViewingDateString = currentViewingDateString,
                         softLimit = softLimit,
+                        customProteinGoal = customProteinGoal,
+                        customFatGoal = customFatGoal,
+                        customCarbsGoal = customCarbsGoal,
+                        onSaveMacroGoals = viewModel::saveCustomMacroGoals,
+                        onResetMacroGoals = viewModel::resetCustomMacroGoals,
                     )
                     Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                 }
@@ -336,6 +352,7 @@ fun ContentView(
                             onShare = { time, foodName ->
                                 showShareFoodDialog = Pair(time, foodName)
                             },
+                            onSwipeToCamera = { cameraOpenRequest++ },
                             deletingProductTime = deletingProductTime,
                             modifiedProductTime = modifiedProductTime,
                             onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
@@ -360,6 +377,7 @@ fun ContentView(
                     },
                     onReturnToToday = { viewModel.returnToToday() },
                     onRequestTutorial = null, // Tutorial logic not fully ported yet
+                    externalCameraRequest = cameraOpenRequest,
                     onCameraClick = {
                         showFoodCamera = true
                     },
@@ -427,89 +445,24 @@ fun ContentView(
                 )
             }
 
-            // Try Manual dialog — text input to correct food name
+            // Try Manual dialog — text input + AI suggested dish names
             showTryManualDialog?.let { triple ->
-                val time = triple.first
-                val currentName = triple.second
-                val imageId = triple.third
-                var manualName by remember { mutableStateOf(currentName) }
-                val coroutineScope = rememberCoroutineScope()
-
-                AlertDialog(
-                    onDismissRequest = { showTryManualDialog = null },
-                    title = {
-                        Text(
-                            Localization.tr(context, "manual_food.title", "Fix food name"),
-                            color = AppTheme.textPrimary()
+                FixFoodNameDialog(
+                    time = triple.first,
+                    currentName = triple.second,
+                    imageId = triple.third,
+                    userEmail = userEmail ?: "",
+                    onDismiss = { showTryManualDialog = null },
+                    onSave = { time, email, imageId, manualName, onSuccess, onError ->
+                        viewModel.updateFoodManually(
+                            time = time,
+                            userEmail = email,
+                            imageId = imageId,
+                            manualFoodName = manualName,
+                            onSuccess = onSuccess,
+                            onError = onError,
                         )
                     },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                Localization.tr(
-                                    context,
-                                    "manual_food.msg",
-                                    "Enter the correct dish name. This will replace the current name in your log."
-                                ),
-                                color = AppTheme.textSecondary(),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                            OutlinedTextField(
-                                value = manualName,
-                                onValueChange = { manualName = it },
-                                placeholder = { Text(currentName) },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                val trimmed = manualName.trim()
-                                if (trimmed.isEmpty()) return@TextButton
-                                HapticsService.getInstance().select()
-                                val email = userEmail ?: ""
-                                showTryManualDialog = null
-                                coroutineScope.launch {
-                                    viewModel.updateFoodManually(
-                                        time = time,
-                                        userEmail = email,
-                                        imageId = imageId,
-                                        manualFoodName = trimmed,
-                                        onSuccess = {
-                                            HapticsService.getInstance().success()
-                                        },
-                                        onError = {
-                                            HapticsService.getInstance().error()
-                                            android.widget.Toast.makeText(
-                                                context,
-                                                Localization.tr(context, "manual_food.error", "Failed to update. Please try again."),
-                                                android.widget.Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    )
-                                }
-                            }
-                        ) {
-                            Text(
-                                Localization.tr(context, "common.save", "Save"),
-                                color = AppTheme.accent()
-                            )
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            HapticsService.getInstance().select()
-                            showTryManualDialog = null
-                        }) {
-                            Text(
-                                Localization.tr(context, "common.cancel", "Cancel"),
-                                color = AppTheme.textSecondary()
-                            )
-                        }
-                    },
-                    containerColor = AppTheme.surface(),
                 )
             }
 
@@ -840,6 +793,159 @@ fun LoadingOverlay(
             }
         }
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun FixFoodNameDialog(
+    time: Long,
+    currentName: String,
+    imageId: String,
+    userEmail: String,
+    onDismiss: () -> Unit,
+    onSave: (
+        time: Long,
+        userEmail: String,
+        imageId: String,
+        manualFoodName: String,
+        onSuccess: () -> Unit,
+        onError: () -> Unit,
+    ) -> Unit,
+) {
+    val context = LocalContext.current
+    var manualName by remember { mutableStateOf(currentName) }
+    var suggestions by remember { mutableStateOf<List<String>>(emptyList()) }
+    var isLoadingSuggestions by remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
+    val grpcService = remember { GRPCService(context) }
+
+    LaunchedEffect(imageId, currentName) {
+        isLoadingSuggestions = true
+        suggestions =
+            try {
+                grpcService.suggestDishNames(
+                    imageId = imageId,
+                    currentName = currentName,
+                    languageCode = LanguageService.getCurrentCode(context),
+                )
+            } catch (_: Exception) {
+                emptyList()
+            }
+        isLoadingSuggestions = false
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                Localization.tr(context, "manual_food.title", "Fix food name"),
+                color = AppTheme.textPrimary(),
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    Localization.tr(
+                        context,
+                        "manual_food.msg",
+                        "Enter the correct dish name. This will replace the current name in your log.",
+                    ),
+                    color = AppTheme.textSecondary(),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                OutlinedTextField(
+                    value = manualName,
+                    onValueChange = { manualName = it },
+                    placeholder = { Text(currentName) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (isLoadingSuggestions) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = AppTheme.accent(),
+                        )
+                    }
+                } else if (suggestions.isNotEmpty()) {
+                    Text(
+                        Localization.tr(context, "manual_food.suggestions", "Suggestions"),
+                        color = AppTheme.textSecondary(),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        suggestions.forEach { suggestion ->
+                            SuggestionChip(
+                                onClick = {
+                                    HapticsService.getInstance().select()
+                                    manualName = suggestion
+                                },
+                                label = { Text(suggestion) },
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val trimmed = manualName.trim()
+                    if (trimmed.isEmpty()) return@TextButton
+                    HapticsService.getInstance().select()
+                    onDismiss()
+                    coroutineScope.launch {
+                        onSave(
+                            time,
+                            userEmail,
+                            imageId,
+                            trimmed,
+                            {
+                                HapticsService.getInstance().success()
+                            },
+                            {
+                                HapticsService.getInstance().error()
+                                android.widget.Toast
+                                    .makeText(
+                                        context,
+                                        Localization.tr(
+                                            context,
+                                            "manual_food.error",
+                                            "Failed to update. Please try again.",
+                                        ),
+                                        android.widget.Toast.LENGTH_SHORT,
+                                    ).show()
+                            },
+                        )
+                    }
+                },
+            ) {
+                Text(
+                    Localization.tr(context, "common.save", "Save"),
+                    color = AppTheme.accent(),
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                HapticsService.getInstance().select()
+                onDismiss()
+            }) {
+                Text(
+                    Localization.tr(context, "common.cancel", "Cancel"),
+                    color = AppTheme.textSecondary(),
+                )
+            }
+        },
+        containerColor = AppTheme.surface(),
+    )
 }
 
 @Composable

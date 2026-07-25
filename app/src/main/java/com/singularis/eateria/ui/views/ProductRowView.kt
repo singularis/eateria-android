@@ -97,6 +97,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -144,6 +145,7 @@ fun ProductCard(
     onAddSugar: (() -> Unit)? = null,
     onAddDrinkExtra: ((String) -> Unit)? = null,
     onAddFoodExtra: ((String) -> Unit)? = null,
+    onSwipeToCamera: (() -> Unit)? = null,
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
@@ -156,25 +158,72 @@ fun ProductCard(
     val context = LocalContext.current
     val grpcService = remember { com.singularis.eateria.services.GRPCService(context) }
 
+    fun openHealthInfo() {
+        if (isDeleting || isLoadingHealth) return
+        HapticsService.getInstance().select()
+        if (healthInfoTitle.isNotEmpty()) {
+            showHealthInfoDialog = true
+            return
+        }
+        isLoadingHealth = true
+        coroutineScope.launch {
+            try {
+                val response =
+                    grpcService.getFoodHealthLevel(
+                        time = product.time,
+                        foodName = product.name,
+                    )
+                if (response != null) {
+                    healthInfoTitle = response.title
+                    healthInfoDescription = response.description
+                    healthInfoSummary = response.healthSummary
+                    showHealthInfoDialog = true
+                }
+            } catch (_: Exception) {
+            }
+            isLoadingHealth = false
+        }
+    }
+
+    val density = LocalDensity.current
+    val swipeThresholdPx = with(density) { 70.dp.toPx() }
     val state =
         rememberSwipeToDismissBoxState(
-            positionalThreshold = { totalDistance -> totalDistance * 0.7f },
+            positionalThreshold = { totalDistance ->
+                // ~70dp threshold (iOS parity), capped at 35% of row width
+                minOf(totalDistance * 0.35f, swipeThresholdPx)
+            },
         )
 
     LaunchedEffect(state.currentValue) {
-        if (state.currentValue == SwipeToDismissBoxValue.EndToStart) {
-            showDeleteConfirmationDialog = true
-            state.reset()
+        when (state.currentValue) {
+            SwipeToDismissBoxValue.EndToStart -> {
+                showDeleteConfirmationDialog = true
+                state.reset()
+            }
+            SwipeToDismissBoxValue.StartToEnd -> {
+                HapticsService.getInstance().mediumImpact()
+                onSwipeToCamera?.invoke()
+                state.reset()
+            }
+            else -> Unit
         }
     }
 
     SwipeToDismissBox(
         state = state,
-        enableDismissFromStartToEnd = false,
+        enableDismissFromStartToEnd = onSwipeToCamera != null,
         enableDismissFromEndToStart = true,
         backgroundContent = {
+            val isDelete = state.targetValue == SwipeToDismissBoxValue.EndToStart
+            val isCamera = state.targetValue == SwipeToDismissBoxValue.StartToEnd
             val color by animateColorAsState(
-                targetValue = if (state.targetValue == SwipeToDismissBoxValue.Settled) Color.Transparent else AppTheme.danger(),
+                targetValue =
+                    when {
+                        isDelete -> AppTheme.danger()
+                        isCamera -> AppTheme.accent()
+                        else -> Color.Transparent
+                    },
                 label = Localization.tr(LocalContext.current, "common.background_animation", "background color animation"),
             )
             val scale by animateFloatAsState(
@@ -187,12 +236,21 @@ fun ProductCard(
                     .fillMaxSize()
                     .background(color, shape = RoundedCornerShape(Dimensions.cornerRadiusM))
                     .padding(horizontal = Dimensions.paddingL),
-                contentAlignment = Alignment.CenterEnd,
+                contentAlignment =
+                    when {
+                        isCamera -> Alignment.CenterStart
+                        else -> Alignment.CenterEnd
+                    },
             ) {
                 Icon(
-                    AppIcons.Actions.delete,
-                    contentDescription = Localization.tr(LocalContext.current, "common.remove", "Delete"),
-                    tint = AppTheme.textPrimary(),
+                    imageVector = if (isCamera) AppIcons.Media.photoCamera else AppIcons.Actions.delete,
+                    contentDescription =
+                        if (isCamera) {
+                            Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo")
+                        } else {
+                            Localization.tr(LocalContext.current, "common.remove", "Delete")
+                        },
+                    tint = Color.White,
                     modifier = Modifier.scale(scale),
                 )
             }
@@ -206,18 +264,14 @@ fun ProductCard(
             colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
-            Box(
-                contentAlignment = Alignment.CenterEnd,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(Dimensions.paddingM),
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(Dimensions.paddingM)
-                            .padding(end = if (product.healthRating >= 0 && !isDeleting) 45.dp else 0.dp),
-                    horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
-                ) {
                 // Food photo - clickable for full screen (matches iOS)
                 Box(
                     modifier =
@@ -226,7 +280,6 @@ fun ProductCard(
                             .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
                             .background(AppTheme.divider())
                             .pointerInput(Unit) {
-                                val context = this
                                 detectTapGestures(
                                     onTap = {
                                         if (!isDeleting) {
@@ -234,17 +287,9 @@ fun ProductCard(
                                             onPhotoTap()
                                         }
                                     },
-                                    onLongPress = {
-                                        // Not fully functional since we need android Context but just stubbing it
-                                        if (!isDeleting) {
-                                            HapticsService.getInstance().mediumImpact()
-                                            // runDiagnostic expects Android context, we will pass LocalContext further down
-                                        }
-                                    }
                                 )
                             },
                 ) {
-                    val context = LocalContext.current
                     val productImage = product.getImage(context)
 
                     if (productImage != null) {
@@ -257,7 +302,7 @@ fun ProductCard(
                     } else if (product.needsRemoteFetch(context)) {
                         Icon(
                             imageVector = AppIcons.Actions.download,
-                            contentDescription = Localization.tr(LocalContext.current, "fs.downloading_photo", "Downloading photo"),
+                            contentDescription = Localization.tr(context, "fs.downloading_photo", "Downloading photo"),
                             tint = AppTheme.textSecondary(),
                             modifier =
                                 Modifier
@@ -267,7 +312,7 @@ fun ProductCard(
                     } else {
                         Icon(
                             imageVector = AppIcons.Media.photoLibrary,
-                            contentDescription = Localization.tr(LocalContext.current, "fs.no_photo", "No photo"),
+                            contentDescription = Localization.tr(context, "fs.no_photo", "No photo"),
                             tint = AppTheme.textSecondary(),
                             modifier =
                                 Modifier
@@ -277,20 +322,9 @@ fun ProductCard(
                     }
                 }
 
-                // Food details - clickable for portion modification (matches iOS)
+                // Food details — body is non-interactive; calories open health info
                 Column(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .clickable(
-                                indication = LocalIndication.current,
-                                interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
-                            ) {
-                                if (!isDeleting) {
-                                    HapticsService.getInstance().select()
-                                    showPortionDialog = true
-                                }
-                            },
+                    modifier = Modifier.weight(1f),
                 ) {
                     Text(
                         text = product.name,
@@ -303,12 +337,17 @@ fun ProductCard(
 
                     Text(
                         text = "${product.calories} ${Localization.tr(
-                            LocalContext.current,
+                            context,
                             "units.kcal",
                             "kcal",
-                        )} • ${product.weight}${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        color = AppTheme.textSecondary(),
+                        )} • ${product.weight}${Localization.tr(context, "units.g", "g")}",
+                        color = AppTheme.accent(),
                         style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier =
+                            Modifier.clickable(enabled = !isDeleting) {
+                                openHealthInfo()
+                            },
                     )
 
                     if (product.ingredients.isNotEmpty()) {
@@ -322,22 +361,22 @@ fun ProductCard(
                         )
                     }
 
-                    // Extras icons
-                    val extrasIconsText = buildString {
-                        product.extras["lemon_5g"]?.let { count -> repeat(count) { append("🍋") } }
-                        product.extras["honey_10g"]?.let { count -> repeat(count) { append("🍯") } }
-                        product.extras["milk_50g"]?.let { count -> repeat(count) { append("🥛") } }
-                        product.extras["soy_sauce_15g"]?.let { count -> repeat(count) { append("🥢") } }
-                        product.extras["wasabi_3g"]?.let { count -> repeat(count) { append("🌿") } }
-                        product.extras["spicy_pepper_5g"]?.let { count -> repeat(count) { append("🌶") } }
-                    }
+                    val extrasIconsText =
+                        buildString {
+                            product.extras["lemon_5g"]?.let { count -> repeat(count) { append("🍋") } }
+                            product.extras["honey_10g"]?.let { count -> repeat(count) { append("🍯") } }
+                            product.extras["milk_50g"]?.let { count -> repeat(count) { append("🥛") } }
+                            product.extras["soy_sauce_15g"]?.let { count -> repeat(count) { append("🥢") } }
+                            product.extras["wasabi_3g"]?.let { count -> repeat(count) { append("🌿") } }
+                            product.extras["spicy_pepper_5g"]?.let { count -> repeat(count) { append("🌶") } }
+                        }
 
                     val hasExtras = extrasIconsText.isNotEmpty() || product.addedSugarTsp > 0
                     if (hasExtras) {
                         Spacer(modifier = Modifier.height(Dimensions.paddingXS))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             if (extrasIconsText.isNotEmpty()) {
                                 Text(
@@ -361,54 +400,66 @@ fun ProductCard(
                     }
                 }
 
-                }
-                
-                // Separate layer for HealthRatingRing or LoadingIcon
                 if (isDeleting) {
                     com.singularis.eateria.ui.components.AnimatedLoadingIcon(
                         size = Dimensions.loadingIndicatorSize,
                         color = AppTheme.accent(),
                         strokeWidth = Dimensions.loadingIndicatorStrokeWidth,
-                        modifier = Modifier.padding(end = Dimensions.paddingM)
                     )
-                } else if (product.healthRating >= 0) {
-                    HealthRatingRing(
-                        rating = product.effectiveHealthRating,
-                        color = getHealthRatingColor(rating = product.effectiveHealthRating),
-                        modifier = Modifier
-                            .padding(end = Dimensions.paddingM)
-                            .clickable {
-                                HapticsService.getInstance().select()
-                                if (healthInfoTitle.isNotEmpty()) {
-                                    // Cached — show immediately
-                                    showHealthInfoDialog = true
-                                    return@clickable
-                                }
-                                // Fetch from GRPC
-                                isLoadingHealth = true
-                                coroutineScope.launch {
-                                    try {
-                                        val response = grpcService.getFoodHealthLevel(
-                                            time = product.time,
-                                            foodName = product.name
-                                        )
-                                        if (response != null) {
-                                            healthInfoTitle = response.title
-                                            healthInfoDescription = response.description
-                                            healthInfoSummary = response.healthSummary
-                                            showHealthInfoDialog = true
-                                        }
-                                    } catch (_: Exception) { }
-                                    isLoadingHealth = false
-                                }
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(0.dp),
+                    ) {
+                        if (onShare != null) {
+                            IconButton(
+                                onClick = {
+                                    HapticsService.getInstance().select()
+                                    onShare(product.time, product.name)
+                                },
+                                modifier = Modifier.size(36.dp),
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.Actions.share,
+                                    contentDescription =
+                                        Localization.tr(context, "portion.share", "Share food with friend"),
+                                    tint = AppTheme.accent(),
+                                    modifier = Modifier.size(20.dp),
+                                )
                             }
-                    )
+                        }
+                        IconButton(
+                            onClick = {
+                                HapticsService.getInstance().select()
+                                showPortionDialog = true
+                            },
+                            modifier = Modifier.size(36.dp),
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.Navigation.more,
+                                contentDescription =
+                                    Localization.tr(context, "common.more", "More options"),
+                                tint = AppTheme.textSecondary(),
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                        if (product.healthRating >= 0) {
+                            HealthRatingRing(
+                                rating = product.effectiveHealthRating,
+                                color = getHealthRatingColor(rating = product.effectiveHealthRating),
+                                modifier =
+                                    Modifier
+                                        .padding(start = 2.dp)
+                                        .clickable { openHealthInfo() },
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
-    // Portion selection dialog
+    // Portion selection dialog (Share removed — dedicated icon on card)
     if (showPortionDialog || showSuccessConfirmation) {
         PortionSelectionDialog(
             foodName = product.name,
@@ -424,10 +475,7 @@ fun ProductCard(
             },
             isSuccess = showSuccessConfirmation,
             resetSuccessState = onSuccessDialogDismissed,
-            onShare =
-                onShare?.let { shareCallback ->
-                    { shareCallback(product.time, product.name) }
-                },
+            onShare = null,
             isDrink = product.isDrink,
             isFruitOrVegetable = product.isFruitOrVegetable,
             onTryAgain = onTryAgain,

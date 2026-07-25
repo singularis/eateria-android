@@ -726,5 +726,10 @@
   "info.privacy.text": "Your data is encrypted in transit. We do not sell your personal information or show ads in the app.",
   "info.section.guest": "Trying without an account",
   "info.guest.text": "Use Let Me Try to explore Eateria immediately. Sign in later if you want to sync across devices or recover your history.",
-  "common.not_yet": "Not Yet"
+  "common.not_yet": "Not Yet",
+  "macro.targets.alert.title": "Macro goals",
+  "macro.no_data": "No macros yet",
+  "macro.reset_recommended": "Reset to recommended",
+  "manual_food.suggestions": "Suggestions",
+  "common.more": "More options"
 }

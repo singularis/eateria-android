@@ -516,6 +516,11 @@ fun MacrosSummaryRow(
     isViewingCustomDate: Boolean,
     currentViewingDateString: String,
     softLimit: Int = 1900,
+    customProteinGoal: Double? = null,
+    customFatGoal: Double? = null,
+    customCarbsGoal: Double? = null,
+    onSaveMacroGoals: (protein: Double, fat: Double, carbs: Double) -> Unit = { _, _, _ -> },
+    onResetMacroGoals: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var proteins by remember { mutableStateOf(0.0) }
@@ -546,8 +551,14 @@ fun MacrosSummaryRow(
         }
     }
 
-    // Macro targets from daily kcal (matching iOS formula)
-    val targets = macroTargetsFromDailyKcal(softLimit)
+    val recommended = macroTargetsFromDailyKcal(softLimit)
+    val targets =
+        MacroTargets(
+            protein = customProteinGoal ?: recommended.protein,
+            fat = customFatGoal ?: recommended.fat,
+            carbs = customCarbsGoal ?: recommended.carbs,
+            sugarMax = recommended.sugarMax,
+        )
     fun fmt(v: Double) = "%.1f".format(v)
     val grams = Localization.tr(context, "units.g", "g")
     val proLabel = Localization.tr(context, "macro.pro", "PRO")
@@ -584,6 +595,10 @@ fun MacrosSummaryRow(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(Dimensions.cornerRadiusM))
                 .background(AppTheme.surfaceAlt())
+                .clickable {
+                    HapticsService.getInstance().select()
+                    showMacroTargets = true
+                }
                 .padding(vertical = Dimensions.paddingS),
             contentAlignment = Alignment.Center,
         ) {
@@ -592,6 +607,17 @@ fun MacrosSummaryRow(
                 style = MaterialTheme.typography.bodySmall,
                 color = AppTheme.textSecondary(),
                 textAlign = TextAlign.Center,
+            )
+        }
+        if (showMacroTargets) {
+            MacroTargetsSheet(
+                softLimit = softLimit,
+                customProteinGoal = customProteinGoal,
+                customFatGoal = customFatGoal,
+                customCarbsGoal = customCarbsGoal,
+                onSave = onSaveMacroGoals,
+                onReset = onResetMacroGoals,
+                onDismiss = { showMacroTargets = false },
             )
         }
         return
@@ -635,7 +661,12 @@ fun MacrosSummaryRow(
     if (showMacroTargets) {
         MacroTargetsSheet(
             softLimit = softLimit,
-            onDismiss = { showMacroTargets = false }
+            customProteinGoal = customProteinGoal,
+            customFatGoal = customFatGoal,
+            customCarbsGoal = customCarbsGoal,
+            onSave = onSaveMacroGoals,
+            onReset = onResetMacroGoals,
+            onDismiss = { showMacroTargets = false },
         )
     }
 }
@@ -656,19 +687,52 @@ private fun macroTargetsFromDailyKcal(kcal: Int): MacroTargets {
 @Composable
 private fun MacroTargetsSheet(
     softLimit: Int,
-    onDismiss: () -> Unit
+    customProteinGoal: Double?,
+    customFatGoal: Double?,
+    customCarbsGoal: Double?,
+    onSave: (protein: Double, fat: Double, carbs: Double) -> Unit,
+    onReset: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    val targets = macroTargetsFromDailyKcal(softLimit)
-    fun fmt(v: Double) = "%.1f".format(v)
+    val recommended = macroTargetsFromDailyKcal(softLimit)
+    fun fmt(v: Double) = "%.0f".format(v)
     val grams = Localization.tr(context, "units.g", "g")
     val proLabel = Localization.tr(context, "macro.pro", "PRO")
     val fatLabel = Localization.tr(context, "macro.fat", "FAT")
     val carLabel = Localization.tr(context, "macro.car", "CAR")
     val sugLabel = Localization.tr(context, "macro.sug", "SUG")
-    val macroGreenPurple = Color(0xFF388E8E) // ~(0.22, 0.55, 0.6)
+    val macroGreenPurple = Color(0xFF388E8E)
+
+    var proteinText by remember {
+        mutableStateOf(fmt(customProteinGoal ?: recommended.protein))
+    }
+    var fatText by remember {
+        mutableStateOf(fmt(customFatGoal ?: recommended.fat))
+    }
+    var carbsText by remember {
+        mutableStateOf(fmt(customCarbsGoal ?: recommended.carbs))
+    }
+
+    val proteinVal = proteinText.toDoubleOrNull()
+    val fatVal = fatText.toDoubleOrNull()
+    val carbsVal = carbsText.toDoubleOrNull()
+    val isValid =
+        proteinVal != null && proteinVal > 0 &&
+            fatVal != null && fatVal > 0 &&
+            carbsVal != null && carbsVal > 0
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val fieldColors =
+        OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = macroGreenPurple,
+            unfocusedBorderColor = AppTheme.divider(),
+            focusedTextColor = AppTheme.textPrimary(),
+            unfocusedTextColor = AppTheme.textPrimary(),
+            cursorColor = macroGreenPurple,
+            focusedLabelColor = macroGreenPurple,
+            unfocusedLabelColor = AppTheme.textSecondary(),
+        )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -677,33 +741,89 @@ private fun MacroTargetsSheet(
         contentColor = AppTheme.textPrimary(),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = Localization.tr(context, "macro.targets.alert.title", "Macro goals"),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = macroGreenPurple,
             )
+
+            OutlinedTextField(
+                value = proteinText,
+                onValueChange = { proteinText = it.filter { ch -> ch.isDigit() || ch == '.' } },
+                label = { Text("$proLabel ($grams)") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                colors = fieldColors,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = fatText,
+                onValueChange = { fatText = it.filter { ch -> ch.isDigit() || ch == '.' } },
+                label = { Text("$fatLabel ($grams)") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                colors = fieldColors,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = carbsText,
+                onValueChange = { carbsText = it.filter { ch -> ch.isDigit() || ch == '.' } },
+                label = { Text("$carLabel ($grams)") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                colors = fieldColors,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Text(
+                text = "$sugLabel 40–50$grams",
+                color = AppTheme.textSecondary(),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+
             Spacer(modifier = Modifier.height(4.dp))
-            Text("$proLabel ${fmt(targets.protein)}$grams", color = macroGreenPurple)
-            Text("$fatLabel ${fmt(targets.fat)}$grams", color = macroGreenPurple)
-            Text("$carLabel ${fmt(targets.carbs)}$grams", color = macroGreenPurple)
-            Text("$sugLabel 40–50$grams", color = macroGreenPurple)
-            Spacer(modifier = Modifier.height(8.dp))
-            PrimaryButton(
-                onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth()
+
+            TextButton(
+                onClick = {
+                    HapticsService.getInstance().select()
+                    proteinText = fmt(recommended.protein)
+                    fatText = fmt(recommended.fat)
+                    carbsText = fmt(recommended.carbs)
+                    onReset()
+                },
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    Localization.tr(context, "common.ok", "OK"),
+                    Localization.tr(context, "macro.reset_recommended", "Reset to recommended"),
+                    color = AppTheme.accent(),
+                )
+            }
+
+            PrimaryButton(
+                onClick = {
+                    val p = proteinVal ?: return@PrimaryButton
+                    val f = fatVal ?: return@PrimaryButton
+                    val c = carbsVal ?: return@PrimaryButton
+                    HapticsService.getInstance().success()
+                    onSave(p, f, c)
+                    onDismiss()
+                },
+                enabled = isValid,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    Localization.tr(context, "common.save", "Save"),
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))

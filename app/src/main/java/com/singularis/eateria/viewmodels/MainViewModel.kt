@@ -90,6 +90,15 @@ class MainViewModel(
     private val _hardLimit = MutableStateFlow(2100)
     val hardLimit: StateFlow<Int> = _hardLimit.asStateFlow()
 
+    private val _customProteinGoal = MutableStateFlow<Double?>(null)
+    val customProteinGoal: StateFlow<Double?> = _customProteinGoal.asStateFlow()
+
+    private val _customFatGoal = MutableStateFlow<Double?>(null)
+    val customFatGoal: StateFlow<Double?> = _customFatGoal.asStateFlow()
+
+    private val _customCarbsGoal = MutableStateFlow<Double?>(null)
+    val customCarbsGoal: StateFlow<Double?> = _customCarbsGoal.asStateFlow()
+
     // UI state for dialogs
     private val _showLimitsAlert = MutableStateFlow(false)
     val showLimitsAlert: StateFlow<Boolean> = _showLimitsAlert.asStateFlow()
@@ -199,8 +208,40 @@ class MainViewModel(
                 val hardLimit = authService.getHardLimit()
                 _softLimit.value = softLimit
                 _hardLimit.value = hardLimit
+                _customProteinGoal.value = authService.getCustomProteinGoal()
+                _customFatGoal.value = authService.getCustomFatGoal()
+                _customCarbsGoal.value = authService.getCustomCarbsGoal()
             } catch (e: Exception) {
                 // Keep default values if loading fails
+            }
+        }
+    }
+
+    fun saveCustomMacroGoals(
+        protein: Double,
+        fat: Double,
+        carbs: Double,
+    ) {
+        _customProteinGoal.value = protein
+        _customFatGoal.value = fat
+        _customCarbsGoal.value = carbs
+        viewModelScope.launch {
+            try {
+                authService.setCustomMacroGoals(protein, fat, carbs)
+                grpcService.updateMacroGoals(protein, fat, carbs)
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun resetCustomMacroGoals() {
+        _customProteinGoal.value = null
+        _customFatGoal.value = null
+        _customCarbsGoal.value = null
+        viewModelScope.launch {
+            try {
+                authService.clearCustomMacroGoals()
+            } catch (_: Exception) {
             }
         }
     }

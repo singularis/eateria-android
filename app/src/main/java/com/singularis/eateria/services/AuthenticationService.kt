@@ -113,6 +113,9 @@ class AuthenticationService(
         private val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
         private val SOFT_LIMIT = stringPreferencesKey("soft_limit")
         private val HARD_LIMIT = stringPreferencesKey("hard_limit")
+        private val CUSTOM_PROTEIN_GOAL = stringPreferencesKey("custom_protein_goal")
+        private val CUSTOM_FAT_GOAL = stringPreferencesKey("custom_fat_goal")
+        private val CUSTOM_CARBS_GOAL = stringPreferencesKey("custom_carbs_goal")
         private val HAS_USER_HEALTH_DATA = booleanPreferencesKey("has_user_health_data")
         private val DISPLAY_MODE_FULL = booleanPreferencesKey("display_mode_full")
         private val IS_ANONYMOUS = booleanPreferencesKey("is_anonymous")
@@ -467,6 +470,38 @@ class AuthenticationService(
     suspend fun setHardLimit(limit: Int) {
         context.dataStore.edit { preferences ->
             preferences[HARD_LIMIT] = limit.toString()
+        }
+    }
+
+    suspend fun getCustomProteinGoal(): Double? =
+        context.dataStore.data.first()[CUSTOM_PROTEIN_GOAL]?.toDoubleOrNull()
+
+    suspend fun getCustomFatGoal(): Double? =
+        context.dataStore.data.first()[CUSTOM_FAT_GOAL]?.toDoubleOrNull()
+
+    suspend fun getCustomCarbsGoal(): Double? =
+        context.dataStore.data.first()[CUSTOM_CARBS_GOAL]?.toDoubleOrNull()
+
+    suspend fun setCustomMacroGoals(
+        protein: Double?,
+        fat: Double?,
+        carbs: Double?,
+    ) {
+        context.dataStore.edit { preferences ->
+            if (protein != null) preferences[CUSTOM_PROTEIN_GOAL] = protein.toString()
+            else preferences.remove(CUSTOM_PROTEIN_GOAL)
+            if (fat != null) preferences[CUSTOM_FAT_GOAL] = fat.toString()
+            else preferences.remove(CUSTOM_FAT_GOAL)
+            if (carbs != null) preferences[CUSTOM_CARBS_GOAL] = carbs.toString()
+            else preferences.remove(CUSTOM_CARBS_GOAL)
+        }
+    }
+
+    suspend fun clearCustomMacroGoals() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(CUSTOM_PROTEIN_GOAL)
+            preferences.remove(CUSTOM_FAT_GOAL)
+            preferences.remove(CUSTOM_CARBS_GOAL)
         }
     }
 

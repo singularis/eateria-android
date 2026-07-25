@@ -133,6 +133,8 @@ fun CameraButtonView(
     selectedDate: Date = Date(),
     onReturnToToday: (() -> Unit)? = null,
     onRequestTutorial: ((String) -> Unit)? = null,
+    /** Increment to trigger the same camera path as the Take Food Photo button (incl. backdating). */
+    externalCameraRequest: Int = 0,
 ) {
     val context = LocalContext.current
     var showBackdatingAlert by remember { mutableStateOf(false) }
@@ -189,6 +191,12 @@ fun CameraButtonView(
             showBackdatingAlert = true
         } else {
             openCamera(isCamera)
+        }
+    }
+
+    LaunchedEffect(externalCameraRequest) {
+        if (externalCameraRequest > 0 && !isLoadingFoodPhoto) {
+            checkBackdating(true)
         }
     }
 

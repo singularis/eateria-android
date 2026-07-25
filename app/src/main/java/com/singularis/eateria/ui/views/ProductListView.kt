@@ -136,6 +136,7 @@ fun ProductListView(
     modifiedProductTime: Long?,
     onSuccessDialogDismissed: () -> Unit,
     onShare: ((Long, String) -> Unit)? = null,
+    onSwipeToCamera: (() -> Unit)? = null,
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
@@ -212,6 +213,7 @@ fun ProductListView(
                         onAddSugar = onAddSugar?.let { { it(product.time, product.name) } },
                         onAddDrinkExtra = onAddDrinkExtra?.let { { extra -> it(product.time, product.name, extra) } },
                         onAddFoodExtra = onAddFoodExtra?.let { { extra -> it(product.time, product.name, extra) } },
+                        onSwipeToCamera = onSwipeToCamera,
                     )
                 }
             }

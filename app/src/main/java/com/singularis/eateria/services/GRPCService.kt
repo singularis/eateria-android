@@ -1087,6 +1087,82 @@ class GRPCService(
             }
         }
 
+    /** Partial goal update — macros only. Do not include weight/calorie fields. */
+    suspend fun updateMacroGoals(
+        proteinTargetG: Double,
+        fatTargetG: Double,
+        carbsTargetG: Double,
+    ): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val jsonObject =
+                    org.json.JSONObject().apply {
+                        put("protein_target_g", proteinTargetG)
+                        put("fat_target_g", fatTargetG)
+                        put("carbs_target_g", carbsTargetG)
+                    }
+
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request =
+                    Request
+                        .Builder()
+                        .url("${baseUrl}goal_update")
+                        .post(requestBody)
+                        .addHeader("Content-Type", "application/json")
+
+                val response = client.newCall(request.build()).execute()
+                response.isSuccessful.also { response.close() }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to update macro goals", e)
+                false
+            }
+        }
+
+    suspend fun suggestDishNames(
+        imageId: String,
+        currentName: String,
+        languageCode: String,
+    ): List<String> =
+        withContext(Dispatchers.IO) {
+            try {
+                val jsonObject =
+                    org.json.JSONObject().apply {
+                        put("image_id", imageId)
+                        put("current_name", currentName)
+                        put("language_code", languageCode)
+                    }
+
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request =
+                    Request
+                        .Builder()
+                        .url("${baseUrl}suggest_dish_names")
+                        .post(requestBody)
+                        .addHeader("Content-Type", "application/json")
+
+                val response = client.newCall(request.build()).execute()
+                if (!response.isSuccessful) {
+                    response.close()
+                    return@withContext emptyList()
+                }
+                val body = response.body.string()
+                response.close()
+                val suggestions = org.json.JSONObject(body).optJSONArray("suggestions")
+                if (suggestions == null) {
+                    emptyList()
+                } else {
+                    List(suggestions.length()) { i -> suggestions.getString(i) }
+                }
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to suggest dish names", e)
+                emptyList()
+            }
+        }
+
     suspend fun logActivity(
         activityType: String,
         value: Int,

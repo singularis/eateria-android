@@ -227,8 +227,8 @@ fun NicknameSettingsView(
                             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                autoCorrect = false,
-                                capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None
+                                autoCorrectEnabled = false,
+                                capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None,
                             )
                         )
 

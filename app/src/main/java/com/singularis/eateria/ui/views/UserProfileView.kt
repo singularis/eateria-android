@@ -23,6 +23,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -31,8 +33,6 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -110,7 +110,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
     LaunchedEffect(languageFlowCurrent) {
         Localization.clearCache()
         QuotesService.clearCache()
-        greeting = authViewModel.getGreeting() ?: Localization.tr(context, "profile.greeting", "Hello")
+        greeting = authViewModel.getGreeting()
         val healthDataService = HealthDataService.getInstance(context)
         val healthProfile = healthDataService.getHealthProfile()
 
@@ -1174,7 +1174,7 @@ private fun ThemeSectionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                    imageVector = if (soundEnabled) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
                     contentDescription = null,
                     tint = if (soundEnabled) AppTheme.accent() else AppTheme.textSecondary()
                 )

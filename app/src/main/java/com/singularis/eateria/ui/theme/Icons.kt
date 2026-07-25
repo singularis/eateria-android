@@ -138,7 +138,7 @@ object AppIcons {
     object Statistics {
         val trendingUp = Icons.AutoMirrored.Filled.TrendingUp
         val trendingDown = Icons.AutoMirrored.Filled.TrendingDown
-        val showChart = Icons.Filled.ShowChart
+        val showChart = Icons.AutoMirrored.Filled.ShowChart
         val barChart = Icons.Filled.BarChart
         val pieChart = Icons.Filled.PieChart
         val analytics = Icons.Filled.Analytics
@@ -151,8 +151,8 @@ object AppIcons {
     object System {
         val logout = Icons.AutoMirrored.Filled.ExitToApp
         val login = Icons.AutoMirrored.Filled.Login
-        val help = Icons.Filled.Help
-        val helpOutlined = Icons.Outlined.Help
+        val help = Icons.AutoMirrored.Filled.Help
+        val helpOutlined = Icons.AutoMirrored.Outlined.Help
         val arrowRight = Icons.AutoMirrored.Filled.KeyboardArrowRight
         val arrowLeft = Icons.AutoMirrored.Filled.KeyboardArrowLeft
         val arrowUp = Icons.Filled.KeyboardArrowUp

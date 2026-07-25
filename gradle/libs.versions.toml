@@ -1,10 +1,10 @@
 [versions]
 # Stable Android Gradle Plugin and Kotlin versions
-agp = "8.12.3"
-kotlin = "2.1.21"
+agp = "8.12.0"
+kotlin = "2.4.0"
 
 # Core Android libraries - stable versions
-core-ktx = "1.16.0"
+core-ktx = "1.18.0"
 appcompat = "1.7.1"
 material = "1.12.0"
 
@@ -14,30 +14,30 @@ androidx-test-ext-junit = "1.2.1"
 espresso-core = "3.6.1"
 
 # Compose - stable BOM and versions
-compose-bom = "2025.06.00"
-activity-compose = "1.10.1"
-lifecycle = "2.9.1"
-navigation = "2.9.0"
+compose-bom = "2026.06.00"
+activity-compose = "1.13.0"
+lifecycle = "2.10.0"
+navigation = "2.9.7"
 
 # Networking and serialization
-retrofit = "2.11.0"
-okhttp = "4.12.0"
-gson = "2.11.0"
+retrofit = "3.0.0"
+okhttp = "5.4.0"
+gson = "2.13.2"
 
 # Google services and auth
 play-services-maps = "19.2.0"
 google-services = "4.4.2"
 
 # Credential Manager (replaces deprecated Google Sign-In)
-credentials = "1.5.0"
-credentials-play-services-auth = "1.5.0"
+credentials = "1.6.0"
+credentials-play-services-auth = "1.6.0"
 googleid = "1.1.1"
 
 # Camera
-camera = "1.4.2"
+camera = "1.6.1"
 
 # DataStore
-datastore = "1.1.7"
+datastore = "1.2.1"
 
 # JWT
 jjwt = "0.12.6"

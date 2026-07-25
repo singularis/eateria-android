@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -492,7 +493,7 @@ fun HealthSettingsView(
                     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Gray4)) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.DirectionsRun, contentDescription = null, tint = AppTheme.accent())
+                                Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = null, tint = AppTheme.accent())
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(Localization.tr(context, "health.plan.timeline_title", "Estimated timeline"), color = AppTheme.accent(), fontWeight = FontWeight.Bold)
                             }
@@ -627,7 +628,13 @@ fun HealthSettingsView(
                                     readOnly = true,
                                     label = { Text(Localization.tr(context, "health.activity", "Activity Level:")) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .menuAnchor(
+                                                ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                                enabled = true,
+                                            ),
                                     colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                                 )
                                 ExposedDropdownMenu(

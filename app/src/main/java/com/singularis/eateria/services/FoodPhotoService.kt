@@ -87,7 +87,7 @@ class FoodPhotoService private constructor(private val context: Context) {
                 return@withContext null
             }
 
-            val inputStream = response.body?.byteStream()
+            val inputStream = response.body.byteStream()
             val bitmap = BitmapFactory.decodeStream(inputStream)
 
             if (bitmap != null) {

@@ -1390,7 +1390,7 @@ private fun CalorieLineChart(
                 val targetY = height - bottomPadding - (chartHeight * normalizedValue)
                 val y = height - bottomPadding - ((height - bottomPadding - targetY) * animationProgress.value)
 
-                points.add(Triple(x, y, stat.totalCalories.toInt()))
+                points.add(Triple(x, y, stat.totalCalories))
 
                 if (index == 0) {
                     path.moveTo(x, y)
@@ -1851,7 +1851,7 @@ private fun FoodWeightLineChart(
                     }
                 val y = height - bottomPadding - (chartHeight * normalizedValue)
 
-                points.add(Triple(x, y, stat.totalFoodWeight.toInt()))
+                points.add(Triple(x, y, stat.totalFoodWeight))
 
                 if (index == 0) {
                     path.moveTo(x, y)
@@ -2174,7 +2174,7 @@ private fun MacroCompositionChart(
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     Text(
-                        text = "${(totalCalories / chartData.size).toInt()} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
+                        text = "${totalCalories / chartData.size} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
                         color = AppTheme.textPrimary(),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )

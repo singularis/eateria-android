@@ -21,10 +21,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Grid3x3
 import androidx.compose.material.icons.filled.LocalCafe
@@ -305,7 +305,7 @@ fun PlanStepView(page: OnboardingPage) {
                     Text(Localization.tr(context, "onboarding.plan.point.weight", "Choose your target weight. BMI never goes below 18.5, so the goal stays safe."), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.DirectionsRun, contentDescription = null, tint = Color(0xFF2196F3), modifier = Modifier.size(32.dp))
+                    Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = null, tint = Color(0xFF2196F3), modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(Localization.tr(context, "onboarding.plan.point.activity", "Pick your activity level or use the activity only mode to focus on movement instead of diet."), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
                 }

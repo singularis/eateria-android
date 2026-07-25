@@ -120,6 +120,7 @@ import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.cardContainer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -158,14 +159,14 @@ fun ProductCard(
     val state =
         rememberSwipeToDismissBoxState(
             positionalThreshold = { totalDistance -> totalDistance * 0.7f },
-            confirmValueChange = {
-                if (it == SwipeToDismissBoxValue.EndToStart) {
-                    showDeleteConfirmationDialog = true
-                    return@rememberSwipeToDismissBoxState false
-                }
-                true
-            },
         )
+
+    LaunchedEffect(state.currentValue) {
+        if (state.currentValue == SwipeToDismissBoxValue.EndToStart) {
+            showDeleteConfirmationDialog = true
+            state.reset()
+        }
+    }
 
     SwipeToDismissBox(
         state = state,
@@ -830,7 +831,7 @@ fun PortionSelectionDialog(
                                                         "200%% (%dg) - Double portion",
                                                     ).replace(
                                                         "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
+                                                        "${calculatedWeight}${Localization.tr(
                                                             LocalContext.current,
                                                             "units.g",
                                                             "g",
@@ -844,7 +845,7 @@ fun PortionSelectionDialog(
                                                         "150%% (%dg) - One and a half portion",
                                                     ).replace(
                                                         "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
+                                                        "${calculatedWeight}${Localization.tr(
                                                             LocalContext.current,
                                                             "units.g",
                                                             "g",
@@ -858,7 +859,7 @@ fun PortionSelectionDialog(
                                                         "125%% (%dg) - One and a quarter portion",
                                                     ).replace(
                                                         "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
+                                                        "${calculatedWeight}${Localization.tr(
                                                             LocalContext.current,
                                                             "units.g",
                                                             "g",
@@ -872,7 +873,7 @@ fun PortionSelectionDialog(
                                                         "75%% (%dg) - Three quarters",
                                                     ).replace(
                                                         "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
+                                                        "${calculatedWeight}${Localization.tr(
                                                             LocalContext.current,
                                                             "units.g",
                                                             "g",
@@ -886,7 +887,7 @@ fun PortionSelectionDialog(
                                                         "50%% (%dg) - Half portion",
                                                     ).replace(
                                                         "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
+                                                        "${calculatedWeight}${Localization.tr(
                                                             LocalContext.current,
                                                             "units.g",
                                                             "g",
@@ -900,13 +901,13 @@ fun PortionSelectionDialog(
                                                         "25%% (%dg) - Quarter portion",
                                                     ).replace(
                                                         "%dg",
-                                                        "${calculatedWeight.toInt()}${Localization.tr(
+                                                        "${calculatedWeight}${Localization.tr(
                                                             LocalContext.current,
                                                             "units.g",
                                                             "g",
                                                         )}",
                                                     )
-                                            else -> "$percentage% (${calculatedWeight.toInt()}${Localization.tr(
+                                            else -> "$percentage% (${calculatedWeight}${Localization.tr(
                                                 LocalContext.current,
                                                 "units.g",
                                                 "g",
@@ -1182,13 +1183,13 @@ private fun HealthLevelInfoDialog(
             (0 until arr.length()).map { i ->
                 val obj = arr.getJSONObject(i)
                 HealthItem(
-                    ingredient = obj.optString("ingredient", null),
-                    ingredients = obj.optString("ingredients", null),
-                    description = obj.optString("description", null),
-                    risk = obj.optString("risk", null),
-                    benefit = obj.optString("benefit", null),
-                    impact = obj.optString("impact", null),
-                    impact_text = obj.optString("impact_text", null),
+                    ingredient = obj.optNullableString("ingredient"),
+                    ingredients = obj.optNullableString("ingredients"),
+                    description = obj.optNullableString("description"),
+                    risk = obj.optNullableString("risk"),
+                    benefit = obj.optNullableString("benefit"),
+                    impact = obj.optNullableString("impact"),
+                    impact_text = obj.optNullableString("impact_text"),
                 )
             }
         } catch (_: Exception) {
@@ -1310,3 +1311,6 @@ private fun HealthLevelInfoDialog(
         containerColor = AppTheme.surface(),
     )
 }
+
+private fun JSONObject.optNullableString(name: String): String? =
+    if (has(name) && !isNull(name)) optString(name, "") else null

@@ -7,7 +7,6 @@ import com.singularis.eateria.models.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
@@ -35,6 +34,7 @@ import eater.ShareFood
 import eater.Alcohol
 import eater.SetLanguage
 
+@Suppress("SENSELESS_COMPARISON")
 class GRPCService(
     private val context: Context,
 ) {
@@ -118,7 +118,7 @@ class GRPCService(
                         headers = mapOf("Accept" to "application/grpc+proto"),
                     )
                 if (response?.isSuccessful == true) {
-                    val bytes = response.body?.bytes()
+                    val bytes = response.body.bytes()
                     response.close()
                     if (bytes != null) {
                         try {
@@ -165,7 +165,7 @@ class GRPCService(
                         contentType = "application/grpc+proto",
                     )
                 if (response?.isSuccessful == true) {
-                    val bytes = response.body?.bytes()
+                    val bytes = response.body.bytes()
                     response.close()
                     if (bytes != null) {
                         try {
@@ -193,7 +193,7 @@ class GRPCService(
                 val response = sendRequest("eater_get_today", "GET")
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -246,7 +246,7 @@ class GRPCService(
                 val response = sendRequest("get_food_custom_date", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -337,7 +337,7 @@ class GRPCService(
 
                 if (response.isSuccessful) {
                     // HTTP 200-299 success response
-                    val responseBody = response.body?.string()
+                    val responseBody = response.body.string()
                     response.close()
 
                     if (responseBody != null) {
@@ -377,7 +377,7 @@ class GRPCService(
                 } else {
                     // HTTP 400+ error response - handle immediately without retries
                     val statusCode = response.code
-                    val responseBody = response.body?.string()
+                    val responseBody = response.body.string()
                     response.close()
 
                     Log.d("GRPCService", "Error Response - Status: $statusCode, Body: $responseBody, PhotoType: $photoType")
@@ -443,7 +443,7 @@ class GRPCService(
                 val response = sendRequest("delete_food", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -479,7 +479,7 @@ class GRPCService(
                 val response = sendRequest("get_recommendation", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -536,7 +536,7 @@ class GRPCService(
                 val response = sendRequest("modify_food_record", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -576,7 +576,7 @@ class GRPCService(
                 val response = sendRequest("manual_weight", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -606,7 +606,7 @@ class GRPCService(
                 Log.d("GRPCService", "Fetching today's statistics")
                 val response = sendRequest("eater_get_today", "GET")
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -676,7 +676,7 @@ class GRPCService(
                 val response = sendRequest("get_food_custom_date", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -740,11 +740,8 @@ class GRPCService(
                     put("nickname", nickname)
                 }
                 
-                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-                val requestBody = okhttp3.RequestBody.create(
-                    mediaType,
-                    jsonObject.toString()
-                )
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
                     .url("$baseUrl/nickname_update")
@@ -755,9 +752,9 @@ class GRPCService(
                 if (response.isSuccessful) {
                     Result.success(Unit)
                 } else {
-                    val errorBody = response.body?.string()
+                    val errorBody = response.body.string()
                     val errorMsg = try {
-                        val json = org.json.JSONObject(errorBody ?: "{}")
+                        val json = org.json.JSONObject(errorBody)
                         json.optString("detail", json.optString("error", "Server returned status code ${response.code}"))
                     } catch (e: Exception) {
                         "Server returned status code ${response.code}"
@@ -788,7 +785,7 @@ class GRPCService(
                 val response = sendRequest("feedback", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -824,7 +821,7 @@ class GRPCService(
                 val response = sendRequest("autocomplete/addfriend", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -857,7 +854,7 @@ class GRPCService(
                 val response = sendRequest("autocomplete/getfriend", "GET")
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -905,7 +902,7 @@ class GRPCService(
                 val response = sendRequest("autocomplete/sharefood", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val responseBytes = response.body?.bytes()
+                    val responseBytes = response.body.bytes()
                     response.close()
 
                     if (responseBytes != null) {
@@ -945,7 +942,7 @@ class GRPCService(
                 val response = sendRequest("set_language", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val bytes = response.body?.bytes()
+                    val bytes = response.body.bytes()
                     response.close()
                     if (bytes != null) {
                         try {
@@ -978,7 +975,7 @@ class GRPCService(
                 val response = sendRequest("delete_user", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val bytes = response.body?.bytes()
+                    val bytes = response.body.bytes()
                     response.close()
                     if (bytes != null) {
                         try {
@@ -1012,7 +1009,7 @@ class GRPCService(
                 val response = sendRequest("food_health_level", "POST", request.toByteArray())
 
                 if (response?.isSuccessful == true) {
-                    val bytes = response.body?.bytes()
+                    val bytes = response.body.bytes()
                     response.close()
                     if (bytes != null) {
                         try {
@@ -1043,8 +1040,8 @@ class GRPCService(
                     put("manual_food_name", newName)
                 }
                 
-                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
                     .url("${baseUrl}modify_food_manual")
@@ -1074,8 +1071,8 @@ class GRPCService(
                     put("recommended_calories", recommendedCalories)
                 }
                 
-                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
                     .url("${baseUrl}goal_update")
@@ -1107,8 +1104,8 @@ class GRPCService(
                     put("date", dateISO)
                 }
                 
-                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
                     .url("${baseUrl}activity_log")
@@ -1139,7 +1136,7 @@ class GRPCService(
                 
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
-                    val body = response.body?.string()
+                    val body = response.body.string()
                     response.close()
                     if (body != null) {
                         val json = org.json.JSONObject(body)
@@ -1179,8 +1176,8 @@ class GRPCService(
                     put("timestamp", System.currentTimeMillis())
                 }
                 
-                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
                     .url("${baseUrl}record_chess_game")
@@ -1189,7 +1186,7 @@ class GRPCService(
                 
                 val response = client.newCall(request.build()).execute()
                 if (response.isSuccessful) {
-                    val body = response.body?.string()
+                    val body = response.body.string()
                     response.close()
                     if (body != null) {
                         val json = org.json.JSONObject(body)
@@ -1227,8 +1224,8 @@ class GRPCService(
                     opponentEmail?.let { put("opponent_email", it) }
                 }
                 
-                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-                val requestBody = okhttp3.RequestBody.create(mediaType, jsonObject.toString())
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
                     .url("${baseUrl}autocomplete/get_chess_stats")
@@ -1237,7 +1234,7 @@ class GRPCService(
                 
                 val response = client.newCall(request.build()).execute()
                 if (response.isSuccessful) {
-                    val body = response.body?.string()
+                    val body = response.body.string()
                     response.close()
                     if (body != null) {
                         val json = org.json.JSONObject(body)
@@ -1277,7 +1274,7 @@ class GRPCService(
                 
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
-                    val body = response.body?.string()
+                    val body = response.body.string()
                     response.close()
                     if (body != null) {
                         val json = org.json.JSONObject(body)
@@ -1314,7 +1311,7 @@ class GRPCService(
                 
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
-                    val body = response.body?.string()
+                    val body = response.body.string()
                     response.close()
                     if (body != null) {
                         val json = org.json.JSONObject(body)

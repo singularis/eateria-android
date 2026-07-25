@@ -64,16 +64,6 @@ data class Product(
         _imageCacheLoaded = false
     }
 
-    // Computed properties mapped from iOS
-    private val extraDefinitions = mapOf(
-        "lemon_5g" to Pair(5, 1),
-        "honey_10g" to Pair(10, 30),
-        "milk_50g" to Pair(50, 32),
-        "soy_sauce_15g" to Pair(15, 10),
-        "wasabi_3g" to Pair(3, 8),
-        "spicy_pepper_5g" to Pair(5, 2)
-    )
-
     val sugarCalories: Int get() = (addedSugarTsp * 20).toInt()
     val sugarGrams: Int get() = (addedSugarTsp * 5).toInt()
 
@@ -116,5 +106,17 @@ data class Product(
         if (lower.contains("soup")) return false
         val fruitVegKeywords = listOf("apple", "banana", "orange", "fruit", "salad", "tomato", "carrot", "cucumber", "avocado", "grape", "berries", "berry", "peach", "pear", "plum", "mango", "pineapple", "watermelon", "melon", "broccoli", "spinach", "lettuce", "onion", "pepper", "bell pepper", "strawberry", "blueberry", "raspberry", "blackberry", "cherry", "kiwi", "lemon", "lime", "potato", "sweet potato", "corn", "pea", "bean", "cabbage", "celery", "zucchini", "eggplant", "beet", "radish", "garlic", "ginger", "pumpkin", "squash", "grapefruit", "apricot", "fig", "date", "coconut", "papaya", "dragon fruit", "persimmon", "pomegranate")
         return fruitVegKeywords.any { lower.contains(it) }
+    }
+
+    private companion object {
+        val extraDefinitions =
+            mapOf(
+                "lemon_5g" to Pair(5, 1),
+                "honey_10g" to Pair(10, 30),
+                "milk_50g" to Pair(50, 32),
+                "soy_sauce_15g" to Pair(15, 10),
+                "wasabi_3g" to Pair(3, 8),
+                "spicy_pepper_5g" to Pair(5, 2),
+            )
     }
 }

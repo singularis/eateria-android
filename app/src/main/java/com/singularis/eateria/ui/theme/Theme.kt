@@ -1,7 +1,9 @@
 package com.singularis.eateria.ui.theme
 
-import android.app.Activity
 import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -16,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import com.singularis.eateria.services.AppSettingsService
 
 private val DarkColorScheme =
@@ -73,14 +74,18 @@ fun EateriaTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
+            val activity = view.context as? ComponentActivity ?: return@SideEffect
+            val systemBarStyle =
+                if (darkTheme) {
+                    SystemBarStyle.dark(Color.Transparent.toArgb())
+                } else {
+                    SystemBarStyle.light(Color.Transparent.toArgb(), Color.Transparent.toArgb())
+                }
             // Enable edge-to-edge and dynamic system bar appearance
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            window.statusBarColor = Color.Transparent.toArgb()
-            window.navigationBarColor = Color.Transparent.toArgb()
-            val controller = WindowCompat.getInsetsController(window, view)
-            controller.isAppearanceLightStatusBars = !darkTheme
-            controller.isAppearanceLightNavigationBars = !darkTheme
+            activity.enableEdgeToEdge(
+                statusBarStyle = systemBarStyle,
+                navigationBarStyle = systemBarStyle,
+            )
         }
     }
 

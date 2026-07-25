@@ -120,7 +120,7 @@ fun ShareFoodView(
                             Text(Localization.tr(context, "friends.add", "Add Friend"))
                         }
                     },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent
                     )
                 )

@@ -10,6 +10,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.CameraAlt
@@ -74,7 +75,7 @@ fun getTutorialSteps(context: Context): List<TutorialStep> {
             key = "hasSeenSportTutorial",
             title = Localization.tr(context, "tutorial.sport.title", "Track Activity 🏃"),
             description = Localization.tr(context, "tutorial.sport.desc", "Log your workouts to earn extra calories for the day."),
-            iconRes = Icons.Default.DirectionsRun,
+            iconRes = Icons.AutoMirrored.Filled.DirectionsRun,
             color = Color(0xFF2196F3) // Blue
         ),
         TutorialStep(

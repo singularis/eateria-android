@@ -1,11 +1,12 @@
 package com.singularis.eateria.ui.views
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import com.singularis.eateria.util.ImageDecodeUtils
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -143,16 +144,25 @@ fun CameraButtonView(
             contract = ActivityResultContracts.PickVisualMedia(),
         ) { uri: Uri? ->
             uri?.let { imageUri ->
-                try {
-                    val inputStream = context.contentResolver.openInputStream(imageUri)
-                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                    inputStream?.close()
-
-                    if (bitmap != null) {
-                        onGalleryImageSelected?.invoke(bitmap)
-                    }
-                } catch (e: Exception) {
-                    // Handle error
+                val bitmap = ImageDecodeUtils.decodeBitmap(context, imageUri)
+                if (bitmap != null) {
+                    onGalleryImageSelected?.invoke(bitmap)
+                } else {
+                    val message =
+                        if (ImageDecodeUtils.isLikelyUnsupportedFormat(context, imageUri)) {
+                            Localization.tr(
+                                context,
+                                "error.image.unsupported",
+                                "This image format (AVIF/HEIC) is not supported on this device. Convert it to JPG or PNG and try again.",
+                            )
+                        } else {
+                            Localization.tr(
+                                context,
+                                "error.image.decode",
+                                "Could not read that image. Try JPG or PNG.",
+                            )
+                        }
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }
             }
         }

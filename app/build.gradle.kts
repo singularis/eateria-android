@@ -5,8 +5,8 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.google.services)
-    id("com.google.protobuf") version "0.9.5"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
+    id("com.google.protobuf") version "0.10.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0"
 }
 
 secrets {
@@ -20,9 +20,9 @@ android {
     defaultConfig {
         applicationId = "com.singularis.eateria"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 17
-        versionName = "4.00"
+        targetSdk = 36
+        versionCode = 19
+        versionName = "4.02"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -61,10 +61,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-    
     buildFeatures {
         compose = true
         buildConfig = true
@@ -81,9 +77,15 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.21.12"
+        artifact = "com.google.protobuf:protoc:4.35.1"
     }
     generateProtoTasks {
         all().forEach { task ->
@@ -133,7 +135,7 @@ dependencies {
     implementation(libs.gson)
     
     // Protobuf
-    implementation("com.google.protobuf:protobuf-kotlin-lite:4.32.1")
+    implementation("com.google.protobuf:protobuf-kotlin-lite:4.35.1")
     
     // Google Services
     implementation(libs.play.services.maps)
@@ -156,7 +158,7 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     
     // WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
     
     // Testing
     testImplementation(libs.junit)
@@ -170,14 +172,14 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // Material Compose for pull-to-refresh and swipe gestures
-    implementation("androidx.compose.material:material:1.9.3")
+    implementation("androidx.compose.material:material:1.11.4")
     
     // Kotlinx Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Accompanist - Permissions
-    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
 }

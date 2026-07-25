@@ -1,7 +1,5 @@
 package com.singularis.eateria.ui.views
 
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -102,13 +100,13 @@ fun ChessOpponentsHistoryView(
                 }
             }
 
-            TabRow(
+            SecondaryTabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = AppTheme.surfaceAlt(),
                 contentColor = AppTheme.textPrimary(),
-                indicator = { tabPositions ->
+                indicator = {
                     TabRowDefaults.SecondaryIndicator(
-                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        Modifier.tabIndicatorOffset(selectedTab),
                         color = AppTheme.accent()
                     )
                 }

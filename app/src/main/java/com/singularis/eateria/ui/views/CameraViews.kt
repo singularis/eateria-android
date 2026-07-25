@@ -536,7 +536,7 @@ fun FullScreenPhotoView(
             var offset by remember { mutableStateOf(Offset.Zero) }
 
             val transformableState =
-                rememberTransformableState { zoomChange, offsetChange, _ ->
+                rememberTransformableState { _, zoomChange, offsetChange, _ ->
                     scale = (scale * zoomChange).coerceIn(0.5f, 5f)
                     offset += offsetChange
                 }
@@ -657,20 +657,33 @@ fun MultiplePhotoUploadButton(
         if (uris.isNotEmpty()) {
             isUploading = true
             val bitmaps = mutableListOf<Bitmap>()
+            var failedUnsupported = false
             for (uri in uris) {
-                try {
-                    val inputStream = context.contentResolver.openInputStream(uri)
-                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                    inputStream?.close()
-                    if (bitmap != null) {
-                        bitmaps.add(bitmap)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                val bitmap = com.singularis.eateria.util.ImageDecodeUtils.decodeBitmap(context, uri)
+                if (bitmap != null) {
+                    bitmaps.add(bitmap)
+                } else if (com.singularis.eateria.util.ImageDecodeUtils.isLikelyUnsupportedFormat(context, uri)) {
+                    failedUnsupported = true
                 }
             }
             if (bitmaps.isNotEmpty()) {
                 onPhotosSelected(bitmaps)
+            } else {
+                val message =
+                    if (failedUnsupported) {
+                        Localization.tr(
+                            context,
+                            "error.image.unsupported",
+                            "This image format (AVIF/HEIC) is not supported on this device. Convert it to JPG or PNG and try again.",
+                        )
+                    } else {
+                        Localization.tr(
+                            context,
+                            "error.image.decode",
+                            "Could not read that image. Try JPG or PNG.",
+                        )
+                    }
+                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
             }
             isUploading = false
         }

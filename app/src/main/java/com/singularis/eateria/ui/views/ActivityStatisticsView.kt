@@ -338,7 +338,7 @@ private fun OrbInfoCard(orb: OrbData, prefs: android.content.SharedPreferences, 
         )
 
         if (orb.key == "chess" && chessScores.isNotEmpty()) {
-            Divider(color = AppTheme.textSecondary().copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(color = AppTheme.textSecondary().copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 4.dp))
             Text(
                 text = Localization.tr(context, "activities.stats.chess.scores", "Scores"),
                 style = MaterialTheme.typography.bodySmall,

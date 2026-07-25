@@ -23,6 +23,7 @@ import com.singularis.eateria.ui.theme.CalorieYellow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -642,10 +643,28 @@ class MainViewModel(
                 if (success) {
                     // Also delete local image
                     imageStorageService.deleteImage(time)
-                    // Refresh data
-                    fetchData()
+                    // Give the backend time to commit the deletion, then bypass the cache so
+                    // the list is rebuilt from the current server state.
+                    delay(200)
+                    productStorageService.fetchAndProcessProducts(forceRefresh = true) {
+                            fetchedProducts,
+                            totalCaloriesConsumed,
+                            weight,
+                        ->
+                        _products.value = fetchedProducts
+                        _caloriesLeft.value = getAdjustedSoftLimit() - totalCaloriesConsumed
+                        _personWeight.value = weight
+                        foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) {
+                                imageId,
+                                bitmap,
+                            ->
+                            injectPhotoIntoProduct(imageId, bitmap)
+                        }
+                        _deletingProductTime.value = null
+                    }
+                } else {
+                    _deletingProductTime.value = null
                 }
-                _deletingProductTime.value = null
             } catch (e: Exception) {
                 _deletingProductTime.value = null
             }

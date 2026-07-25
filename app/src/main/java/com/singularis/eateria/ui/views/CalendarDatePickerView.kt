@@ -256,8 +256,8 @@ private fun CalendarGrid(
                         day.day == today.get(Calendar.DAY_OF_MONTH) &&
                         currentMonth.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
                         currentMonth.get(Calendar.YEAR) == today.get(Calendar.YEAR),
-                isToday = day.day != null && isToday(day.day!!, currentMonth),
-                isClickable = day.day != null && !isFutureDate(day.day!!, currentMonth),
+                isToday = day.day?.let { isToday(it, currentMonth) } ?: false,
+                isClickable = day.day?.let { !isFutureDate(it, currentMonth) } ?: false,
                 onClick = { dayNumber ->
                     if (dayNumber != null && !isFutureDate(dayNumber, currentMonth)) {
                         val selectedDate =

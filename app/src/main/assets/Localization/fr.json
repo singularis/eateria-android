@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Personnalisé...",
   "share.portion.same_amount": "Même quantité",
   "health.score.explainer.title": "À propos de ce score",
-  "health.score.explainer.text": "Le score de 0 à 100 est généré en analysant les ingrédients, la taille de la portion et l'équilibre nutritionnel de ce repas à partir de votre photo. Un score plus élevé signifie un choix plus sain."
+  "health.score.explainer.text": "Le score de 0 à 100 est généré en analysant les ingrédients, la taille de la portion et l'équilibre nutritionnel de ce repas à partir de votre photo. Un score plus élevé signifie un choix plus sain.",
+  "health.daily_score.title": "Score de santé quotidien",
+  "health.daily_score.subtitle": "Score moyen d'aujourd'hui",
+  "health.daily_score.text": "Il s'agit de la moyenne des scores de santé de vos repas d'aujourd'hui (0-100), générée en analysant les ingrédients, les portions et l'équilibre nutritionnel de chaque repas. Un score plus élevé signifie une alimentation globalement plus saine."
 }

@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Personalizat...",
   "share.portion.same_amount": "Aceeași cantitate",
   "health.score.explainer.title": "Despre acest scor",
-  "health.score.explainer.text": "Scorul de la 0 la 100 este generat prin analizarea ingredientelor, dimensiunii porției și echilibrului nutrițional al acestei mese din fotografia ta. Scorurile mai mari înseamnă alegeri mai sănătoase."
+  "health.score.explainer.text": "Scorul de la 0 la 100 este generat prin analizarea ingredientelor, dimensiunii porției și echilibrului nutrițional al acestei mese din fotografia ta. Scorurile mai mari înseamnă alegeri mai sănătoase.",
+  "health.daily_score.title": "Scor zilnic de sănătate",
+  "health.daily_score.subtitle": "Scorul mediu de azi",
+  "health.daily_score.text": "Acesta este media scorurilor de sănătate ale meselor tale de azi (0-100), generată prin analizarea ingredientelor, porțiilor și echilibrului nutrițional al fiecărei mese. Scorurile mai mari înseamnă o alimentație generală mai sănătoasă."
 }

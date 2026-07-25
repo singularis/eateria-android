@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Anpassad...",
   "share.portion.same_amount": "Samma mängd",
   "health.score.explainer.title": "Om denna poäng",
-  "health.score.explainer.text": "Poängen 0-100 genereras genom att analysera ingredienser, portionsstorlek och näringsbalans för denna måltid från ditt foto. Högre poäng betyder hälsosammare val."
+  "health.score.explainer.text": "Poängen 0-100 genereras genom att analysera ingredienser, portionsstorlek och näringsbalans för denna måltid från ditt foto. Högre poäng betyder hälsosammare val.",
+  "health.daily_score.title": "Daglig hälsopoäng",
+  "health.daily_score.subtitle": "Dagens genomsnittspoäng",
+  "health.daily_score.text": "Det här är genomsnittet av dina måltiders hälsopoäng idag (0-100), genererat genom att analysera ingredienser, portioner och näringsbalans för varje måltid. Högre poäng betyder generellt hälsosammare kost."
 }

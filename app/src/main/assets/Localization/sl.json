@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Po meri...",
   "share.portion.same_amount": "Enaka količina",
   "health.score.explainer.title": "O tej oceni",
-  "health.score.explainer.text": "Ocena 0-100 je ustvarjena z analizo sestavin, velikosti porcije in prehranskega ravnovesja tega obroka z vaše fotografije. Višja ocena pomeni bolj zdravo izbiro."
+  "health.score.explainer.text": "Ocena 0-100 je ustvarjena z analizo sestavin, velikosti porcije in prehranskega ravnovesja tega obroka z vaše fotografije. Višja ocena pomeni bolj zdravo izbiro.",
+  "health.daily_score.title": "Dnevna zdravstvena ocena",
+  "health.daily_score.subtitle": "Današnja povprečna ocena",
+  "health.daily_score.text": "To je povprečje zdravstvenih ocen vaših obrokov danes (0-100), ustvarjeno z analizo sestavin, porcij in prehranskega ravnovesja vsakega obroka. Višja ocena pomeni na splošno bolj zdravo prehranjevanje."
 }

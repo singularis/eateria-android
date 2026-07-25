@@ -746,5 +746,8 @@
   "share.portion.custom.button": "사용자 지정...",
   "share.portion.same_amount": "동일한 양",
   "health.score.explainer.title": "이 점수에 대해",
-  "health.score.explainer.text": "0-100점 점수는 사진에서 인식한 이 음식의 재료, 양, 영양 균형을 분석하여 생성됩니다. 점수가 높을수록 더 건강한 선택입니다."
+  "health.score.explainer.text": "0-100점 점수는 사진에서 인식한 이 음식의 재료, 양, 영양 균형을 분석하여 생성됩니다. 점수가 높을수록 더 건강한 선택입니다.",
+  "health.daily_score.title": "일일 건강 점수",
+  "health.daily_score.subtitle": "오늘의 평균 점수",
+  "health.daily_score.text": "오늘 섭취한 음식들의 건강 점수(0-100) 평균입니다. 각 음식의 재료, 양, 영양 균형을 분석하여 생성됩니다. 점수가 높을수록 전반적으로 더 건강한 식습관을 의미합니다."
 }

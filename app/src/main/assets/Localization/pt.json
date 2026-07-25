@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Personalizado...",
   "share.portion.same_amount": "A mesma quantidade",
   "health.score.explainer.title": "Sobre esta pontuação",
-  "health.score.explainer.text": "A pontuação de 0 a 100 é gerada analisando os ingredientes, o tamanho da porção e o equilíbrio nutricional desta refeição a partir da sua foto. Pontuações mais altas significam escolhas mais saudáveis."
+  "health.score.explainer.text": "A pontuação de 0 a 100 é gerada analisando os ingredientes, o tamanho da porção e o equilíbrio nutricional desta refeição a partir da sua foto. Pontuações mais altas significam escolhas mais saudáveis.",
+  "health.daily_score.title": "Pontuação de saúde diária",
+  "health.daily_score.subtitle": "Pontuação média de hoje",
+  "health.daily_score.text": "Esta é a média das pontuações de saúde das suas refeições de hoje (0-100), gerada analisando os ingredientes, as porções e o equilíbrio nutricional de cada refeição. Pontuações mais altas significam uma alimentação globalmente mais saudável."
 }

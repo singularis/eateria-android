@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Vlastné...",
   "share.portion.same_amount": "Rovnaké množstvo",
   "health.score.explainer.title": "O tomto skóre",
-  "health.score.explainer.text": "Skóre 0-100 sa generuje analýzou zložiek, veľkosti porcie a nutričnej rovnováhy tohto jedla z vašej fotografie. Vyššie skóre znamená zdravšiu voľbu."
+  "health.score.explainer.text": "Skóre 0-100 sa generuje analýzou zložiek, veľkosti porcie a nutričnej rovnováhy tohto jedla z vašej fotografie. Vyššie skóre znamená zdravšiu voľbu.",
+  "health.daily_score.title": "Denné zdravotné skóre",
+  "health.daily_score.subtitle": "Dnešné priemerné skóre",
+  "health.daily_score.text": "Toto je priemer dnešných zdravotných skóre vašich jedál (0-100), vygenerovaný analýzou zložiek, porcií a nutričnej rovnováhy každého jedla. Vyššie skóre znamená celkovo zdravšie stravovanie."
 }

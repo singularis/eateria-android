@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Niestandardowy...",
   "share.portion.same_amount": "Taka sama ilość",
   "health.score.explainer.title": "O tym wyniku",
-  "health.score.explainer.text": "Wynik w skali 0-100 jest generowany na podstawie analizy składników, wielkości porcji i bilansu odżywczego tego posiłku ze zdjęcia. Wyższy wynik oznacza zdrowszy wybór."
+  "health.score.explainer.text": "Wynik w skali 0-100 jest generowany na podstawie analizy składników, wielkości porcji i bilansu odżywczego tego posiłku ze zdjęcia. Wyższy wynik oznacza zdrowszy wybór.",
+  "health.daily_score.title": "Dzienny wynik zdrowotny",
+  "health.daily_score.subtitle": "Dzisiejszy średni wynik",
+  "health.daily_score.text": "To średnia z dzisiejszych wyników zdrowotnych Twoich posiłków (0-100), generowana na podstawie analizy składników, porcji i bilansu odżywczego każdego posiłku. Wyższy wynik oznacza zdrowsze odżywianie ogółem."
 }

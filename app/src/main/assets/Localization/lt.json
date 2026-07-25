@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Pasirinktinis...",
   "share.portion.same_amount": "Toks pat kiekis",
   "health.score.explainer.title": "Apie šį įvertinimą",
-  "health.score.explainer.text": "0-100 balų įvertinimas generuojamas analizuojant šio patiekalo sudedamąsias dalis, porcijos dydį ir maistinę pusiausvyrą iš jūsų nuotraukos. Aukštesnis balas reiškia sveikesnį pasirinkimą."
+  "health.score.explainer.text": "0-100 balų įvertinimas generuojamas analizuojant šio patiekalo sudedamąsias dalis, porcijos dydį ir maistinę pusiausvyrą iš jūsų nuotraukos. Aukštesnis balas reiškia sveikesnį pasirinkimą.",
+  "health.daily_score.title": "Kasdienis sveikatos įvertinimas",
+  "health.daily_score.subtitle": "Šiandienos vidutinis įvertinimas",
+  "health.daily_score.text": "Tai šiandienos jūsų valgių sveikatos įvertinimų (0-100) vidurkis, sugeneruotas analizuojant kiekvieno valgio sudedamąsias dalis, porcijas ir maistinę pusiausvyrą. Aukštesnis įvertinimas reiškia sveikesnį mitybos būdą apskritai."
 }

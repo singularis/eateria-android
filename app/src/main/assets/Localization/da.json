@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Brugerdefineret...",
   "share.portion.same_amount": "Samme mængde",
   "health.score.explainer.title": "Om denne score",
-  "health.score.explainer.text": "Scoren på 0-100 genereres ved at analysere ingredienser, portionsstørrelse og næringsbalance for dette måltid ud fra dit foto. Højere score betyder sundere valg."
+  "health.score.explainer.text": "Scoren på 0-100 genereres ved at analysere ingredienser, portionsstørrelse og næringsbalance for dette måltid ud fra dit foto. Højere score betyder sundere valg.",
+  "health.daily_score.title": "Daglig sundhedsscore",
+  "health.daily_score.subtitle": "Dagens gennemsnitlige score",
+  "health.daily_score.text": "Dette er gennemsnittet af dine måltiders sundhedsscore i dag (0-100), genereret ved at analysere ingredienser, portioner og næringsbalance for hvert måltid. Højere score betyder generelt sundere kost."
 }

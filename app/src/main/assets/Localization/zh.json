@@ -746,5 +746,8 @@
   "share.portion.custom.button": "自定义...",
   "share.portion.same_amount": "相同分量",
   "health.score.explainer.title": "关于此评分",
-  "health.score.explainer.text": "0-100 分的评分是通过分析照片中这道菜的食材、分量和营养均衡度生成的。分数越高表示选择越健康。"
+  "health.score.explainer.text": "0-100 分的评分是通过分析照片中这道菜的食材、分量和营养均衡度生成的。分数越高表示选择越健康。",
+  "health.daily_score.title": "每日健康评分",
+  "health.daily_score.subtitle": "今日平均分",
+  "health.daily_score.text": "这是您今天所有餐食健康评分(0-100)的平均值,通过分析每餐的食材、分量和营养均衡度生成。分数越高表示整体饮食越健康。"
 }

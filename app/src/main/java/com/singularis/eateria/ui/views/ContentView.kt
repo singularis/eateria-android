@@ -107,7 +107,6 @@ fun ContentView(
     val manualWeightInput by viewModel.manualWeightInput.collectAsState()
     val tempSoftLimit by viewModel.tempSoftLimit.collectAsState()
     val tempHardLimit by viewModel.tempHardLimit.collectAsState()
-    val showRecommendationAlert by viewModel.showRecommendationAlert.collectAsState()
     val recommendationText by viewModel.recommendationText.collectAsState()
     val showPhotoErrorAlert by viewModel.showPhotoErrorAlert.collectAsState()
     val photoErrorTitle by viewModel.photoErrorTitle.collectAsState()
@@ -141,6 +140,30 @@ fun ContentView(
     var cameraOpenRequest by remember { mutableStateOf(0) }
     // Guests must sign in for share / try-manual; ask first instead of dropping them on login
     var guestSignInPrompt by remember { mutableStateOf<GuestSignInReason?>(null) }
+    // Explains what the daily average health score ring in the top bar means and how it's generated
+    var showDailyHealthScoreInfo by remember { mutableStateOf(false) }
+
+    // Average of today's (or the viewed day's) per-meal health scores, shown as a ring in the top bar
+    val scoredProducts = products.filter { it.healthRating >= 0 }
+    val averageHealthScore =
+        if (scoredProducts.isNotEmpty()) {
+            val sum = scoredProducts.sumOf { it.effectiveHealthRating }
+            val avg = Math.round(sum.toDouble() / scoredProducts.size).toInt()
+            maxOf(0, minOf(100, avg))
+        } else {
+            null
+        }
+    val healthScoreColor =
+        averageHealthScore?.let { rating ->
+            when (rating) {
+                in 0..39 -> Color(1.0f, 0.0f, 0.0f)
+                in 40..59 -> Color(1.0f, 0.6f, 0.0f)
+                in 60..79 -> Color(0.85f, 0.7f, 0.0f)
+                in 80..94 -> Color(0.5f, 0.9f, 0.3f)
+                in 95..100 -> Color(0.0f, 1.0f, 0.0f)
+                else -> Color.Gray
+            }
+        } ?: AppTheme.textSecondary()
 
     LaunchedEffect(hasSeenOnboarding) {
         if (!hasSeenOnboarding) {
@@ -226,28 +249,8 @@ fun ContentView(
                                         bottom = Dimensions.paddingM,
                                         top = Dimensions.paddingM,
                                     ),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                val scoredProducts = products.filter { it.healthRating >= 0 }
-                val averageHealthScore = if (scoredProducts.isNotEmpty()) {
-                    val sum = scoredProducts.sumOf { it.effectiveHealthRating }
-                    val avg = Math.round(sum.toDouble() / scoredProducts.size).toInt()
-                    maxOf(0, minOf(100, avg))
-                } else {
-                    null
-                }
-
-                val healthScoreColor = averageHealthScore?.let { rating ->
-                    when (rating) {
-                        in 0..39 -> Color(1.0f, 0.0f, 0.0f)
-                        in 40..59 -> Color(1.0f, 0.6f, 0.0f)
-                        in 60..79 -> Color(0.85f, 0.7f, 0.0f)
-                        in 80..94 -> Color(0.5f, 0.9f, 0.3f)
-                        in 95..100 -> Color(0.0f, 1.0f, 0.0f)
-                        else -> Color.Gray
-                    }
-                } ?: AppTheme.textSecondary()
-                
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
                 val todaySportCalories by viewModel.todaySportCalories.collectAsState()
                 val sportIconColor = if (todaySportCalories > 0) Color.Green else AppTheme.warning()
 
@@ -262,7 +265,7 @@ fun ContentView(
                         }
                     },
                     onProfileClick = { viewModel.showUserProfile() },
-                    onHealthInfoClick = { viewModel.showHealthDisclaimer() },
+                    onHealthInfoClick = { showDailyHealthScoreInfo = true },
                     onSportClick = { viewModel.showActivitiesView() },
                     onReturnToTodayClick = { viewModel.returnToToday() },
                     alcoholIconColor = alcoholIconColor,
@@ -512,6 +515,66 @@ fun ContentView(
                 )
             }
 
+            // Tapping the daily health score ring in the top bar explains what the
+            // number is and how it's generated, instead of only opening the legal disclaimer.
+            if (showDailyHealthScoreInfo) {
+                AlertDialog(
+                    onDismissRequest = { showDailyHealthScoreInfo = false },
+                    title = {
+                        Text(
+                            text = Localization.tr(context, "health.daily_score.title", "Daily Health Score"),
+                            color = AppTheme.textPrimary(),
+                            fontWeight = FontWeight.Bold,
+                        )
+                    },
+                    text = {
+                        Column {
+                            if (averageHealthScore != null) {
+                                Text(
+                                    text =
+                                        "${Localization.tr(context, "health.daily_score.subtitle", "Today's average score")}: $averageHealthScore/100",
+                                    color = healthScoreColor,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Spacer(modifier = Modifier.height(Dimensions.paddingS))
+                            }
+                            Text(
+                                text =
+                                    Localization.tr(
+                                        context,
+                                        "health.daily_score.text",
+                                        "This is the average of today's food health scores (0-100), generated by analyzing each meal's ingredients, portions, and nutritional balance. Higher scores mean healthier eating overall.",
+                                    ),
+                                color = AppTheme.textSecondary(),
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                HapticsService.getInstance().select()
+                                showDailyHealthScoreInfo = false
+                            },
+                        ) {
+                            Text(Localization.tr(context, "common.ok", "OK"), color = AppTheme.accent())
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                HapticsService.getInstance().select()
+                                showDailyHealthScoreInfo = false
+                                viewModel.showHealthDisclaimer()
+                            },
+                        ) {
+                            Text(Localization.tr(context, "disc.nav", "Health Information"), color = AppTheme.textSecondary())
+                        }
+                    },
+                    containerColor = AppTheme.surface(),
+                )
+            }
+
             if (showOnboarding) {
                 OnboardingView(
                     isPresented = true,
@@ -729,14 +792,6 @@ fun ContentView(
                         }
                     },
                     onDismiss = { viewModel.hideManualWeightEntry() },
-                )
-            }
-
-            // Health Recommendation Alert (iOS behavior)
-            if (showRecommendationAlert) {
-                HealthRecommendationDialog(
-                    recommendation = recommendationText,
-                    onDismiss = { viewModel.hideRecommendationAlert() },
                 )
             }
 

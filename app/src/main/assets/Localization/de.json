@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Benutzerdefiniert...",
   "share.portion.same_amount": "Gleiche Menge",
   "health.score.explainer.title": "Über diese Bewertung",
-  "health.score.explainer.text": "Die Bewertung von 0-100 wird durch die Analyse der Zutaten, der Portionsgröße und der Nährstoffbalance dieser Mahlzeit aus deinem Foto erstellt. Höhere Werte bedeuten gesündere Entscheidungen."
+  "health.score.explainer.text": "Die Bewertung von 0-100 wird durch die Analyse der Zutaten, der Portionsgröße und der Nährstoffbalance dieser Mahlzeit aus deinem Foto erstellt. Höhere Werte bedeuten gesündere Entscheidungen.",
+  "health.daily_score.title": "Täglicher Gesundheitswert",
+  "health.daily_score.subtitle": "Heutiger Durchschnittswert",
+  "health.daily_score.text": "Dies ist der Durchschnitt der heutigen Gesundheitswerte deiner Mahlzeiten (0-100), erstellt durch die Analyse der Zutaten, Portionen und Nährstoffbalance jeder Mahlzeit. Höhere Werte bedeuten insgesamt gesündere Ernährung."
 }

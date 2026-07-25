@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Tùy chỉnh...",
   "share.portion.same_amount": "Cùng một lượng",
   "health.score.explainer.title": "Về điểm số này",
-  "health.score.explainer.text": "Điểm số 0-100 được tạo ra bằng cách phân tích thành phần, khẩu phần và cân bằng dinh dưỡng của món ăn này từ ảnh của bạn. Điểm càng cao nghĩa là lựa chọn càng lành mạnh."
+  "health.score.explainer.text": "Điểm số 0-100 được tạo ra bằng cách phân tích thành phần, khẩu phần và cân bằng dinh dưỡng của món ăn này từ ảnh của bạn. Điểm càng cao nghĩa là lựa chọn càng lành mạnh.",
+  "health.daily_score.title": "Điểm sức khỏe hàng ngày",
+  "health.daily_score.subtitle": "Điểm trung bình hôm nay",
+  "health.daily_score.text": "Đây là điểm trung bình về sức khỏe các bữa ăn của bạn hôm nay (0-100), được tạo ra bằng cách phân tích thành phần, khẩu phần và cân bằng dinh dưỡng của từng bữa ăn. Điểm càng cao nghĩa là ăn uống nhìn chung càng lành mạnh."
 }

@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Egyéni...",
   "share.portion.same_amount": "Ugyanannyi",
   "health.score.explainer.title": "Erről a pontszámról",
-  "health.score.explainer.text": "A 0-100 pontszám a fotódon található étel összetevőinek, adagméretének és tápanyag-egyensúlyának elemzésével jön létre. A magasabb pontszám egészségesebb választást jelent."
+  "health.score.explainer.text": "A 0-100 pontszám a fotódon található étel összetevőinek, adagméretének és tápanyag-egyensúlyának elemzésével jön létre. A magasabb pontszám egészségesebb választást jelent.",
+  "health.daily_score.title": "Napi egészségpontszám",
+  "health.daily_score.subtitle": "Mai átlagpontszám",
+  "health.daily_score.text": "Ez a mai étkezéseid egészségpontszámainak átlaga (0-100), amely az egyes ételek összetevőinek, adagjainak és tápanyag-egyensúlyának elemzésével jön létre. A magasabb pontszám összességében egészségesebb étkezést jelent."
 }

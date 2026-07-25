@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Kohandatud...",
   "share.portion.same_amount": "Sama kogus",
   "health.score.explainer.title": "Selle tulemuse kohta",
-  "health.score.explainer.text": "0-100 punkti skoor genereeritakse selle toidukorra koostisosade, portsjoni suuruse ja toitainete tasakaalu analüüsimisel sinu fotolt. Kõrgem skoor tähendab tervislikumat valikut."
+  "health.score.explainer.text": "0-100 punkti skoor genereeritakse selle toidukorra koostisosade, portsjoni suuruse ja toitainete tasakaalu analüüsimisel sinu fotolt. Kõrgem skoor tähendab tervislikumat valikut.",
+  "health.daily_score.title": "Päevane terviseskoor",
+  "health.daily_score.subtitle": "Tänane keskmine skoor",
+  "health.daily_score.text": "See on tänaste toidukordade terviseskooride keskmine (0-100), mis genereeritakse iga toidukorra koostisosade, portsjonite ja toitainete tasakaalu analüüsimisel. Kõrgem skoor tähendab üldiselt tervislikumat toitumist."
 }

@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Personalizzat...",
   "share.portion.same_amount": "L-istess kwantità",
   "health.score.explainer.title": "Dwar dan il-punteġġ",
-  "health.score.explainer.text": "Il-punteġġ ta' 0-100 huwa ġġenerat billi jiġu analizzati l-ingredjenti, id-daqs tal-porzjon, u l-bilanċ nutrizzjonali ta' din l-ikla mir-ritratt tiegħek. Punteġġi ogħla jfissru għażliet aktar b'saħħithom."
+  "health.score.explainer.text": "Il-punteġġ ta' 0-100 huwa ġġenerat billi jiġu analizzati l-ingredjenti, id-daqs tal-porzjon, u l-bilanċ nutrizzjonali ta' din l-ikla mir-ritratt tiegħek. Punteġġi ogħla jfissru għażliet aktar b'saħħithom.",
+  "health.daily_score.title": "Punteġġ ta' Saħħa Kuljum",
+  "health.daily_score.subtitle": "Punteġġ medju tal-lum",
+  "health.daily_score.text": "Dan huwa l-medja tal-punteġġi tas-saħħa tal-ikliet tiegħek illum (0-100), iġġenerat billi jiġu analizzati l-ingredjenti, il-porzjonijiet, u l-bilanċ nutrizzjonali ta' kull ikla. Punteġġi ogħla jfissru ikel aktar b'saħħtu b'mod ġenerali."
 }

@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Aangepast...",
   "share.portion.same_amount": "Zelfde hoeveelheid",
   "health.score.explainer.title": "Over deze score",
-  "health.score.explainer.text": "De score van 0-100 wordt gegenereerd door de ingrediënten, portiegrootte en voedingsbalans van deze maaltijd op je foto te analyseren. Hogere scores betekenen gezondere keuzes."
+  "health.score.explainer.text": "De score van 0-100 wordt gegenereerd door de ingrediënten, portiegrootte en voedingsbalans van deze maaltijd op je foto te analyseren. Hogere scores betekenen gezondere keuzes.",
+  "health.daily_score.title": "Dagelijkse gezondheidsscore",
+  "health.daily_score.subtitle": "Gemiddelde score van vandaag",
+  "health.daily_score.text": "Dit is het gemiddelde van de gezondheidsscores van je maaltijden van vandaag (0-100), gegenereerd door de ingrediënten, porties en voedingsbalans van elke maaltijd te analyseren. Hogere scores betekenen over het algemeen gezonder eten."
 }

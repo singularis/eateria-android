@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Pielāgots...",
   "share.portion.same_amount": "Tāds pats daudzums",
   "health.score.explainer.title": "Par šo vērtējumu",
-  "health.score.explainer.text": "Vērtējums no 0 līdz 100 tiek ģenerēts, analizējot šī ēdiena sastāvdaļas, porcijas lielumu un uzturvielu līdzsvaru no jūsu fotoattēla. Augstāks vērtējums nozīmē veselīgāku izvēli."
+  "health.score.explainer.text": "Vērtējums no 0 līdz 100 tiek ģenerēts, analizējot šī ēdiena sastāvdaļas, porcijas lielumu un uzturvielu līdzsvaru no jūsu fotoattēla. Augstāks vērtējums nozīmē veselīgāku izvēli.",
+  "health.daily_score.title": "Ikdienas veselības vērtējums",
+  "health.daily_score.subtitle": "Šodienas vidējais vērtējums",
+  "health.daily_score.text": "Šis ir jūsu šodienas ēdienu veselības vērtējumu (0-100) vidējais rādītājs, kas tiek ģenerēts, analizējot katra ēdiena sastāvdaļas, porcijas un uzturvielu līdzsvaru. Augstāks vērtējums nozīmē kopumā veselīgāku uzturu."
 }

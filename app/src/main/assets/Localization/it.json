@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Personalizzato...",
   "share.portion.same_amount": "Stessa quantità",
   "health.score.explainer.title": "Informazioni su questo punteggio",
-  "health.score.explainer.text": "Il punteggio da 0 a 100 viene generato analizzando gli ingredienti, la porzione e l'equilibrio nutrizionale di questo pasto dalla tua foto. Punteggi più alti indicano scelte più sane."
+  "health.score.explainer.text": "Il punteggio da 0 a 100 viene generato analizzando gli ingredienti, la porzione e l'equilibrio nutrizionale di questo pasto dalla tua foto. Punteggi più alti indicano scelte più sane.",
+  "health.daily_score.title": "Punteggio di salute giornaliero",
+  "health.daily_score.subtitle": "Punteggio medio di oggi",
+  "health.daily_score.text": "Questa è la media dei punteggi di salute dei tuoi pasti di oggi (0-100), generata analizzando ingredienti, porzioni ed equilibrio nutrizionale di ogni pasto. Punteggi più alti indicano un'alimentazione complessivamente più sana."
 }

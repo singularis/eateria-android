@@ -746,5 +746,8 @@
   "share.portion.custom.button": "カスタム...",
   "share.portion.same_amount": "同じ量",
   "health.score.explainer.title": "このスコアについて",
-  "health.score.explainer.text": "0〜100のスコアは、写真から検出したこの食事の材料、量、栄養バランスを分析して生成されます。スコアが高いほど健康的な選択です。"
+  "health.score.explainer.text": "0〜100のスコアは、写真から検出したこの食事の材料、量、栄養バランスを分析して生成されます。スコアが高いほど健康的な選択です。",
+  "health.daily_score.title": "1日の健康スコア",
+  "health.daily_score.subtitle": "本日の平均スコア",
+  "health.daily_score.text": "これは本日の食事の健康スコア(0〜100)の平均値で、各食事の材料、量、栄養バランスを分析して生成されます。スコアが高いほど全体的に健康的な食生活を意味します。"
 }

@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Mukautettu...",
   "share.portion.same_amount": "Sama määrä",
   "health.score.explainer.title": "Tietoa tästä pisteytyksestä",
-  "health.score.explainer.text": "0-100 pistemäärä luodaan analysoimalla tämän aterian ainesosat, annoskoko ja ravitsemuksellinen tasapaino kuvastasi. Korkeampi pistemäärä tarkoittaa terveellisempää valintaa."
+  "health.score.explainer.text": "0-100 pistemäärä luodaan analysoimalla tämän aterian ainesosat, annoskoko ja ravitsemuksellinen tasapaino kuvastasi. Korkeampi pistemäärä tarkoittaa terveellisempää valintaa.",
+  "health.daily_score.title": "Päivittäinen terveyspisteytys",
+  "health.daily_score.subtitle": "Tämän päivän keskiarvo",
+  "health.daily_score.text": "Tämä on tämän päivän aterioidesi terveyspisteiden keskiarvo (0-100), joka luodaan analysoimalla kunkin aterian ainesosat, annokset ja ravitsemuksellinen tasapaino. Korkeampi pistemäärä tarkoittaa yleisesti terveellisempää ruokavaliota."
 }

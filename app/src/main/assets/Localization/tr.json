@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Özel...",
   "share.portion.same_amount": "Aynı miktar",
   "health.score.explainer.title": "Bu puan hakkında",
-  "health.score.explainer.text": "0-100 puanı, fotoğrafınızdan bu yemeğin malzemeleri, porsiyon boyutu ve beslenme dengesi analiz edilerek oluşturulur. Daha yüksek puanlar daha sağlıklı seçimler anlamına gelir."
+  "health.score.explainer.text": "0-100 puanı, fotoğrafınızdan bu yemeğin malzemeleri, porsiyon boyutu ve beslenme dengesi analiz edilerek oluşturulur. Daha yüksek puanlar daha sağlıklı seçimler anlamına gelir.",
+  "health.daily_score.title": "Günlük Sağlık Puanı",
+  "health.daily_score.subtitle": "Bugünün ortalama puanı",
+  "health.daily_score.text": "Bu, bugünkü yemeklerinizin sağlık puanlarının (0-100) ortalamasıdır ve her yemeğin malzemeleri, porsiyonları ve beslenme dengesi analiz edilerek oluşturulur. Daha yüksek puanlar genel olarak daha sağlıklı beslenme anlamına gelir."
 }

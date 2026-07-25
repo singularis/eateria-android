@@ -746,5 +746,8 @@
   "share.portion.custom.button": "Saincheaptha...",
   "share.portion.same_amount": "An méid céanna",
   "health.score.explainer.title": "Maidir leis an scór seo",
-  "health.score.explainer.text": "Gintear an scór 0-100 trí chomhábhair, méid an chuid, agus cothromaíocht chothaithe an bhéile seo a anailísiú ó do ghrianghraf. Ciallaíonn scóir níos airde roghanna níos sláintiúla."
+  "health.score.explainer.text": "Gintear an scór 0-100 trí chomhábhair, méid an chuid, agus cothromaíocht chothaithe an bhéile seo a anailísiú ó do ghrianghraf. Ciallaíonn scóir níos airde roghanna níos sláintiúla.",
+  "health.daily_score.title": "Scór Sláinte Laethúil",
+  "health.daily_score.subtitle": "Meánscór an lae inniu",
+  "health.daily_score.text": "Is é seo an meán de scóir sláinte do chuid béilí inniu (0-100), a ghintear trí chomhábhair, cionroinnt agus cothromaíocht chothaithe gach béile a anailísiú. Ciallaíonn scóir níos airde ithe níos sláintiúla ar an iomlán."
 }

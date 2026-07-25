@@ -131,9 +131,6 @@ class MainViewModel(
     private val _showManualWeightEntry = MutableStateFlow(false)
     val showManualWeightEntry: StateFlow<Boolean> = _showManualWeightEntry.asStateFlow()
 
-    private val _showRecommendationAlert = MutableStateFlow(false)
-    val showRecommendationAlert: StateFlow<Boolean> = _showRecommendationAlert.asStateFlow()
-
     private val _recommendationText = MutableStateFlow("")
     val recommendationText: StateFlow<String> = _recommendationText.asStateFlow()
 
@@ -900,9 +897,10 @@ class MainViewModel(
             try {
                 val recommendation = grpcService.getRecommendation(days)
 
-                // Store the recommendation and show alert (iOS behavior)
+                // Store the recommendation; the pager navigates to the dedicated
+                // RecommendationView page (no separate overlay dialog — that duplicated
+                // this same content and appeared stacked on top of the page).
                 _recommendationText.value = recommendation
-                _showRecommendationAlert.value = true
                 _isLoadingRecommendation.value = false
 
                 // Return to today after getting recommendation (iOS behavior)
@@ -1112,15 +1110,6 @@ class MainViewModel(
 
     fun hideActivitiesView() {
         _showActivitiesView.value = false
-    }
-
-    fun showRecommendationAlert() {
-        _showRecommendationAlert.value = true
-    }
-
-    fun hideRecommendationAlert() {
-        _showRecommendationAlert.value = false
-        _isLoadingRecommendation.value = false
     }
 
     fun showPhotoErrorAlert(

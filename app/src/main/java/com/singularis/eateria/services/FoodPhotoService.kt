@@ -2,7 +2,7 @@ package com.singularis.eateria.services
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import com.singularis.eateria.util.ImageDecodeUtils
 import android.util.Log
 import com.singularis.eateria.models.Product
 import kotlinx.coroutines.CoroutineScope
@@ -87,8 +87,8 @@ class FoodPhotoService private constructor(private val context: Context) {
                 return@withContext null
             }
 
-            val inputStream = response.body.byteStream()
-            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val bytes = response.body.bytes()
+            val bitmap = ImageDecodeUtils.decodeByteArray(bytes)
 
             if (bitmap != null) {
                 // Cache the image to disk

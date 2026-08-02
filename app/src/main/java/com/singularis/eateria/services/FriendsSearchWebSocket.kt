@@ -34,7 +34,8 @@ class FriendsSearchWebSocket(
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
 
-    private val url = "wss://chater.singularis.work/autocomplete"
+    private val url: String
+        get() = AppEnvironment.getInstance().webSocketURL
     private var webSocket: WebSocket? = null
     private var scope: CoroutineScope? = null
 

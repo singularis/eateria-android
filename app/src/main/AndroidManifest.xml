@@ -38,6 +38,7 @@
         <activity
             android:name="com.singularis.eateria.MainActivity"
             android:exported="true"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.Eateria">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

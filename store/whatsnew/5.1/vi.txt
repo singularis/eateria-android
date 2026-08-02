@@ -1,0 +1,5 @@
+- Eateria mượt và nhanh hơn — cho theo dõi mỗi ngày
+- Ngôn ngữ của bạn ở mọi nơi: hoạt động, sức khỏe và onboarding
+- Riêng tư theo thiết kế: chỉ biệt danh, email được ẩn
+- Ảnh món ăn tải nhanh hơn khi chuyển ngày
+- Đăng nhập ổn định hơn để quay lại mục tiêu ngay

@@ -2,8 +2,8 @@ package com.singularis.eateria.services
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
+import com.singularis.eateria.util.ImageDecodeUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -116,7 +116,7 @@ class ImageStorageService private constructor(
                 return null
             }
 
-            BitmapFactory.decodeFile(file.absolutePath)
+            ImageDecodeUtils.decodeFile(file)
         } catch (e: Exception) {
             Log.e("ImageStorage", "Failed to load image for time: $forTime", e)
             null
@@ -160,7 +160,7 @@ class ImageStorageService private constructor(
                 return null
             }
 
-            BitmapFactory.decodeFile(file.absolutePath)
+            ImageDecodeUtils.decodeFile(file)
         } catch (e: Exception) {
             Log.e("ImageStorage", "Failed to load image for name: $name", e)
             null
@@ -243,7 +243,7 @@ class ImageStorageService private constructor(
                 return null
             }
 
-            BitmapFactory.decodeFile(file.absolutePath)
+            ImageDecodeUtils.decodeFile(file)
         } catch (e: Exception) {
             Log.e("ImageStorage", "Failed to load cached image for ID: $imageId", e)
             null

@@ -1,0 +1,5 @@
+- Aktivnosti i zdravstvene postavke potpuno na tvom jeziku
+- Jasniji onboarding od prvog zaslona
+- Prijateljskija imena — samo nadimci, privatni e-mailovi skriveni
+- Brže fotografije hrane pri mijenjanju dana
+- Lakše bilježenje težine s fotkom vage

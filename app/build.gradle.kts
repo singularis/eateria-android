@@ -2,13 +2,13 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    // Kotlin compilation comes from AGP 9 built-in Kotlin
     alias(libs.plugins.compose.compiler)
-    id("kotlin-parcelize")
+    id("org.jetbrains.kotlin.plugin.parcelize")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.google.services)
     id("com.google.protobuf") version "0.10.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0"
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 secrets {
@@ -23,8 +23,8 @@ android {
         applicationId = "com.singularis.eateria"
         minSdk = 26
         targetSdk = 36
-        versionCode = 23
-        versionName = "5.0"
+        versionCode = 27
+        versionName = "5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -62,12 +62,16 @@ android {
         debug {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
+            // Studio / local only — may use https://chater.singularis.work/dev
+            buildConfigField("boolean", "USE_DEV_API", "true")
         }
         release {
             // Legacy R8 DSL (AGP < 9.3): code + resource optimization for Play release.
             // Keep rules: app/proguard-rules.pro + proguard-android-optimize.txt
             isMinifyEnabled = true
             isShrinkResources = true
+            // Play Store MUST hit prod (no /dev). Never override via prefs.
+            buildConfigField("boolean", "USE_DEV_API", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

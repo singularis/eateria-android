@@ -12,8 +12,8 @@ import android.net.Uri
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
+import com.singularis.eateria.util.ImageDecodeUtils
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -358,7 +358,7 @@ private fun CameraPreviewView(
                                                 ?: File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg")
 
                                         if (savedFile.exists()) {
-                                            val bitmap = BitmapFactory.decodeFile(savedFile.absolutePath)
+                                            val bitmap = ImageDecodeUtils.decodeFile(savedFile)
                                             onPhotoTaken(bitmap)
                                             savedFile.delete() // Clean up temporary file
                                         } else {

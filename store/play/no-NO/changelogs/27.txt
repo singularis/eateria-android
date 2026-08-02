@@ -1,0 +1,5 @@
+- Raskere, jevnere Eateria — for daglig sporing
+- Språket ditt overalt: aktiviteter, helse og onboarding
+- Privat by design: bare kallenavn, e-poster holdes skjult
+- Matbilder laster raskere når du bytter mellom dager
+- Mer pålitelig innlogging — tilbake til målene med en gang

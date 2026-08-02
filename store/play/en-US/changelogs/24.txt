@@ -1,0 +1,5 @@
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo

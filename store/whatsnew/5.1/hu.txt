@@ -1,0 +1,5 @@
+- Gyorsabb, gördülékenyebb Eateria — a mindennapi követéshez
+- A te nyelved mindenhol: tevékenységek, egészség és onboarding
+- Adatvédelem alapból: csak becenevek, az e-mailek rejtve maradnak
+- Az ételfotók gyorsabban töltődnek napváltáskor
+- Megbízhatóbb bejelentkezés — azonnal vissza a céljaidhoz

@@ -1,0 +1,301 @@
+<en-GB>
+- A smoother, faster Eateria — built for everyday tracking
+- Your language everywhere: activities, health setup, and onboarding
+- Private by design: nicknames only, personal emails stay hidden
+- Food photos load quicker when you jump between days
+- More reliable sign-in so you can get back to your goals
+</en-GB>
+<ar>
+- Eateria أسرع وأكثر سلاسة — لتتبع يومك بسهولة
+- لغتك في كل مكان: الأنشطة والصحة وبدء الاستخدام
+- خصوصية مقصودة: الألقاب فقط والبريد الخاص مخفي
+- صور الطعام تظهر أسرع عند التنقل بين الأيام
+- تسجيل دخول أوثق لتعود إلى أهدافك فورًا
+</ar>
+<be>
+- Хутчэйшы і плынейшы Eateria — для штодзённага трэкінгу
+- Ваша мова ўсюды: актыўнасці, здароўе і онбордынг
+- Прыватнасць па змаўчанні: толькі нікнеймы, email схаваныя
+- Фота ежы адкрываюцца хутчэй пры змене дзён
+- Надзейнейшы ўваход — вяртайцеся да мэтаў без затрымак
+</be>
+<bg>
+- По-бърз и плавен Eateria — за ежедневното проследяване
+- Вашият език навсякъде: дейности, здраве и onboarding
+- Поверителност по дизайн: само прякори, имейлите остават скрити
+- Снимките на храна се зареждат по-бързо при смяна на дни
+- По-надеждно влизане — веднага обратно към целите ви
+</bg>
+<bn-BD>
+- দ্রুত ও মসৃণ Eateria — প্রতিদিনের ট্র্যাকিংয়ের জন্য
+- সর্বত্র আপনার ভাষা: কার্যকলাপ, স্বাস্থ্য ও অনবোর্ডিং
+- গোপনীয়তা ডিজাইনে: শুধু ডাকনাম, ব্যক্তিগত ইমেইল লুকানো
+- দিন বদলালে খাবারের ছবি আরও দ্রুত লোড হয়
+- আরও নির্ভরযোগ্য সাইন-ইন — লক্ষ্যে সঙ্গে সঙ্গে ফিরুন
+</bn-BD>
+<cs-CZ>
+- Rychlejší a plynulejší Eateria — pro každodenní tracking
+- Váš jazyk všude: aktivity, zdraví i onboarding
+- Soukromí od základu: jen přezdívky, e-maily zůstávají skryté
+- Fotky jídla se načítají rychleji při přepínání dnů
+- Spolehlivější přihlášení — zpět k vašim cílům bez zdržení
+</cs-CZ>
+<da-DK>
+- Hurtigere, mere flydende Eateria — til daglig tracking
+- Dit sprog overalt: aktiviteter, sundhed og onboarding
+- Privat by design: kun kaldenavne, e-mails forbliver skjulte
+- Madfotos indlæses hurtigere, når du skifter mellem dage
+- Mere pålidelig login — tilbage til dine mål uden friktion
+</da-DK>
+<de-DE>
+- Schnelleres, flüssigeres Eateria — fürs tägliche Tracking
+- Deine Sprache überall: Aktivitäten, Gesundheit und Onboarding
+- Privat by Design: nur Nicknames, persönliche E-Mails bleiben verborgen
+- Essensfotos laden schneller beim Wechsel zwischen Tagen
+- Zuverlässigeres Anmelden — zurück zu deinen Zielen ohne Umwege
+</de-DE>
+<el-GR>
+- Πιο γρήγορο και ομαλό Eateria — για καθημερινή παρακολούθηση
+- Η γλώσσα σας παντού: δραστηριότητες, υγεία και onboarding
+- Ιδιωτικότητα by design: μόνο ψευδώνυμα, τα email μένουν κρυφά
+- Οι φωτογραφίες φαγητού φορτώνουν πιο γρήγορα αλλάζοντας μέρα
+- Πιο αξιόπιστη σύνδεση για να επιστρέφετε αμέσως στους στόχους
+</el-GR>
+<en-AU>
+- A smoother, faster Eateria — built for everyday tracking
+- Your language everywhere: activities, health setup, and onboarding
+- Private by design: nicknames only, personal emails stay hidden
+- Food photos load quicker when you jump between days
+- More reliable sign-in so you can get back to your goals
+</en-AU>
+<en-CA>
+- A smoother, faster Eateria — built for everyday tracking
+- Your language everywhere: activities, health setup, and onboarding
+- Private by design: nicknames only, personal emails stay hidden
+- Food photos load quicker when you jump between days
+- More reliable sign-in so you can get back to your goals
+</en-CA>
+<en-IN>
+- A smoother, faster Eateria — built for everyday tracking
+- Your language everywhere: activities, health setup, and onboarding
+- Private by design: nicknames only, personal emails stay hidden
+- Food photos load quicker when you jump between days
+- More reliable sign-in so you can get back to your goals
+</en-IN>
+<en-SG>
+- A smoother, faster Eateria — built for everyday tracking
+- Your language everywhere: activities, health setup, and onboarding
+- Private by design: nicknames only, personal emails stay hidden
+- Food photos load quicker when you jump between days
+- More reliable sign-in so you can get back to your goals
+</en-SG>
+<en-US>
+- A smoother, faster Eateria — built for everyday tracking
+- Your language everywhere: activities, health setup, and onboarding
+- Private by design: nicknames only, personal emails stay hidden
+- Food photos load quicker when you jump between days
+- More reliable sign-in so you can get back to your goals
+</en-US>
+<en-ZA>
+- A smoother, faster Eateria — built for everyday tracking
+- Your language everywhere: activities, health setup, and onboarding
+- Private by design: nicknames only, personal emails stay hidden
+- Food photos load quicker when you jump between days
+- More reliable sign-in so you can get back to your goals
+</en-ZA>
+<es-419>
+- Eateria más rápida y fluida — pensada para el día a día
+- Tu idioma en todas partes: actividades, salud y onboarding
+- Privacidad de verdad: solo apodos, correos personales ocultos
+- Las fotos de comida cargan más rápido al cambiar de día
+- Inicio de sesión más fiable para volver a tus metas al instante
+</es-419>
+<es-ES>
+- Eateria más rápida y fluida — pensada para el día a día
+- Tu idioma en todas partes: actividades, salud y onboarding
+- Privacidad de verdad: solo apodos, emails personales ocultos
+- Las fotos de comida cargan más rápido al cambiar de día
+- Inicio de sesión más fiable para volver a tus metas al instante
+</es-ES>
+<et>
+- Kiirem, sujuvam Eateria — igapäevaseks jälgimiseks
+- Sinu keel kõikjal: tegevused, tervis ja onboarding
+- Privaatsus disaini järgi: ainult hüüdnimed, e-kirjad peidetud
+- Toidufotod laadivad kiiremini päevi vahetades
+- Usaldusväärsem sisselogimine — kohe tagasi oma eesmärkide juurde
+</et>
+<fi-FI>
+- Nopeampi, sujuvampi Eateria — arjen seurantaan
+- Kielesi kaikkialla: aktiviteetit, terveys ja onboarding
+- Yksityisyys suunnittelussa: vain lempinimet, sähköpostit piilossa
+- Ruokakuvat latautuvat nopeammin päivää vaihtaessa
+- Luotettavampi kirjautuminen — takaisin tavoitteisiin heti
+</fi-FI>
+<fr-FR>
+- Eateria plus fluide et plus rapide — pour le suivi au quotidien
+- Votre langue partout : activités, santé et onboarding
+- Privé par conception : surnoms uniquement, e-mails masqués
+- Les photos de repas s’affichent plus vite en changeant de jour
+- Connexion plus fiable pour reprendre vos objectifs sans friction
+</fr-FR>
+<gl-ES>
+- Eateria máis rápida e fluída — para o seguimento diario
+- A túa lingua en todas partes: actividades, saúde e onboarding
+- Privacidade de verdade: só alcumes, correos persoais ocultos
+- As fotos de comida cargan máis rápido ao cambiar de día
+- Inicio de sesión máis fiable para volver ás túas metas
+</gl-ES>
+<hi-IN>
+- तेज़ और सहज Eateria — रोज़ाना ट्रैकिंग के लिए
+- हर जगह आपकी भाषा: गतिविधियाँ, स्वास्थ्य और ऑनबोर्डिंग
+- प्राइवेसी पहले: सिर्फ निकनेम, निजी ईमेल छिपे रहते हैं
+- दिन बदलते ही भोजन की फ़ोटो और तेज़ लोड होती हैं
+- ज़्यादा भरोसेमंद साइन-इन — अपने लक्ष्यों पर तुरंत वापस
+</hi-IN>
+<hr>
+- Brži, glatkiji Eateria — za svakodnevno praćenje
+- Tvoj jezik posvuda: aktivnosti, zdravlje i onboarding
+- Privatnost po dizajnu: samo nadimci, e-mailovi ostaju skriveni
+- Fotografije hrane učitavaju se brže pri mijenjanju dana
+- Pouzanija prijava — odmah natrag na svoje ciljeve
+</hr>
+<hu-HU>
+- Gyorsabb, gördülékenyebb Eateria — a mindennapi követéshez
+- A te nyelved mindenhol: tevékenységek, egészség és onboarding
+- Adatvédelem alapból: csak becenevek, az e-mailek rejtve maradnak
+- Az ételfotók gyorsabban töltődnek napváltáskor
+- Megbízhatóbb bejelentkezés — azonnal vissza a céljaidhoz
+</hu-HU>
+<it-IT>
+- Eateria più veloce e fluida — pensata per il tracking quotidiano
+- La tua lingua ovunque: attività, salute e onboarding
+- Privacy di design: solo nickname, email personali nascoste
+- Le foto dei pasti si aprono più in fretta cambiando giorno
+- Accesso più affidabile per tornare subito ai tuoi obiettivi
+</it-IT>
+<ja-JP>
+- より速く、なめらかなEateria — 毎日の記録のために
+- アクティビティ・健康設定・オンボーディングをあなたの言語で
+- プライバシー設計：ニックネームのみ、個人メールは非表示
+- 日付を切り替えても食事写真がすばやく表示
+- より安定したサインインで、すぐに目標へ戻れます
+</ja-JP>
+<ko-KR>
+- 더 빠르고 부드러운 Eateria — 매일의 기록을 위해
+- 활동·건강 설정·온보딩까지 내 언어로
+- 프라이버시 설계: 닉네임만 표시, 개인 이메일 숨김
+- 날짜를 바꿔도 음식 사진이 더 빠르게 표시
+- 더 안정적인 로그인으로 목표로 바로 복귀
+</ko-KR>
+<lt>
+- Greitesnė, sklandesnė Eateria — kasdieniam sekimui
+- Jūsų kalba visur: veiklos, sveikata ir onboarding
+- Privatumas pagal dizainą: tik slapyvardžiai, el. paštas slepiamas
+- Maisto nuotraukos kraunasi greičiau keičiant dienas
+- Patikimesnis prisijungimas — iškart grįžkite prie tikslų
+</lt>
+<lv>
+- Ātrāka, plūstošāka Eateria — ikdienas izsekošanai
+- Jūsu valoda visur: aktivitātes, veselība un onboarding
+- Privātums pēc dizaina: tikai segvārdi, e-pasti paliek slēpti
+- Ēdienu foto ielādējas ātrāk, pārslēdzot dienas
+- Uzticamāka pierakstīšanās — uzreiz atpakaļ pie mērķiem
+</lv>
+<nl-NL>
+- Snellere, soepelere Eateria — gemaakt voor dagelijks tracken
+- Jouw taal overal: activiteiten, gezondheid en onboarding
+- Privacy by design: alleen bijnamen, e-mails blijven verborgen
+- Eetfoto’s laden sneller als je tussen dagen wisselt
+- Betrouwbaarder inloggen — meteen terug naar je doelen
+</nl-NL>
+<no-NO>
+- Raskere, jevnere Eateria — for daglig sporing
+- Språket ditt overalt: aktiviteter, helse og onboarding
+- Privat by design: bare kallenavn, e-poster holdes skjult
+- Matbilder laster raskere når du bytter mellom dager
+- Mer pålitelig innlogging — tilbake til målene med en gang
+</no-NO>
+<pl-PL>
+- Szybsza, płynniejsza Eateria — do codziennego śledzenia
+- Twój język wszędzie: aktywności, zdrowie i onboarding
+- Prywatność domyślnie: tylko nicki, e-maile zostają ukryte
+- Zdjęcia jedzenia ładują się szybciej przy zmianie dni
+- Pewniejsze logowanie — wróć do swoich celów bez przeszkód
+</pl-PL>
+<pt-PT>
+- Eateria mais rápida e fluida — feita para o dia a dia
+- O seu idioma em tudo: atividades, saúde e onboarding
+- Privacidade de verdade: só alcunhas, emails ficam ocultos
+- Fotos de comida carregam mais depressa ao mudar de dia
+- Início de sessão mais fiável para voltar aos seus objetivos
+</pt-PT>
+<ro>
+- Eateria mai rapidă și fluidă — pentru urmărirea de zi cu zi
+- Limba ta peste tot: activități, sănătate și onboarding
+- Confidențialitate prin design: doar porecle, emailurile rămân ascunse
+- Pozele cu mâncare se încarcă mai rapid când schimbi ziua
+- Autentificare mai sigură ca să revii imediat la obiective
+</ro>
+<sk>
+- Rýchlejšia a plynulejšia Eateria — na každodenný tracking
+- Váš jazyk všade: aktivity, zdravie aj onboarding
+- Súkromie od základu: len prezývky, e-maily zostávajú skryté
+- Fotky jedla sa načítajú rýchlejšie pri prepínaní dní
+- Spoľahlivejšie prihlásenie — späť k cieľom bez zdržania
+</sk>
+<sl>
+- Hitrejši, bolj tekoč Eateria — za vsakodnevno sledenje
+- Tvoj jezik povsod: aktivnosti, zdravje in onboarding
+- Zasebnost po zasnovi: samo vzdevki, e-pošta ostane skrita
+- Fotografije hrane se naložijo hitreje ob menjavi dni
+- Zanesljivejša prijava — takoj nazaj k svojim ciljem
+</sl>
+<sv-SE>
+- Snabbare, smidigare Eateria — för vardagens tracking
+- Ditt språk överallt: aktiviteter, hälsa och onboarding
+- Privat by design: bara smeknamn, mejl hålls dolda
+- Matfoton laddar snabbare när du byter dag
+- Pålitligare inloggning så du kommer tillbaka till målen
+</sv-SE>
+<th>
+- Eateria ลื่นและเร็วขึ้น — สำหรับติดตามทุกวัน
+- ภาษาของคุณครบทุกจุด: กิจกรรม สุขภาพ และเริ่มต้นใช้งาน
+- ออกแบบเพื่อความเป็นส่วนตัว: แสดงเฉพาะชื่อเล่น ซ่อนอีเมล
+- รูปอาหารโหลดเร็วขึ้นเมื่อเปลี่ยนวัน
+- เข้าสู่ระบบเสถียรขึ้น กลับสู่เป้าหมายได้ทันที
+</th>
+<tr-TR>
+- Daha hızlı, daha akıcı Eateria — günlük takip için
+- Her yerde senin dilin: aktiviteler, sağlık ve onboarding
+- Gizlilik odaklı: yalnızca takma adlar, e-postalar gizli
+- Günler arasında gezerken yemek fotoğrafları daha hızlı
+- Daha güvenilir giriş — hedeflerine hemen geri dön
+</tr-TR>
+<uk>
+- Швидший і плавніший Eateria — для щоденного трекінгу
+- Ваша мова всюди: активності, здоровʼя та онбординг
+- Приватність за замовчуванням: лише нікнейми, email приховані
+- Фото їжі відкриваються швидше при зміні днів
+- Надійніший вхід — повертайтесь до своїх цілей без зайвих кроків
+</uk>
+<ur>
+- تیز اور ہموار Eateria — روزمرہ ٹریکنگ کے لیے
+- آپ کی زبان ہر جگہ: سرگرمیاں، صحت اور آغاز
+- رازداری پہلے: صرف عرفی نام، ذاتی ای میل مخفی
+- دن بدلتے وقت کھانے کی تصاویر تیزی سے کھلتی ہیں
+- زیادہ قابلِ اعتماد سائن اِن — فوراً اپنے اہداف پر واپس
+</ur>
+<vi>
+- Eateria mượt và nhanh hơn — cho theo dõi mỗi ngày
+- Ngôn ngữ của bạn ở mọi nơi: hoạt động, sức khỏe và onboarding
+- Riêng tư theo thiết kế: chỉ biệt danh, email được ẩn
+- Ảnh món ăn tải nhanh hơn khi chuyển ngày
+- Đăng nhập ổn định hơn để quay lại mục tiêu ngay
+</vi>
+<zh-CN>
+- 更快更流畅的 Eateria — 为每天记录而打造
+- 全流程支持你的语言：活动、健康设置与引导
+- 隐私优先：仅显示昵称，隐藏个人邮箱
+- 切换日期时食物照片加载更快
+- 登录更可靠，马上回到你的健康目标
+</zh-CN>

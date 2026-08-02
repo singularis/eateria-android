@@ -1,0 +1,5 @@
+- Rýchlejšia a plynulejšia Eateria — na každodenný tracking
+- Váš jazyk všade: aktivity, zdravie aj onboarding
+- Súkromie od základu: len prezývky, e-maily zostávajú skryté
+- Fotky jedla sa načítajú rýchlejšie pri prepínaní dní
+- Spoľahlivejšie prihlásenie — späť k cieľom bez zdržania

@@ -1,0 +1,5 @@
+- Aktiviteetit ja terveysasetukset kokonaan omalla kielelläsi
+- Selkeämpi onboarding heti ensimmäiseltä näytöltä
+- Ystävällisemmät nimet — vain lempinimet, yksityiset sähköpostit piilossa
+- Nopeammat ruokakuvat päivää vaihtaessa
+- Sujuvampi painon kirjaus vaakakuvalla

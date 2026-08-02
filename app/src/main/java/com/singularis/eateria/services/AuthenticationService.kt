@@ -42,16 +42,16 @@ import java.util.concurrent.TimeUnit
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 data class TokenRequest(
-    val provider: String,
+    @SerializedName("provider") val provider: String,
     @SerializedName("idToken") val idToken: String,
-    val email: String,
-    val name: String?,
+    @SerializedName("email") val email: String,
+    @SerializedName("name") val name: String?,
     @SerializedName("profilePictureURL") val profilePictureURL: String?,
-    @SerializedName("previous_anonymous_uuid") val previousAnonymousUuid: String? = null
+    @SerializedName("previous_anonymous_uuid") val previousAnonymousUuid: String? = null,
 )
 
 data class TokenResponse(
-    val token: String,
+    @SerializedName("token") val token: String,
     @SerializedName("expiresIn") val expiresIn: Int,
     @SerializedName("userEmail") val userEmail: String,
     @SerializedName("userName") val userName: String?,
@@ -59,8 +59,8 @@ data class TokenResponse(
 )
 
 data class ErrorResponse(
-    val error: String,
-    val message: String?,
+    @SerializedName("error") val error: String,
+    @SerializedName("message") val message: String?,
 )
 
 interface AuthApi {

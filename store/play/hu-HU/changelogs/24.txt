@@ -1,0 +1,5 @@
+- Tevékenységek és egészségbeállítás teljesen a nyelveden
+- Egyértelműbb onboarding az első képernyőtől
+- Barátságosabb nevek — csak becenevek, a privát e-mailek rejtve
+- Gyorsabb ételfotók napok között váltáskor
+- Könnyebb súlyingazás mérlegfotóval

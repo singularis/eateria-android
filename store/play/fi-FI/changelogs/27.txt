@@ -1,0 +1,5 @@
+- Nopeampi, sujuvampi Eateria — arjen seurantaan
+- Kielesi kaikkialla: aktiviteetit, terveys ja onboarding
+- Yksityisyys suunnittelussa: vain lempinimet, sähköpostit piilossa
+- Ruokakuvat latautuvat nopeammin päivää vaihtaessa
+- Luotettavampi kirjautuminen — takaisin tavoitteisiin heti

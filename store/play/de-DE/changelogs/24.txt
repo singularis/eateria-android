@@ -1,0 +1,5 @@
+- Aktivitäten und Gesundheitsprofil vollständig in Ihrer Sprache
+- Klareres Onboarding vom ersten Bildschirm an
+- Freundlichere Namen — nur Nicknames, private E-Mails bleiben verborgen
+- Schnellere Essensfotos beim Wechsel zwischen Tagen
+- Einfacheres Gewichtloggen mit Waagenfoto

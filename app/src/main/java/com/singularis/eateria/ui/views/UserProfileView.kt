@@ -423,7 +423,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             )
                             androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
 
-                            if (com.singularis.eateria.BuildConfig.DEBUG) {
+                            if (com.singularis.eateria.BuildConfig.USE_DEV_API) {
                                 var isDev by remember { mutableStateOf(com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment) }
                                 Column(
                                     modifier = Modifier.background(if (isDev) Color.Red.copy(alpha = 0.3f) else Color.Green.copy(alpha = 0.3f))

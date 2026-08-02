@@ -49,9 +49,16 @@
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
--keepclassmembers,allowobfuscation class * {
+# Keep JSON wire names for Gson (R8 must not strip @SerializedName fields).
+-keepclassmembers class * {
     @com.google.gson.annotations.SerializedName <fields>;
 }
+# Auth / login wire models used by Retrofit+Gson in release
+-keep class com.singularis.eateria.services.TokenRequest { <fields>; }
+-keep class com.singularis.eateria.services.TokenResponse { <fields>; }
+-keep class com.singularis.eateria.services.ErrorResponse { <fields>; }
+-keep class com.singularis.eateria.services.CalorieLimitsStorageService$Limits { <fields>; }
+-keep class com.singularis.eateria.services.StatisticsCacheService$CachedStatistics { <fields>; }
 
 # Retrofit / OkHttp
 -dontwarn okhttp3.**

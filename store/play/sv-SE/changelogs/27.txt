@@ -1,0 +1,5 @@
+- Snabbare, smidigare Eateria — för vardagens tracking
+- Ditt språk överallt: aktiviteter, hälsa och onboarding
+- Privat by design: bara smeknamn, mejl hålls dolda
+- Matfoton laddar snabbare när du byter dag
+- Pålitligare inloggning så du kommer tillbaka till målen

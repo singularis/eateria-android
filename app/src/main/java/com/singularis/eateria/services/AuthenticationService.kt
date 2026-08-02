@@ -22,60 +22,43 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.singularis.eateria.util.Secrets
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
-import java.util.Date
+import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 data class TokenRequest(
-    @SerializedName("provider") val provider: String,
-    @SerializedName("idToken") val idToken: String,
-    @SerializedName("email") val email: String,
-    @SerializedName("name") val name: String?,
-    @SerializedName("profilePictureURL") val profilePictureURL: String?,
-    @SerializedName("previous_anonymous_uuid") val previousAnonymousUuid: String? = null,
+    val provider: String,
+    val idToken: String,
+    val email: String,
+    val name: String?,
+    val profilePictureURL: String?,
+    val previousAnonymousUuid: String? = null,
 )
 
 data class TokenResponse(
-    @SerializedName("token") val token: String,
-    @SerializedName("expiresIn") val expiresIn: Int,
-    @SerializedName("userEmail") val userEmail: String,
-    @SerializedName("userName") val userName: String?,
-    @SerializedName("profilePictureURL") val profilePictureURL: String?,
+    val token: String,
+    val expiresIn: Int,
+    val userEmail: String,
+    val userName: String?,
+    val profilePictureURL: String?,
 )
-
-data class ErrorResponse(
-    @SerializedName("error") val error: String,
-    @SerializedName("message") val message: String?,
-)
-
-interface AuthApi {
-    @POST
-    suspend fun authenticate(
-        @retrofit2.http.Url url: String,
-        @Body tokenRequest: TokenRequest,
-    ): TokenResponse
-}
 
 class AuthenticationService(
     private val context: Context,
 ) {
     private val baseUrl: String
-        get() = AppEnvironment.getInstance().baseURL + "/"
+        get() = AppEnvironment.getInstance().baseURL.trimEnd('/') + "/"
 
     private val client =
         OkHttpClient
@@ -83,30 +66,93 @@ class AuthenticationService(
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor { chain ->
-                val original = chain.request()
-                val requestBuilder =
-                    original
-                        .newBuilder()
-                        .header("Content-Type", "application/json")
-                chain.proceed(requestBuilder.build())
-            }.build()
-
-    private val authApi =
-        Retrofit
-            .Builder()
-            .baseUrl(baseUrl)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(AuthApi::class.java)
-
-    private val gson = Gson()
 
     // Modern Credential Manager instance
     private val credentialManager = CredentialManager.create(context)
 
+    /**
+     * Auth over OkHttp + org.json (no Gson/Retrofit reflection).
+     * R8 must not be able to rename JSON keys for login.
+     */
+    private suspend fun authenticate(
+        endpoint: String,
+        request: TokenRequest,
+    ): TokenResponse =
+        withContext(Dispatchers.IO) {
+            val bodyJson =
+                JSONObject()
+                    .put("provider", request.provider)
+                    .put("idToken", request.idToken)
+                    .put("email", request.email)
+                    .put("name", request.name ?: JSONObject.NULL)
+                    .put("profilePictureURL", request.profilePictureURL ?: JSONObject.NULL)
+                    .apply {
+                        if (!request.previousAnonymousUuid.isNullOrBlank()) {
+                            put("previous_anonymous_uuid", request.previousAnonymousUuid)
+                        }
+                    }
+
+            val httpRequest =
+                Request
+                    .Builder()
+                    .url(baseUrl + endpoint.trimStart('/'))
+                    .post(bodyJson.toString().toRequestBody(JSON_MEDIA_TYPE))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .build()
+
+            client.newCall(httpRequest).execute().use { response ->
+                val raw = response.body.string()
+                if (!response.isSuccessful) {
+                    throw IllegalStateException("Auth HTTP ${response.code}: ${raw.take(300)}")
+                }
+                parseTokenResponse(raw, fallbackEmail = request.email, fallbackName = request.name)
+            }
+        }
+
+    private fun parseTokenResponse(
+        raw: String,
+        fallbackEmail: String,
+        fallbackName: String?,
+    ): TokenResponse {
+        val json = JSONObject(raw)
+        val token = json.optString("token", "").trim()
+        if (token.isEmpty()) {
+            throw IllegalStateException("Auth response missing token")
+        }
+        val userEmail =
+            json.optString("userEmail", "")
+                .ifBlank { json.optString("user_email", "") }
+                .ifBlank { fallbackEmail }
+                .trim()
+        if (userEmail.isEmpty()) {
+            throw IllegalStateException("Auth response missing userEmail")
+        }
+        val userName =
+            json.optNonBlank("userName")
+                ?: json.optNonBlank("user_name")
+                ?: fallbackName
+        val profilePictureURL =
+            json.optNonBlank("profilePictureURL")
+                ?: json.optNonBlank("profile_picture_url")
+        val expiresIn = json.optInt("expiresIn", json.optInt("expires_in", 0))
+        return TokenResponse(
+            token = token,
+            expiresIn = expiresIn,
+            userEmail = userEmail,
+            userName = userName,
+            profilePictureURL = profilePictureURL,
+        )
+    }
+
+    private fun JSONObject.optNonBlank(key: String): String? {
+        if (!has(key) || isNull(key)) return null
+        return optString(key).trim().takeIf { it.isNotEmpty() && it != "null" }
+    }
+
     companion object {
+        private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
         private val USER_EMAIL = stringPreferencesKey("user_email")
         private val USER_NAME = stringPreferencesKey("user_name")
         private val PROFILE_PICTURE_URL = stringPreferencesKey("profile_picture_url")
@@ -124,10 +170,10 @@ class AuthenticationService(
 
     private fun getSportCaloriesKey(dateKey: String): Preferences.Key<String> = stringPreferencesKey("sport_calories_$dateKey")
 
-    // Flow for authentication state
+    // Flow for authentication state — email in DataStore is the UI gate; JWT must also exist.
     val isAuthenticated: Flow<Boolean> =
         context.dataStore.data.map { preferences ->
-            !preferences[USER_EMAIL].isNullOrEmpty()
+            !preferences[USER_EMAIL].isNullOrEmpty() && !TokenStore.read(context).isNullOrEmpty()
         }
 
     val userEmail: Flow<String?> =
@@ -242,7 +288,6 @@ class AuthenticationService(
 
             Log.e("AuthenticationService", "SUCCESS: Got credential result!")
             handleSignInResult(result)
-            true
         } catch (e: GetCredentialException) {
             Log.e("AuthenticationService", "FAILED: Credential Manager sign in failed", e)
             Log.e("AuthenticationService", "Exception type: ${e.javaClass.simpleName}")
@@ -282,13 +327,13 @@ class AuthenticationService(
                 profilePictureURL = null
             )
 
-            val loginUrl = "anonymous_auth"
-            val response = authApi.authenticate(loginUrl, tokenRequest)
-            
+            val response = authenticate("anonymous_auth", tokenRequest)
+            if (response.token.isBlank()) return false
+
             TokenStore.save(context, response.token)
-            
+
             context.dataStore.edit { preferences ->
-                preferences[USER_EMAIL] = response.userEmail
+                preferences[USER_EMAIL] = response.userEmail.ifBlank { fakeEmail }
                 preferences[USER_NAME] = response.userName ?: "Guest"
                 if (response.profilePictureURL != null) {
                     preferences[PROFILE_PICTURE_URL] = response.profilePictureURL
@@ -349,44 +394,46 @@ class AuthenticationService(
 
             Log.e("AuthenticationService", "SUCCESS: Alternative sign-in worked!")
             handleSignInResult(result)
-            true
         } catch (e: Exception) {
             Log.e("AuthenticationService", "Alternative sign-in also failed", e)
             false
         }
     }
 
-    private suspend fun handleSignInResult(result: GetCredentialResponse) {
+    private suspend fun handleSignInResult(result: GetCredentialResponse): Boolean {
         when (val credential = result.credential) {
             is CustomCredential -> {
                 if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                    try {
+                    return try {
                         val googleIdTokenCredential =
                             GoogleIdTokenCredential
                                 .createFrom(credential.data)
                         handleGoogleIdToken(googleIdTokenCredential)
                     } catch (e: GoogleIdTokenParsingException) {
                         Log.e("AuthenticationService", "Received an invalid google id token response", e)
+                        false
                     }
                 } else {
                     Log.e("AuthenticationService", "Unexpected type of credential")
+                    return false
                 }
             }
             is PasswordCredential -> {
-                // Handle password credential if needed
                 Log.d("AuthenticationService", "Password credential received")
+                return false
             }
             is PublicKeyCredential -> {
-                // Handle passkey credential if needed
                 Log.d("AuthenticationService", "Passkey credential received")
+                return false
             }
             else -> {
                 Log.e("AuthenticationService", "Unexpected type of credential")
+                return false
             }
         }
     }
 
-    private suspend fun handleGoogleIdToken(googleIdTokenCredential: GoogleIdTokenCredential) {
+    private suspend fun handleGoogleIdToken(googleIdTokenCredential: GoogleIdTokenCredential): Boolean {
         val idToken = googleIdTokenCredential.idToken
         val email = googleIdTokenCredential.id
         val name = googleIdTokenCredential.displayName
@@ -403,32 +450,45 @@ class AuthenticationService(
                 email = email,
                 name = name,
                 profilePictureURL = profilePictureURL,
-                previousAnonymousUuid = prevUuid
+                previousAnonymousUuid = prevUuid,
             )
 
-        try {
-            val endpoint = "eater_auth"
-            val tokenResponse = authApi.authenticate(endpoint, tokenRequest)
-            updateAuthenticationState(tokenResponse)
+        return try {
+            val tokenResponse = authenticate("eater_auth", tokenRequest)
+            updateAuthenticationState(tokenResponse, fallbackEmail = email, fallbackName = name)
+            !TokenStore.read(context).isNullOrEmpty()
         } catch (e: Exception) {
             Log.e("AuthenticationService", "Authentication failed", e)
-            throw e
+            false
         }
     }
 
-    private suspend fun updateAuthenticationState(response: TokenResponse) {
-        val currentTimestamp = System.currentTimeMillis() / 1000f
-
+    private suspend fun updateAuthenticationState(
+        response: TokenResponse,
+        fallbackEmail: String? = null,
+        fallbackName: String? = null,
+    ) {
+        if (response.token.isBlank()) {
+            throw IllegalStateException("Refusing to persist empty auth token")
+        }
         TokenStore.save(context, response.token)
 
-        context.dataStore.edit { preferences ->
-            preferences[USER_EMAIL] = response.userEmail
+        val email = response.userEmail.ifBlank { fallbackEmail.orEmpty() }.trim()
+        if (email.isEmpty()) {
+            throw IllegalStateException("Refusing to persist auth without userEmail")
+        }
 
-            response.userName?.let { preferences[USER_NAME] = it }
+        context.dataStore.edit { preferences ->
+            preferences[USER_EMAIL] = email
+            (response.userName ?: fallbackName)?.let { preferences[USER_NAME] = it }
             response.profilePictureURL?.let { preferences[PROFILE_PICTURE_URL] = it }
             preferences[IS_ANONYMOUS] = false
             preferences.remove(ANONYMOUS_UUID)
         }
+        Log.e(
+            "AuthenticationService",
+            "Auth persisted: email=$email tokenLen=${response.token.length}",
+        )
     }
 
     suspend fun signOut() {

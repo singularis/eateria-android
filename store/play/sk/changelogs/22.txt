@@ -1,0 +1,5 @@
+- Aktivity a nastavenie zdravia plne vo vašom jazyku
+- Jasnejší onboarding od prvej obrazovky
+- Priateľskejšie mená — len prezývky, súkromné e-maily skryté
+- Rýchlejšie fotky jedla pri prepínaní dní
+- Pohodlnejšie váženie s fotkou váhy

@@ -1,0 +1,301 @@
+<en-GB>
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo
+</en-GB>
+<ar>
+- الأنشطة وإعدادات الصحة بلغتك بالكامل
+- إعداد أوضح منذ الشاشة الأولى
+- أسماء ألطف — الألقاب فقط وإخفاء البريد الخاص
+- صور طعام أسرع عند التنقل بين الأيام
+- تسجيل وزن أسهل بصورة الميزان
+</ar>
+<be>
+- Актыўнасці і налады здароўя цалкам на вашай мове
+- Зразумелейшы онбордынг з першага экрана
+- Сяброўскія імёны — толькі нікнеймы, прыватныя email схаваныя
+- Хутчэйшыя фота ежы пры пераключэнні дзён
+- Зручнейшае ўзважванне з фота вагаў
+</be>
+<bg>
+- Дейностите и здравните настройки са напълно на вашия език
+- По-ясно въведение още от първия екран
+- По-приятелски имена — само прякори, скрити лични имейли
+- По-бързи снимки на храна при смяна на дни
+- По-лесно записване на тегло със снимка на кантар
+</bg>
+<bn-BD>
+- কার্যকলাপ ও স্বাস্থ্য সেটআপ সম্পূর্ণ আপনার ভাষায়
+- প্রথম স্ক্রিন থেকেই পরিষ্কার অনবোর্ডিং
+- বন্ধুত্বপূর্ণ নাম — শুধু ডাকনাম, ব্যক্তিগত ইমেইল লুকানো
+- দিন বদলালে খাবারের ছবি আরও দ্রুত
+- ওজন মাপার ছবি দিয়ে সহজ ওজন লগ
+</bn-BD>
+<cs-CZ>
+- Aktivity a nastavení zdraví plně ve vašem jazyce
+- Jasnější onboarding od první obrazovky
+- Přátelštější jména — jen přezdívky, soukromé e-maily skryté
+- Rychlejší fotky jídla při přepínání dnů
+- Pohodlnější vážení s fotkou váhy
+</cs-CZ>
+<da-DK>
+- Aktiviteter og sundhedsopsætning helt på dit sprog
+- Klarere onboarding fra den første skærm
+- Venligere navne — kun kaldenavne, private e-mails skjult
+- Hurtigere madfotos når du skifter mellem dage
+- Nemmere vægtlogning med vægtfoto
+</da-DK>
+<de-DE>
+- Aktivitäten und Gesundheitsprofil vollständig in Ihrer Sprache
+- Klareres Onboarding vom ersten Bildschirm an
+- Freundlichere Namen — nur Nicknames, private E-Mails bleiben verborgen
+- Schnellere Essensfotos beim Wechsel zwischen Tagen
+- Einfacheres Gewichtloggen mit Waagenfoto
+</de-DE>
+<el-GR>
+- Δραστηριότητες και ρυθμίσεις υγείας πλήρως στη γλώσσα σας
+- Πιο καθαρό onboarding από την πρώτη οθόνη
+- Φιλικότερα ονόματα — μόνο ψευδώνυμα, τα ιδιωτικά email κρύβονται
+- Γρηγορότερες φωτογραφίες φαγητού όταν αλλάζετε μέρα
+- Ευκολότερη καταγραφή βάρους με φωτο της ζυγαριάς
+</el-GR>
+<en-AU>
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo
+</en-AU>
+<en-CA>
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo
+</en-CA>
+<en-IN>
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo
+</en-IN>
+<en-SG>
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo
+</en-SG>
+<en-US>
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo
+</en-US>
+<en-ZA>
+- Activities and health setup fully in your language
+- Clearer onboarding from the first screen
+- Friendlier names — nicknames only, private emails stay hidden
+- Faster food photos when you jump between days
+- Smoother weight logging with a scale photo
+</en-ZA>
+<es-419>
+- Actividades y salud completamente en tu idioma
+- Onboarding más claro desde la primera pantalla
+- Nombres más amables: solo apodos, correos privados ocultos
+- Fotos de comida más rápidas al cambiar de día
+- Registro de peso más fácil con foto de la báscula
+</es-419>
+<es-ES>
+- Actividades y salud completamente en tu idioma
+- Onboarding más claro desde la primera pantalla
+- Nombres más amables: solo apodos, emails privados ocultos
+- Fotos de comida más rápidas al cambiar de día
+- Registro de peso más fácil con foto de la báscula
+</es-ES>
+<et>
+- Tegevused ja tervisesätted täielikult sinu keeles
+- Selgem sissejuhatus juba esimesest ekraanist
+- Sõbralikumad nimed — ainult hüüdnimed, privaatsed e-kirjad peidetud
+- Kiiremad toidufotod päevade vahel liikudes
+- Sujuvam kaalu logimine kaalufotoga
+</et>
+<fi-FI>
+- Aktiviteetit ja terveysasetukset kokonaan omalla kielelläsi
+- Selkeämpi onboarding heti ensimmäiseltä näytöltä
+- Ystävällisemmät nimet — vain lempinimet, yksityiset sähköpostit piilossa
+- Nopeammat ruokakuvat päivää vaihtaessa
+- Sujuvampi painon kirjaus vaakakuvalla
+</fi-FI>
+<fr-FR>
+- Activités et profil santé entièrement dans votre langue
+- Onboarding plus clair dès le premier écran
+- Noms plus discrets — surnoms uniquement, e-mails privés masqués
+- Photos de repas plus rapides en changeant de jour
+- Suivi du poids plus fluide avec photo de la balance
+</fr-FR>
+<gl-ES>
+- Actividades e saúde completamente no teu idioma
+- Onboarding máis claro desde a primeira pantalla
+- Nomes máis amables — só alcumes, correos privados ocultos
+- Fotos de comida máis rápidas ao cambiar de día
+- Rexistro de peso máis doado cunha foto da báscula
+</gl-ES>
+<hi-IN>
+- गतिविधियाँ और स्वास्थ्य सेटअप पूरी तरह आपकी भाषा में
+- पहली स्क्रीन से ही साफ़ ऑनबोर्डिंग
+- दोस्ताना नाम — सिर्फ निकनेम, निजी ईमेल छिपे रहते हैं
+- दिन बदलते समय भोजन की फ़ोटो तेज़
+- तराजू की फ़ोटो से आसान वज़न लॉग
+</hi-IN>
+<hr>
+- Aktivnosti i zdravstvene postavke potpuno na tvom jeziku
+- Jasniji onboarding od prvog zaslona
+- Prijateljskija imena — samo nadimci, privatni e-mailovi skriveni
+- Brže fotografije hrane pri mijenjanju dana
+- Lakše bilježenje težine s fotkom vage
+</hr>
+<hu-HU>
+- Tevékenységek és egészségbeállítás teljesen a nyelveden
+- Egyértelműbb onboarding az első képernyőtől
+- Barátságosabb nevek — csak becenevek, a privát e-mailek rejtve
+- Gyorsabb ételfotók napok között váltáskor
+- Könnyebb súlyingazás mérlegfotóval
+</hu-HU>
+<it-IT>
+- Attività e profilo salute completamente nella tua lingua
+- Onboarding più chiaro dal primo schermo
+- Nomi più discreti — solo nickname, email private nascoste
+- Foto dei pasti più veloci quando cambi giorno
+- Peso più semplice con foto della bilancia
+</it-IT>
+<ja-JP>
+- アクティビティと健康設定をあなたの言語で表示
+- 最初の画面からわかりやすいオンボーディング
+- フレンドリーな表示名 — ニックネームのみ、非公開メールは非表示
+- 日付を切り替えても食事写真がすばやく表示
+- 体重計の写真でスムーズな体重記録
+</ja-JP>
+<ko-KR>
+- 활동과 건강 설정을 내 언어로 완전히 지원
+- 첫 화면부터 더 분명한 온보딩
+- 더 친근한 이름 — 닉네임만 표시, 비공개 이메일 숨김
+- 날짜를 바꿔도 음식 사진이 더 빠르게 표시
+- 체중계 사진으로 더 쉬운 체중 기록
+</ko-KR>
+<lt>
+- Veiklos ir sveikatos nustatymai visiškai jūsų kalba
+- Aiškesnis pradžios vedimas nuo pirmo ekrano
+- Draugiškesni vardai — tik slapyvardžiai, privatūs el. laiškai paslėpti
+- Greitesnės maisto nuotraukos keičiant dienas
+- Patogesnis svorio fiksavimas su svarstyklių nuotrauka
+</lt>
+<lv>
+- Aktivitātes un veselības iestatījumi pilnībā jūsu valodā
+- Skaidrāka ievadīšana jau no pirmā ekrāna
+- Draudzīgāki vārdi — tikai segvārdi, privātie e-pasti paslēpti
+- Ātrākas ēdienu fotogrāfijas, pārslēdzot dienas
+- Ērtāka svara reģistrēšana ar svaru foto
+</lv>
+<nl-NL>
+- Activiteiten en gezondheidsinstellingen volledig in jouw taal
+- Duidelijkere onboarding vanaf het eerste scherm
+- Vriendelijkere namen — alleen bijnamen, privé-e-mails verborgen
+- Snellere eetfoto's bij wisselen tussen dagen
+- Soepeler gewicht loggen met een weegschaalfoto
+</nl-NL>
+<no-NO>
+- Aktiviteter og helseoppsett helt på ditt språk
+- Tydeligere onboarding fra første skjerm
+- Vennligere navn — kun kallenavn, private e-poster skjult
+- Raskere matbilder når du bytter mellom dager
+- Enklere vektlogging med vektfoto
+</no-NO>
+<pl-PL>
+- Aktywności i ustawienia zdrowia w pełni w Twoim języku
+- Jaśniejszy onboarding od pierwszego ekranu
+- Przyjaźniejsze nazwy — tylko nicki, prywatne e-maile ukryte
+- Szybsze zdjęcia jedzenia przy przełączaniu dni
+- Wygodniejsze ważenie ze zdjęciem wagi
+</pl-PL>
+<pt-PT>
+- Atividades e saúde totalmente no seu idioma
+- Onboarding mais claro desde o primeiro ecrã
+- Nomes mais amigáveis — só alcunhas, emails privados ocultos
+- Fotos de comida mais rápidas ao mudar de dia
+- Peso mais fácil com foto da balança
+</pt-PT>
+<ro>
+- Activități și setări de sănătate complet în limba ta
+- Onboarding mai clar de la primul ecran
+- Nume mai prietenoase — doar porecle, emailuri private ascunse
+- Fotografii cu mâncare mai rapide când schimbi ziua
+- Înregistrare greutate mai ușoară cu poza cântarului
+</ro>
+<sk>
+- Aktivity a nastavenie zdravia plne vo vašom jazyku
+- Jasnejší onboarding od prvej obrazovky
+- Priateľskejšie mená — len prezývky, súkromné e-maily skryté
+- Rýchlejšie fotky jedla pri prepínaní dní
+- Pohodlnejšie váženie s fotkou váhy
+</sk>
+<sl>
+- Aktivnosti in zdravstvene nastavitve popolnoma v tvojem jeziku
+- Jasnejši onboarding že od prvega zaslona
+- Prijaznejša imena — samo vzdevki, zasebni e-pošti skriti
+- Hitrejše fotografije hrane pri preklopu dni
+- Lažje beleženje teže s fotografijo tehtnice
+</sl>
+<sv-SE>
+- Aktiviteter och hälsoinställningar helt på ditt språk
+- Tydligare onboarding från första skärmen
+- Vänligare namn — endast smeknamn, privata mejl dolda
+- Snabbare matfoton när du byter dag
+- Smidigare viktloggning med vågfoto
+</sv-SE>
+<th>
+- กิจกรรมและการตั้งค่าสุขภาพครบในภาษาของคุณ
+- การเริ่มต้นใช้งานชัดเจนขึ้นตั้งแต่หน้าจอแรก
+- ชื่อที่เป็นมิตรกว่า — แสดงเฉพาะชื่อเล่น ซ่อนอีเมลส่วนตัว
+- รูปอาหารโหลดเร็วขึ้นเมื่อเปลี่ยนวัน
+- บันทึกน้ำหนักลื่นขึ้นด้วยรูปตาชั่ง
+</th>
+<tr-TR>
+- Aktiviteler ve sağlık kurulumu tamamen sizin dilinizde
+- İlk ekrandan itibaren daha net başlangıç
+- Daha samimi isimler — yalnızca takma adlar, gizli e-postalar gizli kalır
+- Günler arasında gezerken daha hızlı yemek fotoğrafları
+- Terazi fotoğrafıyla daha akıcı kilo kaydı
+</tr-TR>
+<uk>
+- Активності та налаштування здоровʼя повністю вашою мовою
+- Зрозуміліший онбординг з першого екрана
+- Дружні імена — лише нікнейми, приватні email приховані
+- Швидші фото їжі при перемиканні між днями
+- Зручніше зважування з фото вагів
+</uk>
+<ur>
+- سرگرمیاں اور صحت کی ترتیب مکمل طور پر آپ کی زبان میں
+- پہلی اسکرین سے ہی واضح آغاز
+- دوستانہ نام — صرف عرفی نام، نجی ای میل مخفی
+- دن بدلتے وقت کھانے کی تصاویر تیز
+- ترازو کی تصویر سے آسان وزن اندراج
+</ur>
+<vi>
+- Hoạt động và thiết lập sức khỏe đầy đủ bằng ngôn ngữ của bạn
+- Onboarding rõ ràng hơn từ màn hình đầu tiên
+- Tên thân thiện hơn — chỉ biệt danh, ẩn email riêng tư
+- Ảnh món ăn tải nhanh hơn khi chuyển ngày
+- Ghi cân nặng dễ hơn với ảnh cân
+</vi>
+<zh-CN>
+- 活动与健康设置全面支持你的语言
+- 从首屏起更清晰的引导流程
+- 更友好的名称 — 仅显示昵称，隐藏私人邮箱
+- 切换日期时食物照片加载更快
+- 通过秤面照片更轻松记录体重
+</zh-CN>

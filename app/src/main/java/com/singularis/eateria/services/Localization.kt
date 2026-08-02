@@ -44,6 +44,17 @@ object Localization {
         return name
     }
 
+    /** English storage key → localized activity label for health profile UI. */
+    fun translateActivityLevel(context: Context, level: String): String =
+        when (level) {
+            "Sedentary" -> tr(context, "health.activity.sedentary", level)
+            "Lightly Active" -> tr(context, "health.activity.lightly", level)
+            "Moderately Active" -> tr(context, "health.activity.moderately", level)
+            "Very Active" -> tr(context, "health.activity.very", level)
+            "Extremely Active" -> tr(context, "health.activity.extremely", level)
+            else -> level
+        }
+
     fun tr(
         context: Context,
         key: String,

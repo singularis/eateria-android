@@ -23,7 +23,7 @@ object LanguageService {
             "de" to "DE",
             "it" to "IT",
             "pt" to "PT",
-            "pt-BR" to "BR",
+            "pt-br" to "BR", // must match normalize() lowercase form (asset: pt-br.json)
             "ru" to "RU",
             "uk" to "UA",
             "zh" to "CN",
@@ -79,10 +79,7 @@ object LanguageService {
                 it[LANGUAGE_CODE] = normalized
                 it[DISPLAY_NAME] = displayName ?: nativeName(normalized)
             }
-            val country =
-                representativeCountry[normalized]?.uppercase(Locale.getDefault())
-                    ?: normalized.uppercase(Locale.getDefault())
-            Locale.setDefault(Locale.Builder().setLanguage(normalized).setRegion(country).build())
+            applyLocale(normalized)
             Localization.clearCache()
             QuotesService.clearCache()
             return true
@@ -91,8 +88,7 @@ object LanguageService {
                 it[LANGUAGE_CODE] = "en"
                 it[DISPLAY_NAME] = nativeName("en")
             }
-            val fallbackCountry = representativeCountry["en"] ?: "US"
-            Locale.setDefault(Locale.Builder().setLanguage("en").setRegion(fallbackCountry).build())
+            applyLocale("en")
             Localization.clearCache()
             QuotesService.clearCache()
             return false
@@ -117,11 +113,18 @@ object LanguageService {
         }
 
     fun applyCurrentLocale(context: Context) {
-        val code = getCurrentCode(context)
+        applyLocale(getCurrentCode(context))
+    }
+
+    private fun applyLocale(code: String) {
+        val norm = normalize(code)
+        val parts = norm.split("-")
+        val language = parts.firstOrNull().orEmpty().ifEmpty { "en" }
         val country =
-            representativeCountry[code]?.uppercase(Locale.getDefault())
-                ?: code.uppercase(Locale.getDefault())
-        Locale.setDefault(Locale.Builder().setLanguage(code).setRegion(country).build())
+            representativeCountry[norm]?.uppercase(Locale.getDefault())
+                ?: parts.getOrNull(1)?.uppercase(Locale.getDefault())
+                ?: language.uppercase(Locale.getDefault())
+        Locale.setDefault(Locale.Builder().setLanguage(language).setRegion(country).build())
     }
 
     fun flagEmoji(code: String): String {
@@ -134,12 +137,64 @@ object LanguageService {
     }
 
     fun deviceDefault(): String {
-        val device = Locale.getDefault().language
-        return normalize(device)
+        val locale = Locale.getDefault()
+        val tag = locale.toLanguageTag().lowercase(Locale.getDefault()).replace('_', '-')
+        // Prefer exact regional match when we ship it (e.g. pt-BR → pt-br).
+        if (representativeCountry.keys.any { it.lowercase(Locale.getDefault()) == tag }) {
+            return normalize(tag)
+        }
+        val regional =
+            listOfNotNull(
+                locale.language.takeIf { it.isNotEmpty() },
+                locale.country.takeIf { it.isNotEmpty() }?.lowercase(Locale.getDefault()),
+            ).joinToString("-")
+        if (regional.contains("-") &&
+            representativeCountry.keys.any { it.lowercase(Locale.getDefault()) == regional }
+        ) {
+            return normalize(regional)
+        }
+        return normalize(locale.language)
+    }
+
+    /**
+     * Language to use for anonymous / first-run users:
+     * persisted choice if any, otherwise auto-detected device language
+     * (falling back to English when we have no localization file).
+     */
+    fun resolvedPreferredLanguage(context: Context): String {
+        if (hasPersistedLanguage(context)) {
+            return getCurrentCode(context)
+        }
+        val detected = deviceDefault()
+        val available = availableLanguageCodes(context).toSet()
+        return if (detected in available) detected else "en"
+    }
+
+    /**
+     * Persist preferred/detected language and push it to the backend (including
+     * anonymous `anon_*@anonymous.local` accounts) so recommendations / copy use
+     * the correct language after onboarding.
+     */
+    suspend fun syncDetectedLanguageToBackend(context: Context): Boolean {
+        val code = resolvedPreferredLanguage(context)
+        // Always keep the local choice even if the network call fails.
+        context.dataStore.edit {
+            it[LANGUAGE_CODE] = code
+            it[DISPLAY_NAME] = nativeName(code)
+        }
+        applyLocale(code)
+        Localization.clearCache()
+        QuotesService.clearCache()
+
+        val email = AuthenticationService(context).getUserEmail()
+        if (email.isNullOrEmpty()) {
+            return true
+        }
+        return runCatching { GRPCService(context).setLanguage(email, code) }.getOrDefault(false)
     }
 
     fun normalize(code: String): String {
-        val lower = code.lowercase(Locale.getDefault())
+        val lower = code.lowercase(Locale.getDefault()).replace('_', '-')
         // Preserve regional codes that are explicitly in our language map (e.g., pt-BR)
         if (representativeCountry.keys.any { it.lowercase(Locale.getDefault()) == lower }) {
             return lower
@@ -223,6 +278,7 @@ object LanguageService {
             "nl" to "Advies",
             "pl" to "Rada",
             "pt" to "Cons",
+            "pt-br" to "Cons",
             "ro" to "Sfat",
             "sk" to "Rada",
             "sl" to "Nasvet",

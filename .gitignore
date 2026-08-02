@@ -47,6 +47,10 @@ local.properties
 build_warnings*.txt
 
 secrets.properties
+keystore.properties
+*.jks
+*.keystore
+!app/debug.keystore
 
 # Google Services configuration (contains sensitive project info)
 google-services.json

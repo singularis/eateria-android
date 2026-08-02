@@ -270,7 +270,7 @@ private fun CameraPreviewView(
                         Localization.tr(
                             LocalContext.current,
                             "weight.take_photo",
-                            "Take Photo",
+                            "Take scale photo",
                         )
                     } else {
                         Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo")

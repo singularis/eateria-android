@@ -1029,7 +1029,7 @@ fun WeightActionSheetDialog(
                         ),
                 ) {
                     Text(
-                        Localization.tr(LocalContext.current, "camera.takefood", "Take Food Photo"),
+                        Localization.tr(LocalContext.current, "weight.take_photo", "Take scale photo"),
                         style = MaterialTheme.typography.labelMedium,
                     )
                 }

@@ -586,6 +586,10 @@ fun ContentView(
                                 .ReminderService(context)
                         scope.launch {
                             reminderService.setNotificationsEnabled(notificationsEnabled)
+                            // Anonymous guests never pick a language in INITIAL onboarding —
+                            // sync device-detected language to backend so recommendations match.
+                            com.singularis.eateria.services.LanguageService
+                                .syncDetectedLanguageToBackend(context)
                         }
 
                         // Save health data if provided and calculate calorie limits

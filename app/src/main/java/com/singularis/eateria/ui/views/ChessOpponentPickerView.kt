@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.singularis.eateria.services.AnonymousUserIdentity
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
@@ -53,7 +54,10 @@ fun ChessOpponentPickerView(
             isLoading = true
             coroutineScope.launch {
                 val (fetchedFriends, total) = grpcService.getFriends(offset, limit)
-                val newFriends = fetchedFriends.map { Friend(it.first, it.second) }
+                val newFriends =
+                    AnonymousUserIdentity
+                        .addFriendVisiblePairs(fetchedFriends)
+                        .map { Friend(it.first, it.second) }
                 if (isLoadMore) {
                     friends = friends + newFriends
                 } else {
@@ -147,7 +151,12 @@ fun ChessOpponentPickerView(
                 ) {
                     items(friends) { friend ->
                         FriendRow(friend = friend, onSelect = {
-                            val opponentName = friend.nickname.ifEmpty { friend.email }
+                            val opponentName =
+                                AnonymousUserIdentity.friendDisplayName(
+                                    friend.email,
+                                    friend.nickname,
+                                    fallback = friend.nickname.trim(),
+                                )
                             HapticsService.getInstance().success()
                             onOpponentSelected(opponentName, friend.email)
                         })
@@ -221,18 +230,12 @@ private fun FriendRow(friend: Friend, onSelect: () -> Unit) {
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
+            // Nickname only — never show Apple private-relay / anon emails.
             Text(
-                friend.nickname.ifEmpty { friend.email },
+                AnonymousUserIdentity.friendDisplayName(friend.email, friend.nickname),
                 style = MaterialTheme.typography.titleMedium,
                 color = AppTheme.textPrimary()
             )
-            if (friend.nickname.isNotEmpty()) {
-                Text(
-                    friend.email,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppTheme.textSecondary()
-                )
-            }
         }
         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = AppTheme.textSecondary(), modifier = Modifier.size(16.dp))
     }

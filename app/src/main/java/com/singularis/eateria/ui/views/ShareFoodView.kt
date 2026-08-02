@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.singularis.eateria.services.AnonymousUserIdentity
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.HapticsService
@@ -63,6 +64,7 @@ fun ShareFoodView(
     var showAddFriends by remember { mutableStateOf(false) }
     var sharesCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var showShareConfirmation by remember { mutableStateOf<String?>(null) }
+    var showShareError by remember { mutableStateOf<String?>(null) }
     var showPortionDialogFor by remember { mutableStateOf<String?>(null) }
     var headerBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
@@ -72,7 +74,10 @@ fun ShareFoodView(
         sharesCounts = loadSharesCounts(context)
         isLoading = true
         fetchAllFriends(grpcService) { fetchedFriends ->
-            allFriends = fetchedFriends.sortedByShares(sharesCounts)
+            allFriends =
+                AnonymousUserIdentity
+                    .addFriendVisiblePairs(fetchedFriends)
+                    .sortedByShares(sharesCounts)
             isLoading = false
         }
 
@@ -185,7 +190,8 @@ fun ShareFoodView(
                         items(friends) { friend ->
                             val (email, nickname) = friend
                             val sharesCount = sharesCounts[email] ?: 0
-                            val displayName = if (nickname.isNotEmpty()) nickname else email
+                            val displayName =
+                                AnonymousUserIdentity.friendDisplayName(email, nickname, fallback = "")
 
                             Surface(
                                 modifier = Modifier
@@ -211,7 +217,7 @@ fun ShareFoodView(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
-                                        // Build subtitle: shares count + email (if nickname is shown)
+                                        // Build subtitle: shares count + email (hide anon / private-relay)
                                         val details = mutableListOf<String>()
                                         if (sharesCount > 0) {
                                             details.add(
@@ -220,7 +226,11 @@ fun ShareFoodView(
                                                     .replace("%d", "$sharesCount"),
                                             )
                                         }
-                                        if (nickname.isNotEmpty()) details.add(email)
+                                        AnonymousUserIdentity.menuEmailSubtitle(email)?.let { safeEmail ->
+                                            if (AnonymousUserIdentity.hasUsableNickname(nickname)) {
+                                                details.add(safeEmail)
+                                            }
+                                        }
                                         if (details.isNotEmpty()) {
                                             Text(
                                                 text = details.joinToString(" • "),
@@ -280,24 +290,35 @@ fun ShareFoodView(
                             fromEmail = userEmail,
                             toEmail = toEmail,
                             percentage = percentage,
-                            context = context,
-                        ) {
-                            incrementShareCount(context, toEmail)
-                            sharesCounts = loadSharesCounts(context)
-                            // Re-sort the full list (not just the visible slice) so a friend who just
-                            // moved up in share count is correctly ordered even beyond the current page.
-                            allFriends = allFriends.sortedByShares(sharesCounts)
-                            onShareSuccess()
-                            val successTemplate = Localization.tr(context, "share.success.msg", "Shared %d%% with %@")
-                            val displayName = allFriends.find { it.first == toEmail }?.let {
-                                if (it.second.isNotEmpty()) it.second else toEmail
-                            } ?: toEmail
-                            showShareConfirmation =
-                                successTemplate
-                                    .replace("%d%%", "$percentage%")
-                                    .replace("%@", displayName)
-                            showPortionDialogFor = null
-                        }
+                            onSuccess = {
+                                incrementShareCount(context, toEmail)
+                                sharesCounts = loadSharesCounts(context)
+                                // Re-sort the full list (not just the visible slice) so a friend who just
+                                // moved up in share count is correctly ordered even beyond the current page.
+                                allFriends = allFriends.sortedByShares(sharesCounts)
+                                onShareSuccess()
+                                val successTemplate =
+                                    Localization.tr(context, "share.success.msg", "Shared %d%% with %@")
+                                val displayName =
+                                    allFriends.find { it.first == toEmail }?.let {
+                                        if (it.second.isNotEmpty()) it.second else toEmail
+                                    } ?: toEmail
+                                showShareConfirmation =
+                                    successTemplate
+                                        .replace("%d%%", "$percentage%")
+                                        .replace("%@", displayName)
+                                showPortionDialogFor = null
+                            },
+                            onFailure = {
+                                showShareError =
+                                    Localization.tr(
+                                        context,
+                                        "share.fail.msg",
+                                        "Could not share this meal. Please try again.",
+                                    )
+                                showPortionDialogFor = null
+                            },
+                        )
                     }
                 },
             )
@@ -328,6 +349,21 @@ fun ShareFoodView(
                     showShareConfirmation = null
                     onShareSuccess()
                     onDismiss()
+                }) { Text(Localization.tr(context, "common.ok", "OK")) }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+    }
+
+    showShareError?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { showShareError = null },
+            title = { Text(Localization.tr(context, "share.fail.title", "Share failed"), color = AppTheme.textPrimary()) },
+            text = { Text(msg, color = AppTheme.textSecondary()) },
+            confirmButton = {
+                TextButton(onClick = {
+                    HapticsService.getInstance().error()
+                    showShareError = null
                 }) { Text(Localization.tr(context, "common.ok", "OK")) }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -372,16 +408,18 @@ private suspend fun shareFood(
     fromEmail: String,
     toEmail: String,
     percentage: Int,
-    context: Context,
     onSuccess: () -> Unit,
+    onFailure: () -> Unit,
 ) {
     try {
         val success = grpcService.shareFood(time, fromEmail, toEmail, percentage)
         if (success) {
             onSuccess()
+        } else {
+            onFailure()
         }
     } catch (e: Exception) {
-        // Handle error
+        onFailure()
     }
 }
 
@@ -410,7 +448,8 @@ private fun PortionChooserDialog(
             confirmButton = {
                 TextButton(onClick = {
                     val value = customPercentage.toIntOrNull()
-                    if (value != null && value in 1..300) {
+                    // Backend: 1–99 split, 100 = same-amount copy.
+                    if (value != null && value in 1..100) {
                         onSelect(value)
                         showCustom = false
                     }

@@ -346,11 +346,14 @@ class MainViewModel(
 
     fun fetchDataWithLoading(forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            // Load from cache first
+            // Fast open: show cached products immediately, then fill in missing photos.
             val (cachedProducts, cachedCalories, cachedWeight) = productStorageService.loadProducts()
             _products.value = cachedProducts
             _caloriesLeft.value = getAdjustedSoftLimit() - cachedCalories
             _personWeight.value = cachedWeight
+            // Even when product JSON is fresh, photos may still be missing on disk —
+            // prefetch so cards auto-refresh as each picture downloads.
+            prefetchProductPhotos(cachedProducts)
 
             if (forceRefresh || productStorageService.isDataStale()) {
                 _isLoadingData.value = true
@@ -363,15 +366,19 @@ class MainViewModel(
                     _caloriesLeft.value = actualCaloriesLeft
                     _personWeight.value = weight
                     _isLoadingData.value = false
-                    // Prefetch remote photos for products missing local images (iOS parity)
-                    foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) { imageId, bitmap ->
-                        injectPhotoIntoProduct(imageId, bitmap)
-                    }
+                    prefetchProductPhotos(fetchedProducts)
                     checkProgressiveOnboarding()
                 }
             } else {
                 fetchAlcoholLatestAndUpdateIcon()
             }
+        }
+    }
+
+    /** Download missing remote food photos and bump cards as each one arrives. */
+    private fun prefetchProductPhotos(products: List<com.singularis.eateria.models.Product>) {
+        foodPhotoService.prefetchPhotos(products, viewModelScope) { imageId, bitmap ->
+            injectPhotoIntoProduct(imageId, bitmap)
         }
     }
 
@@ -396,9 +403,7 @@ class MainViewModel(
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
                 // Prefetch remote photos for products missing local images (iOS parity)
-                foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) { imageId, bitmap ->
-                    injectPhotoIntoProduct(imageId, bitmap)
-                }
+                prefetchProductPhotos(fetchedProducts)
                 checkProgressiveOnboarding()
                 _isPullRefreshing.value = false
             }
@@ -415,10 +420,7 @@ class MainViewModel(
                 val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
-                // Prefetch remote photos for products missing local images (iOS parity)
-                foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) { imageId, bitmap ->
-                    injectPhotoIntoProduct(imageId, bitmap)
-                }
+                prefetchProductPhotos(fetchedProducts)
                 checkProgressiveOnboarding()
             }
         }
@@ -697,12 +699,7 @@ class MainViewModel(
                         _products.value = fetchedProducts
                         _caloriesLeft.value = getAdjustedSoftLimit() - totalCaloriesConsumed
                         _personWeight.value = weight
-                        foodPhotoService.prefetchPhotos(fetchedProducts, viewModelScope) {
-                                imageId,
-                                bitmap,
-                            ->
-                            injectPhotoIntoProduct(imageId, bitmap)
-                        }
+                        prefetchProductPhotos(fetchedProducts)
                         _deletingProductTime.value = null
                     }
                 } else {
@@ -941,6 +938,7 @@ class MainViewModel(
                 _caloriesLeft.value = actualCaloriesLeft
                 _personWeight.value = weight
                 _isLoadingData.value = false
+                prefetchProductPhotos(fetchedProducts)
             }
         }
     }

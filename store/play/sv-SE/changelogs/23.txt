@@ -1,0 +1,5 @@
+- Aktiviteter och hälsoinställningar helt på ditt språk
+- Tydligare onboarding från första skärmen
+- Vänligare namn — endast smeknamn, privata mejl dolda
+- Snabbare matfoton när du byter dag
+- Smidigare viktloggning med vågfoto

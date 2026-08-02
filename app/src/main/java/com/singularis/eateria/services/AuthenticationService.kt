@@ -180,14 +180,28 @@ class AuthenticationService(
         val preferences = context.dataStore.data.first()
         val name = preferences[USER_NAME]
         val email = preferences[USER_EMAIL]
+        val nickname = context.getSharedPreferences("eateria_prefs", android.content.Context.MODE_PRIVATE)
+            .getString("user_nickname", "")
+            ?.ifEmpty { null }
+        val displayName =
+            AnonymousUserIdentity.menuDisplayName(
+                context = context,
+                nickname = nickname,
+                userName = name,
+            )
 
         return when {
-            !name.isNullOrEmpty() -> "Hello $name"
-            !email.isNullOrEmpty() -> {
+            AnonymousUserIdentity.isAnonymous(email = email, nickname = nickname, name = name) ->
+                Localization.tr(context, "common.hello", "Hello") + " " +
+                    AnonymousUserIdentity.defaultDisplayName(context)
+            displayName.isNotEmpty() ->
+                Localization.tr(context, "common.hello", "Hello") + " " + displayName
+            !email.isNullOrEmpty() && !AnonymousUserIdentity.isAnonymousEmail(email) &&
+                !AnonymousUserIdentity.isPrivateRelayEmail(email) -> {
                 val firstName = email.substringBefore("@").replaceFirstChar { it.uppercase() }
-                "Hello $firstName"
+                Localization.tr(context, "common.hello", "Hello") + " " + firstName
             }
-            else -> "Hello"
+            else -> Localization.tr(context, "common.hello", "Hello")
         }
     }
 

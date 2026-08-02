@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -21,8 +23,8 @@ android {
         applicationId = "com.singularis.eateria"
         minSdk = 26
         targetSdk = 36
-        versionCode = 19
-        versionName = "4.02"
+        versionCode = 23
+        versionName = "5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -40,6 +42,20 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // Optional Play upload key: create keystore.properties at project root
+        // (storeFile, storePassword, keyAlias, keyPassword). Ignored if missing.
+        val keystorePropertiesFile = rootProject.file("keystore.properties")
+        if (keystorePropertiesFile.exists()) {
+            val keystoreProperties = Properties().apply {
+                keystorePropertiesFile.inputStream().use { load(it) }
+            }
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -48,11 +64,19 @@ android {
             isDebuggable = true
         }
         release {
-            isMinifyEnabled = false
+            // Legacy R8 DSL (AGP < 9.3): code + resource optimization for Play release.
+            // Keep rules: app/proguard-rules.pro + proguard-android-optimize.txt
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
+            // Package native debug symbols into the AAB for Play crash symbolication.
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
+            signingConfigs.findByName("release")?.let { signingConfig = it }
         }
     }
     

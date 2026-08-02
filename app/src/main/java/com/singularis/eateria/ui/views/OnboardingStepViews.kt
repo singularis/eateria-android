@@ -106,7 +106,12 @@ fun BalancedPlateStepView(page: OnboardingPage) {
                     Spacer(modifier = Modifier.height(20.dp))
                     Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Score: $score", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
+                    Text(
+                        Localization.tr(context, "onboarding.plates.score", "Score: %d").replace("%d", "$score"),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4CAF50),
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(desc, fontSize = 16.sp, color = AppTheme.textSecondary(), textAlign = TextAlign.Center)
                 }

@@ -1,0 +1,5 @@
+- Aktywności i ustawienia zdrowia w pełni w Twoim języku
+- Jaśniejszy onboarding od pierwszego ekranu
+- Przyjaźniejsze nazwy — tylko nicki, prywatne e-maile ukryte
+- Szybsze zdjęcia jedzenia przy przełączaniu dni
+- Wygodniejsze ważenie ze zdjęciem wagi

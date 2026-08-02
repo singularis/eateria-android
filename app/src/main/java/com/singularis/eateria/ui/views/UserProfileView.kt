@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.filled.Star
 import coil.compose.AsyncImage
+import com.singularis.eateria.services.AnonymousUserIdentity
 import com.singularis.eateria.services.HealthDataService
 import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.services.Localization
@@ -79,7 +81,9 @@ fun UserProfileView(
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
     val userName by authViewModel.userName.collectAsState(initial = null)
     val userProfilePictureURL by authViewModel.userProfilePictureURL.collectAsState(initial = null)
+    val isAnonymous by authViewModel.isAnonymous.collectAsState(initial = false)
     val isFullMode by authViewModel.isFullDisplayMode.collectAsState(initial = false)
+    var loadMascotArtwork by remember { mutableStateOf(false) }
 
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
@@ -124,6 +128,11 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
         } else {
             hasHealthData = false
         }
+    }
+
+    // Let buttons paint first, then load mascot bitmaps (faster menu open).
+    LaunchedEffect(Unit) {
+        loadMascotArtwork = true
     }
 
     Box(
@@ -188,9 +197,22 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         greeting = greeting,
                         userEmail = userEmail,
                         userName = userName,
-                        userProfilePictureURL = userProfilePictureURL,
+                        userProfilePictureURL = if (isAnonymous) null else userProfilePictureURL,
                         onEditNickname = { showNicknameSettings = true },
-                        nickname = prefs.getString("user_nickname", "") ?: ""
+                        nickname = prefs.getString("user_nickname", "") ?: "",
+                        isAnonymous = isAnonymous,
+                    )
+                }
+
+                // Statistics at top of menu (before Watch me first)
+                item {
+                    ActionButton(
+                        icon = Icons.AutoMirrored.Filled.TrendingUp,
+                        title = Localization.tr(LocalContext.current, "profile.viewstats", "View Statistics"),
+                        onClick = {
+                            com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
+                            onStatisticsClick()
+                        }
                     )
                 }
 
@@ -219,13 +241,22 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth().padding(horizontal = Dimensions.paddingM)
                         ) {
-                            val catImage = com.singularis.eateria.services.AppMascot.CAT.images(com.singularis.eateria.services.MascotState.HAPPY).firstOrNull()
-                            if (catImage != null) {
-                                val resId = context.resources.getIdentifier(catImage, "drawable", context.packageName)
-                                if (resId != 0) {
-                                    AsyncImage(model = resId, contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+                            if (loadMascotArtwork) {
+                                val catImage = com.singularis.eateria.services.AppMascot.CAT.images(com.singularis.eateria.services.MascotState.HAPPY).firstOrNull()
+                                if (catImage != null) {
+                                    val resId = context.resources.getIdentifier(catImage, "drawable", context.packageName)
+                                    if (resId != 0) {
+                                        AsyncImage(model = resId, contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+                                    } else Spacer(modifier = Modifier.size(44.dp))
                                 } else Spacer(modifier = Modifier.size(44.dp))
-                            } else Spacer(modifier = Modifier.size(44.dp))
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Pets,
+                                    contentDescription = null,
+                                    tint = AppTheme.textPrimary().copy(alpha = 0.9f),
+                                    modifier = Modifier.size(44.dp)
+                                )
+                            }
                             
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
@@ -242,13 +273,22 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                                 )
                             }
                             
-                            val dogImage = com.singularis.eateria.services.AppMascot.DOG.images(com.singularis.eateria.services.MascotState.HAPPY).firstOrNull()
-                            if (dogImage != null) {
-                                val resId = context.resources.getIdentifier(dogImage, "drawable", context.packageName)
-                                if (resId != 0) {
-                                    AsyncImage(model = resId, contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+                            if (loadMascotArtwork) {
+                                val dogImage = com.singularis.eateria.services.AppMascot.DOG.images(com.singularis.eateria.services.MascotState.HAPPY).firstOrNull()
+                                if (dogImage != null) {
+                                    val resId = context.resources.getIdentifier(dogImage, "drawable", context.packageName)
+                                    if (resId != 0) {
+                                        AsyncImage(model = resId, contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+                                    } else Spacer(modifier = Modifier.size(44.dp))
                                 } else Spacer(modifier = Modifier.size(44.dp))
-                            } else Spacer(modifier = Modifier.size(44.dp))
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Pets,
+                                    contentDescription = null,
+                                    tint = AppTheme.textPrimary().copy(alpha = 0.9f),
+                                    modifier = Modifier.size(44.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -264,7 +304,8 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         currentMascot = currentMascot,
                         themeService = themeService,
                         soundEnabled = soundEnabled,
-                        context = context
+                        context = context,
+                        loadMascotArtwork = loadMascotArtwork,
                     )
                 }
 
@@ -297,14 +338,6 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         color = CalorieGreen
                     )
                     Column(verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS)) {
-                        ActionButton(
-                            icon = Icons.AutoMirrored.Filled.TrendingUp,
-                            title = Localization.tr(LocalContext.current, "profile.viewstats", "View Statistics"),
-                            onClick = {
-                                com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
-                                onStatisticsClick()
-                            }
-                        )
                         ActionButton(
                             icon = Icons.Default.Feedback,
                             title = Localization.tr(LocalContext.current, "profile.sharefeedback", "Share Feedback"),
@@ -603,10 +636,28 @@ private fun ProfileHeader(
     userName: String?,
     userProfilePictureURL: String? = null,
     onEditNickname: () -> Unit,
-    nickname: String
+    nickname: String,
+    isAnonymous: Boolean = false,
 ) {
+    val context = LocalContext.current
+    val displayName =
+        AnonymousUserIdentity.menuDisplayName(
+            context = context,
+            nickname = nickname.ifEmpty { null },
+            userName = userName,
+        )
+    val hasRealNickname = AnonymousUserIdentity.hasUsableNickname(nickname.ifEmpty { null })
+    val hasRealName = AnonymousUserIdentity.isUsablePersonName(userName)
+    val emailSubtitle = AnonymousUserIdentity.menuEmailSubtitle(userEmail)
+
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onEditNickname() }.border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .then(
+                    if (isAnonymous) Modifier else Modifier.clickable { onEditNickname() },
+                )
+                .border(1.dp, AppTheme.textPrimary().copy(alpha = 0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
         colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
@@ -632,7 +683,7 @@ private fun ProfileHeader(
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = null,
-                        tint = AppTheme.textPrimary(),
+                        tint = if (isAnonymous) CalorieOrange else AppTheme.textPrimary(),
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -640,29 +691,55 @@ private fun ProfileHeader(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (nickname.isNotEmpty()) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Text(text = nickname, color = AppTheme.textPrimary(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
-                }
-                if (!userName.isNullOrEmpty()) {
-                    Text(text = userName, color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodyMedium)
-                }
-            } else if (!userName.isNullOrEmpty()) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Text(text = userName, color = AppTheme.textPrimary(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
-                }
+            if (isAnonymous) {
+                Text(
+                    text = AnonymousUserIdentity.defaultDisplayName(context),
+                    color = CalorieOrange,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = Localization.tr(context, "profile.trial_usage.hint", "Sign in to save your progress"),
+                    color = AppTheme.textSecondary(),
+                    style = MaterialTheme.typography.labelMedium,
+                )
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Text(text = Localization.tr(LocalContext.current, "profile.set_nickname", "Set Nickname"), color = AppTheme.accent(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = displayName,
+                        color = AppTheme.textPrimary(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Icon(imageVector = androidx.compose.material.icons.Icons.Default.Add, contentDescription = null, tint = AppTheme.accent(), modifier = Modifier.size(20.dp))
+                    Icon(
+                        imageVector = if (hasRealNickname || hasRealName) Icons.Default.Edit else Icons.Default.Add,
+                        contentDescription = null,
+                        tint = AppTheme.accent(),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                if (hasRealNickname && hasRealName && !userName.equals(displayName, ignoreCase = true)) {
+                    Text(
+                        text = userName!!,
+                        color = AppTheme.textSecondary(),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                } else if (!hasRealNickname && !hasRealName) {
+                    Text(
+                        text = Localization.tr(context, "profile.set_nickname", "Set Nickname"),
+                        color = AppTheme.accent(),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
+                if (emailSubtitle != null) {
+                    Text(
+                        text = emailSubtitle,
+                        color = AppTheme.textSecondary(),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
                 }
             }
-            Text(text = userEmail ?: "No email", color = AppTheme.textSecondary(), style = MaterialTheme.typography.labelMedium)
         }
     }
 }
@@ -1106,7 +1183,8 @@ private fun ThemeSectionCard(
     currentMascot: com.singularis.eateria.services.AppMascot,
     themeService: com.singularis.eateria.services.ThemeService,
     soundEnabled: Boolean,
-    context: android.content.Context
+    context: android.content.Context,
+    loadMascotArtwork: Boolean = true,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
@@ -1114,7 +1192,7 @@ private fun ThemeSectionCard(
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM)) {
-            if (currentMascot != com.singularis.eateria.services.AppMascot.NONE) {
+            if (loadMascotArtwork && currentMascot != com.singularis.eateria.services.AppMascot.NONE) {
                 val previews = themeService.getUniquePreviewImageNames(5)
                 androidx.compose.foundation.lazy.LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),

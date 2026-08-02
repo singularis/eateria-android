@@ -256,7 +256,12 @@ fun ProgressiveOnboardingView(
                             )
                         }
                         Column {
-                            Text("Gender", color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                            Text(
+                                Localization.tr(context, "health.gender", "Gender:").trimEnd(':'),
+                                color = Color.Gray,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
+                            )
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -319,11 +324,19 @@ fun ProgressiveOnboardingView(
                                 fontWeight = FontWeight.Black,
                                 color = AppTheme.accent()
                             )
-                            Text("kcal", style = MaterialTheme.typography.titleMedium, color = AppTheme.textSecondary())
+                            Text(
+                                Localization.tr(context, "units.kcal", "kcal"),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = AppTheme.textSecondary(),
+                            )
                         }
                     } else {
                         Column(modifier = Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Select Activity Level", color = Color.Gray, fontSize = 12.sp)
+                            Text(
+                                Localization.tr(context, "health.select_activity", "Select Activity Level"),
+                                color = Color.Gray,
+                                fontSize = 12.sp,
+                            )
                             // A simple selection list since Dropdown/Wheel might be complex
                             activityLevels.forEach { level ->
                                 val isSelected = activityLevel == level
@@ -337,7 +350,7 @@ fun ProgressiveOnboardingView(
                                         .padding(16.dp)
                                 ) {
                                     Text(
-                                        text = level,
+                                        text = Localization.translateActivityLevel(context, level),
                                         color = if (isSelected) AppTheme.accent() else AppTheme.textPrimary(),
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     )

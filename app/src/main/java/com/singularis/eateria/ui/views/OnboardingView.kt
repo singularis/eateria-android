@@ -153,7 +153,7 @@ fun OnboardingView(
             OnboardingPage(title = Localization.tr(LocalContext.current, "onboarding.friends.title", "Share Meals with Friends 🤝"), description = Localization.tr(LocalContext.current, "onboarding.friends.desc", "Add friends and share portions of your meals to split calories. Keep in touch and see who you share with most."), icon = Icons.Default.PersonAdd, iconColor = Color(0xFF03A9F4), anchor = "friends")
         )
 
-    val onboardingPages = remember(mode) {
+    val onboardingPages = remember(mode, currentLanguage) {
         when (mode) {
             OnboardingMode.INITIAL -> allPages.filter { it.anchor in listOf("intro", "tools", "pets", "plan", "balanced_plate", "smart_tips", "team", "disclaimer") }
             OnboardingMode.HEALTH -> allPages.filter { it.anchor in listOf("health_setup", "health_form", "health_results") }
@@ -217,9 +217,9 @@ fun OnboardingView(
                     TextButton(
                         onClick = {
                             com.singularis.eateria.services.HapticsService.getInstance().select()
-                            if (!LanguageService.hasPersistedLanguage(context)) {
-                                // If no language was chosen, default to English
-                                coroutineScope.launch { LanguageService.setLanguage(context, "en") }
+                            // Push auto-detected (or chosen) language to backend — needed for anonymous users.
+                            coroutineScope.launch {
+                                LanguageService.syncDetectedLanguageToBackend(context)
                             }
                             onComplete(null, true)
                         },
@@ -1136,20 +1136,7 @@ private fun HealthFormView(
                                 shape = RoundedCornerShape(8.dp),
                             ) {
                                 Text(
-                                    text =
-                                        when (level) {
-                                            "Sedentary" -> Localization.tr(LocalContext.current, "health.activity.sedentary", level)
-                                            "Lightly Active" -> Localization.tr(LocalContext.current, "health.activity.lightly", level)
-                                            "Moderately Active" ->
-                                                Localization.tr(
-                                                    LocalContext.current,
-                                                    "health.activity.moderately",
-                                                    level,
-                                                )
-                                            "Very Active" -> Localization.tr(LocalContext.current, "health.activity.very", level)
-                                            "Extremely Active" -> Localization.tr(LocalContext.current, "health.activity.extremely", level)
-                                            else -> level
-                                        },
+                                    text = Localization.translateActivityLevel(LocalContext.current, level),
                                     fontSize = 14.sp,
                                     fontWeight = if (activityLevel == level) FontWeight.Bold else FontWeight.Normal,
                                 )
@@ -1994,8 +1981,19 @@ private fun PetsOnboardingView(page: OnboardingPage) {
 
 @Composable
 fun IntroStepView(page: OnboardingPage) {
+    val context = LocalContext.current
+    val currentLanguage by LanguageService.languageFlow(context).collectAsState(
+        initial = LanguageService.getCurrentCode(context),
+    )
     var typedText by remember { mutableStateOf("") }
-    val fullText = Localization.tr(LocalContext.current, "onboarding.intro.full", "Hello and welcome to Eateria!\nWe’re here to help you build a healthier lifestyle. Balance your meals, track daily activity, and work toward your personal goals step by step.\n\nWe’ll support you along the way.\nLet’s begin your journey to feeling your best!")
+    val fullText =
+        remember(currentLanguage) {
+            Localization.tr(
+                context,
+                "onboarding.intro.full",
+                "Hello and welcome to Eateria!\nWe're here to help you build a healthier lifestyle. Balance your meals, track daily activity, and work toward your personal goals step by step.\n\nWe'll support you along the way.\nLet's begin your journey to feeling your best!",
+            )
+        }
     
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
@@ -2007,7 +2005,7 @@ fun IntroStepView(page: OnboardingPage) {
         )
     )
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(fullText) {
         typedText = ""
         for (i in fullText.indices) {
             typedText += fullText[i]

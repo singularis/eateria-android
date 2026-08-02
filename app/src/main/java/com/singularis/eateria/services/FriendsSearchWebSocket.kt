@@ -134,7 +134,9 @@ class FriendsSearchWebSocket(
                             userResults.add(UserSearchResult(email, nickname))
                         }
                     }
-                    scope?.launch { _resultsChannel.send(userResults) }
+                    scope?.launch {
+                        _resultsChannel.send(AnonymousUserIdentity.addFriendVisible(userResults))
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("FriendsWS", "Failed to parse message", e)

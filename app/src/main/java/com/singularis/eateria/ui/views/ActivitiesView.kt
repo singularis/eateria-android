@@ -111,13 +111,13 @@ fun ActivitiesView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Activities",
+                    text = Localization.tr(context, "activities.title", "Activities"),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = AppTheme.textPrimary()
                 )
                 
                 TextButton(onClick = onDismiss) {
-                    Text("Done", color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "common.done", "Done"), color = AppTheme.textPrimary())
                 }
             }
             
@@ -212,12 +212,12 @@ fun ActivitiesView(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Chess",
+                            text = Localization.tr(context, "activities.chess.name", "Chess"),
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             color = AppTheme.textPrimary()
                         )
                         TextButton(onClick = { showChessSheet = false }) {
-                            Text("Done", color = AppTheme.textPrimary())
+                            Text(Localization.tr(context, "common.done", "Done"), color = AppTheme.textPrimary())
                         }
                     }
                     ChessActivityCard(
@@ -300,6 +300,7 @@ fun ActivitiesView(
 
 @Composable
 private fun BurnedCaloriesCard(dateISO: String, totalCalories: Int) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -312,7 +313,7 @@ private fun BurnedCaloriesCard(dateISO: String, totalCalories: Int) {
                 Text("🔥", fontSize = 24.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Today's Burned Calories", 
+                    Localization.tr(context, "activities.burned.title", "Today's Burned Calories"),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = AppTheme.textPrimary()
                 )
@@ -326,7 +327,7 @@ private fun BurnedCaloriesCard(dateISO: String, totalCalories: Int) {
                     color = Color(0xFFFFA500) // Orange
                 )
                 Text(
-                    text = "kcal",
+                    text = Localization.tr(context, "units.kcal", "kcal"),
                     fontSize = 20.sp,
                     color = AppTheme.textSecondary(),
                     modifier = Modifier.padding(bottom = 10.dp)
@@ -341,6 +342,7 @@ private fun HoneycombActivitiesGrid(
     onActivityClick: (ActivityType?) -> Unit,
     onStatisticsClick: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val w = 106f
     val h = 91f
     val gap = 18f
@@ -364,16 +366,46 @@ private fun HoneycombActivitiesGrid(
         contentAlignment = Alignment.Center
     ) {
         // Neighbors
-        HoneycombCell("Elliptical", "🏃‍♀️", Color(0xFF800080), Modifier.offset(x = (gridX(1, 0) - originX).dp, y = (gridY(1) - originY).dp)) { onActivityClick(ActivityType.ELLIPTICAL) }
-        HoneycombCell("Gym", "🏋️", Color(0xFFFFA500), Modifier.offset(x = (gridX(0, 1) - originX).dp, y = (gridY(0) - originY).dp)) { onActivityClick(ActivityType.GYM) }
-        HoneycombCell("Steps", "🚶", Color(0xFF00FF00), Modifier.offset(x = (gridX(0, 2) - originX).dp, y = (gridY(0) - originY).dp)) { onActivityClick(ActivityType.STEPS) }
-        HoneycombCell("Treadmill", "🏃", Color(0xFF0000FF), Modifier.offset(x = (gridX(1, 2) - originX).dp, y = (gridY(1) - originY).dp)) { onActivityClick(ActivityType.TREADMILL) }
-        HoneycombCell("Yoga", "🧘", Color(0xFF669980), Modifier.offset(x = (gridX(2, 1) - originX).dp, y = (gridY(2) - originY).dp)) { onActivityClick(ActivityType.YOGA) }
-        HoneycombCell("Chess", "♟️", Color(0xFF800080), Modifier.offset(x = (gridX(2, 2) - originX).dp, y = (gridY(2) - originY).dp)) { onActivityClick(ActivityType.CHESS) }
+        HoneycombCell(
+            Localization.tr(context, "activities.elliptical", "Elliptical"),
+            "🏃‍♀️",
+            Color(0xFF800080),
+            Modifier.offset(x = (gridX(1, 0) - originX).dp, y = (gridY(1) - originY).dp),
+        ) { onActivityClick(ActivityType.ELLIPTICAL) }
+        HoneycombCell(
+            Localization.tr(context, "activities.gym", "Gym"),
+            "🏋️",
+            Color(0xFFFFA500),
+            Modifier.offset(x = (gridX(0, 1) - originX).dp, y = (gridY(0) - originY).dp),
+        ) { onActivityClick(ActivityType.GYM) }
+        HoneycombCell(
+            Localization.tr(context, "activities.steps", "Steps"),
+            "🚶",
+            Color(0xFF00FF00),
+            Modifier.offset(x = (gridX(0, 2) - originX).dp, y = (gridY(0) - originY).dp),
+        ) { onActivityClick(ActivityType.STEPS) }
+        HoneycombCell(
+            Localization.tr(context, "activities.treadmill", "Treadmill"),
+            "🏃",
+            Color(0xFF0000FF),
+            Modifier.offset(x = (gridX(1, 2) - originX).dp, y = (gridY(1) - originY).dp),
+        ) { onActivityClick(ActivityType.TREADMILL) }
+        HoneycombCell(
+            Localization.tr(context, "activities.yoga", "Yoga"),
+            "🧘",
+            Color(0xFF669980),
+            Modifier.offset(x = (gridX(2, 1) - originX).dp, y = (gridY(2) - originY).dp),
+        ) { onActivityClick(ActivityType.YOGA) }
+        HoneycombCell(
+            Localization.tr(context, "activities.chess.name", "Chess"),
+            "♟️",
+            Color(0xFF800080),
+            Modifier.offset(x = (gridX(2, 2) - originX).dp, y = (gridY(2) - originY).dp),
+        ) { onActivityClick(ActivityType.CHESS) }
 
         // Center: Stats
         HoneycombCell(
-            title = "Stats",
+            title = Localization.tr(context, "activities.stats.short", "Stats"),
             icon = "📊",
             color = Color.Green,
             modifier = Modifier.offset(0.dp, 0.dp)
@@ -425,23 +457,24 @@ private fun ActivityInputSheet(
     onSubmit: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val title = when (type) {
-        ActivityType.GYM -> "Gym"
-        ActivityType.STEPS -> "Steps"
-        ActivityType.TREADMILL -> "Treadmill"
-        ActivityType.ELLIPTICAL -> "Elliptical"
-        ActivityType.YOGA -> "Yoga"
-        ActivityType.CHESS -> "Chess"
+        ActivityType.GYM -> Localization.tr(context, "activities.gym", "Gym")
+        ActivityType.STEPS -> Localization.tr(context, "activities.steps", "Steps")
+        ActivityType.TREADMILL -> Localization.tr(context, "activities.treadmill", "Treadmill")
+        ActivityType.ELLIPTICAL -> Localization.tr(context, "activities.elliptical", "Elliptical")
+        ActivityType.YOGA -> Localization.tr(context, "activities.yoga", "Yoga")
+        ActivityType.CHESS -> Localization.tr(context, "activities.chess.name", "Chess")
     }
     val prompt = when (type) {
-        ActivityType.GYM -> "How many minutes did you train?"
-        ActivityType.STEPS -> "How many steps did you walk?"
-        else -> "How many calories did you burn?"
+        ActivityType.GYM -> Localization.tr(context, "activities.gym.prompt", "How many minutes did you train?")
+        ActivityType.STEPS -> Localization.tr(context, "activities.steps.prompt", "How many steps did you walk?")
+        else -> Localization.tr(context, "activities.calories.prompt", "How many calories did you burn?")
     }
     val placeholder = when (type) {
-        ActivityType.GYM -> "Minutes"
-        ActivityType.STEPS -> "Steps"
-        else -> "Calories"
+        ActivityType.GYM -> Localization.tr(context, "activities.gym.placeholder", "Minutes")
+        ActivityType.STEPS -> Localization.tr(context, "activities.steps.placeholder", "Steps")
+        else -> Localization.tr(context, "activities.calories.placeholder", "Enter calories")
     }
 
     Box(
@@ -467,7 +500,11 @@ private fun ActivityInputSheet(
                 TextButton(onClick = {
                     if (inputValue.trim().isNotEmpty()) onSubmit() else onDismiss()
                 }) {
-                    Text("Done", color = AppTheme.accent(), fontWeight = FontWeight.Bold)
+                    Text(
+                        Localization.tr(context, "common.done", "Done"),
+                        color = AppTheme.accent(),
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
 
@@ -502,6 +539,7 @@ private fun ChessActivityCard(
     onRecordGameClick: () -> Unit,
     onHistoryClick: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -514,23 +552,36 @@ private fun ChessActivityCard(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("♟️", fontSize = 24.sp)
-                    Text("Chess", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = AppTheme.textPrimary())
+                    Text(
+                        Localization.tr(context, "activities.chess.name", "Chess"),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = AppTheme.textPrimary(),
+                    )
                 }
                 TextButton(
                     onClick = onHistoryClick,
                     modifier = Modifier.background(Color.Blue.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
                 ) {
-                    Text("History", color = Color.Blue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        Localization.tr(context, "activities.chess.history", "History"),
+                        color = Color.Blue,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Wins:", fontSize = 20.sp, color = AppTheme.textSecondary())
+                    Text(
+                        Localization.tr(context, "activities.chess.wins_label", "Wins:"),
+                        fontSize = 20.sp,
+                        color = AppTheme.textSecondary(),
+                    )
                     Text("0", fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Color.Gray) // Placeholder for total wins
                 }
                 Text(
-                    text = "🎯 No League Yet",
+                    text = "🎯 ${Localization.tr(context, "activities.no_league_yet", "No League Yet")}",
                     color = Color.Gray,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.background(Color.Gray.copy(alpha = 0.15f), RoundedCornerShape(12.dp)).padding(horizontal = 16.dp, vertical = 6.dp)
@@ -543,7 +594,13 @@ private fun ChessActivityCard(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Magenta),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Record Game", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(8.dp))
+                Text(
+                    Localization.tr(context, "activities.chess.record", "Record Game"),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.padding(8.dp),
+                )
             }
         }
     }
@@ -554,6 +611,7 @@ private fun ChessWinnerSheet(
     onWinnerSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -564,16 +622,35 @@ private fun ChessWinnerSheet(
             .clickable(enabled = false) { }
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            Text("Who won?", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = AppTheme.textPrimary())
+            Text(
+                Localization.tr(context, "activities.chess.who_won", "Who won?"),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = AppTheme.textPrimary(),
+            )
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                WinnerButton("Me", "👤", Color.Green, Modifier.weight(1f)) { onWinnerSelected("me") }
-                WinnerButton("Draw", "🤝", Color.Gray, Modifier.weight(1f)) { onWinnerSelected("draw") }
-                WinnerButton("Opponent", "👥", Color.Red, Modifier.weight(1f)) { onWinnerSelected("opponent") }
+                WinnerButton(
+                    Localization.tr(context, "activities.chess.me", "Me"),
+                    "👤",
+                    Color.Green,
+                    Modifier.weight(1f),
+                ) { onWinnerSelected("me") }
+                WinnerButton(
+                    Localization.tr(context, "activities.chess.draw", "Draw"),
+                    "🤝",
+                    Color.Gray,
+                    Modifier.weight(1f),
+                ) { onWinnerSelected("draw") }
+                WinnerButton(
+                    Localization.tr(context, "activities.chess.opponent", "Opponent"),
+                    "👥",
+                    Color.Red,
+                    Modifier.weight(1f),
+                ) { onWinnerSelected("opponent") }
             }
 
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = AppTheme.textSecondary())
+                Text(Localization.tr(context, "common.cancel", "Cancel"), color = AppTheme.textSecondary())
             }
         }
     }

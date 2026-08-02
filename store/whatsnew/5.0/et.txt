@@ -1,0 +1,5 @@
+- Tegevused ja tervisesätted täielikult sinu keeles
+- Selgem sissejuhatus juba esimesest ekraanist
+- Sõbralikumad nimed — ainult hüüdnimed, privaatsed e-kirjad peidetud
+- Kiiremad toidufotod päevade vahel liikudes
+- Sujuvam kaalu logimine kaalufotoga

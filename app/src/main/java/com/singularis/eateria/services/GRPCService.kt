@@ -87,7 +87,8 @@ class GRPCService(
 
                 if (response.isSuccessful) {
                     response
-                } else if (retriesLeft > 0) {
+                } else if (retriesLeft > 0 && response.code !in 400..499) {
+                    // Do not retry client errors (e.g. invalid share percentage).
                     response.close()
                     val delay = baseDelaySeconds * 2.0.pow(maxRetries - retriesLeft).toLong()
                     kotlinx.coroutines.delay(delay * 1000)
@@ -860,8 +861,12 @@ class GRPCService(
                     if (responseBytes != null) {
                         try {
                             val getFriendsResponse = GetFriends.GetFriendsResponse.parseFrom(responseBytes)
-                            val allFriends = getFriendsResponse.friendsList.map { Pair(it.email, it.nickname) }
-                            val totalCount = getFriendsResponse.count
+                            // Match iOS: nickname required — hide anon + Apple private-relay without nickname.
+                            val allFriends =
+                                AnonymousUserIdentity.addFriendVisiblePairs(
+                                    getFriendsResponse.friendsList.map { Pair(it.email, it.nickname) },
+                                )
+                            val totalCount = allFriends.size
 
                             val slicedFriends = allFriends.drop(offset).take(limit)
                             Pair(slicedFriends, totalCount)

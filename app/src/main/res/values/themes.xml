@@ -13,8 +13,8 @@
         <item name="colorSecondaryContainer">@color/teal_700</item>
         <item name="colorOnSecondaryContainer">@color/white</item>
         
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryContainer</item>
+        <!-- Do not set statusBarColor/navigationBarColor — deprecated for edge-to-edge (API 35+).
+             enableEdgeToEdge() in MainActivity handles system bars. -->
         <!-- Customize your theme here. -->
     </style>
 </resources>

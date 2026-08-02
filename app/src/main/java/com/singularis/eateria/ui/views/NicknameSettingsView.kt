@@ -45,7 +45,7 @@ fun NicknameSettingsView(
     val userEmail by authViewModel.userEmail.collectAsState(initial = "")
     
     // Check if the user is using an Apple Private Relay email
-    val isAppleHiddenEmail = userEmail?.contains("@privaterelay.appleid.com") == true
+    val isAppleHiddenEmail = com.singularis.eateria.services.AnonymousUserIdentity.isPrivateRelayEmail(userEmail)
 
     var nickname by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }

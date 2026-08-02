@@ -623,7 +623,7 @@ fun HealthSettingsView(
                                 onExpandedChange = { expanded = it }
                             ) {
                                 OutlinedTextField(
-                                    value = activityLevel,
+                                    value = Localization.translateActivityLevel(context, activityLevel),
                                     onValueChange = {},
                                     readOnly = true,
                                     label = { Text(Localization.tr(context, "health.activity", "Activity Level:")) },
@@ -643,7 +643,7 @@ fun HealthSettingsView(
                                 ) {
                                     activityLevels.forEach { level ->
                                         DropdownMenuItem(
-                                            text = { Text(level) },
+                                            text = { Text(Localization.translateActivityLevel(context, level)) },
                                             onClick = {
                                                 activityLevel = level
                                                 expanded = false

@@ -1,0 +1,5 @@
+- Hoạt động và thiết lập sức khỏe đầy đủ bằng ngôn ngữ của bạn
+- Onboarding rõ ràng hơn từ màn hình đầu tiên
+- Tên thân thiện hơn — chỉ biệt danh, ẩn email riêng tư
+- Ảnh món ăn tải nhanh hơn khi chuyển ngày
+- Ghi cân nặng dễ hơn với ảnh cân

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.singularis.eateria.services.AnonymousUserIdentity
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.FriendsSearchWebSocket
 import com.singularis.eateria.services.GRPCService
@@ -49,6 +50,7 @@ fun AddFriendsView(
     var isSearching by remember { mutableStateOf(false) }
     var isAddingFriend by remember { mutableStateOf(false) }
     var showSuccess by remember { mutableStateOf<String?>(null) }
+    var showBlocked by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         statusText = Localization.tr(context, "search.type3", "Type at least 3 letters to search")
@@ -115,7 +117,7 @@ fun AddFriendsView(
                             statusText = status
                         }
                     },
-                    label = { Text(Localization.tr(LocalContext.current, "friends.search.placeholder", "Search by email...")) },
+                    label = { Text(Localization.tr(LocalContext.current, "friends.search.placeholder", "Search by email or nickname...")) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     enabled = !isAddingFriend,
@@ -138,15 +140,26 @@ fun AddFriendsView(
                     ) {
                         items(suggestions) { user ->
                             val email = user.email
+                            val nickname = user.nickname?.trim().orEmpty()
+                            val visible = AnonymousUserIdentity.isAddFriendVisible(email, user.nickname)
                             Card(
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
                                         .clickable(
-                                            enabled = !isAddingFriend,
+                                            enabled = !isAddingFriend && visible,
                                             indication = LocalIndication.current,
                                             interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
                                         ) {
+                                            if (!visible) {
+                                                showBlocked =
+                                                    Localization.tr(
+                                                        context,
+                                                        "friends.add.anonymous.blocked",
+                                                        "Trial accounts cannot be added as friends.",
+                                                    )
+                                                return@clickable
+                                            }
                                             com.singularis.eateria.services.HapticsService.getInstance().select()
                                             selectFriend(
                                                 email = email,
@@ -155,14 +168,14 @@ fun AddFriendsView(
                                                 onAddingStateChanged = { isAddingFriend = it },
                                                 onSuccess = {
                                                     onFriendAdded(email)
+                                                    val label = nickname.ifEmpty { email }
                                                     showSuccess =
                                                         Localization
                                                             .tr(
                                                                 context,
                                                                 "friends.add.success.msg",
                                                                 "%@ added to your friends list",
-                                                            ).replace("%@", email)
-                                                    // keep dialog open briefly to show confirmation
+                                                            ).replace("%@", label)
                                                 },
                                             )
                                         },
@@ -190,29 +203,13 @@ fun AddFriendsView(
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
-                                        val isAppleHiddenEmail = email.contains("@privaterelay.appleid.com")
-                                        if (!user.nickname.isNullOrEmpty()) {
-                                            Text(
-                                                text = user.nickname,
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                                                color = com.singularis.eateria.ui.theme.AppTheme.textPrimary()
-                                            )
-                                            if (!isAppleHiddenEmail) {
-                                                Text(
-                                                    text = email,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = com.singularis.eateria.ui.theme.AppTheme.textSecondary()
-                                                )
-                                            }
-                                        } else {
-                                            Text(
-                                                text = email,
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                                                color = com.singularis.eateria.ui.theme.AppTheme.textPrimary()
-                                            )
-                                        }
+                                        // Nickname only — never show Apple private-relay / anon emails.
+                                        Text(
+                                            text = AnonymousUserIdentity.friendDisplayName(email, user.nickname),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                            color = com.singularis.eateria.ui.theme.AppTheme.textPrimary()
+                                        )
                                     }
                                 }
                             }
@@ -285,6 +282,25 @@ fun AddFriendsView(
                     showSuccess = null
                     onDismiss()
                 }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
+            },
+            containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
+        )
+    }
+
+    showBlocked?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { showBlocked = null },
+            title = {
+                Text(
+                    Localization.tr(LocalContext.current, "friends.add", "Add Friend"),
+                    color = Color.White,
+                )
+            },
+            text = { Text(msg, color = Color.Gray) },
+            confirmButton = {
+                TextButton(onClick = { showBlocked = null }) {
+                    Text(Localization.tr(LocalContext.current, "common.ok", "OK"))
+                }
             },
             containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
         )

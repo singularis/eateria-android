@@ -12,7 +12,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.singularis.eateria.services.AuthenticationService
 import com.singularis.eateria.services.LanguageService
@@ -26,13 +25,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var authService: AuthenticationService
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Enable edge-to-edge display
+        // Backward-compatible edge-to-edge (enforced on API 35+). Avoid coloring
+        // status/nav bars — those APIs are deprecated and flagged by Play Console.
         enableEdgeToEdge()
-
-        // Ensure the app can draw behind system bars
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        super.onCreate(savedInstanceState)
 
         authService = AuthenticationService(this)
         // Set process Locale to stored language at startup

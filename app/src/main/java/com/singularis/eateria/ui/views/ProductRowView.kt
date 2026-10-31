@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -304,11 +305,13 @@ fun ProductCard(
                 modifier =
                     Modifier
                         .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
                         .padding(Dimensions.paddingS),
                 horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
                 verticalAlignment = Alignment.Top,
             ) {
-                // Photo matches iOS: 101dp at 80% text, 68dp at 160%, and it grows taller with the text.
+                // Photo matches iOS: 101 dp at 80% text, 68 dp at 160%. Width stays fixed.
+                // Height follows the meal text, from one width up to 1.8 widths.
                 val photoTravel = com.singularis.eateria.ui.theme.scaleTravel(
                     com.singularis.eateria.ui.theme.LocalAppScale.current,
                 )
@@ -360,10 +363,10 @@ fun ProductCard(
                         HealthRatingRing(
                             rating = product.effectiveHealthRating,
                             color = getHealthRatingColor(rating = product.effectiveHealthRating),
+                            onClick = { openHealthInfo() },
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
-                                .padding(3.dp)
-                                .clickable { openHealthInfo() },
+                                .padding(3.dp),
                         )
                     }
                 }
@@ -1167,21 +1170,30 @@ fun HealthRatingRing(
     rating: Int,
     color: Color,
     size: Dp = 36.dp,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val progress = (rating.toFloat() / 100f).coerceIn(0f, 1f)
     val stroke = (size * 0.1f).coerceAtLeast(3.dp)
+    val numberSize = (size.value * 0.42f).sp
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(size)
-            .background(AppTheme.surface().copy(alpha = 0.94f), CircleShape),
+            .background(AppTheme.surface().copy(alpha = 0.94f), CircleShape)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                },
+            ),
     ) {
         Canvas(Modifier.fillMaxSize().padding(stroke / 2)) {
             val width = stroke.toPx()
             drawArc(
                 color = color.copy(alpha = 0.2f),
-                startAngle = 0f,
+                startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
                 style = androidx.compose.ui.graphics.drawscope.Stroke(width, cap = androidx.compose.ui.graphics.StrokeCap.Round),
@@ -1194,13 +1206,22 @@ fun HealthRatingRing(
                 style = androidx.compose.ui.graphics.drawscope.Stroke(width, cap = androidx.compose.ui.graphics.StrokeCap.Round),
             )
         }
-        Text(
+        androidx.compose.foundation.text.BasicText(
             text = rating.toString(),
-            color = color,
-            fontSize = (size.value * 0.42f).sp,
-            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = stroke + 1.dp),
+            style = androidx.compose.ui.text.TextStyle(
+                color = color,
+                fontSize = numberSize,
+                fontWeight = FontWeight.Bold,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            ),
             maxLines = 1,
-            softWrap = false,
+            autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(
+                minFontSize = numberSize * 0.6f,
+                maxFontSize = numberSize,
+            ),
         )
     }
 }

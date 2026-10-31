@@ -34,6 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +62,8 @@ fun RootTabView(
     val overlays by AppNavigation.fullScreenOverlays.collectAsState()
     val dailyLimit by AppNavigation.dailyLimit.collectAsState()
     val context = LocalContext.current
+    var introKey by remember { mutableStateOf<String?>(null) }
+    val tutorialPrefs = remember { context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE) }
     BackHandler(enabled = tab != AppTab.TODAY) { AppNavigation.select(AppTab.TODAY) }
     Column(
         Modifier
@@ -83,12 +88,30 @@ fun RootTabView(
                         StatisticsView()
                     }
             }
+            introKey?.let { key ->
+                MainAppTutorialView(
+                    isPresented = true,
+                    specificStepKey = key,
+                    onDismiss = {
+                        tutorialPrefs.edit().putBoolean(key, true).apply()
+                        introKey = null
+                    },
+                )
+            }
         }
         if (overlays > 0 && tab == AppTab.TODAY) return@Column
         AppBottomBar(
             selection = tab,
             onSelect = { next ->
                 HapticsService.getInstance().select()
+                val intro = when (next) {
+                    AppTab.STATS -> "hasSeenStatsTutorial"
+                    AppTab.IDEAS -> "hasSeenAdviceTutorial"
+                    else -> null
+                }
+                if (intro != null && !tutorialPrefs.getBoolean(intro, false)) {
+                    introKey = intro
+                }
                 AppNavigation.select(next)
             },
             onCamera = {

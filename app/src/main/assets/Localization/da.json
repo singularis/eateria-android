@@ -512,7 +512,7 @@
   "nickname.label": "Kaldenavn (1-50 tegn, latinske små bogstaver a-z, 0-9)",
   "nickname.latin_lowercase_error": "Kun latinske små bogstaver og cifre (a-z, 0-9)",
   "nickname.length_error": "Kaldenavn skal være 50 tegn eller færre",
-  "nickname.placeholder": "Indtast dit kaldenavn",
+  "nickname.placeholder": "Sund spiser",
   "nickname.save": "Gem kaldenavn",
   "nickname.success": "Dit kaldenavn er blevet opdateret!",
   "nickname.taken_error": "Dette kaldenavn er allerede taget",
@@ -683,7 +683,7 @@
   "profile.appearance": "Udseende",
   "profile.dailycalorie": "Dagligt Kalorimål:",
   "profile.datamode": "Datatilstand",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Sund spiser",
   "profile.delete": "Slet Konto",
   "profile.dev_environment": "Servermiljø",
   "profile.edit_description": "Tilføj et foto og dit navn, hvis du vil. Kaldenavnet bruges stadig til venner.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Kunne ikke registrere vægt. Prøv igen.",
   "weight.recorded.msg": "Din vægt blev registreret.",
   "weight.recorded.title": "Vægt registreret",
-  "weight.take_photo": "Fotografer vægten"
+  "weight.take_photo": "Fotografer vægten",
+  "activities.chess.color.white": "Hvid",
+  "activities.chess.color.black": "Sort",
+  "activities.chess.color.red": "Rød",
+  "activities.chess.color.xiangqi": "kinesisk skak",
+  "chess.summary.unknown": "Ukendt"
 }

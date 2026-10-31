@@ -512,7 +512,7 @@
   "nickname.label": "ニックネーム(50字以内)",
   "nickname.latin_lowercase_error": "ラテン小文字と数字のみ (a-z, 0-9)",
   "nickname.length_error": "50字以内",
-  "nickname.placeholder": "入力してください",
+  "nickname.placeholder": "ヘルシーイーター",
   "nickname.save": "保存",
   "nickname.success": "更新完了",
   "nickname.taken_error": "このニックネームは既に使用されています",
@@ -683,7 +683,7 @@
   "profile.appearance": "外観",
   "profile.dailycalorie": "1日のカロリー目標：",
   "profile.datamode": "データモード",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "ヘルシーイーター",
   "profile.delete": "アカウント削除",
   "profile.dev_environment": "サーバー環境",
   "profile.edit_description": "よければ写真と名前を追加できます。友達にはニックネームを使います。",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "体重の記録に失敗しました。もう一度お試しください。",
   "weight.recorded.msg": "体重が正常に記録されました。",
   "weight.recorded.title": "体重を記録しました",
-  "weight.take_photo": "体重計を撮影"
+  "weight.take_photo": "体重計を撮影",
+  "activities.chess.color.white": "白",
+  "activities.chess.color.black": "黒",
+  "activities.chess.color.red": "赤",
+  "activities.chess.color.xiangqi": "象棋",
+  "chess.summary.unknown": "不明"
 }

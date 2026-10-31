@@ -16,6 +16,7 @@ import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.DestructiveButton
 import com.singularis.eateria.ui.theme.PrimaryButton
 import com.singularis.eateria.ui.theme.SecondaryButton
+import com.singularis.eateria.ui.theme.WithAppTextScale
 import com.singularis.eateria.ui.theme.appSheetBackground
 
 enum class AppNoticeKind {
@@ -42,7 +43,9 @@ fun AppSheet(
         sheetState = sheetState,
         containerColor = AppTheme.surface(),
         content = {
-            Column(Modifier.appSheetBackground().padding(bottom = 24.dp), content = content)
+            WithAppTextScale {
+                Column(Modifier.appSheetBackground().padding(bottom = 24.dp), content = content)
+            }
         },
     )
 }
@@ -55,39 +58,43 @@ fun AppNotice(
     onDismiss: () -> Unit,
 ) {
     AppSheet(onDismiss = onDismiss) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = AppTheme.textPrimary(),
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-        )
-        if (message.isNotEmpty()) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyLarge,
-                color = AppTheme.textSecondary(),
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-            )
-        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(24.dp),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
         ) {
-            actions.forEach { action ->
-                val click = {
-                    action.onClick()
-                    onDismiss()
-                }
-                when (action.kind) {
-                    AppNoticeKind.PRIMARY -> PrimaryButton(onClick = click, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                            Text(action.title, color = androidx.compose.ui.graphics.Color.White)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = AppTheme.textPrimary(),
+            )
+            if (message.isNotEmpty()) {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = AppTheme.textSecondary(),
+                )
+            }
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp),
+            ) {
+                actions.forEach { action ->
+                    val click = {
+                        action.onClick()
+                        onDismiss()
                     }
-                    AppNoticeKind.SECONDARY -> SecondaryButton(onClick = click, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                        Text(action.title, color = AppTheme.textPrimary())
-                    }
-                    AppNoticeKind.DESTRUCTIVE -> DestructiveButton(onClick = click, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                    when (action.kind) {
+                        AppNoticeKind.PRIMARY -> PrimaryButton(onClick = click, modifier = Modifier.fillMaxWidth()) {
                             Text(action.title, color = androidx.compose.ui.graphics.Color.White)
+                        }
+                        AppNoticeKind.SECONDARY -> SecondaryButton(onClick = click, modifier = Modifier.fillMaxWidth()) {
+                            Text(action.title, color = AppTheme.textPrimary())
+                        }
+                        AppNoticeKind.DESTRUCTIVE -> DestructiveButton(onClick = click, modifier = Modifier.fillMaxWidth()) {
+                            Text(action.title, color = androidx.compose.ui.graphics.Color.White)
+                        }
                     }
                 }
             }

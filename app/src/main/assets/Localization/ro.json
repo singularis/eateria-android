@@ -512,7 +512,7 @@
   "nickname.label": "Poreclă (1-50 car.)",
   "nickname.latin_lowercase_error": "Doar litere mici latine și cifre (a-z, 0-9)",
   "nickname.length_error": "Max 50 car.",
-  "nickname.placeholder": "Introdu porecla",
+  "nickname.placeholder": "Mâncător sănătos",
   "nickname.save": "Salvează",
   "nickname.success": "Succes!",
   "nickname.taken_error": "Acest pseudonim este deja luat",
@@ -683,7 +683,7 @@
   "profile.appearance": "Aspect",
   "profile.dailycalorie": "Ținta Zilnică de Calorii:",
   "profile.datamode": "Mod date",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Mâncător sănătos",
   "profile.delete": "Șterge Contul",
   "profile.dev_environment": "Mediu Server",
   "profile.edit_description": "Adaugă o fotografie și numele tău dacă vrei. Porecla rămâne pentru prieteni.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Nu s-a putut înregistra greutatea. Încearcă din nou.",
   "weight.recorded.msg": "Greutatea ta a fost înregistrată cu succes.",
   "weight.recorded.title": "Greutate înregistrată",
-  "weight.take_photo": "Fotografiază cântarul"
+  "weight.take_photo": "Fotografiază cântarul",
+  "activities.chess.color.white": "Alb",
+  "activities.chess.color.black": "Negru",
+  "activities.chess.color.red": "Roșu",
+  "activities.chess.color.xiangqi": "șah chinezesc",
+  "chess.summary.unknown": "Necunoscut"
 }

@@ -512,7 +512,7 @@
   "nickname.label": "Segvārds (1-50 rakstz., latīņu mazie burti a-z, 0-9)",
   "nickname.latin_lowercase_error": "Tikai latīņu mazie burti un cipari (a-z, 0-9)",
   "nickname.length_error": "Segvārdam jābūt līdz 50 rakstzīmēm",
-  "nickname.placeholder": "Ievadiet segvārdu",
+  "nickname.placeholder": "Veselīgs ēdājs",
   "nickname.save": "Saglabāt segvārdu",
   "nickname.success": "Jūsu segvārds ir veiksmīgi atjaunināts!",
   "nickname.taken_error": "Šis segvārds jau ir aizņemts",
@@ -683,7 +683,7 @@
   "profile.appearance": "Izskats",
   "profile.dailycalorie": "Dienas kaloriju mērķis:",
   "profile.datamode": "Datu režīms",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Veselīgs ēdājs",
   "profile.delete": "Dzēst kontu",
   "profile.dev_environment": "Servera vide",
   "profile.edit_description": "Pievieno foto un vārdu, ja vēlies. Segvārdu joprojām izmanto draugiem.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Svara reģistrācija neizdevās. Mēģiniet vēlreiz.",
   "weight.recorded.msg": "Jūsu svars ir veiksmīgi reģistrēts.",
   "weight.recorded.title": "Svars reģistrēts",
-  "weight.take_photo": "Nofotografēt svarus"
+  "weight.take_photo": "Nofotografēt svarus",
+  "activities.chess.color.white": "Balts",
+  "activities.chess.color.black": "Melns",
+  "activities.chess.color.red": "Sarkans",
+  "activities.chess.color.xiangqi": "ķīniešu šahs",
+  "chess.summary.unknown": "Nezināms"
 }

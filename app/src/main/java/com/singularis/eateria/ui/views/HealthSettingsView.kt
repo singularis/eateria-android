@@ -663,29 +663,28 @@ fun HealthSettingsView(
         }
 
         if (showingHealthDataAlert) {
-            AlertDialog(
-                onDismissRequest = { showingHealthDataAlert = false },
-                title = { Text(Localization.tr(context, "health.invalid.title", "Invalid Health Data")) },
-                text = {
-                    Text(if (invalidHealthDataMessage.isEmpty()) Localization.tr(context, "health.invalid.msg", "Check your current weight and target weight...") else invalidHealthDataMessage)
+            AppNotice(
+                title = Localization.tr(context, "health.invalid.title", "Invalid Health Data"),
+                message = if (invalidHealthDataMessage.isEmpty()) {
+                    Localization.tr(context, "health.invalid.msg", "Check your current weight and target weight...")
+                } else {
+                    invalidHealthDataMessage
                 },
-                confirmButton = {
-                    TextButton(onClick = { showingHealthDataAlert = false }) { Text("OK") }
-                }
+                actions = listOf(AppNoticeAction(Localization.tr(context, "common.ok", "OK")) {}),
+                onDismiss = { showingHealthDataAlert = false },
             )
         }
 
         if (showingTargetWeightAlert) {
             val bmi = targetBMIValue() ?: 0.0
-            AlertDialog(
-                onDismissRequest = { showingTargetWeightAlert = false },
-                title = { Text(Localization.tr(context, "health.target_invalid.title", "Invalid Target Weight")) },
-                text = {
-                    Text(String.format(Localization.tr(context, "health.target_invalid.msg", "Target BMI: %.1f. The entered target weight is not allowed..."), bmi))
-                },
-                confirmButton = {
-                    TextButton(onClick = { showingTargetWeightAlert = false }) { Text("OK") }
-                }
+            AppNotice(
+                title = Localization.tr(context, "health.target_invalid.title", "Invalid Target Weight"),
+                message = String.format(
+                    Localization.tr(context, "health.target_invalid.msg", "Target BMI: %.1f. The entered target weight is not allowed..."),
+                    bmi,
+                ),
+                actions = listOf(AppNoticeAction(Localization.tr(context, "common.ok", "OK")) {}),
+                onDismiss = { showingTargetWeightAlert = false },
             )
         }
     }

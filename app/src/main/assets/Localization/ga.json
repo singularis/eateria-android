@@ -512,7 +512,7 @@
   "nickname.label": "Leasainm (1-50 carachtar, litreacha beaga Laidine a-z, 0-9)",
   "nickname.latin_lowercase_error": "Litreacha beaga Laidine agus digiteacha amháin (a-z, 0-9)",
   "nickname.length_error": "Ní mór leasainm a bheith 50 carachtar nó níos lú",
-  "nickname.placeholder": "Iontráil do leasainm",
+  "nickname.placeholder": "Iteoir sláintiúil",
   "nickname.save": "Sábháil Leasainm",
   "nickname.success": "Nuashonraíodh do leasainm go rathúil!",
   "nickname.taken_error": "Tá an leasainm seo tógtha cheana",
@@ -683,7 +683,7 @@
   "profile.appearance": "Cuma",
   "profile.dailycalorie": "Sprioc Chalraí Laethúil:",
   "profile.datamode": "Mód Sonraí",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Iteoir sláintiúil",
   "profile.delete": "Scrios Cuntas",
   "profile.dev_environment": "Timpeallacht Freastalaí",
   "profile.edit_description": "Cuir grianghraf agus d’ainm leis más mian leat. Úsáidtear an leasainm fós do chairde.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Theip ar thaifeadadh meáchain. Déan iarracht arís.",
   "weight.recorded.msg": "Taifeadadh do mheáchan go rathúil.",
   "weight.recorded.title": "Meáchan taifeadta",
-  "weight.take_photo": "Grianghraf den mheá"
+  "weight.take_photo": "Grianghraf den mheá",
+  "activities.chess.color.white": "Bán",
+  "activities.chess.color.black": "Dubh",
+  "activities.chess.color.red": "Dearg",
+  "activities.chess.color.xiangqi": "ficheall na Síne",
+  "chess.summary.unknown": "Anaithnid"
 }

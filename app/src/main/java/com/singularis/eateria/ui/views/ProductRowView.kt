@@ -12,6 +12,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -106,7 +107,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
@@ -119,6 +122,8 @@ import com.singularis.eateria.ui.theme.AppIcons
 import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
+import com.singularis.eateria.ui.theme.PrimaryButton
+import com.singularis.eateria.ui.theme.SecondaryButton
 import com.singularis.eateria.ui.theme.cardContainer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -148,6 +153,7 @@ fun ProductCard(
     onAddFoodExtra: ((String) -> Unit)? = null,
     onSwipeToCamera: (() -> Unit)? = null,
     isAnonymous: Boolean = false,
+    onPhotoLoaded: ((String, android.graphics.Bitmap) -> Unit)? = null,
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
@@ -159,9 +165,30 @@ fun ProductCard(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val grpcService = remember { com.singularis.eateria.services.GRPCService(context) }
+    var showMealIntro by remember { mutableStateOf(false) }
+    var openHealthAfterIntro by remember { mutableStateOf(false) }
+    fun closeMealIntro() {
+        context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE)
+            .edit().putBoolean("hasSeenMealCardTutorial", true).apply()
+        openHealthAfterIntro = true
+        showMealIntro = false
+    }
+
+    LaunchedEffect(product.imageId, product.imageRevision) {
+        if (product.imageId.isEmpty() || !product.needsRemoteFetch(context)) return@LaunchedEffect
+        val bitmap = com.singularis.eateria.services.FoodPhotoService.getInstance(context)
+            .fetchVisiblePhoto(product.imageId) ?: return@LaunchedEffect
+        onPhotoLoaded?.invoke(product.imageId, bitmap)
+    }
 
     fun openHealthInfo() {
         if (isDeleting || isLoadingHealth) return
+        val seenMeal = context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE)
+            .getBoolean("hasSeenMealCardTutorial", false)
+        if (!seenMeal) {
+            showMealIntro = true
+            return
+        }
         HapticsService.getInstance().select()
         if (healthInfoTitle.isNotEmpty()) {
             showHealthInfoDialog = true
@@ -184,6 +211,13 @@ fun ProductCard(
             } catch (_: Exception) {
             }
             isLoadingHealth = false
+        }
+    }
+
+    LaunchedEffect(showMealIntro, openHealthAfterIntro) {
+        if (!showMealIntro && openHealthAfterIntro) {
+            openHealthAfterIntro = false
+            openHealthInfo()
         }
     }
 
@@ -272,65 +306,73 @@ fun ProductCard(
                         .fillMaxWidth()
                         .padding(Dimensions.paddingS),
                 horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
             ) {
-                // Food photo - clickable for full screen (matches iOS)
-                val photoSize = 64.dp - 16.dp * com.singularis.eateria.ui.theme.scaleTravel(com.singularis.eateria.ui.theme.LocalAppScale.current)
+                // Photo matches iOS: 101dp at 80% text, 68dp at 160%, and it grows taller with the text.
+                val photoTravel = com.singularis.eateria.ui.theme.scaleTravel(
+                    com.singularis.eateria.ui.theme.LocalAppScale.current,
+                )
+                val photoSize = 101.dp - 33.dp * photoTravel
                 Box(
-                    modifier =
-                        Modifier
-                            .size(photoSize)
-                            .clip(RoundedCornerShape(AppTheme.smallRadius))
-                            .background(AppTheme.divider())
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onTap = {
-                                        if (!isDeleting) {
-                                            HapticsService.getInstance().select()
-                                            onPhotoTap()
-                                        }
-                                    },
-                                )
-                            },
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .width(photoSize)
+                        .heightIn(min = photoSize, max = photoSize * 1.8f)
+                        .fillMaxHeight(),
                 ) {
-                    // imageRevision changes when a remote photo finishes downloading
-                    key(product.imageId, product.imageRevision) {
-                        val productImage = product.getImage(context)
-
-                        if (productImage != null) {
-                            Image(
-                                bitmap = productImage.asImageBitmap(),
-                                contentDescription = product.name,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
-                            )
-                        } else if (product.needsRemoteFetch(context)) {
-                            Icon(
-                                imageVector = AppIcons.Actions.download,
-                                contentDescription = Localization.tr(context, "fs.downloading_photo", "Downloading photo"),
-                                tint = AppTheme.textSecondary(),
-                                modifier =
-                                    Modifier
-                                        .size(Dimensions.iconSizeM)
-                                        .align(Alignment.Center),
-                            )
-                        } else {
-                            Icon(
-                                imageVector = AppIcons.Media.photoLibrary,
-                                contentDescription = Localization.tr(context, "fs.no_photo", "No photo"),
-                                tint = AppTheme.textSecondary(),
-                                modifier =
-                                    Modifier
-                                        .size(Dimensions.iconSizeM)
-                                        .align(Alignment.Center),
-                            )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(RoundedCornerShape(AppTheme.smallRadius))
+                            .background(AppTheme.surfaceAlt())
+                            .clickable(enabled = !isDeleting) {
+                                HapticsService.getInstance().select()
+                                onPhotoTap()
+                            },
+                    ) {
+                        key(product.imageId, product.imageRevision) {
+                            val productImage = product.getImage(context)
+                            if (productImage != null) {
+                                Image(
+                                    bitmap = productImage.asImageBitmap(),
+                                    contentDescription = product.name,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop,
+                                )
+                            } else if (product.needsRemoteFetch(context)) {
+                                Icon(
+                                    imageVector = AppIcons.Actions.download,
+                                    contentDescription = Localization.tr(context, "fs.downloading_photo", "Downloading photo"),
+                                    tint = AppTheme.textSecondary(),
+                                    modifier = Modifier.size(Dimensions.iconSizeM).align(Alignment.Center),
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = AppIcons.Media.photoLibrary,
+                                    contentDescription = Localization.tr(context, "fs.no_photo", "No photo"),
+                                    tint = AppTheme.textSecondary(),
+                                    modifier = Modifier.size(if (product.imageId.isEmpty()) 28.dp else 17.dp).align(Alignment.Center),
+                                )
+                            }
                         }
+                    }
+                    if (product.healthRating >= 0 && !isDeleting) {
+                        HealthRatingRing(
+                            rating = product.effectiveHealthRating,
+                            color = getHealthRatingColor(rating = product.effectiveHealthRating),
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(3.dp)
+                                .clickable { openHealthInfo() },
+                        )
                     }
                 }
 
                 // Food details — body is non-interactive; calories open health info
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = !isDeleting) { openHealthInfo() },
                 ) {
                     Text(
                         text = product.name,
@@ -352,10 +394,6 @@ fun ProductCard(
                         color = AppTheme.accent(),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
-                        modifier =
-                            Modifier.clickable(enabled = !isDeleting) {
-                                openHealthInfo()
-                            },
                     )
 
                     if (product.ingredients.isNotEmpty()) {
@@ -415,9 +453,9 @@ fun ProductCard(
                         strokeWidth = Dimensions.loadingIndicatorStrokeWidth,
                     )
                 } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(0.dp),
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         if (onShare != null) {
                             IconButton(
@@ -425,13 +463,13 @@ fun ProductCard(
                                     HapticsService.getInstance().select()
                                     onShare(product.time, product.name)
                                 },
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(36.dp),
                             ) {
                                 Icon(
                                     imageVector = AppIcons.Actions.share,
                                     contentDescription =
                                         Localization.tr(context, "portion.share", "Share food with friend"),
-                                    tint = AppTheme.accent(),
+                                    tint = AppTheme.success(),
                                     modifier = Modifier.size(20.dp),
                                 )
                             }
@@ -441,7 +479,7 @@ fun ProductCard(
                                 HapticsService.getInstance().select()
                                 showPortionDialog = true
                             },
-                            modifier = Modifier.size(40.dp),
+                            modifier = Modifier.size(36.dp),
                         ) {
                             Icon(
                                 imageVector = AppIcons.Navigation.more,
@@ -451,14 +489,19 @@ fun ProductCard(
                                 modifier = Modifier.size(20.dp),
                             )
                         }
-                        if (product.healthRating >= 0) {
-                            HealthRatingRing(
-                                rating = product.effectiveHealthRating,
-                                color = getHealthRatingColor(rating = product.effectiveHealthRating),
-                                modifier =
-                                    Modifier
-                                        .padding(start = 2.dp)
-                                        .clickable { openHealthInfo() },
+                        IconButton(
+                            onClick = {
+                                HapticsService.getInstance().warning()
+                                showDeleteConfirmationDialog = true
+                            },
+                            modifier = Modifier.size(36.dp),
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.Actions.delete,
+                                contentDescription =
+                                    Localization.tr(context, "common.remove", "Remove"),
+                                tint = AppTheme.danger(),
+                                modifier = Modifier.size(20.dp),
                             )
                         }
                     }
@@ -494,6 +537,14 @@ fun ProductCard(
         )
     }
 
+    if (showMealIntro) {
+        MainAppTutorialView(
+            isPresented = true,
+            specificStepKey = "hasSeenMealCardTutorial",
+            onDismiss = { closeMealIntro() },
+        )
+    }
+
     if (showDeleteConfirmationDialog) {
         DeleteConfirmationDialog(
             onConfirm = {
@@ -515,6 +566,7 @@ fun ProductCard(
             title = healthInfoTitle,
             description = healthInfoDescription,
             healthSummaryJson = healthInfoSummary,
+            dishTime = product.time,
             onDismiss = { showHealthInfoDialog = false }
         )
     }
@@ -558,61 +610,34 @@ fun PortionSelectionDialog(
             } else {
                 Localization.tr(LocalContext.current, "portion.selected", "the selected")
             }
-        AlertDialog(
-            onDismissRequest = {
-                onDismiss()
-                resetSuccessState()
-            },
-            title = {
-                Text(
-                    text = Localization.tr(LocalContext.current, "portion.updated.title", "Portion Updated!"),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.textPrimary(),
-                )
-            },
-            text = {
-                Text(
-                    text =
-                        Localization
-                            .tr(
-                                LocalContext.current,
-                                "portion.updated.msg",
-                                "Successfully updated '%@' to %d%% portion.",
-                            ).replace("%@", foodName)
-                            .replace("%d%%", "$selectedPortion%"),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppTheme.textSecondary(),
-                    textAlign = TextAlign.Center,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
+        AppNotice(
+            title = Localization.tr(LocalContext.current, "portion.updated.title", "Portion Updated!"),
+            message = Localization
+                .tr(
+                    LocalContext.current,
+                    "portion.updated.msg",
+                    "Successfully updated '%@' to %d%% portion.",
+                ).replace("%@", foodName)
+                .replace("%d%%", "$selectedPortion%"),
+            actions = listOf(
+                AppNoticeAction(Localization.tr(LocalContext.current, "common.ok", "OK")) {
                     HapticsService.getInstance().select()
-                    onDismiss()
                     resetSuccessState()
-                }) {
-                    Text(
-                        Localization.tr(LocalContext.current, "common.ok", "OK"),
-                        color = AppTheme.accent(),
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
-            },
-            containerColor = AppTheme.surface(),
+                },
+            ),
+            onDismiss = onDismiss,
         )
     } else if (showAdditivesSelection) {
-        AlertDialog(
-            onDismissRequest = { showAdditivesSelection = false },
-            title = {
+        AppSheet(onDismiss = { showAdditivesSelection = false }) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "portion.additional", "Additives"),
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
                     color = AppTheme.textPrimary(),
                 )
-            },
-            text = {
                 LazyColumn(
                     modifier = Modifier.heightIn(max = Dimensions.fixedHeight * 3),
                     verticalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
@@ -670,22 +695,21 @@ fun PortionSelectionDialog(
                         }
                     }
                 }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showAdditivesSelection = false }) {
-                    Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = AppTheme.textSecondary())
+                SecondaryButton(
+                    onClick = { showAdditivesSelection = false },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                ) {
+                    Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = AppTheme.textPrimary())
                 }
-            },
-            containerColor = AppTheme.surface()
-        )
+            }
+        }
     } else {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
             containerColor = AppTheme.surface(),
         ) {
-            // Fixed header — always visible, not scrolled away
+            com.singularis.eateria.ui.theme.WithAppTextScale {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1091,67 +1115,39 @@ fun PortionSelectionDialog(
                         }
                     }
                 }
+            }
         }
     }
 }
+
 @Composable
 fun DeleteConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = Localization.tr(LocalContext.current, "common.remove", "Remove"),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.textPrimary(),
-            )
-        },
-        text = {
-            Text(
-                text =
-                    Localization.tr(
-                        LocalContext.current,
-                        "food.remove.confirm",
-                        "Are you sure you want to remove this food entry? This action cannot be undone.",
-                    ),
-                style = MaterialTheme.typography.bodySmall,
-                color = AppTheme.textSecondary(),
-                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-            )
-        },
-        confirmButton = {
-            Button(
-                onClick = { 
-                    HapticsService.getInstance().error()
-                    onConfirm() 
-                },
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = AppTheme.danger(), // Destructive action color
-                        contentColor = AppTheme.onAccent,
-                    ),
+    AppNotice(
+        title = Localization.tr(LocalContext.current, "common.remove", "Remove"),
+        message = Localization.tr(
+            LocalContext.current,
+            "food.remove.confirm",
+            "Are you sure you want to remove this food entry? This action cannot be undone.",
+        ),
+        actions = listOf(
+            AppNoticeAction(
+                Localization.tr(LocalContext.current, "common.remove", "Remove"),
+                AppNoticeKind.DESTRUCTIVE,
             ) {
-                Text(Localization.tr(LocalContext.current, "common.remove", "Remove"))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { 
+                HapticsService.getInstance().error()
+                onConfirm()
+            },
+            AppNoticeAction(
+                Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
+                AppNoticeKind.SECONDARY,
+            ) {
                 HapticsService.getInstance().select()
-                onDismiss() 
-            }) {
-                Text(
-                    Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
-                    color = AppTheme.textSecondary(),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-        },
-        containerColor = AppTheme.surface(),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
+            },
+        ),
+        onDismiss = onDismiss,
     )
 }
 
@@ -1170,33 +1166,41 @@ fun getHealthRatingColor(rating: Int): Color {
 fun HealthRatingRing(
     rating: Int,
     color: Color,
-    modifier: Modifier = Modifier
+    size: Dp = 36.dp,
+    modifier: Modifier = Modifier,
 ) {
     val progress = (rating.toFloat() / 100f).coerceIn(0f, 1f)
+    val stroke = (size * 0.1f).coerceAtLeast(3.dp)
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier.size(44.dp)
+        modifier = modifier
+            .size(size)
+            .background(AppTheme.surface().copy(alpha = 0.94f), CircleShape),
     ) {
-        CircularProgressIndicator(
-            progress = { 1f },
-            color = color.copy(alpha = 0.2f),
-            strokeWidth = 4.dp,
-            modifier = Modifier.fillMaxSize()
-        )
-        CircularProgressIndicator(
-            progress = { progress },
-            color = color,
-            strokeWidth = 4.dp,
-            modifier = Modifier.fillMaxSize(),
-            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
-        )
+        Canvas(Modifier.fillMaxSize().padding(stroke / 2)) {
+            val width = stroke.toPx()
+            drawArc(
+                color = color.copy(alpha = 0.2f),
+                startAngle = 0f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width, cap = androidx.compose.ui.graphics.StrokeCap.Round),
+            )
+            drawArc(
+                color = color,
+                startAngle = -90f,
+                sweepAngle = 360f * progress,
+                useCenter = false,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width, cap = androidx.compose.ui.graphics.StrokeCap.Round),
+            )
+        }
         Text(
             text = rating.toString(),
             color = color,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.SansSerif
-            )
+            fontSize = (size.value * 0.42f).sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            softWrap = false,
         )
     }
 }
@@ -1210,11 +1214,33 @@ private fun HealthLevelInfoDialog(
     title: String,
     description: String,
     healthSummaryJson: String,
+    dishTime: Long,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val displayTitle = AlertHelper.translateHealthText(context, title)
     val displayDescription = AlertHelper.translateHealthText(context, description)
+    val explainStore = remember { com.singularis.eateria.services.FoodScoreExplainStore.getInstance(context) }
+    var email by remember { mutableStateOf("") }
+    val dishDay = remember(dishTime) {
+        val cal = java.util.Calendar.getInstance()
+        cal.timeInMillis = dishTime
+        String.format(
+            java.util.Locale.US,
+            "%04d-%02d-%02d",
+            cal.get(java.util.Calendar.YEAR),
+            cal.get(java.util.Calendar.MONTH) + 1,
+            cal.get(java.util.Calendar.DAY_OF_MONTH),
+        )
+    }
+    var dishExplain by remember(dishTime) { mutableStateOf("") }
+    var explainingDish by remember { mutableStateOf(false) }
+    LaunchedEffect(dishTime) {
+        email = com.singularis.eateria.services.AuthenticationService(context).getUserEmail().orEmpty()
+        val entry = explainStore.dishEntry(email, dishTime)
+        dishExplain = if (entry != null && entry.basisDishTime == dishTime) entry.text else ""
+    }
 
     // Parse healthSummary JSON
     data class HealthItem(
@@ -1247,17 +1273,14 @@ private fun HealthLevelInfoDialog(
         }
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+    AppSheet(onDismiss = onDismiss) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
             Text(
                 text = displayTitle,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
                 color = AppTheme.textPrimary(),
+                modifier = Modifier.padding(bottom = 12.dp),
             )
-        },
-        text = {
             LazyColumn(
                 modifier = Modifier.heightIn(max = 400.dp),
                 verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
@@ -1356,6 +1379,28 @@ private fun HealthLevelInfoDialog(
                     }
                 }
 
+                if (explainingDish) {
+                    item {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                            Text(
+                                Localization.tr(context, "health.score.explaining", "Explaining your food score"),
+                                color = AppTheme.textSecondary(),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+                if (dishExplain.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = dishExplain,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AppTheme.textPrimary(),
+                        )
+                    }
+                }
+
                 // Health disclaimer
                 item {
                     Spacer(modifier = Modifier.height(Dimensions.paddingM))
@@ -1377,20 +1422,49 @@ private fun HealthLevelInfoDialog(
                     )
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                HapticsService.getInstance().select()
-                onDismiss()
-            }) {
-                Text(
-                    Localization.tr(context, "common.ok", "OK"),
-                    color = AppTheme.accent(),
-                )
+            PrimaryButton(
+                onClick = {
+                    HapticsService.getInstance().select()
+                    val cached = explainStore.dishEntry(email, dishTime)
+                    if (cached != null && cached.basisDishTime == dishTime) {
+                        dishExplain = cached.text
+                        return@PrimaryButton
+                    }
+                    explainingDish = true
+                    dishExplain = ""
+                    scope.launch {
+                        val result = com.singularis.eateria.services.GRPCService(context).explainFoodScore(
+                            userName = email,
+                            day = dishDay,
+                            languageCode = com.singularis.eateria.services.LanguageService.getCurrentCode(context),
+                            dishTime = dishTime,
+                        )
+                        explainingDish = false
+                        if (result != null && result.text.isNotBlank()) {
+                            val basis = if (result.basisDishTime != 0L) result.basisDishTime else dishTime
+                            explainStore.saveDish(email, dishTime, result.text, basis)
+                            dishExplain = result.text
+                        } else if (result != null) {
+                            explainStore.saveDish(email, dishTime, "", dishTime)
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                enabled = !explainingDish,
+            ) {
+                Text(Localization.tr(context, "health.score.explain", "Explain"), color = AppTheme.onAccent)
             }
-        },
-        containerColor = AppTheme.surface(),
-    )
+            SecondaryButton(
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onDismiss()
+                },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            ) {
+                Text(Localization.tr(context, "common.ok", "OK"), color = AppTheme.textPrimary())
+            }
+        }
+    }
 }
 
 private fun JSONObject.optNullableString(name: String): String? =

@@ -12,9 +12,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.net.URLEncoder
 
 /**
  * Service for fetching food photos from the backend
@@ -69,9 +69,14 @@ class FoodPhotoService private constructor(private val context: Context) {
         }
 
         try {
-            // URL encode the image_id
-            val encodedImageId = URLEncoder.encode(imageId, "UTF-8")
-            val url = "${AppEnvironment.getInstance().baseURL}/get_photo?image_id=$encodedImageId"
+            // OkHttp encodes @ and / once. Encoding first makes it encode % again,
+            // and MinIO then looks up user%40email.com%2F… and returns 404.
+            val url = AppEnvironment.getInstance().baseURL.trimEnd('/').toHttpUrlOrNull()
+                ?.newBuilder()
+                ?.addPathSegment("get_photo")
+                ?.addQueryParameter("image_id", imageId)
+                ?.build()
+            if (url == null) return@withContext null
 
             val requestBuilder = Request.Builder().url(url).get()
 
@@ -106,6 +111,19 @@ class FoodPhotoService private constructor(private val context: Context) {
                 inFlightRequests.remove(imageId)
             }
         }
+    }
+
+    /**
+     * One try now, then 1s, 2s, 4s, and 8s. A new meal's file is often missing
+     * for a few seconds. Used only while the card is on screen.
+     */
+    suspend fun fetchVisiblePhoto(imageId: String): Bitmap? {
+        fetchPhoto(imageId)?.let { return it }
+        for (waitMs in longArrayOf(1_000L, 2_000L, 4_000L, 8_000L)) {
+            delay(waitMs)
+            fetchPhoto(imageId)?.let { return it }
+        }
+        return null
     }
 
     /**

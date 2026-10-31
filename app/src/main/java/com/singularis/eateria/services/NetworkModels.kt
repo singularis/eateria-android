@@ -45,6 +45,11 @@ data class DailyLimit(
     }
 }
 
+data class FoodScoreExplanation(
+    val text: String,
+    val basisDishTime: Long,
+)
+
 data class DayFoodScore(
     val hasScore: Boolean,
     val score: Int,

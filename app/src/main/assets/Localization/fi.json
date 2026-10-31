@@ -512,7 +512,7 @@
   "nickname.label": "Nimimerkki (1-50 merkkiä, latinalaiset pienet a-z, 0-9)",
   "nickname.latin_lowercase_error": "Vain latinalaiset pienet kirjaimet ja numerot (a-z, 0-9)",
   "nickname.length_error": "Enintään 50 merkkiä",
-  "nickname.placeholder": "Kirjoita nimimerkki",
+  "nickname.placeholder": "Terveellinen syöjä",
   "nickname.save": "Tallenna",
   "nickname.success": "Päivitetty onnistuneesti!",
   "nickname.taken_error": "Tämä nimimerkki on jo käytössä",
@@ -683,7 +683,7 @@
   "profile.appearance": "Ulkoasu",
   "profile.dailycalorie": "Päivittäinen kaloritavoite:",
   "profile.datamode": "Datatila",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Terveellinen syöjä",
   "profile.delete": "Poista Tili",
   "profile.dev_environment": "Palvelinympäristö",
   "profile.edit_description": "Lisää kuva ja nimesi, jos haluat. Lempinimeä käytetään edelleen kavereille.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Painon tallennus epäonnistui. Yritä uudelleen.",
   "weight.recorded.msg": "Painosi on tallennettu onnistuneesti.",
   "weight.recorded.title": "Paino tallennettu",
-  "weight.take_photo": "Valokuvaa vaaka"
+  "weight.take_photo": "Valokuvaa vaaka",
+  "activities.chess.color.white": "Valkoinen",
+  "activities.chess.color.black": "Musta",
+  "activities.chess.color.red": "Punainen",
+  "activities.chess.color.xiangqi": "kiinalainen shakki",
+  "chess.summary.unknown": "Tuntematon"
 }

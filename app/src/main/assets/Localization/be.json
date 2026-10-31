@@ -512,7 +512,7 @@
   "nickname.label": "Нікнейм (1-50 сімвалаў, лацінскія літары a-z, 0-9)",
   "nickname.latin_lowercase_error": "Толькі лацінскія літары і лічбы (a-z, 0-9)",
   "nickname.length_error": "Нікнейм павінен быць не больш за 50 сімвалаў",
-  "nickname.placeholder": "Увядзіце нікнейм",
+  "nickname.placeholder": "Здаровы ядок",
   "nickname.save": "Захаваць нікнейм",
   "nickname.success": "Нікнейм паспяхова абноўлены!",
   "nickname.taken_error": "Гэты нікнейм ужо заняты",
@@ -683,7 +683,7 @@
   "profile.appearance": "Выгляд",
   "profile.dailycalorie": "Штодзённая мэта калорый:",
   "profile.datamode": "Рэжым даных",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Здаровы ядок",
   "profile.delete": "Выдаліць уліковы запіс",
   "profile.dev_environment": "Сервернае асяроддзе",
   "profile.edit_description": "Дадайце фота і імя, калі хочаце. Псеўданім і далей для сяброў.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Не ўдалося запісаць вагу. Паспрабуйце яшчэ.",
   "weight.recorded.msg": "Ваша вага паспяхова запісана.",
   "weight.recorded.title": "Вага запісана",
-  "weight.take_photo": "Сфатаграфаваць вагі"
+  "weight.take_photo": "Сфатаграфаваць вагі",
+  "activities.chess.color.white": "Белыя",
+  "activities.chess.color.black": "Чорныя",
+  "activities.chess.color.red": "Чырвоныя",
+  "activities.chess.color.xiangqi": "Сянцы",
+  "chess.summary.unknown": "Невядома"
 }

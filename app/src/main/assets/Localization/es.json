@@ -512,7 +512,7 @@
   "nickname.label": "Apodo (1-50 caracteres)",
   "nickname.latin_lowercase_error": "Solo letras minúsculas latinas y dígitos (a-z, 0-9)",
   "nickname.length_error": "Máximo 50 caracteres",
-  "nickname.placeholder": "Introduce apodo",
+  "nickname.placeholder": "Comensal saludable",
   "nickname.save": "Guardar",
   "nickname.success": "¡Actualizado con éxito!",
   "nickname.taken_error": "Este apodo ya está en uso",
@@ -683,7 +683,7 @@
   "profile.appearance": "Apariencia",
   "profile.dailycalorie": "Meta Diaria de Calorías:",
   "profile.datamode": "Modo de Datos",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Comensal saludable",
   "profile.delete": "Eliminar Cuenta",
   "profile.dev_environment": "Entorno del Servidor",
   "profile.edit_description": "Añade una foto y tu nombre si quieres. El apodo se sigue usando con los amigos.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "No se pudo registrar tu peso. Inténtalo de nuevo.",
   "weight.recorded.msg": "Tu peso se ha registrado correctamente.",
   "weight.recorded.title": "Peso registrado",
-  "weight.take_photo": "Fotografiar la báscula"
+  "weight.take_photo": "Fotografiar la báscula",
+  "activities.chess.color.white": "Blanco",
+  "activities.chess.color.black": "Negro",
+  "activities.chess.color.red": "Rojo",
+  "activities.chess.color.xiangqi": "ajedrez chino",
+  "chess.summary.unknown": "Desconocido"
 }

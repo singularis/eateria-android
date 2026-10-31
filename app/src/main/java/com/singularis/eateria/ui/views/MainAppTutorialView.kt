@@ -14,6 +14,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,6 +46,7 @@ import com.singularis.eateria.R
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.ThemeService
 import com.singularis.eateria.ui.theme.AppTheme
+import com.singularis.eateria.ui.theme.PrimaryButton
 import kotlinx.coroutines.launch
 
 data class TutorialStep(
@@ -113,6 +116,17 @@ fun getTutorialSteps(context: Context): List<TutorialStep> {
             color = Color(0xFFE91E63) // Pink
         ),
         TutorialStep(
+            key = "hasSeenMealCardTutorial",
+            title = Localization.tr(context, "tutorial.meal.title", "Meal card"),
+            description = Localization.tr(
+                context,
+                "tutorial.meal.desc",
+                "Tap a meal to open its health score. The ring on the photo is that score. Green is better, red needs a look. Explain writes a longer note. Swipe the meal right to change the portion or add extras.",
+            ),
+            iconRes = Icons.Default.Restaurant,
+            color = Color(0xFF4CAF50),
+        ),
+        TutorialStep(
             key = "hasSeenTypeGuideTutorial",
             title = Localization.tr(context, "tutorial.type.title", "Type a meal"),
             description = Localization.tr(context, "tutorial.type.desc", "Log a meal by typing it, not only by photo."),
@@ -129,7 +143,7 @@ fun getTutorialSteps(context: Context): List<TutorialStep> {
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppTutorialView(
     isPresented: Boolean,
@@ -141,7 +155,7 @@ fun MainAppTutorialView(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val allSteps = remember { getTutorialSteps(context) }
-    
+
     val displayedSteps = remember(specificStepKey) {
         if (specificStepKey != null) {
             allSteps.filter { it.key == specificStepKey }
@@ -149,7 +163,7 @@ fun MainAppTutorialView(
             allSteps
         }
     }
-    
+
     val pagerState = rememberPagerState(pageCount = { displayedSteps.size })
 
     fun finishTutorial() {
@@ -162,132 +176,130 @@ fun MainAppTutorialView(
         onDismiss()
     }
 
+    if (specificStepKey != null) {
+        val step = displayedSteps.firstOrNull() ?: return
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+        ModalBottomSheet(
+            onDismissRequest = { finishTutorial() },
+            sheetState = sheetState,
+            containerColor = AppTheme.surface(),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 16.dp),
+            ) {
+                TutorialCardView(step = step, compact = true)
+                PrimaryButton(
+                    onClick = { finishTutorial() },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                ) {
+                    Text(
+                        text = Localization.tr(context, "common.done", "Done"),
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        }
+        return
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppTheme.surface())
+            .background(AppTheme.backgroundGradient())
     ) {
-        // Dynamic Background blobs
-        Box(
-            modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.TopStart)
-                .offset(x = (-50).dp, y = (-50).dp)
-                .blur(40.dp, edgeTreatment = androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
-                .background(Color.Blue.copy(alpha = 0.1f), CircleShape)
-        )
-        Box(
-            modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.BottomEnd)
-                .offset(x = 50.dp, y = 50.dp)
-                .blur(40.dp, edgeTreatment = androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
-                .background(Color.Magenta.copy(alpha = 0.1f), CircleShape)
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .systemBarsPadding(),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header / Drag Indicator for sheet
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                horizontalArrangement = if (specificStepKey != null) Arrangement.Center else Arrangement.End
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (specificStepKey != null) {
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(5.dp)
-                            .background(Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(50))
-                    )
-                } else {
-                    TextButton(onClick = { finishTutorial() }) {
-                        Text(
-                            text = Localization.tr(context, "common.skip", "Skip"),
-                            color = AppTheme.textSecondary(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium
+                if (pagerState.currentPage > 0) {
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = Localization.tr(context, "common.back", "Back"),
+                            tint = AppTheme.textPrimary(),
                         )
                     }
+                } else {
+                    Spacer(Modifier.size(48.dp))
+                }
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { finishTutorial() }) {
+                    Text(
+                        text = Localization.tr(context, "common.skip", "Skip"),
+                        color = AppTheme.textPrimary(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                    )
                 }
             }
 
-            // Pager
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) { page ->
-                TutorialCardView(step = displayedSteps[page])
+                TutorialCardView(step = displayedSteps[page], compact = false)
             }
 
-            // Indicators
-            if (displayedSteps.size > 1) {
-                Row(
-                    modifier = Modifier.padding(bottom = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    repeat(displayedSteps.size) { index ->
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .background(
-                                    if (pagerState.currentPage == index) AppTheme.accent() else Color.Gray.copy(alpha = 0.3f),
-                                    CircleShape
-                                )
-                        )
-                    }
-                }
-            }
-
-            // Button
-            Button(
-                onClick = {
-                    if (pagerState.currentPage < displayedSteps.size - 1) {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                        }
-                    } else {
-                        finishTutorial()
-                    }
-                },
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .padding(bottom = 30.dp)
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                ),
-                contentPadding = PaddingValues(0.dp)
+                    .padding(bottom = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(AppTheme.accent(), Color(0xFF9C27B0))
-                            ),
-                            RoundedCornerShape(16.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val buttonText = if (specificStepKey != null) {
-                        Localization.tr(context, "common.done", "Done")
-                    } else {
-                        if (pagerState.currentPage == displayedSteps.size - 1) Localization.tr(context, "common.start", "Get Started") else Localization.tr(context, "common.next", "Next")
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    repeat(displayedSteps.size) { index ->
+                        val current = pagerState.currentPage == index
+                        Box(
+                            modifier = Modifier
+                                .height(6.dp)
+                                .width(if (current) 18.dp else 6.dp)
+                                .background(
+                                    if (current) AppTheme.accent() else AppTheme.divider(),
+                                    RoundedCornerShape(50),
+                                ),
+                        )
                     }
-                    
+                }
+                val buttonText = if (pagerState.currentPage == displayedSteps.size - 1) {
+                    Localization.tr(context, "onboarding.start", "Get Started")
+                } else {
+                    Localization.tr(context, "onboarding.continue", "Continue")
+                }
+                PrimaryButton(
+                    onClick = {
+                        if (pagerState.currentPage < displayedSteps.size - 1) {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        } else {
+                            finishTutorial()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
                     Text(
                         text = buttonText,
                         color = Color.White,
                         style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
             }
@@ -296,7 +308,7 @@ fun MainAppTutorialView(
 }
 
 @Composable
-fun TutorialCardView(step: TutorialStep) {
+fun TutorialCardView(step: TutorialStep, compact: Boolean = false) {
     var appearAnimation by remember { mutableStateOf(false) }
     
     val scale by animateFloatAsState(
@@ -310,6 +322,42 @@ fun TutorialCardView(step: TutorialStep) {
 
     LaunchedEffect(Unit) {
         appearAnimation = true
+    }
+
+    if (compact) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(88.dp)
+                        .background(step.color.copy(alpha = 0.12f), CircleShape),
+                )
+                Icon(
+                    imageVector = step.iconRes,
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    tint = step.color,
+                )
+            }
+            Text(
+                text = step.title.withoutTutorialEmoji(),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.textPrimary(),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = step.description,
+                style = MaterialTheme.typography.bodyLarge,
+                color = AppTheme.textSecondary(),
+                textAlign = TextAlign.Center,
+            )
+        }
+        return
     }
 
     androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -349,7 +397,7 @@ fun TutorialCardView(step: TutorialStep) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = step.title,
+                text = step.title.withoutTutorialEmoji(),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.textPrimary(),
@@ -370,3 +418,14 @@ fun TutorialCardView(step: TutorialStep) {
     }
     }
 }
+
+/** The heading is the screen name. Emoji in the source string stay out of that line. */
+private fun String.withoutTutorialEmoji(): String = buildString {
+    for (ch in this@withoutTutorialEmoji) {
+        val code = ch.code
+        if (code == 0xFE0F || code == 0x200D) continue
+        if (code >= 0x1F000) continue
+        if (code in 0x2600..0x27BF) continue
+        append(ch)
+    }
+}.trim()

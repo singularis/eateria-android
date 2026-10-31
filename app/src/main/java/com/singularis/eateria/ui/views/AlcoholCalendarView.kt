@@ -188,18 +188,15 @@ fun AlcoholCalendarView(
     }
 
     if (detailsVisible) {
-        AlertDialog(
-            onDismissRequest = { detailsVisible = false },
-            title = { Text(detailsTitle, color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(), fontWeight = FontWeight.Bold) },
-            text = { Text(detailsMessage, color = com.singularis.eateria.ui.theme.AppTheme.textSecondary()) },
-            confirmButton = {
-                androidx.compose.material3.TextButton(onClick = {
+        AppNotice(
+            title = detailsTitle,
+            message = detailsMessage,
+            actions = listOf(
+                AppNoticeAction(Localization.tr(LocalContext.current, "common.ok", "OK")) {
                     com.singularis.eateria.services.HapticsService.getInstance().select()
-                    detailsVisible = false
-                }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = com.singularis.eateria.ui.theme.AppTheme.accent()) }
-            },
-            containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
-            shape = RoundedCornerShape(24.dp)
+                },
+            ),
+            onDismiss = { detailsVisible = false },
         )
     }
 }

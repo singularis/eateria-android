@@ -512,7 +512,7 @@
   "nickname.label": "Vzdevek (1-50 znakov)",
   "nickname.latin_lowercase_error": "Samo latinske male črke in številke (a-z, 0-9)",
   "nickname.length_error": "Max 50 znakov",
-  "nickname.placeholder": "Vnesite vzdevek",
+  "nickname.placeholder": "Zdrav jedec",
   "nickname.save": "Shrani",
   "nickname.success": "Uspešno posodobljeno!",
   "nickname.taken_error": "Ta vzdevek je že zaseden",
@@ -683,7 +683,7 @@
   "profile.appearance": "Videz",
   "profile.dailycalorie": "Dnevni cilj kalorij:",
   "profile.datamode": "Način podatkov",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Zdrav jedec",
   "profile.delete": "Izbriši račun",
   "profile.dev_environment": "Strežniško okolje",
   "profile.edit_description": "Dodajte fotografijo in ime, če želite. Vzdevek se še vedno uporablja za prijatelje.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Zabeležitev teže ni uspela. Poskusi znova.",
   "weight.recorded.msg": "Tvoja teža je bila uspešno zabeležena.",
   "weight.recorded.title": "Teža zabeležena",
-  "weight.take_photo": "Fotografiraj tehtnico"
+  "weight.take_photo": "Fotografiraj tehtnico",
+  "activities.chess.color.white": "Belo",
+  "activities.chess.color.black": "Črno",
+  "activities.chess.color.red": "Rdeče",
+  "activities.chess.color.xiangqi": "kitajski šah",
+  "chess.summary.unknown": "Neznano"
 }

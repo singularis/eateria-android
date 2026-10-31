@@ -512,7 +512,7 @@
   "nickname.label": "Surnom (1-50 car.)",
   "nickname.latin_lowercase_error": "Seules les lettres minuscules latines et les chiffres (a-z, 0-9)",
   "nickname.length_error": "Max 50 car.",
-  "nickname.placeholder": "Entrez surnom",
+  "nickname.placeholder": "Mangeur sain",
   "nickname.save": "Enregistrer",
   "nickname.success": "Succès !",
   "nickname.taken_error": "Ce surnom est déjà pris",
@@ -683,7 +683,7 @@
   "profile.appearance": "Apparence",
   "profile.dailycalorie": "Objectif calorique quotidien :",
   "profile.datamode": "Mode de données",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Mangeur sain",
   "profile.delete": "Supprimer le compte",
   "profile.dev_environment": "Environnement Serveur",
   "profile.edit_description": "Ajoutez une photo et votre nom si vous voulez. Le pseudo reste utilisé pour les amis.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Échec de l'enregistrement du poids. Veuillez réessayer.",
   "weight.recorded.msg": "Votre poids a été enregistré avec succès.",
   "weight.recorded.title": "Poids enregistré",
-  "weight.take_photo": "Photographier la balance"
+  "weight.take_photo": "Photographier la balance",
+  "activities.chess.color.white": "Blanc",
+  "activities.chess.color.black": "Noir",
+  "activities.chess.color.red": "Rouge",
+  "activities.chess.color.xiangqi": "échecs chinois",
+  "chess.summary.unknown": "Inconnu"
 }

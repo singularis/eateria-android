@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -183,13 +185,16 @@ fun TypeFoodSheet(
 
 @Composable
 fun CaloriesLeftSheet(
+    caloriesTotal: Int,
+    eatenToday: Int,
     caloriesLeft: Int,
-    softLimit: Int,
+    tone: Color = AppTheme.textPrimary(),
     onDismiss: () -> Unit,
     onCalculateLimits: () -> Unit = {},
     onSetLimits: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val kcal = Localization.tr(context, "units.kcal", "kcal")
     AppSheet(onDismiss = onDismiss) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = Dimensions.paddingL),
@@ -197,24 +202,26 @@ fun CaloriesLeftSheet(
             verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
         ) {
             Text(
-                text = "$caloriesLeft",
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (caloriesLeft < 0) AppTheme.danger() else AppTheme.textPrimary(),
-                maxLines = 1,
-            )
-            Text(
                 text = Localization.tr(context, "calories.left.title", "Calories left"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = AppTheme.textPrimary(),
             )
-            Text(
-                text = Localization.tr(context, "calories.left.msg", "This number is how many calories you have left today.") +
-                    " ($softLimit ${Localization.tr(context, "units.kcal", "kcal")})",
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppTheme.textSecondary(),
-                textAlign = TextAlign.Center,
+            CalorieSheetLine(
+                label = Localization.tr(context, "calories.sheet.limit", "Limit"),
+                value = caloriesTotal,
+                kcal = kcal,
+            )
+            CalorieSheetLine(
+                label = Localization.tr(context, "calories.sheet.eaten", "Eaten today"),
+                value = eatenToday,
+                kcal = kcal,
+            )
+            CalorieSheetLine(
+                label = Localization.tr(context, "calories.sheet.left", "Left"),
+                value = caloriesLeft,
+                kcal = kcal,
+                valueColor = tone,
             )
             PrimaryButton(
                 onClick = {
@@ -243,6 +250,32 @@ fun CaloriesLeftSheet(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun CalorieSheetLine(
+    label: String,
+    value: Int,
+    kcal: String,
+    valueColor: Color = AppTheme.textPrimary(),
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = AppTheme.textSecondary(),
+        )
+        Text(
+            text = "$value $kcal",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = valueColor,
+        )
     }
 }
 

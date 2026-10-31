@@ -512,7 +512,7 @@
   "nickname.label": "Apelido (1-50 caracteres, letras minúsculas latinas a-z, 0-9)",
   "nickname.latin_lowercase_error": "Apenas letras minúsculas latinas e dígitos (a-z, 0-9)",
   "nickname.length_error": "Apelido deve ter 50 caracteres ou menos",
-  "nickname.placeholder": "Insira seu apelido",
+  "nickname.placeholder": "Comedor saudável",
   "nickname.save": "Salvar Apelido",
   "nickname.success": "Seu apelido foi atualizado com sucesso!",
   "nickname.taken_error": "Este apelido já está em uso",
@@ -683,7 +683,7 @@
   "profile.appearance": "Aparência",
   "profile.dailycalorie": "Meta Diária de Calorias:",
   "profile.datamode": "Modo de Dados",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Comedor saudável",
   "profile.delete": "Excluir Conta",
   "profile.dev_environment": "Ambiente do Servidor",
   "profile.edit_description": "Adicione uma foto e o seu nome se quiser. O apelido continua para os amigos.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Falha ao registrar seu peso. Tente novamente.",
   "weight.recorded.msg": "Seu peso foi registrado com sucesso.",
   "weight.recorded.title": "Peso registrado",
-  "weight.take_photo": "Fotografar a balança"
+  "weight.take_photo": "Fotografar a balança",
+  "activities.chess.color.white": "Branco",
+  "activities.chess.color.black": "Preto",
+  "activities.chess.color.red": "Vermelho",
+  "activities.chess.color.xiangqi": "xadrez chinês",
+  "chess.summary.unknown": "Desconhecido"
 }

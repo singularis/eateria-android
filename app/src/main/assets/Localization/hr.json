@@ -512,7 +512,7 @@
   "nickname.label": "Nadimak (1-50 znakova, latinična mala slova a-z, 0-9)",
   "nickname.latin_lowercase_error": "Samo latinična mala slova i brojevi (a-z, 0-9)",
   "nickname.length_error": "Nadimak mora imati najviše 50 znakova",
-  "nickname.placeholder": "Unesite nadimak",
+  "nickname.placeholder": "Zdravi jedač",
   "nickname.save": "Spremi nadimak",
   "nickname.success": "Vaš nadimak je uspješno ažuriran!",
   "nickname.taken_error": "Ovaj nadimak je već zauzet",
@@ -683,7 +683,7 @@
   "profile.appearance": "Izgled",
   "profile.dailycalorie": "Dnevni cilj kalorija:",
   "profile.datamode": "Način prikaza podataka",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Zdravi jedač",
   "profile.delete": "Izbriši račun",
   "profile.dev_environment": "Razvojno okruženje",
   "profile.edit_description": "Dodajte fotografiju i ime ako želite. Nadimak se i dalje koristi za prijatelje.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Zabilježavanje težine nije uspjelo. Pokušajte ponovno.",
   "weight.recorded.msg": "Vaša težina je uspješno zabilježena.",
   "weight.recorded.title": "Težina zabilježena",
-  "weight.take_photo": "Fotografiraj vagu"
+  "weight.take_photo": "Fotografiraj vagu",
+  "activities.chess.color.white": "Bijelo",
+  "activities.chess.color.black": "Crno",
+  "activities.chess.color.red": "Crveno",
+  "activities.chess.color.xiangqi": "kineski šah",
+  "chess.summary.unknown": "Nepoznato"
 }

@@ -512,7 +512,7 @@
   "nickname.label": "Prezývka (1-50 znakov)",
   "nickname.latin_lowercase_error": "Iba malé latinské písmená a číslice (a-z, 0-9)",
   "nickname.length_error": "Max 50 znakov",
-  "nickname.placeholder": "Zadajte prezývku",
+  "nickname.placeholder": "Zdravý jedák",
   "nickname.save": "Uložiť",
   "nickname.success": "Úspešne aktualizované!",
   "nickname.taken_error": "Táto prezývka je už obsadená",
@@ -683,7 +683,7 @@
   "profile.appearance": "Vzhľad",
   "profile.dailycalorie": "Denný cieľ kalórií:",
   "profile.datamode": "Režim údajov",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Zdravý jedák",
   "profile.delete": "Vymazať účet",
   "profile.dev_environment": "Serverové prostredie",
   "profile.edit_description": "Pridajte fotku a meno, ak chcete. Prezývka sa ďalej používa pre priateľov.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Záznam hmotnosti zlyhal. Skúste znova.",
   "weight.recorded.msg": "Vaša hmotnosť bola úspešne zaznamenaná.",
   "weight.recorded.title": "Hmotnosť zaznamenaná",
-  "weight.take_photo": "Odfotiť váhu"
+  "weight.take_photo": "Odfotiť váhu",
+  "activities.chess.color.white": "Biela",
+  "activities.chess.color.black": "Čierna",
+  "activities.chess.color.red": "Červená",
+  "activities.chess.color.xiangqi": "Siang-čchi",
+  "chess.summary.unknown": "Neznáme"
 }

@@ -36,6 +36,8 @@ import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.ImageStorageService
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.AppTheme
+import com.singularis.eateria.ui.theme.PrimaryButton
+import com.singularis.eateria.ui.theme.SecondaryButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -339,34 +341,30 @@ fun ShareFoodView(
     }
 
     showShareConfirmation?.let { msg ->
-        AlertDialog(
-            onDismissRequest = { showShareConfirmation = null },
-            title = { Text(Localization.tr(context, "share.success.title", "Shared"), color = AppTheme.textPrimary()) },
-            text = { Text(msg, color = AppTheme.textSecondary()) },
-            confirmButton = {
-                TextButton(onClick = {
+        AppNotice(
+            title = Localization.tr(context, "share.success.title", "Shared"),
+            message = msg,
+            actions = listOf(
+                AppNoticeAction(Localization.tr(context, "common.ok", "OK")) {
                     HapticsService.getInstance().success()
-                    showShareConfirmation = null
                     onShareSuccess()
                     onDismiss()
-                }) { Text(Localization.tr(context, "common.ok", "OK")) }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
+                },
+            ),
+            onDismiss = { showShareConfirmation = null },
         )
     }
 
     showShareError?.let { msg ->
-        AlertDialog(
-            onDismissRequest = { showShareError = null },
-            title = { Text(Localization.tr(context, "share.fail.title", "Share failed"), color = AppTheme.textPrimary()) },
-            text = { Text(msg, color = AppTheme.textSecondary()) },
-            confirmButton = {
-                TextButton(onClick = {
+        AppNotice(
+            title = Localization.tr(context, "share.fail.title", "Share failed"),
+            message = msg,
+            actions = listOf(
+                AppNoticeAction(Localization.tr(context, "common.ok", "OK")) {
                     HapticsService.getInstance().error()
-                    showShareError = null
-                }) { Text(Localization.tr(context, "common.ok", "OK")) }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
+                },
+            ),
+            onDismiss = { showShareError = null },
         )
     }
 }
@@ -433,92 +431,74 @@ private fun PortionChooserDialog(
     var customPercentage by remember { mutableStateOf("") }
     
     if (showCustom) {
-        AlertDialog(
-            onDismissRequest = { showCustom = false },
-            title = { Text(Localization.tr(context, "share.portion.custom.title", "Custom percentage"), color = AppTheme.textPrimary()) },
-            text = {
+        AppSheet(onDismiss = { showCustom = false }) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(
+                    Localization.tr(context, "share.portion.custom.title", "Custom percentage"),
+                    color = AppTheme.textPrimary(),
+                    style = MaterialTheme.typography.titleLarge,
+                )
                 OutlinedTextField(
                     value = customPercentage,
                     onValueChange = { customPercentage = it },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     placeholder = { Text(Localization.tr(context, "share.portion.custom.placeholder", "e.g. 40")) },
-                    singleLine = true
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
                 )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val value = customPercentage.toIntOrNull()
-                    // Backend: 1–99 split, 100 = same-amount copy.
-                    if (value != null && value in 1..100) {
-                        onSelect(value)
-                        showCustom = false
-                    }
-                }) { Text(Localization.tr(context, "common.ok", "OK")) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCustom = false }) { Text(Localization.tr(context, "common.cancel", "Cancel")) }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-        )
+                PrimaryButton(
+                    onClick = {
+                        val value = customPercentage.toIntOrNull()
+                        if (value != null && value in 1..100) {
+                            onSelect(value)
+                            showCustom = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(Localization.tr(context, "common.ok", "OK"), color = Color.White)
+                }
+                SecondaryButton(
+                    onClick = { showCustom = false },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(Localization.tr(context, "common.cancel", "Cancel"), color = AppTheme.textPrimary())
+                }
+            }
+        }
     } else {
         val options = listOf(25, 50, 75)
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(Localization.tr(context, "share.portion.question", "How much did your friend eat?"), color = AppTheme.textPrimary()) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    options.forEach { p ->
-                        Button(
-                            onClick = { 
-                                HapticsService.getInstance().select()
-                                onSelect(p) 
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = Color.White,
-                            ),
-                        ) {
-                            Text(text = "$p%")
-                        }
-                    }
-                    // "Same amount" = 100%, called out in green since it's the most common choice
-                    Button(
-                        onClick = {
-                            HapticsService.getInstance().select()
-                            onSelect(100)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AppTheme.success(),
-                            contentColor = Color.White,
-                        ),
-                    ) {
-                        Text(text = Localization.tr(context, "share.portion.same_amount", "Same amount"))
-                    }
-                    Button(
-                        onClick = { 
-                            HapticsService.getInstance().select()
-                            showCustom = true 
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = AppTheme.textPrimary(),
-                        ),
-                    ) {
-                        Text(text = Localization.tr(context, "share.portion.custom.button", "Custom..."))
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = { 
-                TextButton(onClick = { 
+        AppNotice(
+            title = Localization.tr(context, "share.portion.question", "How much did your friend eat?"),
+            message = "",
+            actions = options.map { p ->
+                AppNoticeAction("$p%") {
                     HapticsService.getInstance().select()
-                    onDismiss() 
-                }) { Text(Localization.tr(context, "common.cancel", "Cancel")) } 
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
+                    onSelect(p)
+                }
+            } + listOf(
+                AppNoticeAction(Localization.tr(context, "share.portion.same_amount", "Same amount")) {
+                    HapticsService.getInstance().select()
+                    onSelect(100)
+                },
+                AppNoticeAction(
+                    Localization.tr(context, "share.portion.custom.button", "Custom..."),
+                    AppNoticeKind.SECONDARY,
+                ) {
+                    HapticsService.getInstance().select()
+                    showCustom = true
+                },
+                AppNoticeAction(
+                    Localization.tr(context, "common.cancel", "Cancel"),
+                    AppNoticeKind.SECONDARY,
+                ) {
+                    HapticsService.getInstance().select()
+                },
+            ),
+            onDismiss = onDismiss,
         )
     }
 }

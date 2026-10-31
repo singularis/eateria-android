@@ -512,7 +512,7 @@
   "nickname.label": "ডাকনাম (১-৫০ অক্ষর, ল্যাটিন ছোট হাতের a-z, 0-9)",
   "nickname.latin_lowercase_error": "শুধুমাত্র ল্যাটিন ছোট হাতের অক্ষর এবং সংখ্যা (a-z, 0-9)",
   "nickname.length_error": "ডাকনাম ৫০ অক্ষরের কম হতে হবে",
-  "nickname.placeholder": "আপনার ডাকনাম লিখুন",
+  "nickname.placeholder": "স্বাস্থ্যকর ভোজনকারী",
   "nickname.save": "ডাকনাম সংরক্ষণ করুন",
   "nickname.success": "আপনার ডাকনাম সফলভাবে আপডেট করা হয়েছে!",
   "nickname.taken_error": "এই ডাকনামটি ইতিমধ্যে নেওয়া হয়েছে",
@@ -683,7 +683,7 @@
   "profile.appearance": "চেহারা",
   "profile.dailycalorie": "দৈনিক ক্যালোরি লক্ষ্য:",
   "profile.datamode": "ডেটা মোড",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "স্বাস্থ্যকর ভোজনকারী",
   "profile.delete": "অ্যাকাউন্ট মুছুন",
   "profile.dev_environment": "সার্ভার পরিবেশ",
   "profile.edit_description": "চাইলে ছবি ও নাম যোগ করুন। বন্ধুদের জন্য ডাকনামই থাকবে।",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "ওজন রেকর্ড করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
   "weight.recorded.msg": "আপনার ওজন সফলভাবে রেকর্ড করা হয়েছে।",
   "weight.recorded.title": "ওজন রেকর্ড হয়েছে",
-  "weight.take_photo": "ওজন মেশিনের ছবি তুলুন"
+  "weight.take_photo": "ওজন মেশিনের ছবি তুলুন",
+  "activities.chess.color.white": "সাদা",
+  "activities.chess.color.black": "কালো",
+  "activities.chess.color.red": "লাল",
+  "activities.chess.color.xiangqi": "জিয়াংচি",
+  "chess.summary.unknown": "অজানা"
 }

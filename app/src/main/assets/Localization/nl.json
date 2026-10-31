@@ -512,7 +512,7 @@
   "nickname.label": "Bijnaam (1-50 tekens)",
   "nickname.latin_lowercase_error": "Alleen Latijnse kleine letters en cijfers (a-z, 0-9)",
   "nickname.length_error": "Max 50 tekens",
-  "nickname.placeholder": "Voer bijnaam in",
+  "nickname.placeholder": "Gezonde eter",
   "nickname.save": "Opslaan",
   "nickname.success": "Succesvol bijgewerkt!",
   "nickname.taken_error": "Deze bijnaam is al in gebruik",
@@ -683,7 +683,7 @@
   "profile.appearance": "Uiterlijk",
   "profile.dailycalorie": "Dagelijks Caloriedoel:",
   "profile.datamode": "Gegevensmodus",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Gezonde eter",
   "profile.delete": "Account Verwijderen",
   "profile.dev_environment": "Serveromgeving",
   "profile.edit_description": "Voeg een foto en je naam toe als je wilt. De bijnaam blijft voor vrienden.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Het vastleggen van uw gewicht is mislukt. Probeer het opnieuw.",
   "weight.recorded.msg": "Uw gewicht is succesvol vastgelegd.",
   "weight.recorded.title": "Gewicht vastgelegd",
-  "weight.take_photo": "Weegschaal fotograferen"
+  "weight.take_photo": "Weegschaal fotograferen",
+  "activities.chess.color.white": "Wit",
+  "activities.chess.color.black": "Zwart",
+  "activities.chess.color.red": "Rood",
+  "activities.chess.color.xiangqi": "Chinees schaken",
+  "chess.summary.unknown": "Onbekend"
 }

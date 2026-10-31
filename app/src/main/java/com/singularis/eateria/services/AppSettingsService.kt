@@ -42,6 +42,13 @@ class AppSettingsService private constructor(context: Context) {
             _reduceMotionFlow.value = value
         }
 
+    /** Phone buzz. On by default, same as iOS food_vibration_enabled. */
+    var vibrationEnabled: Boolean
+        get() = prefs.getBoolean(KEY_VIBRATION, true)
+        set(value) {
+            prefs.edit().putBoolean(KEY_VIBRATION, value).apply()
+        }
+
     private val _fontScaleFlow = MutableStateFlow(loadFontScale())
     val fontScaleFlow: StateFlow<Float> = _fontScaleFlow.asStateFlow()
 
@@ -118,6 +125,7 @@ class AppSettingsService private constructor(context: Context) {
         private const val PREFS_NAME = "app_settings"
         private const val KEY_APPEARANCE_MODE = "app_appearance_mode"
         private const val KEY_REDUCE_MOTION = "app_reduce_motion"
+        private const val KEY_VIBRATION = "food_vibration_enabled"
         private const val KEY_FONT_SCALE = "app_dish_card_scale_v4"
         const val FONT_SCALE_MIN = 0.80f
         const val FONT_SCALE_MAX = 1.60f
@@ -140,7 +148,9 @@ class AppSettingsService private constructor(context: Context) {
             screenWidthDp: Int,
         ): Float {
             val chosen = if (followsSystem) systemFontScale else stored
-            return chosen.coerceIn(FONT_SCALE_MIN, maxScaleFor(screenWidthDp))
+            // 160% is always allowed. Narrow phones shrink the home row instead of
+            // capping the slider, same as the iOS extra-large setting.
+            return chosen.coerceIn(FONT_SCALE_MIN, FONT_SCALE_MAX)
         }
 
         @Volatile

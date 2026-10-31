@@ -512,7 +512,7 @@
   "nickname.label": "Soprannome (1-50 caratteri, lettere minuscole latine a-z, 0-9)",
   "nickname.latin_lowercase_error": "Solo lettere minuscole latine e cifre (a-z, 0-9)",
   "nickname.length_error": "Il soprannome deve essere di 50 caratteri o meno",
-  "nickname.placeholder": "Inserisci il tuo soprannome",
+  "nickname.placeholder": "Mangiatore sano",
   "nickname.save": "Salva Soprannome",
   "nickname.success": "Il tuo soprannome è stato aggiornato con successo!",
   "nickname.taken_error": "Questo soprannome è già stato preso",
@@ -683,7 +683,7 @@
   "profile.appearance": "Aspetto",
   "profile.dailycalorie": "Obiettivo Calorico Giornaliero:",
   "profile.datamode": "Modalità Dati",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Mangiatore sano",
   "profile.delete": "Elimina Account",
   "profile.dev_environment": "Ambiente Server",
   "profile.edit_description": "Aggiungi una foto e il tuo nome se vuoi. Il nickname resta per gli amici.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Registrazione del peso non riuscita. Riprova.",
   "weight.recorded.msg": "Il tuo peso è stato registrato con successo.",
   "weight.recorded.title": "Peso Registrato",
-  "weight.take_photo": "Fotografa la bilancia"
+  "weight.take_photo": "Fotografa la bilancia",
+  "activities.chess.color.white": "Bianco",
+  "activities.chess.color.black": "Nero",
+  "activities.chess.color.red": "Rosso",
+  "activities.chess.color.xiangqi": "scacchi cinesi",
+  "chess.summary.unknown": "Sconosciuto"
 }

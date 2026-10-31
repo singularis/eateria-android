@@ -265,44 +265,23 @@ fun AddFriendsView(
 
     // Confirmation popup after adding friend
     showSuccess?.let { msg ->
-        AlertDialog(
-            onDismissRequest = {
+        AppNotice(
+            title = Localization.tr(LocalContext.current, "friends.add.success.title", "You have a new friend!"),
+            message = msg,
+            actions = listOf(AppNoticeAction(Localization.tr(LocalContext.current, "common.ok", "OK")) {}),
+            onDismiss = {
                 showSuccess = null
                 onDismiss()
             },
-            title = {
-                Text(
-                    Localization.tr(LocalContext.current, "friends.add.success.title", "You have a new friend!"),
-                    color = Color.White,
-                )
-            },
-            text = { Text(msg, color = Color.Gray) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showSuccess = null
-                    onDismiss()
-                }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
-            },
-            containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
         )
     }
 
     showBlocked?.let { msg ->
-        AlertDialog(
-            onDismissRequest = { showBlocked = null },
-            title = {
-                Text(
-                    Localization.tr(LocalContext.current, "friends.add", "Add Friend"),
-                    color = Color.White,
-                )
-            },
-            text = { Text(msg, color = Color.Gray) },
-            confirmButton = {
-                TextButton(onClick = { showBlocked = null }) {
-                    Text(Localization.tr(LocalContext.current, "common.ok", "OK"))
-                }
-            },
-            containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
+        AppNotice(
+            title = Localization.tr(LocalContext.current, "friends.add", "Add Friend"),
+            message = msg,
+            actions = listOf(AppNoticeAction(Localization.tr(LocalContext.current, "common.ok", "OK")) {}),
+            onDismiss = { showBlocked = null },
         )
     }
 }

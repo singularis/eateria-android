@@ -251,62 +251,23 @@ fun FeedbackView(
         }
 
         if (showSuccessDialog) {
-            AlertDialog(
-                onDismissRequest = {
+            AppNotice(
+                title = Localization.tr(context, "common.done", "Done"),
+                message = Localization.tr(context, "feedback.success", "Thank you for your feedback! We appreciate your input and will use it to improve the app."),
+                actions = listOf(AppNoticeAction(Localization.tr(context, "common.ok", "OK")) {}),
+                onDismiss = {
                     showSuccessDialog = false
                     onBackClick()
                 },
-                title = {
-                    Text(
-                        text = Localization.tr(context, "common.done", "Done"),
-                        color = AppTheme.textPrimary(),
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                text = {
-                    Text(
-                        text = Localization.tr(context, "feedback.success", "Thank you for your feedback! We appreciate your input and will use it to improve the app."),
-                        color = AppTheme.textSecondary(),
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showSuccessDialog = false
-                            onBackClick()
-                        },
-                    ) {
-                        Text(Localization.tr(context, "common.ok", "OK"), color = AppTheme.accent())
-                    }
-                },
-                containerColor = AppTheme.surface(),
             )
         }
 
         if (showErrorDialog) {
-            AlertDialog(
-                onDismissRequest = { showErrorDialog = false },
-                title = {
-                    Text(
-                        text = Localization.tr(context, "common.error", "Error"),
-                        color = AppTheme.textPrimary(),
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                text = {
-                    Text(
-                        text = errorMessage,
-                        color = AppTheme.textSecondary(),
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = { showErrorDialog = false },
-                    ) {
-                        Text(Localization.tr(context, "common.ok", "OK"), color = AppTheme.accent())
-                    }
-                },
-                containerColor = AppTheme.surface(),
+            AppNotice(
+                title = Localization.tr(context, "common.error", "Error"),
+                message = errorMessage,
+                actions = listOf(AppNoticeAction(Localization.tr(context, "common.ok", "OK")) {}),
+                onDismiss = { showErrorDialog = false },
             )
         }
     }

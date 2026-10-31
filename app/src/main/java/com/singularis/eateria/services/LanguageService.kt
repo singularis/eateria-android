@@ -18,6 +18,7 @@ object LanguageService {
     private val representativeCountry: Map<String, String> =
         mapOf(
             "en" to "GB",
+            "en-us" to "US",
             "es" to "ES",
             "fr" to "FR",
             "de" to "DE",
@@ -261,6 +262,7 @@ object LanguageService {
             "de" to "Rat",
             "el" to "Συμβ",
             "en" to "Advice",
+            "en-us" to "Advice",
             "es" to "Cons",
             "et" to "Nõu",
             "fi" to "Neuvo",

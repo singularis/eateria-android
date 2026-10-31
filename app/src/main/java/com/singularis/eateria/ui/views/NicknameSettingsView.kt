@@ -216,7 +216,7 @@ fun NicknameSettingsView(
                                 errorMessage = "" 
                             },
                             placeholder = {
-                                Text(Localization.tr(context, "nickname.placeholder", "Enter your nickname"))
+                                Text(Localization.tr(context, "nickname.placeholder", "Healthy Eater"))
                             },
                             singleLine = true,
                             enabled = !isLoading,

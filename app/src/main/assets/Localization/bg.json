@@ -512,7 +512,7 @@
   "nickname.label": "Псевдоним (1-50 знака, латински малки букви a-z, 0-9)",
   "nickname.latin_lowercase_error": "Само латински малки букви и цифри (a-z, 0-9)",
   "nickname.length_error": "Псевдонимът трябва да е до 50 знака",
-  "nickname.placeholder": "Въведете псевдоним",
+  "nickname.placeholder": "Здрав ядящ",
   "nickname.save": "Запазване на псевдоним",
   "nickname.success": "Псевдонимът бе актуализиран успешно!",
   "nickname.taken_error": "Този прякор вече е зает",
@@ -683,7 +683,7 @@
   "profile.appearance": "Външен вид",
   "profile.dailycalorie": "Дневна Цел за Калории:",
   "profile.datamode": "Режим на Данни",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Здрав ядящ",
   "profile.delete": "Изтрий Акаунт",
   "profile.dev_environment": "Сървърна среда",
   "profile.edit_description": "Добавете снимка и име, ако искате. Псевдонимът остава за приятели.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Неуспешен запис на тегло. Опитайте отново.",
   "weight.recorded.msg": "Теглото ви е записано успешно.",
   "weight.recorded.title": "Теглото е записано",
-  "weight.take_photo": "Снимай кантар"
+  "weight.take_photo": "Снимай кантар",
+  "activities.chess.color.white": "Бяло",
+  "activities.chess.color.black": "Черно",
+  "activities.chess.color.red": "Червено",
+  "activities.chess.color.xiangqi": "Сянчи",
+  "chess.summary.unknown": "Неизвестно"
 }

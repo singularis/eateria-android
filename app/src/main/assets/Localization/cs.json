@@ -512,7 +512,7 @@
   "nickname.label": "Přezdívka (1-50 znaků, latinská malá písmena a-z, 0-9)",
   "nickname.latin_lowercase_error": "Pouze latinská malá písmena a číslice (a-z, 0-9)",
   "nickname.length_error": "Přezdívka musí mít 50 znaků nebo méně",
-  "nickname.placeholder": "Zadejte svou přezdívku",
+  "nickname.placeholder": "Zdravý jedlík",
   "nickname.save": "Uložit přezdívku",
   "nickname.success": "Vaše přezdívka byla úspěšně aktualizována!",
   "nickname.taken_error": "Tato přezdívka je již obsazena",
@@ -683,7 +683,7 @@
   "profile.appearance": "Vzhled",
   "profile.dailycalorie": "Denní cíl kalorií:",
   "profile.datamode": "Režim dat",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Zdravý jedlík",
   "profile.delete": "Smazat účet",
   "profile.dev_environment": "Serverové prostředí",
   "profile.edit_description": "Přidejte fotku a jméno, pokud chcete. Přezdívka se dál používá pro přátele.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Záznam hmotnosti selhal. Zkuste to znovu.",
   "weight.recorded.msg": "Vaše hmotnost byla úspěšně zaznamenána.",
   "weight.recorded.title": "Hmotnost zaznamenána",
-  "weight.take_photo": "Vyfotit váhu"
+  "weight.take_photo": "Vyfotit váhu",
+  "activities.chess.color.white": "Bílá",
+  "activities.chess.color.black": "Černá",
+  "activities.chess.color.red": "Červená",
+  "activities.chess.color.xiangqi": "Siang-čchi",
+  "chess.summary.unknown": "Neznámé"
 }

@@ -512,7 +512,7 @@
   "nickname.label": "Pseudonim (1-50 znaków, małe litery łacińskie a-z, 0-9)",
   "nickname.latin_lowercase_error": "Tylko małe litery łacińskie i cyfry (a-z, 0-9)",
   "nickname.length_error": "Max 50 znaków",
-  "nickname.placeholder": "Wpisz pseudonim",
+  "nickname.placeholder": "Zdrowy jedzący",
   "nickname.save": "Zapisz",
   "nickname.success": "Zaktualizowano!",
   "nickname.taken_error": "Ten pseudonim jest już zajęty",
@@ -683,7 +683,7 @@
   "profile.appearance": "Wygląd",
   "profile.dailycalorie": "Dzienny Cel Kalorii:",
   "profile.datamode": "Tryb Danych",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Zdrowy jedzący",
   "profile.delete": "Usuń Konto",
   "profile.dev_environment": "Środowisko Serwera",
   "profile.edit_description": "Dodaj zdjęcie i imię, jeśli chcesz. Pseudonim nadal służy do znajomych.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Nie udało się zapisać wagi. Spróbuj ponownie.",
   "weight.recorded.msg": "Twoja waga została pomyślnie zapisana.",
   "weight.recorded.title": "Waga zapisana",
-  "weight.take_photo": "Zrób zdjęcie wagi"
+  "weight.take_photo": "Zrób zdjęcie wagi",
+  "activities.chess.color.white": "Białe",
+  "activities.chess.color.black": "Czarne",
+  "activities.chess.color.red": "Czerwone",
+  "activities.chess.color.xiangqi": "szachy chińskie",
+  "chess.summary.unknown": "Nieznane"
 }

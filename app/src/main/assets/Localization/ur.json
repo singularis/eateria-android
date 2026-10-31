@@ -512,7 +512,7 @@
   "nickname.label": "عرفی نام (1-50 حروف، لاطینی چھوٹے حروف a-z، 0-9)",
   "nickname.latin_lowercase_error": "صرف لاطینی چھوٹے حروف اور اعداد (a-z، 0-9)",
   "nickname.length_error": "عرفی نام زیادہ سے زیادہ 50 حروف کا ہونا چاہیے",
-  "nickname.placeholder": "اپنا عرفی نام درج کریں",
+  "nickname.placeholder": "صحت مند کھانے والا",
   "nickname.save": "عرفی نام محفوظ کریں",
   "nickname.success": "آپ کا عرفی نام کامیابی سے اپ ڈیٹ ہو گیا!",
   "nickname.taken_error": "یہ عرفی نام پہلے سے لیا جا چکا ہے",
@@ -683,7 +683,7 @@
   "profile.appearance": "ظہور",
   "profile.dailycalorie": "روزانہ کیلوری کا ہدف:",
   "profile.datamode": "ڈیٹا موڈ",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "صحت مند کھانے والا",
   "profile.delete": "اکاؤنٹ ڈیلیٹ کریں",
   "profile.dev_environment": "سرور ماحول",
   "profile.edit_description": "چاہیں تو تصویر اور نام شامل کریں۔ دوستوں کے لیے عرفی نام ہی رہے گا۔",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "وزن ریکارڈ کرنے میں ناکامی۔ دوبارہ کوشش کریں۔",
   "weight.recorded.msg": "آپ کا وزن کامیابی سے ریکارڈ ہو گیا۔",
   "weight.recorded.title": "وزن ریکارڈ ہو گیا",
-  "weight.take_photo": "اسکیل کی تصویر لیں"
+  "weight.take_photo": "اسکیل کی تصویر لیں",
+  "activities.chess.color.white": "سفید",
+  "activities.chess.color.black": "سیاہ",
+  "activities.chess.color.red": "سرخ",
+  "activities.chess.color.xiangqi": "شیانگ چی",
+  "chess.summary.unknown": "نامعلوم"
 }

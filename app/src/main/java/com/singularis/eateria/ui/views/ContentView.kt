@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +57,8 @@ import com.singularis.eateria.services.LanguageService
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.ui.theme.AppTheme
 import com.singularis.eateria.ui.theme.Dimensions
+import com.singularis.eateria.ui.theme.PrimaryButton
+import com.singularis.eateria.ui.theme.SecondaryButton
 import com.singularis.eateria.viewmodels.AuthViewModel
 import com.singularis.eateria.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
@@ -73,6 +74,9 @@ fun ContentView(
     val currentLanguage by LanguageService.languageFlow(context).collectAsState(initial = LanguageService.getCurrentCode(context))
     val products by viewModel.products.collectAsState()
     val caloriesLeft by viewModel.caloriesLeft.collectAsState()
+    val caloriesTotal by viewModel.caloriesTotal.collectAsState()
+    val serverEaten by viewModel.serverEaten.collectAsState()
+    val serverCaloriesLeft by viewModel.serverCaloriesLeft.collectAsState()
     val personWeight by viewModel.personWeight.collectAsState()
     val softLimit by viewModel.softLimit.collectAsState()
     val customProteinGoal by viewModel.customProteinGoal.collectAsState()
@@ -128,7 +132,8 @@ fun ContentView(
     var showTypeFood by remember { mutableStateOf(false) }
     var showFoodCamera by remember { mutableStateOf(false) }
     var showCaloriesSheet by remember { mutableStateOf(false) }
-    var showCameraTutorial by remember { mutableStateOf(false) }
+    var introKey by remember { mutableStateOf<String?>(null) }
+    var introAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val pendingMeal by com.singularis.eateria.navigation.AppNavigation.pendingMeal.collectAsState()
     val shellSignIn by com.singularis.eateria.navigation.AppNavigation.showSignIn.collectAsState()
     var showWeightCamera by remember { mutableStateOf(false) }
@@ -143,24 +148,26 @@ fun ContentView(
     var uploadOpenRequest by remember { mutableStateOf(0) }
     val shellCamera by com.singularis.eateria.navigation.AppNavigation.cameraRequest.collectAsState()
     val shellUpload by com.singularis.eateria.navigation.AppNavigation.uploadRequest.collectAsState()
-    // First camera open shows the camera tip, then opens the camera (iOS checkTutorial).
-    var openCameraAfterTutorial by remember { mutableStateOf(false) }
+    // First tap of a control explains that screen, then does the action.
     val tutorialPrefs = remember { context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE) }
-    fun requestCamera() {
-        if (!tutorialPrefs.getBoolean("hasSeenCameraTutorial", false)) {
-            openCameraAfterTutorial = true
-            showCameraTutorial = true
+    fun introduce(key: String, force: Boolean = false, action: () -> Unit) {
+        if (!force && tutorialPrefs.getBoolean(key, false)) {
+            action()
         } else {
-            cameraOpenRequest++
+            introAction = if (force) null else action
+            introKey = key
         }
     }
-    fun finishCameraTutorial() {
-        tutorialPrefs.edit().putBoolean("hasSeenCameraTutorial", true).apply()
-        showCameraTutorial = false
-        if (openCameraAfterTutorial) {
-            openCameraAfterTutorial = false
-            cameraOpenRequest++
-        }
+    fun finishIntro() {
+        val key = introKey
+        val action = introAction
+        if (key != null) tutorialPrefs.edit().putBoolean(key, true).apply()
+        introKey = null
+        introAction = null
+        action?.invoke()
+    }
+    fun requestCamera() {
+        introduce("hasSeenCameraTutorial") { cameraOpenRequest++ }
     }
     LaunchedEffect(shellCamera) {
         if (shellCamera > 0) {
@@ -257,19 +264,19 @@ fun ContentView(
                     userProfilePictureURL = userProfilePictureURL,
                     onDateClick = {
                         if (!isLoadingData) {
-                            viewModel.showCalendarPicker()
+                            introduce("hasSeenCalendarTutorial") { viewModel.showCalendarPicker() }
                         }
                     },
                     onProfileClick = { viewModel.showUserProfile() },
-                    onHealthInfoClick = { showDailyHealthScoreInfo = true },
-                    onSportClick = { viewModel.showActivitiesView() },
+                    onHealthInfoClick = { introduce("hasSeenHealthScoreTutorial") { showDailyHealthScoreInfo = true } },
+                    onSportClick = { introduce("hasSeenSportTutorial") { viewModel.showActivitiesView() } },
                     onReturnToTodayClick = { viewModel.returnToToday() },
                     alcoholIconColor = alcoholIconColor,
                     sportIconColor = sportIconColor,
                     healthScore = averageHealthScore ?: 0,
                     healthColor = healthScoreColor,
                     hasFoods = products.isNotEmpty(),
-                    onAlcoholClick = { viewModel.showAlcoholCalendar() },
+                    onAlcoholClick = { introduce("hasSeenAlcoholTutorial") { viewModel.showAlcoholCalendar() } },
                 )
 
                 Spacer(modifier = Modifier.height(Dimensions.paddingS))
@@ -283,9 +290,9 @@ fun ContentView(
                     personWeight = personWeight,
                     caloriesLeft = caloriesLeft,
                     isLoadingWeightPhoto = isLoadingWeightPhoto,
-                    onWeightClick = { viewModel.showWeightActionSheet() },
-                    onCaloriesClick = { showCaloriesSheet = true },
-                    onTypeFoodClick = { showTypeFood = true },
+                    onWeightClick = { introduce("hasSeenWeightTutorial") { viewModel.showWeightActionSheet() } },
+                    onCaloriesClick = { introduce("hasSeenCaloriesTutorial") { showCaloriesSheet = true } },
+                    onTypeFoodClick = { introduce("hasSeenTypeGuideTutorial") { showTypeFood = true } },
                     getColor = viewModel::getColor,
                 )
 
@@ -321,6 +328,7 @@ fun ContentView(
                             products = products,
                             isRefreshing = isPullRefreshing,
                             onRefresh = { viewModel.pullToRefresh() },
+                            onPhotoLoaded = viewModel::onFoodPhotoLoaded,
                             onDelete = { time -> viewModel.deleteProductWithLoading(time) },
                             onModify = { time, foodName, percentage ->
                                 userEmail?.let { email ->
@@ -386,7 +394,7 @@ fun ContentView(
                         java.util.Date()
                     },
                     onReturnToToday = { viewModel.returnToToday() },
-                    onRequestTutorial = { showCameraTutorial = true },
+                    onRequestTutorial = { introduce("hasSeenCameraTutorial", force = true) {} },
                     externalCameraRequest = cameraOpenRequest,
                     externalUploadRequest = uploadOpenRequest,
                     onCameraClick = {
@@ -499,61 +507,110 @@ fun ContentView(
             // Tapping the daily health score ring in the top bar explains what the
             // number is and how it's generated, instead of only opening the legal disclaimer.
             if (showDailyHealthScoreInfo) {
-                AlertDialog(
-                    onDismissRequest = { showDailyHealthScoreInfo = false },
-                    title = {
+                val explainStore = remember { com.singularis.eateria.services.FoodScoreExplainStore.getInstance(context) }
+                val explainDay = viewModel.scoreDayString()
+                val newestDish = newestMeal ?: 0L
+                var dayExplain by remember(explainDay, newestDish) { mutableStateOf("") }
+                var explainingDay by remember { mutableStateOf(false) }
+                LaunchedEffect(explainDay, newestDish, userEmail) {
+                    val entry = explainStore.dayEntry(userEmail.orEmpty(), explainDay)
+                    dayExplain = if (entry != null && entry.basisDishTime == newestDish) entry.text else ""
+                }
+                AppSheet(onDismiss = { showDailyHealthScoreInfo = false }) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
                         Text(
                             text = Localization.tr(context, "health.daily_score.title", "Daily Health Score"),
                             color = AppTheme.textPrimary(),
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge,
                         )
-                    },
-                    text = {
-                        Column {
-                            if (averageHealthScore != null) {
-                                Text(
-                                    text =
-                                        "${Localization.tr(context, "health.daily_score.subtitle", "Today's average score")}: $averageHealthScore/100",
-                                    color = healthScoreColor,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                Spacer(modifier = Modifier.height(Dimensions.paddingS))
-                            }
+                        if (averageHealthScore != null) {
                             Text(
                                 text =
-                                    Localization.tr(
-                                        context,
-                                        "health.daily_score.text",
-                                        "This is the average of today's food health scores (0-100), generated by analyzing each meal's ingredients, portions, and nutritional balance. Higher scores mean healthier eating overall.",
-                                    ),
-                                color = AppTheme.textSecondary(),
+                                    "${Localization.tr(context, "health.daily_score.subtitle", "Today's average score")}: $averageHealthScore/100",
+                                color = healthScoreColor,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
                             )
                         }
-                    },
-                    confirmButton = {
-                        TextButton(
+                        Text(
+                            text =
+                                Localization.tr(
+                                    context,
+                                    "health.score.weighs",
+                                    "This score weighs how much of each meal, not how many meals.",
+                                ),
+                            color = AppTheme.textSecondary(),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        if (explainingDay) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                Text(
+                                    Localization.tr(context, "health.score.explaining", "Explaining your food score"),
+                                    color = AppTheme.textSecondary(),
+                                )
+                            }
+                        }
+                        if (dayExplain.isNotEmpty()) {
+                            Text(dayExplain, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
+                        }
+                        PrimaryButton(
+                            onClick = {
+                                HapticsService.getInstance().select()
+                                val email = userEmail.orEmpty()
+                                val cached = explainStore.dayEntry(email, explainDay)
+                                if (cached != null && cached.basisDishTime == newestDish) {
+                                    dayExplain = cached.text
+                                    return@PrimaryButton
+                                }
+                                explainingDay = true
+                                dayExplain = ""
+                                scope.launch {
+                                    val result = com.singularis.eateria.services.GRPCService(context).explainFoodScore(
+                                        userName = email,
+                                        day = explainDay,
+                                        languageCode = com.singularis.eateria.services.LanguageService.getCurrentCode(context),
+                                        dishTime = 0L,
+                                    )
+                                    explainingDay = false
+                                    if (result != null && result.text.isNotBlank()) {
+                                        val basis = if (result.basisDishTime != 0L) result.basisDishTime else newestDish
+                                        explainStore.saveDay(email, explainDay, result.text, basis)
+                                        dayExplain = result.text
+                                    } else if (result != null) {
+                                        explainStore.saveDay(email, explainDay, "", newestDish)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !explainingDay,
+                        ) {
+                            Text(Localization.tr(context, "health.score.explain", "Explain"), color = Color.White)
+                        }
+                        SecondaryButton(
                             onClick = {
                                 HapticsService.getInstance().select()
                                 showDailyHealthScoreInfo = false
                             },
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(Localization.tr(context, "common.ok", "OK"), color = AppTheme.accent())
+                            Text(Localization.tr(context, "common.ok", "OK"), color = AppTheme.textPrimary())
                         }
-                    },
-                    dismissButton = {
-                        TextButton(
+                        SecondaryButton(
                             onClick = {
                                 HapticsService.getInstance().select()
                                 showDailyHealthScoreInfo = false
                                 viewModel.showHealthDisclaimer()
                             },
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(Localization.tr(context, "disc.nav", "Health Information"), color = AppTheme.textSecondary())
+                            Text(Localization.tr(context, "disc.nav", "Health Information"), color = AppTheme.textPrimary())
                         }
-                    },
-                    containerColor = AppTheme.surface(),
-                )
+                    }
+                }
             }
 
             if (showOnboarding) FullScreenOverlay(onDismiss = { if (hasSeenOnboarding) viewModel.hideOnboarding() }) {
@@ -632,51 +689,22 @@ fun ContentView(
                             "Fixing a food name needs an account. Sign in now? Your guest food log stays linked to you."
                     }
                 }
-                AlertDialog(
-                    onDismissRequest = { guestSignInPrompt = null },
-                    title = {
-                        Text(
-                            text = Localization.tr(context, titleKey, titleFallback),
-                            color = AppTheme.textPrimary(),
-                            fontWeight = FontWeight.Bold,
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = Localization.tr(context, messageKey, messageFallback),
-                            color = AppTheme.textSecondary(),
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                HapticsService.getInstance().select()
-                                guestSignInPrompt = null
-                                authViewModel.signOutForAccountUpgrade()
-                            },
+                AppNotice(
+                    title = Localization.tr(context, titleKey, titleFallback),
+                    message = Localization.tr(context, messageKey, messageFallback),
+                    actions = listOf(
+                        AppNoticeAction(Localization.tr(context, "login.prompt.confirm", "Login Now")) {
+                            HapticsService.getInstance().select()
+                            authViewModel.signOutForAccountUpgrade()
+                        },
+                        AppNoticeAction(
+                            Localization.tr(context, "common.not_yet", "Not Yet"),
+                            AppNoticeKind.SECONDARY,
                         ) {
-                            Text(
-                                Localization.tr(context, "login.prompt.confirm", "Login Now"),
-                                color = AppTheme.accent(),
-                            )
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = {
-                                HapticsService.getInstance().select()
-                                guestSignInPrompt = null
-                            },
-                        ) {
-                            Text(
-                                Localization.tr(context, "common.not_yet", "Not Yet"),
-                                color = AppTheme.textSecondary(),
-                            )
-                        }
-                    },
-                    containerColor = AppTheme.surface(),
-                    titleContentColor = AppTheme.textPrimary(),
-                    textContentColor = AppTheme.textSecondary(),
+                            HapticsService.getInstance().select()
+                        },
+                    ),
+                    onDismiss = { guestSignInPrompt = null },
                 )
             }
 
@@ -770,21 +798,21 @@ fun ContentView(
             }
             if (showCaloriesSheet) {
                 CaloriesLeftSheet(
-                    caloriesLeft = caloriesLeft,
-                    softLimit = softLimit,
+                    caloriesTotal = caloriesTotal,
+                    eatenToday = serverEaten,
+                    caloriesLeft = serverCaloriesLeft,
+                    tone = viewModel.getColor(caloriesLeft),
                     onDismiss = { showCaloriesSheet = false },
                     onCalculateLimits = { viewModel.showHealthSettings() },
                     onSetLimits = { viewModel.showLimitsAlert() },
                 )
             }
-            if (showCameraTutorial) {
-                FullScreenOverlay(onDismiss = { finishCameraTutorial() }) {
-                    MainAppTutorialView(
-                        isPresented = true,
-                        specificStepKey = "hasSeenCameraTutorial",
-                        onDismiss = { finishCameraTutorial() },
-                    )
-                }
+            if (introKey != null) {
+                MainAppTutorialView(
+                    isPresented = true,
+                    specificStepKey = introKey,
+                    onDismiss = { finishIntro() },
+                )
             }
 
             // Sport Calories Dialog
@@ -905,118 +933,111 @@ private fun FixFoodNameDialog(
         isLoadingSuggestions = false
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+    AppSheet(onDismiss = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Text(
                 Localization.tr(context, "manual_food.title", "Fix food name"),
                 color = AppTheme.textPrimary(),
+                style = MaterialTheme.typography.titleLarge,
             )
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    Localization.tr(
-                        context,
-                        "manual_food.msg",
-                        "Enter the correct dish name. This will replace the current name in your log.",
-                    ),
-                    color = AppTheme.textSecondary(),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                OutlinedTextField(
-                    value = manualName,
-                    onValueChange = { manualName = it },
-                    placeholder = { Text(currentName) },
-                    singleLine = true,
+            Text(
+                Localization.tr(
+                    context,
+                    "manual_food.msg",
+                    "Enter the correct dish name. This will replace the current name in your log.",
+                ),
+                color = AppTheme.textSecondary(),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            OutlinedTextField(
+                value = manualName,
+                onValueChange = { manualName = it },
+                placeholder = { Text(currentName) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (isLoadingSuggestions) {
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
-                if (isLoadingSuggestions) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp,
-                            color = AppTheme.accent(),
-                        )
-                    }
-                } else if (suggestions.isNotEmpty()) {
-                    Text(
-                        Localization.tr(context, "manual_food.suggestions", "Suggestions"),
-                        color = AppTheme.textSecondary(),
-                        style = MaterialTheme.typography.labelMedium,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp,
+                        color = AppTheme.accent(),
                     )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        suggestions.forEach { suggestion ->
-                            SuggestionChip(
-                                onClick = {
-                                    HapticsService.getInstance().select()
-                                    manualName = suggestion
-                                },
-                                label = { Text(suggestion) },
-                            )
-                        }
+                }
+            } else if (suggestions.isNotEmpty()) {
+                Text(
+                    Localization.tr(context, "manual_food.suggestions", "Suggestions"),
+                    color = AppTheme.textSecondary(),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    suggestions.forEach { suggestion ->
+                        SuggestionChip(
+                            onClick = {
+                                HapticsService.getInstance().select()
+                                manualName = suggestion
+                            },
+                            label = { Text(suggestion) },
+                        )
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
+            PrimaryButton(
                 onClick = {
                     val trimmed = manualName.trim()
-                    if (trimmed.isEmpty()) return@TextButton
-                    HapticsService.getInstance().select()
-                    onDismiss()
-                    coroutineScope.launch {
-                        onSave(
-                            time,
-                            userEmail,
-                            imageId,
-                            trimmed,
-                            {
-                                HapticsService.getInstance().success()
-                            },
-                            {
-                                HapticsService.getInstance().error()
-                                android.widget.Toast
-                                    .makeText(
-                                        context,
-                                        Localization.tr(
+                    if (trimmed.isNotEmpty()) {
+                        HapticsService.getInstance().select()
+                        onDismiss()
+                        coroutineScope.launch {
+                            onSave(
+                                time,
+                                userEmail,
+                                imageId,
+                                trimmed,
+                                {
+                                    HapticsService.getInstance().success()
+                                },
+                                {
+                                    HapticsService.getInstance().error()
+                                    android.widget.Toast
+                                        .makeText(
                                             context,
-                                            "manual_food.error",
-                                            "Failed to update. Please try again.",
-                                        ),
-                                        android.widget.Toast.LENGTH_SHORT,
-                                    ).show()
-                            },
-                        )
+                                            Localization.tr(
+                                                context,
+                                                "manual_food.error",
+                                                "Failed to update. Please try again.",
+                                            ),
+                                            android.widget.Toast.LENGTH_SHORT,
+                                        ).show()
+                                },
+                            )
+                        }
                     }
                 },
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(
-                    Localization.tr(context, "common.save", "Save"),
-                    color = AppTheme.accent(),
-                )
+                Text(Localization.tr(context, "common.save", "Save"), color = Color.White)
             }
-        },
-        dismissButton = {
-            TextButton(onClick = {
-                HapticsService.getInstance().select()
-                onDismiss()
-            }) {
-                Text(
-                    Localization.tr(context, "common.cancel", "Cancel"),
-                    color = AppTheme.textSecondary(),
-                )
+            SecondaryButton(
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onDismiss()
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(Localization.tr(context, "common.cancel", "Cancel"), color = AppTheme.textPrimary())
             }
-        },
-        containerColor = AppTheme.surface(),
-    )
+        }
+    }
 }
 
 private enum class GuestSignInReason {

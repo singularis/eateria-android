@@ -512,7 +512,7 @@
   "nickname.label": "Spitzname (1-50 Zeichen)",
   "nickname.latin_lowercase_error": "Nur lateinische Kleinbuchstaben und Ziffern (a-z, 0-9)",
   "nickname.length_error": "Maximal 50 Zeichen",
-  "nickname.placeholder": "Spitznamen eingeben",
+  "nickname.placeholder": "Gesunder Esser",
   "nickname.save": "Speichern",
   "nickname.success": "Erfolgreich aktualisiert!",
   "nickname.taken_error": "Dieser Spitzname ist bereits vergeben",
@@ -683,7 +683,7 @@
   "profile.appearance": "Erscheinungsbild",
   "profile.dailycalorie": "Tägliches Kalorienziel:",
   "profile.datamode": "Datenmodus",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Gesunder Esser",
   "profile.delete": "Konto löschen",
   "profile.dev_environment": "Serverumgebung",
   "profile.edit_description": "Füge ein Foto und deinen Namen hinzu, wenn du möchtest. Der Spitzname gilt weiter für Freunde.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Gewicht konnte nicht erfasst werden. Bitte erneut versuchen.",
   "weight.recorded.msg": "Ihr Gewicht wurde erfolgreich erfasst.",
   "weight.recorded.title": "Gewicht erfasst",
-  "weight.take_photo": "Waage fotografieren"
+  "weight.take_photo": "Waage fotografieren",
+  "activities.chess.color.white": "Weiß",
+  "activities.chess.color.black": "Schwarz",
+  "activities.chess.color.red": "Rot",
+  "activities.chess.color.xiangqi": "chinesisches Schach",
+  "chess.summary.unknown": "Unbekannt"
 }

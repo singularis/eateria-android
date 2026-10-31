@@ -56,9 +56,9 @@ val DarkOnBackground = DarkTextPrimary
 
 val CalorieGreen = Color(0xFF4CAF50)
 val CalorieYellow = Color(0xFFFFC107)
+val CalorieOrange = Color(0xFFFF9800)
 val CalorieRed = Color(0xFFF44336)
 val CalorieBlue = Color(0xFF2196F3)
-val CalorieOrange = Color(0xFFFF9800)
 
 val Gray3 = Color(0xFF333333)
 val Gray4 = Color(0xFF444444)

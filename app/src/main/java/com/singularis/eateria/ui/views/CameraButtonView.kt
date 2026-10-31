@@ -232,54 +232,22 @@ fun CameraButtonView(
         val message = Localization.tr(context, "backdating.message.submitting", "Submitting for %@\n(%@)")
             .replaceFirst("%@", dateString).replaceFirst("%@", timeAgo)
             
-        AlertDialog(
-            onDismissRequest = { showBackdatingAlert = false },
-            title = {
-                Text(
-                    text = Localization.tr(context, "backdating.alert.title", "Confirm Past Date"),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.textPrimary()
-                )
-            },
-            text = {
-                Text(
-                    text = "$emoji $message\n\n${Localization.tr(context, "backdating.alert.tip", "Tip: You can log today's food instead.")}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AppTheme.textSecondary()
-                )
-            },
-            confirmButton = {
-                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = {
-                            showBackdatingAlert = false
-                            openCamera(pendingSourceIsCamera)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = AppTheme.accent(), contentColor = Color.White)
-                    ) {
-                        Text(Localization.tr(context, "backdating.alert.confirm", "Confirm"))
-                    }
-                    Button(
-                        onClick = {
-                            showBackdatingAlert = false
-                            onReturnToToday?.invoke()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = AppTheme.success(), contentColor = Color.White)
-                    ) {
-                        Text(Localization.tr(context, "backdating.alert.log_today", "Log Today's Food"))
-                    }
-                    TextButton(
-                        onClick = { showBackdatingAlert = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(Localization.tr(context, "backdating.alert.cancel", "Cancel"), color = AppTheme.textSecondary())
-                    }
-                }
-            },
-            containerColor = AppTheme.surface()
+        AppNotice(
+            title = Localization.tr(context, "backdating.alert.title", "Confirm Past Date"),
+            message = "$emoji $message\n\n${Localization.tr(context, "backdating.alert.tip", "Tip: You can log today's food instead.")}",
+            actions = listOf(
+                AppNoticeAction(Localization.tr(context, "backdating.alert.confirm", "Confirm")) {
+                    openCamera(pendingSourceIsCamera)
+                },
+                AppNoticeAction(Localization.tr(context, "backdating.alert.log_today", "Log Today's Food")) {
+                    onReturnToToday?.invoke()
+                },
+                AppNoticeAction(
+                    Localization.tr(context, "backdating.alert.cancel", "Cancel"),
+                    AppNoticeKind.SECONDARY,
+                ) {},
+            ),
+            onDismiss = { showBackdatingAlert = false },
         )
     }
 

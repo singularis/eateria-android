@@ -512,7 +512,7 @@
   "nickname.label": "Hüüdnimi (1-50 märki, ladina väiketähed a-z, 0-9)",
   "nickname.latin_lowercase_error": "Ainult ladina väiketähed ja numbrid (a-z, 0-9)",
   "nickname.length_error": "Hüüdnimi peab olema kuni 50 märki",
-  "nickname.placeholder": "Sisesta hüüdnimi",
+  "nickname.placeholder": "Tervislik sööja",
   "nickname.save": "Salvesta hüüdnimi",
   "nickname.success": "Hüüdnimi uuendatud!",
   "nickname.taken_error": "See hüüdnimi on juba võetud",
@@ -683,7 +683,7 @@
   "profile.appearance": "Välimus",
   "profile.dailycalorie": "Päevane kalorite sihtmärk:",
   "profile.datamode": "Andmerežiim",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Tervislik sööja",
   "profile.delete": "Kustuta konto",
   "profile.dev_environment": "Serverikeskkond",
   "profile.edit_description": "Lisa foto ja nimi, kui soovid. Hüüdnime kasutatakse edasi sõprade jaoks.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Kaalu salvestamine ebaõnnestus. Proovige uuesti.",
   "weight.recorded.msg": "Teie kaal on edukalt salvestatud.",
   "weight.recorded.title": "Kaal salvestatud",
-  "weight.take_photo": "Pildista kaalu"
+  "weight.take_photo": "Pildista kaalu",
+  "activities.chess.color.white": "Valge",
+  "activities.chess.color.black": "Must",
+  "activities.chess.color.red": "Punane",
+  "activities.chess.color.xiangqi": "hiina male",
+  "chess.summary.unknown": "Teadmata"
 }

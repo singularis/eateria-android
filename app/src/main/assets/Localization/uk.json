@@ -512,7 +512,7 @@
   "nickname.label": "Нікнейм (до 50, латиниця малими a-z, 0-9)",
   "nickname.latin_lowercase_error": "Тільки латинські малі літери та цифри (a-z, 0-9)",
   "nickname.length_error": "До 50 симв.",
-  "nickname.placeholder": "Введіть нікнейм",
+  "nickname.placeholder": "Здоровий їдець",
   "nickname.save": "Зберегти",
   "nickname.success": "Успішно!",
   "nickname.taken_error": "Цей нікнейм вже зайнятий",
@@ -683,7 +683,7 @@
   "profile.appearance": "Вигляд",
   "profile.dailycalorie": "Щоденна мета калорій:",
   "profile.datamode": "Режим даних",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Здоровий їдець",
   "profile.delete": "Видалити акаунт",
   "profile.dev_environment": "Серверне середовище",
   "profile.edit_description": "За бажанням додайте фото та ім'я. Нікнейм і далі потрібен для друзів.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Не вдалося записати вагу. Спробуйте ще раз.",
   "weight.recorded.msg": "Вашу вагу успішно записано.",
   "weight.recorded.title": "Вагу записано",
-  "weight.take_photo": "Сфотографувати ваги"
+  "weight.take_photo": "Сфотографувати ваги",
+  "activities.chess.color.white": "Білі",
+  "activities.chess.color.black": "Чорні",
+  "activities.chess.color.red": "Червоні",
+  "activities.chess.color.xiangqi": "Сянці",
+  "chess.summary.unknown": "Невідомо"
 }

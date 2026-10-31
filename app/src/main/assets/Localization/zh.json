@@ -512,7 +512,7 @@
   "nickname.label": "昵称(1-50字，拉丁小写a-z，0-9)",
   "nickname.latin_lowercase_error": "仅限拉丁小写字母和数字（a-z，0-9）",
   "nickname.length_error": "昵称必须在50个字符以内",
-  "nickname.placeholder": "输入您的昵称",
+  "nickname.placeholder": "健康饮食者",
   "nickname.save": "保存昵称",
   "nickname.success": "您的昵称已成功更新！",
   "nickname.taken_error": "此昵称已被占用",
@@ -683,7 +683,7 @@
   "profile.appearance": "外观",
   "profile.dailycalorie": "每日卡路里目标：",
   "profile.datamode": "数据模式",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "健康饮食者",
   "profile.delete": "删除账户",
   "profile.dev_environment": "服务器环境",
   "profile.edit_description": "可以添加照片和姓名。好友仍使用昵称。",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "记录体重失败。请重试。",
   "weight.recorded.msg": "您的体重已成功记录。",
   "weight.recorded.title": "体重已记录",
-  "weight.take_photo": "拍摄体重秤"
+  "weight.take_photo": "拍摄体重秤",
+  "activities.chess.color.white": "白",
+  "activities.chess.color.black": "黑",
+  "activities.chess.color.red": "红",
+  "activities.chess.color.xiangqi": "象棋",
+  "chess.summary.unknown": "未知"
 }

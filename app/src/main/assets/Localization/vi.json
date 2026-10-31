@@ -512,7 +512,7 @@
   "nickname.label": "Biệt danh (1-50 ký tự, chữ thường Latin a-z, 0-9)",
   "nickname.latin_lowercase_error": "Chỉ chữ thường Latin và số (a-z, 0-9)",
   "nickname.length_error": "Biệt danh phải có tối đa 50 ký tự",
-  "nickname.placeholder": "Nhập biệt danh của bạn",
+  "nickname.placeholder": "Người ăn lành mạnh",
   "nickname.save": "Lưu Biệt Danh",
   "nickname.success": "Biệt danh của bạn đã được cập nhật thành công!",
   "nickname.taken_error": "Biệt danh này đã được sử dụng",
@@ -683,7 +683,7 @@
   "profile.appearance": "Giao diện",
   "profile.dailycalorie": "Mục Tiêu Calo Hàng Ngày:",
   "profile.datamode": "Chế Độ Dữ Liệu",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Người ăn lành mạnh",
   "profile.delete": "Xóa Tài Khoản",
   "profile.dev_environment": "Môi Trường Máy Chủ",
   "profile.edit_description": "Thêm ảnh và tên nếu muốn. Biệt danh vẫn dùng cho bạn bè.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Ghi cân nặng thất bại. Vui lòng thử lại.",
   "weight.recorded.msg": "Cân nặng của bạn đã được ghi thành công.",
   "weight.recorded.title": "Đã ghi cân nặng",
-  "weight.take_photo": "Chụp ảnh cân"
+  "weight.take_photo": "Chụp ảnh cân",
+  "activities.chess.color.white": "Trắng",
+  "activities.chess.color.black": "Đen",
+  "activities.chess.color.red": "Đỏ",
+  "activities.chess.color.xiangqi": "Cờ tướng",
+  "chess.summary.unknown": "Không rõ"
 }

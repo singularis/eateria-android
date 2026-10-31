@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.interaction.MutableInteractionSource
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -74,9 +75,12 @@ fun ActivitiesView(
     var showChessHistory by remember { mutableStateOf(false) }
     var showStatistics by remember { mutableStateOf(false) }
     var showOpponentPicker by remember { mutableStateOf(false) }
+    var showChessColorSheet by remember { mutableStateOf(false) }
+    var showOpponentColorSheet by remember { mutableStateOf(false) }
     var selectedActivityType by remember { mutableStateOf<ActivityType?>(null) }
     var inputValue by remember { mutableStateOf("") }
     var pendingGameResult by remember { mutableStateOf("") }
+    var pendingOpponentEmail by remember { mutableStateOf("") }
     var summaryTotalCalories by remember { mutableIntStateOf(0) }
     var summaryActivityTypes by remember { mutableStateOf<List<String>>(emptyList()) }
 
@@ -84,6 +88,50 @@ fun ActivitiesView(
     var chessWins by remember { mutableIntStateOf(com.singularis.eateria.services.ActivityLocalStore.chessTotalWins(context)) }
     val scope = rememberCoroutineScope()
     val grpcService = remember { GRPCService(context) }
+
+    fun recordChessGame(color: String, opponentColor: String?) {
+        val opponentEmail = pendingOpponentEmail
+        val winner = pendingGameResult
+        showChessColorSheet = false
+        showOpponentColorSheet = false
+        if (opponentEmail.isNotBlank()) {
+            com.singularis.eateria.services.ActivityLocalStore.recordChessResult(context, opponentEmail, winner)
+        }
+        chessWins = com.singularis.eateria.services.ActivityLocalStore.chessTotalWins(context)
+        if ("chess" !in summaryActivityTypes) {
+            summaryActivityTypes = summaryActivityTypes + "chess"
+            com.singularis.eateria.services.ActivityLocalStore.saveSummary(context, dateISO, summaryTotalCalories, summaryActivityTypes)
+        }
+        scope.launch {
+            try {
+                grpcService.logActivity(
+                    activityType = "chess",
+                    value = 1,
+                    calories = 0,
+                    dateISO = dateISO,
+                )
+                val playerEmail = com.singularis.eateria.services.AuthenticationService(context).getUserEmail().orEmpty()
+                if (playerEmail.isNotBlank() && opponentEmail.isNotBlank()) {
+                    val result = when (winner) {
+                        "me" -> "win"
+                        "opponent" -> "loss"
+                        else -> "draw"
+                    }
+                    val (ok, playerScore, _) = grpcService.recordChessGame(
+                        playerEmail,
+                        opponentEmail,
+                        result,
+                        color,
+                        opponentColor,
+                    )
+                    if (ok && playerScore != null) {
+                        com.singularis.eateria.services.ActivityLocalStore.setOpponentScore(context, opponentEmail, playerScore)
+                    }
+                }
+            } catch (_: Exception) { }
+        }
+        HapticsService.getInstance().success()
+    }
 
     // Load activity summary on appear
     LaunchedEffect(dateISO) {
@@ -245,41 +293,60 @@ fun ActivitiesView(
             ChessOpponentPickerView(
                 onOpponentSelected = { _, opponentEmail ->
                     showOpponentPicker = false
-                    val winner = pendingGameResult
                     if (opponentEmail.isNotBlank()) {
-                        com.singularis.eateria.services.ActivityLocalStore.recordChessResult(context, opponentEmail, winner)
+                        pendingOpponentEmail = opponentEmail
+                        showChessColorSheet = true
                     }
-                    chessWins = com.singularis.eateria.services.ActivityLocalStore.chessTotalWins(context)
-                    if ("chess" !in summaryActivityTypes) {
-                        summaryActivityTypes = summaryActivityTypes + "chess"
-                        com.singularis.eateria.services.ActivityLocalStore.saveSummary(context, dateISO, summaryTotalCalories, summaryActivityTypes)
-                    }
-                    scope.launch {
-                        try {
-                            grpcService.logActivity(
-                                activityType = "chess",
-                                value = 1,
-                                calories = 0,
-                                dateISO = dateISO
-                            )
-                            val playerEmail = com.singularis.eateria.services.AuthenticationService(context).getUserEmail().orEmpty()
-                            if (playerEmail.isNotBlank() && opponentEmail.isNotBlank()) {
-                                val result = when (winner) {
-                                    "me" -> "win"
-                                    "opponent" -> "loss"
-                                    else -> "draw"
-                                }
-                                val (ok, playerScore, _) = grpcService.recordChessGame(playerEmail, opponentEmail, result)
-                                if (ok && playerScore != null) {
-                                    com.singularis.eateria.services.ActivityLocalStore.setOpponentScore(context, opponentEmail, playerScore)
-                                }
-                            }
-                        } catch (_: Exception) { }
-                    }
-                    HapticsService.getInstance().success()
                 },
                 onDismiss = { showOpponentPicker = false }
             )
+        }
+
+        if (showChessColorSheet) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { showChessColorSheet = false },
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                ChessColorSheet(
+                    title = Localization.tr(context, "activities.chess.color_prompt", "Which side did you play?"),
+                    subtitle = Localization.tr(context, "activities.chess.xiangqi_hint", "Red is xiangqi."),
+                    choices = listOf("black", "white", "red"),
+                    onSelected = { color ->
+                        showChessColorSheet = false
+                        if (color == "black") {
+                            showOpponentColorSheet = true
+                        } else {
+                            recordChessGame(color, null)
+                        }
+                    },
+                    onDismiss = { showChessColorSheet = false },
+                )
+            }
+        }
+
+        if (showOpponentColorSheet) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { showOpponentColorSheet = false },
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                ChessColorSheet(
+                    title = Localization.tr(context, "activities.chess.opponent_color", "Opponent played"),
+                    subtitle = Localization.tr(context, "activities.chess.opponent_color_hint", "White is the usual other side. Pick red if they played red."),
+                    choices = listOf("white", "red"),
+                    onSelected = { opponentColor ->
+                        showOpponentColorSheet = false
+                        val mirror = if (opponentColor == "red") "red" else null
+                        recordChessGame("black", mirror)
+                    },
+                    onDismiss = { showOpponentColorSheet = false },
+                )
+            }
         }
 
         // Chess History Sheet
@@ -674,6 +741,75 @@ private fun ChessWinnerSheet(
                 ) { onWinnerSelected("opponent") }
             }
 
+            TextButton(onClick = onDismiss) {
+                Text(Localization.tr(context, "common.cancel", "Cancel"), color = AppTheme.textSecondary())
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChessColorSheet(
+    title: String,
+    subtitle: String,
+    choices: List<String>,
+    onSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .shadow(18.dp, RoundedCornerShape(18.dp))
+            .background(AppTheme.surface(), RoundedCornerShape(18.dp))
+            .padding(20.dp)
+            .clickable(enabled = false) { }
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = AppTheme.textPrimary(),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppTheme.textSecondary(),
+                textAlign = TextAlign.Center,
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                choices.forEach { choice ->
+                    val label = when (choice) {
+                        "black" -> Localization.tr(context, "activities.chess.black", "Black")
+                        "white" -> Localization.tr(context, "activities.chess.white", "White")
+                        else -> Localization.tr(context, "activities.chess.red", "Red")
+                    }
+                    val fill = when (choice) {
+                        "white" -> Color.White
+                        "red" -> Color(0xFFE53935)
+                        else -> Color.Black
+                    }
+                    Column(
+                        modifier = Modifier.weight(1f).clickable { onSelected(choice) },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .border(
+                                    1.dp,
+                                    if (choice == "white") Color.Black.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.7f),
+                                    androidx.compose.foundation.shape.CircleShape,
+                                )
+                                .background(fill, androidx.compose.foundation.shape.CircleShape),
+                        )
+                        Text(label, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    }
+                }
+            }
             TextButton(onClick = onDismiss) {
                 Text(Localization.tr(context, "common.cancel", "Cancel"), color = AppTheme.textSecondary())
             }

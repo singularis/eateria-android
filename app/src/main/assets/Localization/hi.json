@@ -512,7 +512,7 @@
   "nickname.label": "उपनाम (1-50 अक्षर, लैटिन लोअरकेस a-z, 0-9)",
   "nickname.latin_lowercase_error": "केवल लैटिन लोअरकेस अक्षर और अंक (a-z, 0-9)",
   "nickname.length_error": "उपनाम 50 अक्षर या उससे कम होना चाहिए",
-  "nickname.placeholder": "अपना उपनाम दर्ज करें",
+  "nickname.placeholder": "स्वस्थ खाने वाला",
   "nickname.save": "उपनाम सहेजें",
   "nickname.success": "आपका उपनाम सफलतापूर्वक अपडेट हो गया है!",
   "nickname.taken_error": "यह उपनाम पहले से लिया जा चुका है",
@@ -683,7 +683,7 @@
   "profile.appearance": "रंगरूप",
   "profile.dailycalorie": "दैनिक कैलोरी लक्ष्य:",
   "profile.datamode": "डेटा मोड",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "स्वस्थ खाने वाला",
   "profile.delete": "खाता हटाएं",
   "profile.dev_environment": "सर्वर वातावरण",
   "profile.edit_description": "चाहें तो फ़ोटो और नाम जोड़ें। दोस्तों के लिए उपनाम ही रहेगा।",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "वजन रिकॉर्ड करने में विफल। कृपया फिर से प्रयास करें।",
   "weight.recorded.msg": "आपका वजन सफलतापूर्वक रिकॉर्ड हो गया है।",
   "weight.recorded.title": "वजन रिकॉर्ड हुआ",
-  "weight.take_photo": "तराजू की फोटो लें"
+  "weight.take_photo": "तराजू की फोटो लें",
+  "activities.chess.color.white": "सफ़ेद",
+  "activities.chess.color.black": "काला",
+  "activities.chess.color.red": "लाल",
+  "activities.chess.color.xiangqi": "शियांगची",
+  "chess.summary.unknown": "अज्ञात"
 }

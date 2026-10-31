@@ -512,7 +512,7 @@
   "nickname.label": "닉네임 (1-50자, 라틴 소문자 a-z, 0-9)",
   "nickname.latin_lowercase_error": "라틴 소문자와 숫자만 사용 가능 (a-z, 0-9)",
   "nickname.length_error": "닉네임은 50자 이하여야 합니다",
-  "nickname.placeholder": "닉네임 입력",
+  "nickname.placeholder": "건강한 먹는 사람",
   "nickname.save": "닉네임 저장",
   "nickname.success": "닉네임이 성공적으로 업데이트되었습니다!",
   "nickname.taken_error": "이 닉네임은 이미 사용 중입니다",
@@ -683,7 +683,7 @@
   "profile.appearance": "외관",
   "profile.dailycalorie": "일일 칼로리 목표:",
   "profile.datamode": "데이터 모드",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "건강한 먹는 사람",
   "profile.delete": "계정 삭제",
   "profile.dev_environment": "서버 환경",
   "profile.edit_description": "원하면 사진과 이름을 추가하세요. 친구에게는 닉네임을 씁니다.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "체중 기록에 실패했습니다. 다시 시도하세요.",
   "weight.recorded.msg": "체중이 성공적으로 기록되었습니다.",
   "weight.recorded.title": "체중 기록됨",
-  "weight.take_photo": "체중계 사진 찍기"
+  "weight.take_photo": "체중계 사진 찍기",
+  "activities.chess.color.white": "백",
+  "activities.chess.color.black": "흑",
+  "activities.chess.color.red": "빨강",
+  "activities.chess.color.xiangqi": "샹치",
+  "chess.summary.unknown": "알 수 없음"
 }

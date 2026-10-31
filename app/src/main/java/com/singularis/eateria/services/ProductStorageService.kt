@@ -15,6 +15,20 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.Calendar
 
+/** Day food after local extras are applied. serverEaten is protobuf total_calories. */
+data class DayFoodSnapshot(
+    val products: List<Product>,
+    val eatenWithExtras: Int,
+    val serverEaten: Int,
+    val personWeight: Float,
+    val caloriesTotal: Int,
+    val caloriesLeft: Int,
+) {
+    companion object {
+        val Empty = DayFoodSnapshot(emptyList(), 0, 0, 0f, 0, 0)
+    }
+}
+
 class ProductStorageService private constructor(
     private val context: Context,
 ) {
@@ -33,6 +47,9 @@ class ProductStorageService private constructor(
         private const val KEY_WEIGHT = "cached_weight"
         private const val KEY_LAST_UPDATE = "last_update_timestamp"
         private const val KEY_HEALTH_LEVELS = "cached_health_levels"
+        private const val KEY_SERVER_EATEN = "cached_server_eaten"
+        private const val KEY_CALORIES_TOTAL = "cached_calories_total"
+        private const val KEY_CALORIES_LEFT = "cached_calories_left"
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -45,6 +62,9 @@ class ProductStorageService private constructor(
         products: List<Product>,
         calories: Int,
         weight: Float,
+        serverEaten: Int = calories,
+        caloriesTotal: Int = 0,
+        caloriesLeft: Int = 0,
     ) {
         try {
             val productDataList = products.map { ProductData.fromProduct(it) }
@@ -55,6 +75,9 @@ class ProductStorageService private constructor(
                 .putString(KEY_PRODUCTS, json)
                 .putInt(KEY_CALORIES, calories)
                 .putFloat(KEY_WEIGHT, weight)
+                .putInt(KEY_SERVER_EATEN, serverEaten)
+                .putInt(KEY_CALORIES_TOTAL, caloriesTotal)
+                .putInt(KEY_CALORIES_LEFT, caloriesLeft)
                 .putLong(KEY_LAST_UPDATE, System.currentTimeMillis())
                 .apply()
 
@@ -65,25 +88,38 @@ class ProductStorageService private constructor(
         }
     }
 
-    fun loadProducts(): Triple<List<Product>, Int, Float> {
+    fun loadDayFood(): DayFoodSnapshot {
         return try {
             val json = prefs.getString(KEY_PRODUCTS, null)
             if (json == null) {
                 Log.d("ProductStorage", "No cached products found")
-                return Triple(emptyList(), 0, 0f)
+                return DayFoodSnapshot.Empty
             }
 
             val productDataList = Json.decodeFromString<List<ProductData>>(json)
             val products = productDataList.map { it.toProduct() }
             val calories = prefs.getInt(KEY_CALORIES, 0)
             val weight = prefs.getFloat(KEY_WEIGHT, 0f)
+            val hasServerBudget = prefs.contains(KEY_CALORIES_TOTAL)
 
             Log.d("ProductStorage", "Loaded ${products.size} products from cache")
-            Triple(products, calories, weight)
+            DayFoodSnapshot(
+                products = products,
+                eatenWithExtras = calories,
+                serverEaten = if (hasServerBudget) prefs.getInt(KEY_SERVER_EATEN, calories) else calories,
+                personWeight = weight,
+                caloriesTotal = prefs.getInt(KEY_CALORIES_TOTAL, 0),
+                caloriesLeft = prefs.getInt(KEY_CALORIES_LEFT, 0),
+            )
         } catch (e: Exception) {
             Log.e("ProductStorage", "Failed to load products from cache", e)
-            Triple(emptyList(), 0, 0f)
+            DayFoodSnapshot.Empty
         }
+    }
+
+    fun loadProducts(): Triple<List<Product>, Int, Float> {
+        val day = loadDayFood()
+        return Triple(day.products, day.eatenWithExtras, day.personWeight)
     }
 
     // MARK: - Fetch and Process with Image Mapping (iOS Logic)
@@ -91,16 +127,16 @@ class ProductStorageService private constructor(
     suspend fun fetchAndProcessProducts(
         tempImageTime: Long? = null,
         forceRefresh: Boolean = false,
-        callback: (List<Product>, Int, Float) -> Unit,
+        callback: (DayFoodSnapshot) -> Unit,
     ) {
         val shouldForceRefresh = forceRefresh || (tempImageTime != null)
 
         // Check cache first ONLY if looking for today and no temp image (standard refresh)
         if (!shouldForceRefresh && !isDataStale()) {
-            val (cachedProducts, cachedCalories, cachedWeight) = loadProducts()
-            if (cachedProducts.isNotEmpty() || cachedCalories > 0 || cachedWeight > 0f) {
+            val cached = loadDayFood()
+            if (cached.products.isNotEmpty() || cached.eatenWithExtras > 0 || cached.personWeight > 0f) {
                 withContext(Dispatchers.Main) {
-                    callback(cachedProducts, cachedCalories, cachedWeight)
+                    callback(cached)
                 }
                 return
             }
@@ -117,13 +153,12 @@ class ProductStorageService private constructor(
                     val todayFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
                     val isToday = dateStr == todayFormatter.format(Date())
 
-                    val (fetchedProducts, fetchedCalories, weight) = grpcService.fetchCustomDateProducts(dateStr)
-                    val products = FoodExtrasStore.getInstance(context).apply(fetchedProducts)
-                    val calories = fetchedCalories + FoodExtrasStore.getInstance(context).totalExtrasCalories(products)
+                    val fetched = grpcService.fetchCustomDateProducts(dateStr)
+                    val snapshot = snapshotFromFetch(fetched)
 
                     withContext(Dispatchers.Main) {
-                        if (products.isNotEmpty()) {
-                            val matchingProduct = products.minByOrNull { Math.abs(it.time - tempImageTime) }
+                        if (snapshot.products.isNotEmpty()) {
+                            val matchingProduct = snapshot.products.minByOrNull { Math.abs(it.time - tempImageTime) }
                             if (matchingProduct != null) {
                                 val diff = Math.abs(matchingProduct.time - tempImageTime)
                                 if (diff < 14400000) { // 4 hours
@@ -135,39 +170,24 @@ class ProductStorageService private constructor(
                             }
                         }
 
-                        val productsWithImages = products.map { product ->
-                            val image = product.getImage(context)
-                            if (image != null) product.setImage(image)
-                            product
-                        }
-
                         if (isToday) {
-                            saveProducts(productsWithImages, calories, weight)
+                            saveSnapshot(snapshot)
                         }
 
-                        callback(productsWithImages, calories, weight)
+                        callback(snapshot)
                     }
                 } else {
-                    val (fetchedProducts, fetchedCalories, weight) = grpcService.fetchProducts()
-                    val products = FoodExtrasStore.getInstance(context).apply(fetchedProducts)
-                    val calories = fetchedCalories + FoodExtrasStore.getInstance(context).totalExtrasCalories(products)
+                    val snapshot = snapshotFromFetch(grpcService.fetchProducts())
 
                     withContext(Dispatchers.Main) {
-                        val productsWithImages = products.map { product ->
-                            val image = product.getImage(context)
-                            if (image != null) product.setImage(image)
-                            product
-                        }
-
-                        saveProducts(productsWithImages, calories, weight)
-                        callback(productsWithImages, calories, weight)
+                        saveSnapshot(snapshot)
+                        callback(snapshot)
                     }
                 }
             } catch (e: Exception) {
                 Log.e("ProductStorage", "Failed to fetch and process products", e)
                 withContext(Dispatchers.Main) {
-                    val (cachedProducts, cachedCalories, cachedWeight) = loadProducts()
-                    callback(cachedProducts, cachedCalories, cachedWeight)
+                    callback(loadDayFood())
                 }
             }
         }
@@ -175,34 +195,51 @@ class ProductStorageService private constructor(
 
     suspend fun fetchAndProcessCustomDateProducts(
         date: String,
-        callback: (List<Product>, Int, Float) -> Unit,
+        callback: (DayFoodSnapshot) -> Unit,
     ) {
         withContext(Dispatchers.IO) {
             try {
-                val (fetchedProducts, fetchedCalories, weight) = grpcService.fetchCustomDateProducts(date)
-                val products = FoodExtrasStore.getInstance(context).apply(fetchedProducts)
-                val calories = fetchedCalories + FoodExtrasStore.getInstance(context).totalExtrasCalories(products)
-
+                val snapshot = snapshotFromFetch(grpcService.fetchCustomDateProducts(date))
                 withContext(Dispatchers.Main) {
-                    // Load images for products (don't save custom date data to cache)
-                    val productsWithImages =
-                        products.map { product ->
-                            val image = product.getImage(context)
-                            if (image != null) {
-                                product.setImage(image)
-                            }
-                            product
-                        }
-
-                    callback(productsWithImages, calories, weight)
+                    callback(snapshot)
                 }
             } catch (e: Exception) {
                 Log.e("ProductStorage", "Failed to fetch custom date products", e)
                 withContext(Dispatchers.Main) {
-                    callback(emptyList(), 0, 0f)
+                    callback(DayFoodSnapshot.Empty)
                 }
             }
         }
+    }
+
+    private fun snapshotFromFetch(fetched: FetchedDayFood): DayFoodSnapshot {
+        val products = FoodExtrasStore.getInstance(context).apply(fetched.products)
+        val extras = FoodExtrasStore.getInstance(context).totalExtrasCalories(products)
+        val productsWithImages =
+            products.map { product ->
+                val image = product.getImage(context)
+                if (image != null) product.setImage(image)
+                product
+            }
+        return DayFoodSnapshot(
+            products = productsWithImages,
+            eatenWithExtras = fetched.totalCalories + extras,
+            serverEaten = fetched.totalCalories,
+            personWeight = fetched.personWeight,
+            caloriesTotal = fetched.caloriesTotal,
+            caloriesLeft = fetched.caloriesLeft,
+        )
+    }
+
+    private fun saveSnapshot(snapshot: DayFoodSnapshot) {
+        saveProducts(
+            products = snapshot.products,
+            calories = snapshot.eatenWithExtras,
+            weight = snapshot.personWeight,
+            serverEaten = snapshot.serverEaten,
+            caloriesTotal = snapshot.caloriesTotal,
+            caloriesLeft = snapshot.caloriesLeft,
+        )
     }
 
     // MARK: - Cache Management
@@ -213,6 +250,9 @@ class ProductStorageService private constructor(
             .remove(KEY_PRODUCTS)
             .remove(KEY_CALORIES)
             .remove(KEY_WEIGHT)
+            .remove(KEY_SERVER_EATEN)
+            .remove(KEY_CALORIES_TOTAL)
+            .remove(KEY_CALORIES_LEFT)
             .remove(KEY_LAST_UPDATE)
             .apply()
         Log.d("ProductStorage", "Cache cleared")

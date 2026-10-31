@@ -512,7 +512,7 @@
   "nickname.label": "Nickname (1-50 karattru, Latin lowercase a-z, 0-9)",
   "nickname.latin_lowercase_error": "Biss ittri żgħar Latin u ċifri (a-z, 0-9)",
   "nickname.length_error": "Il-laqam għandu jkun ta' 50 karattru jew inqas",
-  "nickname.placeholder": "Daħħal nickname",
+  "nickname.placeholder": "Wieħed jiekol b'saħħtu",
   "nickname.save": "Issejvja Nickname",
   "nickname.success": "Il-laqam tiegħek ġie aġġornat b'suċċess!",
   "nickname.taken_error": "Dan il-laqam diġà ttieħed",
@@ -683,7 +683,7 @@
   "profile.appearance": "Dehra",
   "profile.dailycalorie": "Mira tal-Kaloriji Kuljum:",
   "profile.datamode": "Mod tad-Dejta",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Wieħed jiekol b'saħħtu",
   "profile.delete": "Ħassar il-Kont",
   "profile.dev_environment": "Ambjent tas-Server",
   "profile.edit_description": "Żid ritratt u ismek jekk trid. Il-laqam jibqa’ jintuża mal-ħbieb.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Ir-reġistrazzjoni tal-piż falliet. Erġa’ pprova.",
   "weight.recorded.msg": "Il-piż tiegħek ġie rreġistrat b’suċċess.",
   "weight.recorded.title": "Il-piż irreġistrat",
-  "weight.take_photo": "Ħu ritratt tal-miżien"
+  "weight.take_photo": "Ħu ritratt tal-miżien",
+  "activities.chess.color.white": "Abjad",
+  "activities.chess.color.black": "Iswed",
+  "activities.chess.color.red": "Aħmar",
+  "activities.chess.color.xiangqi": "ċess Ċiniż",
+  "chess.summary.unknown": "Mhux magħruf"
 }

@@ -512,7 +512,7 @@
   "nickname.label": "ชื่อเล่น (1-50 ตัวอักษร)",
   "nickname.latin_lowercase_error": "เฉพาะตัวอักษรละตินตัวพิมพ์เล็กและตัวเลข (a-z, 0-9)",
   "nickname.length_error": "ไม่เกิน 50 ตัวอักษร",
-  "nickname.placeholder": "พิมพ์ชื่อเล่น",
+  "nickname.placeholder": "คนกินเพื่อสุขภาพ",
   "nickname.save": "บันทึก",
   "nickname.success": "สำเร็จ!",
   "nickname.taken_error": "ชื่อเล่นนี้ถูกใช้แล้ว",
@@ -683,7 +683,7 @@
   "profile.appearance": "รูปลักษณ์",
   "profile.dailycalorie": "เป้าหมายแคลอรี่รายวัน:",
   "profile.datamode": "โหมดข้อมูล",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "คนกินเพื่อสุขภาพ",
   "profile.delete": "ลบบัญชี",
   "profile.dev_environment": "สภาพแวดล้อมเซิร์ฟเวอร์",
   "profile.edit_description": "เพิ่มรูปและชื่อได้ถ้าต้องการ ชื่อเล่นยังใช้กับเพื่อน",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "ไม่สามารถบันทึกน้ำหนักได้ โปรดลองอีกครั้ง",
   "weight.recorded.msg": "บันทึกน้ำหนักของคุณเรียบร้อยแล้ว",
   "weight.recorded.title": "บันทึกน้ำหนักแล้ว",
-  "weight.take_photo": "ถ่ายรูปเครื่องชั่ง"
+  "weight.take_photo": "ถ่ายรูปเครื่องชั่ง",
+  "activities.chess.color.white": "ขาว",
+  "activities.chess.color.black": "ดำ",
+  "activities.chess.color.red": "แดง",
+  "activities.chess.color.xiangqi": "เซียงฉี",
+  "chess.summary.unknown": "ไม่ทราบ"
 }

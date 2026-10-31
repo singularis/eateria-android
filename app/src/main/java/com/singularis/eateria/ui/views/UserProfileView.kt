@@ -392,11 +392,11 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                                 }
                             )
                             androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+                            RemindersToggleRow()
+                            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
                             val followsSystemSize by appSettingsService.followsSystemTextSizeFlow.collectAsState()
                             val effectiveScale = com.singularis.eateria.ui.theme.LocalAppScale.current
-                            val maxScale = com.singularis.eateria.services.AppSettingsService.maxScaleFor(
-                                androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp,
-                            )
+                            val maxScale = com.singularis.eateria.services.AppSettingsService.FONT_SCALE_MAX
                             val minScale = com.singularis.eateria.services.AppSettingsService.FONT_SCALE_MIN
                             Column(Modifier.padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingS)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -572,96 +572,57 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
 
         // Sign Out Dialog
         if (showSignOutDialog) {
-            AlertDialog(
-                onDismissRequest = { showSignOutDialog = false },
-                title = {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "profile.logout"),
-                        color = AppTheme.textPrimary(),
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                text = {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "profile.logout.confirm"),
-                        color = AppTheme.textSecondary(),
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            com.singularis.eateria.services.HapticsService.getInstance().warning()
-                            showSignOutDialog = false
-                            coroutineScope.launch {
-                                // Clear statistics cache before logging out
-                                StatisticsService.getInstance(context).clearAllCache()
-                                authViewModel.signOut()
-                                onBackClick()
-                            }
-                        },
+            AppNotice(
+                title = Localization.tr(LocalContext.current, "profile.logout"),
+                message = Localization.tr(LocalContext.current, "profile.logout.confirm"),
+                actions = listOf(
+                    AppNoticeAction(
+                        Localization.tr(LocalContext.current, "profile.logout"),
+                        AppNoticeKind.DESTRUCTIVE,
                     ) {
-                        Text(Localization.tr(LocalContext.current, "profile.logout"), color = AppTheme.danger())
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { 
-                            com.singularis.eateria.services.HapticsService.getInstance().select()
-                            showSignOutDialog = false 
-                        },
+                        com.singularis.eateria.services.HapticsService.getInstance().warning()
+                        coroutineScope.launch {
+                            StatisticsService.getInstance(context).clearAllCache()
+                            authViewModel.signOut()
+                            onBackClick()
+                        }
+                    },
+                    AppNoticeAction(
+                        Localization.tr(LocalContext.current, "common.cancel"),
+                        AppNoticeKind.SECONDARY,
                     ) {
-                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = AppTheme.textSecondary())
-                    }
-                },
-                containerColor = AppTheme.surface(),
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
+                    },
+                ),
+                onDismiss = { showSignOutDialog = false },
             )
         }
 
-        // Delete Account Dialog
         if (showDeleteAccountDialog) {
-            AlertDialog(
-                onDismissRequest = { showDeleteAccountDialog = false },
-                title = {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "profile.delete"),
-                        color = AppTheme.textPrimary(),
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                text = {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "alert.delete.message"),
-                        color = AppTheme.textSecondary(),
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            com.singularis.eateria.services.HapticsService.getInstance().error()
-                            showDeleteAccountDialog = false
-                            coroutineScope.launch {
-                                // Clear statistics cache and health data before deleting account
-                                StatisticsService.getInstance(context).clearAllCache()
-                                HealthDataService.getInstance(context).clearHealthData()
-                                authViewModel.deleteAccount()
-                                onBackClick()
-                            }
-                        },
+            AppNotice(
+                title = Localization.tr(LocalContext.current, "profile.delete"),
+                message = Localization.tr(LocalContext.current, "alert.delete.message"),
+                actions = listOf(
+                    AppNoticeAction(
+                        Localization.tr(LocalContext.current, "profile.delete"),
+                        AppNoticeKind.DESTRUCTIVE,
                     ) {
-                        Text(Localization.tr(LocalContext.current, "profile.delete"), color = CalorieRed)
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { 
-                            com.singularis.eateria.services.HapticsService.getInstance().select()
-                            showDeleteAccountDialog = false 
-                        },
+                        com.singularis.eateria.services.HapticsService.getInstance().error()
+                        coroutineScope.launch {
+                            StatisticsService.getInstance(context).clearAllCache()
+                            HealthDataService.getInstance(context).clearHealthData()
+                            authViewModel.deleteAccount()
+                            onBackClick()
+                        }
+                    },
+                    AppNoticeAction(
+                        Localization.tr(LocalContext.current, "common.cancel"),
+                        AppNoticeKind.SECONDARY,
                     ) {
-                        Text(Localization.tr(LocalContext.current, "common.cancel"), color = AppTheme.textSecondary())
-                    }
-                },
-                containerColor = AppTheme.surface(),
+                        com.singularis.eateria.services.HapticsService.getInstance().select()
+                    },
+                ),
+                onDismiss = { showDeleteAccountDialog = false },
             )
         }
     }
@@ -1320,6 +1281,48 @@ private fun ThemeSectionCard(
                     colors = SwitchDefaults.colors(checkedThumbColor = AppTheme.accent(), checkedTrackColor = AppTheme.accent().copy(alpha = 0.5f))
                 )
             }
+
+            Spacer(modifier = Modifier.height(Dimensions.paddingM))
+            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider())
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
+            var vibrationOn by remember {
+                mutableStateOf(com.singularis.eateria.services.AppSettingsService.getInstance().vibrationEnabled)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = Localization.tr(LocalContext.current, "profile.vibration", "Vibration"),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AppTheme.textPrimary(),
+                    )
+                    Text(
+                        text = Localization.tr(
+                            LocalContext.current,
+                            "profile.vibration.desc",
+                            "Pleasant or unpleasant buzz based on food quality",
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AppTheme.textSecondary(),
+                    )
+                }
+                Switch(
+                    checked = vibrationOn,
+                    onCheckedChange = {
+                        vibrationOn = it
+                        com.singularis.eateria.services.AppSettingsService.getInstance().vibrationEnabled = it
+                        if (it) {
+                            com.singularis.eateria.services.HapticsService.getInstance().foodQuality(80)
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = AppTheme.accent(),
+                        checkedTrackColor = AppTheme.accent().copy(alpha = 0.5f),
+                    ),
+                )
+            }
         }
     }
 }
@@ -1381,17 +1384,64 @@ private fun <T> PreferenceSegmentedRow(title: String, options: List<Pair<String,
 }
 
 @Composable
-private fun PreferenceToggleRow(title: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun PreferenceToggleRow(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    subtitle: String? = null,
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = title, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
+        Column(modifier = Modifier.weight(1f).padding(end = Dimensions.paddingS)) {
+            Text(text = title, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
+            if (!subtitle.isNullOrEmpty()) {
+                Text(text = subtitle, color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
+            }
+        }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(checkedThumbColor = AppTheme.accent(), checkedTrackColor = AppTheme.accent().copy(alpha = 0.5f))
         )
     }
+}
+
+@OptIn(com.google.accompanist.permissions.ExperimentalPermissionsApi::class)
+@Composable
+private fun RemindersToggleRow() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val reminders = remember { com.singularis.eateria.services.ReminderService(context) }
+    val enabled by reminders.notificationsEnabled.collectAsState(initial = false)
+    val permission = com.google.accompanist.permissions.rememberPermissionState(
+        android.Manifest.permission.POST_NOTIFICATIONS,
+    ) { granted ->
+        scope.launch { reminders.setNotificationsEnabled(granted) }
+    }
+    PreferenceToggleRow(
+        title = Localization.tr(context, "profile.reminders", "Reminders"),
+        subtitle = Localization.tr(
+            context,
+            "profile.reminders.desc",
+            "Breakfast, lunch, and dinner while this is on",
+        ),
+        checked = enabled,
+        onCheckedChange = { want ->
+            com.singularis.eateria.services.HapticsService.getInstance().select()
+            if (!want) {
+                scope.launch { reminders.setNotificationsEnabled(false) }
+            } else {
+                val needsPermission = android.os.Build.VERSION.SDK_INT >= 33 &&
+                    permission.status !is com.google.accompanist.permissions.PermissionStatus.Granted
+                if (needsPermission) {
+                    permission.launchPermissionRequest()
+                } else {
+                    scope.launch { reminders.setNotificationsEnabled(true) }
+                }
+            }
+        },
+    )
 }

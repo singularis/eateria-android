@@ -9,6 +9,7 @@ import com.singularis.eateria.services.dataStore
 import kotlinx.coroutines.flow.first
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.AuthenticationService
+import com.singularis.eateria.services.DayFoodSnapshot
 import com.singularis.eateria.services.DailyRefreshManager
 import com.singularis.eateria.services.FoodPhotoService
 import com.singularis.eateria.services.GRPCService
@@ -19,6 +20,7 @@ import com.singularis.eateria.services.RecommendationResult
 import com.singularis.eateria.services.ReminderService
 import com.singularis.eateria.services.WeightMotivationService
 import com.singularis.eateria.ui.theme.CalorieGreen
+import com.singularis.eateria.ui.theme.CalorieOrange
 import com.singularis.eateria.ui.theme.CalorieRed
 import com.singularis.eateria.ui.theme.CalorieYellow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +53,16 @@ class MainViewModel(
 
     private val _caloriesLeft = MutableStateFlow(0)
     val caloriesLeft: StateFlow<Int> = _caloriesLeft.asStateFlow()
+
+    private val _eatenWithExtras = MutableStateFlow(0)
+    private val _serverEaten = MutableStateFlow(0)
+    val serverEaten: StateFlow<Int> = _serverEaten.asStateFlow()
+
+    private val _caloriesTotal = MutableStateFlow(0)
+    val caloriesTotal: StateFlow<Int> = _caloriesTotal.asStateFlow()
+
+    private val _serverCaloriesLeft = MutableStateFlow(0)
+    val serverCaloriesLeft: StateFlow<Int> = _serverCaloriesLeft.asStateFlow()
 
     private val _personWeight = MutableStateFlow(0f)
     val personWeight: StateFlow<Float> = _personWeight.asStateFlow()
@@ -212,6 +224,7 @@ class MainViewModel(
                 _customProteinGoal.value = authService.getCustomProteinGoal()
                 _customFatGoal.value = authService.getCustomFatGoal()
                 _customCarbsGoal.value = authService.getCustomCarbsGoal()
+                publishFlame()
             } catch (e: Exception) {
                 // Keep default values if loading fails
             }
@@ -301,6 +314,7 @@ class MainViewModel(
                 val todayKey = getTodayDateKey()
                 val sportCalories = authService.getSportCalories(todayKey)
                 _todaySportCalories.value = sportCalories
+                publishFlame()
             } catch (e: Exception) {
                 _todaySportCalories.value = 0
             }
@@ -324,6 +338,51 @@ class MainViewModel(
             _softLimit.value + _todaySportCalories.value
         }
 
+    /**
+     * Flame number. A saved server limit uses calories_left as returned
+     * (limit minus eaten, sport not included). With no saved limit, keep the
+     * phone soft limit, including today's sport bump.
+     */
+    private fun publishFlame() {
+        _caloriesLeft.value =
+            if (_caloriesTotal.value > 0) {
+                _serverCaloriesLeft.value
+            } else {
+                getAdjustedSoftLimit() - _eatenWithExtras.value
+            }
+    }
+
+    private fun applyDayFood(day: DayFoodSnapshot) {
+        _products.value = day.products
+        _eatenWithExtras.value = day.eatenWithExtras
+        _serverEaten.value = day.serverEaten
+        _caloriesTotal.value = day.caloriesTotal
+        _serverCaloriesLeft.value = day.caloriesLeft
+        if (day.personWeight > 0f) _personWeight.value = day.personWeight
+        publishFlame()
+    }
+
+    private fun refreshVisibleDay() {
+        viewModelScope.launch {
+            val custom = _currentViewingDateString.value
+            if (_isViewingCustomDate.value && custom.isNotBlank()) {
+                productStorageService.fetchAndProcessCustomDateProducts(custom) { applyDayFood(it) }
+            } else {
+                productStorageService.fetchAndProcessProducts(forceRefresh = true) { applyDayFood(it) }
+            }
+        }
+    }
+
+    private suspend fun pushCalorieLimit(limit: Int) {
+        if (limit !in 1..20000) return
+        if (grpcService.setCalorieLimit(limit)) {
+            _caloriesTotal.value = limit
+            _serverCaloriesLeft.value = limit - _serverEaten.value
+            publishFlame()
+        }
+        refreshVisibleDay()
+    }
+
     fun reloadLimitsFromStorage() {
         loadLimitsFromStorage()
     }
@@ -343,6 +402,8 @@ class MainViewModel(
                 // Update local state
                 _softLimit.value = softLimit
                 _hardLimit.value = hardLimit
+                publishFlame()
+                pushCalorieLimit(softLimit)
             } catch (e: Exception) {
             }
         }
@@ -351,26 +412,20 @@ class MainViewModel(
     fun fetchDataWithLoading(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             // Fast open: show cached products immediately, then fill in missing photos.
-            val (cachedProducts, cachedCalories, cachedWeight) = productStorageService.loadProducts()
-            _products.value = cachedProducts
-            _caloriesLeft.value = getAdjustedSoftLimit() - cachedCalories
-            if (cachedWeight > 0f) _personWeight.value = cachedWeight
+            val cached = productStorageService.loadDayFood()
+            applyDayFood(cached)
             // Even when product JSON is fresh, photos may still be missing on disk —
             // prefetch so cards auto-refresh as each picture downloads.
-            prefetchProductPhotos(cachedProducts)
+            prefetchProductPhotos(cached.products)
 
             if (forceRefresh || productStorageService.isDataStale()) {
                 _isLoadingData.value = true
                 // Refresh alcohol icon color alongside food refresh
                 fetchAlcoholLatestAndUpdateIcon()
-                productStorageService.fetchAndProcessProducts(forceRefresh = forceRefresh) { fetchedProducts, totalCaloriesConsumed, weight ->
-                    _products.value = fetchedProducts
-                    // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
-                    val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
-                    _caloriesLeft.value = actualCaloriesLeft
-                    if (weight > 0f) _personWeight.value = weight
+                productStorageService.fetchAndProcessProducts(forceRefresh = forceRefresh) { day ->
+                    applyDayFood(day)
                     _isLoadingData.value = false
-                    prefetchProductPhotos(fetchedProducts)
+                    prefetchProductPhotos(day.products)
                     checkProgressiveOnboarding()
                 }
             } else {
@@ -400,14 +455,9 @@ class MainViewModel(
             fetchAlcoholLatestAndUpdateIcon()
             
             // Force fetch from network
-            productStorageService.fetchAndProcessProducts(forceRefresh = true) { fetchedProducts, totalCaloriesConsumed, weight ->
-                _products.value = fetchedProducts
-                // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
-                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
-                _caloriesLeft.value = actualCaloriesLeft
-                if (weight > 0f) _personWeight.value = weight
-                // Prefetch remote photos for products missing local images (iOS parity)
-                prefetchProductPhotos(fetchedProducts)
+            productStorageService.fetchAndProcessProducts(forceRefresh = true) { day ->
+                applyDayFood(day)
+                prefetchProductPhotos(day.products)
                 checkProgressiveOnboarding()
                 _isPullRefreshing.value = false
             }
@@ -418,13 +468,9 @@ class MainViewModel(
         viewModelScope.launch {
             // Keep alcohol state fresh when data updates without full loading overlay
             fetchAlcoholLatestAndUpdateIcon()
-            productStorageService.fetchAndProcessProducts { fetchedProducts, totalCaloriesConsumed, weight ->
-                _products.value = fetchedProducts
-                // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
-                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
-                _caloriesLeft.value = actualCaloriesLeft
-                if (weight > 0f) _personWeight.value = weight
-                prefetchProductPhotos(fetchedProducts)
+            productStorageService.fetchAndProcessProducts { day ->
+                applyDayFood(day)
+                prefetchProductPhotos(day.products)
                 checkProgressiveOnboarding()
             }
         }
@@ -445,13 +491,16 @@ class MainViewModel(
             for (wait in longArrayOf(0L, 2000L, 4000L, 8000L)) {
                 if (wait > 0) delay(wait)
                 var count = before
-                productStorageService.fetchAndProcessProducts(forceRefresh = true) { fetched, totalCaloriesConsumed, weight ->
-                    _products.value = fetched
-                    _caloriesLeft.value = getAdjustedSoftLimit() - totalCaloriesConsumed
-                    if (weight > 0f) _personWeight.value = weight
-                    count = fetched.size
+                productStorageService.fetchAndProcessProducts(forceRefresh = true) { day ->
+                    applyDayFood(day)
+                    count = day.products.size
                 }
                 if (count > before) {
+                    val newest = _products.value.maxByOrNull { it.time }
+                    if (newest != null && newest.healthRating >= 0) {
+                        com.singularis.eateria.services.HapticsService.getInstance()
+                            .foodQuality(newest.healthRating)
+                    }
                     prefetchProductPhotos(_products.value)
                     break
                 }
@@ -460,6 +509,11 @@ class MainViewModel(
             refreshDayFoodScore()
             checkProgressiveOnboarding()
         }
+    }
+
+    /** A visible card finished downloading. Bumps imageRevision so the row redraws. */
+    fun onFoodPhotoLoaded(imageId: String, bitmap: Bitmap) {
+        injectPhotoIntoProduct(imageId, bitmap)
     }
 
     /** Injects a downloaded photo into the matching product so the UI refreshes without a full re-fetch */
@@ -511,12 +565,8 @@ class MainViewModel(
                         viewModelScope.launch {
                             productStorageService.fetchAndProcessProducts(
                                 tempImageTime = tempTimestamp,
-                            ) { fetchedProducts, totalCaloriesConsumed, weight ->
-                                _products.value = fetchedProducts
-                                // Recalculate caloriesLeft based on our local soft limit
-                                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
-                                _caloriesLeft.value = actualCaloriesLeft
-                                if (weight > 0f) _personWeight.value = weight
+                            ) { day ->
+                                applyDayFood(day)
                                 _isLoadingFoodPhoto.value = false
                                 com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
 
@@ -747,15 +797,9 @@ class MainViewModel(
                     // Give the backend time to commit the deletion, then bypass the cache so
                     // the list is rebuilt from the current server state.
                     delay(200)
-                    productStorageService.fetchAndProcessProducts(forceRefresh = true) {
-                            fetchedProducts,
-                            totalCaloriesConsumed,
-                            weight,
-                        ->
-                        _products.value = fetchedProducts
-                        _caloriesLeft.value = getAdjustedSoftLimit() - totalCaloriesConsumed
-                        if (weight > 0f) _personWeight.value = weight
-                        prefetchProductPhotos(fetchedProducts)
+                    productStorageService.fetchAndProcessProducts(forceRefresh = true) { day ->
+                        applyDayFood(day)
+                        prefetchProductPhotos(day.products)
                         _deletingProductTime.value = null
                     }
                 } else {
@@ -1000,14 +1044,10 @@ class MainViewModel(
                 }
             _currentViewingDate.value = displayDate
 
-            productStorageService.fetchAndProcessCustomDateProducts(dateString) { fetchedProducts, totalCaloriesConsumed, weight ->
-                _products.value = fetchedProducts
-                // Recalculate caloriesLeft based on our local soft limit for custom date too
-                val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
-                _caloriesLeft.value = actualCaloriesLeft
-                if (weight > 0f) _personWeight.value = weight
+            productStorageService.fetchAndProcessCustomDateProducts(dateString) { day ->
+                applyDayFood(day)
                 _isLoadingData.value = false
-                prefetchProductPhotos(fetchedProducts)
+                prefetchProductPhotos(day.products)
             }
         }
     }
@@ -1020,22 +1060,19 @@ class MainViewModel(
         fetchDataWithLoading(forceRefresh = forceRefresh)
     }
 
+    /**
+     * Green while more than half the limit is left, amber down to 20%,
+     * orange under 20%, red when the number is negative.
+     */
     fun getColor(caloriesLeft: Int): androidx.compose.ui.graphics.Color {
-        val caloriesConsumed = getAdjustedSoftLimit() - caloriesLeft
-
-        val color =
-            when {
-                caloriesLeft >= 0 -> {
-                    CalorieGreen
-                }
-                caloriesConsumed <= _hardLimit.value -> {
-                    CalorieYellow
-                }
-                else -> {
-                    CalorieRed
-                }
-            }
-        return color
+        val limit = if (_caloriesTotal.value > 0) _caloriesTotal.value else getAdjustedSoftLimit()
+        if (caloriesLeft < 0) return CalorieRed
+        if (limit <= 0) return CalorieGreen
+        return when {
+            caloriesLeft * 2 > limit -> CalorieGreen
+            caloriesLeft * 5 >= limit -> CalorieYellow
+            else -> CalorieOrange
+        }
     }
 
     // Dialog state management
@@ -1073,12 +1110,14 @@ class MainViewModel(
         // Update local state
         _softLimit.value = finalSoftLimit
         _hardLimit.value = finalHardLimit
+        publishFlame()
 
-        // Persist to storage
+        // Persist to storage and to the account, so the next today fetch has the limit.
         viewModelScope.launch {
             try {
                 authService.setSoftLimit(finalSoftLimit)
                 authService.setHardLimit(finalHardLimit)
+                pushCalorieLimit(finalSoftLimit)
             } catch (e: Exception) {
             }
         }
@@ -1228,6 +1267,7 @@ class MainViewModel(
                 val todayKey = getTodayDateKey()
                 authService.setSportCalories(todayKey, calories)
                 _todaySportCalories.value = calories
+                publishFlame()
             } catch (e: Exception) {
                 // Handle error silently
             }

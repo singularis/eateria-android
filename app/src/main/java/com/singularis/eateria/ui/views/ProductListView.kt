@@ -141,6 +141,7 @@ fun ProductListView(
     onSwipeToCamera: (() -> Unit)? = null,
     isAnonymous: Boolean = false,
     pendingMealLabel: String? = null,
+    onPhotoLoaded: ((String, android.graphics.Bitmap) -> Unit)? = null,
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
@@ -228,6 +229,7 @@ fun ProductListView(
                         onAddFoodExtra = onAddFoodExtra?.let { { extra -> it(product.time, product.name, extra) } },
                         onSwipeToCamera = onSwipeToCamera,
                         isAnonymous = isAnonymous,
+                        onPhotoLoaded = onPhotoLoaded,
                     )
                 }
             }

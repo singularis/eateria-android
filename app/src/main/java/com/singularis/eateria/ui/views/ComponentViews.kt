@@ -131,6 +131,7 @@ import com.singularis.eateria.ui.theme.CalorieGreen
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
 import com.singularis.eateria.ui.theme.PrimaryButton
+import com.singularis.eateria.ui.theme.SecondaryButton
 import com.singularis.eateria.ui.theme.cardContainer
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -484,16 +485,43 @@ fun StatsButtonsView(
 
 /** One line that shrinks down to 65% before it would clip, like iOS minimumScaleFactor. */
 @Composable
-private fun FitText(text: String, style: androidx.compose.ui.text.TextStyle) {
+private fun FitText(
+    text: String,
+    style: androidx.compose.ui.text.TextStyle,
+    modifier: Modifier = Modifier,
+) {
     androidx.compose.foundation.text.BasicText(
         text = text,
-        style = style,
+        modifier = modifier.fillMaxWidth(),
+        style = style.copy(textAlign = TextAlign.Center),
         maxLines = 1,
         autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(
-            minFontSize = style.fontSize * 0.65f,
+            minFontSize = style.fontSize * 0.55f,
             maxFontSize = style.fontSize,
         ),
     )
+}
+
+@Composable
+private fun MacroCell(
+    label: String,
+    amount: String,
+    percent: String,
+    color: androidx.compose.ui.graphics.Color,
+    large: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val small = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, color = color)
+    val main = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold, color = color)
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        if (large) {
+            FitText("$label $percent", small)
+            FitText(amount, main)
+        } else {
+            FitText(percent, small.copy(color = color.copy(alpha = 0.9f)))
+            FitText("$label $amount", main)
+        }
+    }
 }
 
 @Composable
@@ -642,6 +670,15 @@ fun MacrosSummaryRow(
         return
     }
 
+    val largeText = com.singularis.eateria.ui.theme.LocalAppScale.current >= 1.15f
+    val sidePad = (16f - 10f * com.singularis.eateria.ui.theme.scaleTravel(
+        com.singularis.eateria.ui.theme.LocalAppScale.current,
+    )).dp
+    fun pct(value: Double, target: Double): String {
+        if (target <= 0.0) return "–"
+        return "${kotlin.math.round(value / target * 100.0).toInt()}%"
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -651,29 +688,49 @@ fun MacrosSummaryRow(
                 HapticsService.getInstance().select()
                 showMacroTargets = true
             }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = sidePad, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Row(
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("$proLabel ${fmt(proteins)}$grams", color = proColor,
-                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
-                maxLines = 1)
-            Text(" • ", color = dotColor, fontSize = 14.sp)
-            Text("$fatLabel ${fmt(fats)}$grams", color = fatColor,
-                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
-                maxLines = 1)
-            Text(" • ", color = dotColor, fontSize = 14.sp)
-            Text("$carLabel ${fmt(carbs)}$grams", color = carColor,
-                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
-                maxLines = 1)
-            Text(" • ", color = dotColor, fontSize = 14.sp)
-            Text("$sugLabel ${fmt(sugar)}$grams", color = sugColor,
-                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
-                maxLines = 1)
+            MacroCell(
+                label = proLabel,
+                amount = "${fmt(proteins)}$grams",
+                percent = pct(proteins, targets.protein),
+                color = proColor,
+                large = largeText,
+                modifier = Modifier.weight(1f),
+            )
+            Text("•", color = dotColor, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+            MacroCell(
+                label = fatLabel,
+                amount = "${fmt(fats)}$grams",
+                percent = pct(fats, targets.fat),
+                color = fatColor,
+                large = largeText,
+                modifier = Modifier.weight(1f),
+            )
+            Text("•", color = dotColor, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+            MacroCell(
+                label = carLabel,
+                amount = "${fmt(carbs)}$grams",
+                percent = pct(carbs, targets.carbs),
+                color = carColor,
+                large = largeText,
+                modifier = Modifier.weight(1f),
+            )
+            Text("•", color = dotColor, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+            MacroCell(
+                label = sugLabel,
+                amount = "${fmt(sugar)}$grams",
+                percent = pct(sugar, targets.sugarMax),
+                color = sugColor,
+                large = largeText,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 
@@ -869,17 +926,16 @@ fun CalorieLimitsDialog(
     val isValidLimits = softLimitValue > 0 && hardLimitValue > 0 && softLimitValue < hardLimitValue
     val showValidationError = tempSoftLimit.isNotEmpty() && tempHardLimit.isNotEmpty() && !isValidLimits
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+    AppSheet(onDismiss = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Text(
                 text = Localization.tr(LocalContext.current, "limits.title", "Set Calorie Limits"),
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
                 color = AppTheme.textPrimary(),
             )
-        },
-        text = {
             Column {
                 Text(
                     text =
@@ -961,38 +1017,27 @@ fun CalorieLimitsDialog(
                     )
                 }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = { 
+            PrimaryButton(
+                onClick = {
                     HapticsService.getInstance().mediumImpact()
-                    onSave() 
+                    onSave()
                 },
-                enabled = isValidLimits, // Disable save button if limits are invalid
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = if (isValidLimits) AppTheme.accent() else AppTheme.textSecondary(),
-                        contentColor = AppTheme.onAccent,
-                    ),
+                enabled = isValidLimits,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(Localization.tr(LocalContext.current, "limits.save_manual", "Save Manual Limits"))
+                Text(Localization.tr(LocalContext.current, "limits.save_manual", "Save Manual Limits"), color = AppTheme.onAccent)
             }
-        },
-        dismissButton = {
-            TextButton(onClick = { 
-                HapticsService.getInstance().select()
-                onDismiss() 
-            }) {
-                Text(
-                    Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
-                    color = AppTheme.textSecondary(),
-                    style = MaterialTheme.typography.bodySmall,
-                )
+            SecondaryButton(
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onDismiss()
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = AppTheme.textPrimary())
             }
-        },
-        containerColor = AppTheme.surface(),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-    )
+        }
+    }
 }
 
 @Composable
@@ -1001,18 +1046,7 @@ fun WeightActionSheetDialog(
     onManualEntry: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true),
-    ) {
-        Surface(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.paddingM),
-            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-            color = AppTheme.surface(),
-        ) {
+    AppSheet(onDismiss = onDismiss) {
             Column(
                 modifier = Modifier.padding(Dimensions.paddingL),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -1086,7 +1120,6 @@ fun WeightActionSheetDialog(
                     )
                 }
             }
-        }
     }
 }
 
@@ -1097,59 +1130,53 @@ fun ManualWeightDialog(
     onSubmit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+    AppSheet(onDismiss = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Text(
                 text = Localization.tr(LocalContext.current, "weight.enter.title", "Enter Weight"),
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                color = AppTheme.textPrimary(),
             )
-        },
-        text = {
-            Column {
-                Text(
-                    text = Localization.tr(LocalContext.current, "weight.enter.msg", "Enter your weight in kilograms"),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppTheme.textSecondary(),
-                )
-
-                Spacer(modifier = Modifier.height(Dimensions.paddingM))
-
-                OutlinedTextField(
-                    value = weightInput,
-                    onValueChange = onWeightChange,
-                    label = {
-                        Text(
-                            Localization.tr(LocalContext.current, "weight.kg", "Weight (kg)"),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            Text(
+                text = Localization.tr(LocalContext.current, "weight.enter.msg", "Enter your weight in kilograms"),
+                style = MaterialTheme.typography.bodyLarge,
+                color = AppTheme.textSecondary(),
+            )
+            OutlinedTextField(
+                value = weightInput,
+                onValueChange = onWeightChange,
+                label = {
+                    Text(
+                        Localization.tr(LocalContext.current, "weight.kg", "Weight (kg)"),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            PrimaryButton(
+                onClick = {
+                    HapticsService.getInstance().mediumImpact()
+                    onSubmit()
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(Localization.tr(LocalContext.current, "common.save", "Save"), color = AppTheme.onAccent)
             }
-        },
-        confirmButton = {
-            TextButton(onClick = { 
-                HapticsService.getInstance().mediumImpact()
-                onSubmit() 
-            }) {
-                Text(Localization.tr(LocalContext.current, "common.save", "Save"), color = AppTheme.accent())
+            SecondaryButton(
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onDismiss()
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = AppTheme.textPrimary())
             }
-        },
-        dismissButton = {
-            TextButton(onClick = { 
-                HapticsService.getInstance().select()
-                onDismiss() 
-            }) {
-                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = AppTheme.textSecondary())
-            }
-        },
-        containerColor = AppTheme.surface(),
-        titleContentColor = AppTheme.textPrimary(),
-        textContentColor = AppTheme.textPrimary(),
-    )
+        }
+    }
 }
 
 @Composable
@@ -1158,39 +1185,15 @@ fun PhotoErrorAlert(
     message: String,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.textPrimary(),
-            )
-        },
-        text = {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = AppTheme.textSecondary(),
-                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { 
+    AppNotice(
+        title = title,
+        message = message,
+        actions = listOf(
+            AppNoticeAction(Localization.tr(LocalContext.current, "common.ok", "OK")) {
                 HapticsService.getInstance().select()
-                onDismiss() 
-            }) {
-                Text(
-                    text = Localization.tr(LocalContext.current, "common.ok", "OK"),
-                    color = AppTheme.accent(),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-        },
-        containerColor = AppTheme.surface(),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusM),
+            },
+        ),
+        onDismiss = onDismiss,
     )
 }
 
@@ -1203,53 +1206,45 @@ fun SportCaloriesDialog(
     onSave: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+    AppSheet(onDismiss = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Text(
                 text = Localization.tr(LocalContext.current, "sport.title", "Sport Calories Bonus"),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = AppTheme.textPrimary(),
             )
-        },
-        text = {
-            Column {
-                Text(
-                    text = Localization.tr(LocalContext.current, "sport.msg", "Add extra calories for your sport activities today:"),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AppTheme.textSecondary(),
-                    modifier = Modifier.padding(bottom = Dimensions.paddingM),
-                )
-
-                OutlinedTextField(
-                    value = sportCaloriesInput,
-                    onValueChange = onSportCaloriesChange,
-                    label = { Text(Localization.tr(LocalContext.current, "calories.label", "Calories"), color = Color.Gray) },
-                    placeholder = {
-                        Text(
-                            Localization.tr(LocalContext.current, "sport.placeholder", "Calories burned (e.g., 300)"),
-                            color = AppTheme.textSecondary(),
-                        )
-                    },
-                    keyboardOptions =
-                        KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done,
-                        ),
-                    singleLine = true,
-                    colors =
-                        OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = AppTheme.textPrimary(),
-                            unfocusedTextColor = AppTheme.textPrimary(),
-                            focusedBorderColor = AppTheme.accent(),
-                            unfocusedBorderColor = Color.Gray,
-                        ),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
+            Text(
+                text = Localization.tr(LocalContext.current, "sport.msg", "Add extra calories for your sport activities today:"),
+                style = MaterialTheme.typography.bodyLarge,
+                color = AppTheme.textSecondary(),
+            )
+            OutlinedTextField(
+                value = sportCaloriesInput,
+                onValueChange = onSportCaloriesChange,
+                label = { Text(Localization.tr(LocalContext.current, "calories.label", "Calories"), color = Color.Gray) },
+                placeholder = {
+                    Text(
+                        Localization.tr(LocalContext.current, "sport.placeholder", "Calories burned (e.g., 300)"),
+                        color = AppTheme.textSecondary(),
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                ),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = AppTheme.textPrimary(),
+                    unfocusedTextColor = AppTheme.textPrimary(),
+                    focusedBorderColor = AppTheme.accent(),
+                    unfocusedBorderColor = Color.Gray,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            PrimaryButton(
                 onClick = {
                     HapticsService.getInstance().mediumImpact()
                     val calories = sportCaloriesInput.toIntOrNull()
@@ -1257,26 +1252,21 @@ fun SportCaloriesDialog(
                         onSave()
                     }
                 },
-                colors = ButtonDefaults.textButtonColors(contentColor = AppTheme.accent()),
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(Localization.tr(LocalContext.current, "common.save", "Save"))
+                Text(Localization.tr(LocalContext.current, "common.save", "Save"), color = AppTheme.onAccent)
             }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = { 
+            SecondaryButton(
+                onClick = {
                     HapticsService.getInstance().select()
-                    onDismiss() 
+                    onDismiss()
                 },
-                colors = ButtonDefaults.textButtonColors(contentColor = AppTheme.textSecondary()),
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"))
+                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = AppTheme.textPrimary())
             }
-        },
-        containerColor = AppTheme.surface(),
-        titleContentColor = AppTheme.textPrimary(),
-        textContentColor = AppTheme.textPrimary(),
-    )
+        }
+    }
 }
 
 @Composable

@@ -512,7 +512,7 @@
   "nickname.label": "Ψευδώνυμο (1-50 χαρακτήρες)",
   "nickname.latin_lowercase_error": "Μόνο λατινικά πεζά γράμματα και αριθμοί (a-z, 0-9)",
   "nickname.length_error": "Έως 50 χαρακτήρες",
-  "nickname.placeholder": "Εισαγάγετε ψευδώνυμο",
+  "nickname.placeholder": "Υγιεινός φαγάς",
   "nickname.save": "Αποθήκευση",
   "nickname.success": "Επιτυχής ενημέρωση!",
   "nickname.taken_error": "Αυτό το ψευδώνυμο είναι ήδη κατειλημμένο",
@@ -683,7 +683,7 @@
   "profile.appearance": "Εμφάνιση",
   "profile.dailycalorie": "Ημερήσιος Στόχος Θερμίδων:",
   "profile.datamode": "Λειτουργία Δεδομένων",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Υγιεινός φαγάς",
   "profile.delete": "Διαγραφή Λογαριασμού",
   "profile.dev_environment": "Περιβάλλον Διακομιστή",
   "profile.edit_description": "Προσθέστε φωτογραφία και όνομα αν θέλετε. Το ψευδώνυμο μένει για τους φίλους.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Αποτυχία καταγραφής βάρους. Προσπαθήστε ξανά.",
   "weight.recorded.msg": "Το βάρος σας καταγράφηκε με επιτυχία.",
   "weight.recorded.title": "Το βάρος καταγράφηκε",
-  "weight.take_photo": "Φωτογράφισε τη ζυγαριά"
+  "weight.take_photo": "Φωτογράφισε τη ζυγαριά",
+  "activities.chess.color.white": "Λευκά",
+  "activities.chess.color.black": "Μαύρα",
+  "activities.chess.color.red": "Κόκκινα",
+  "activities.chess.color.xiangqi": "Σιανγκτσί",
+  "chess.summary.unknown": "Άγνωστο"
 }

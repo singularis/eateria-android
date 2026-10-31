@@ -54,7 +54,7 @@ object AnonymousUserIdentity {
         Localization.tr(context, "profile.trial_usage", "Trial usage")
 
     fun defaultDisplayName(context: Context): String =
-        Localization.tr(context, "profile.default_display_name", "Health Eater")
+        Localization.tr(context, "profile.default_display_name", "Healthy Eater")
 
     fun isUsablePersonName(name: String?): Boolean {
         val trimmed = name?.trim().orEmpty()

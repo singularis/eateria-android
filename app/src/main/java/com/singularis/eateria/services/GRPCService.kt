@@ -35,10 +35,40 @@ import eater.ShareFood
 import eater.Alcohol
 import eater.SetLanguage
 import eater.EaterText
+import eater.ExplainFoodScore
 import eater.GetFoodScore
 import eater.MealSuggest
 import eater.StatisticsRange
 import java.util.TimeZone
+
+/** One page of games, plus color and kind totals for every saved game. */
+data class ChessHistoryPage(
+    val total: Int = 0,
+    val games: List<Map<String, Any>> = emptyList(),
+    val pieceCounts: Map<String, Int> = emptyMap(),
+    val gameKinds: Map<String, Int> = emptyMap(),
+)
+
+/** Wins, opponents, and the same totals as history. Counts are not taken from one page. */
+data class AllChessData(
+    val totalWins: Int = 0,
+    val opponents: Map<String, String> = emptyMap(),
+    val pieceCounts: Map<String, Int> = emptyMap(),
+    val gameKinds: Map<String, Int> = emptyMap(),
+)
+
+/** One day of food from today or a custom date. totalCalories is food eaten. */
+data class FetchedDayFood(
+    val products: List<Product>,
+    val totalCalories: Int,
+    val personWeight: Float,
+    val caloriesTotal: Int,
+    val caloriesLeft: Int,
+) {
+    companion object {
+        val Empty = FetchedDayFood(emptyList(), 0, 0f, 0, 0)
+    }
+}
 
 @Suppress("SENSELESS_COMPARISON")
 class GRPCService(
@@ -261,7 +291,7 @@ class GRPCService(
             }
         }
 
-    suspend fun fetchProducts(): Triple<List<Product>, Int, Float> =
+    suspend fun fetchProducts(): FetchedDayFood =
         withContext(Dispatchers.IO) {
             try {
                 val response = sendRequest("eater_get_today", "GET")
@@ -293,28 +323,31 @@ class GRPCService(
                                     )
                                 }
 
-                            val remainingCalories = todayFood.totalForDay.totalCalories
-                            val personWeight = todayFood.personWeight
-
-                            Triple(products, remainingCalories, personWeight)
+                            FetchedDayFood(
+                                products = products,
+                                totalCalories = todayFood.totalForDay.totalCalories,
+                                personWeight = todayFood.personWeight,
+                                caloriesTotal = todayFood.totalForDay.caloriesTotal,
+                                caloriesLeft = todayFood.totalForDay.caloriesLeft,
+                            )
                         } catch (e: Exception) {
                             Log.e("GRPCService", "Failed to parse protobuf response", e)
-                            Triple(emptyList(), 0, 0f)
+                            FetchedDayFood.Empty
                         }
                     } else {
-                        Triple(emptyList(), 0, 0f)
+                        FetchedDayFood.Empty
                     }
                 } else {
                     response?.close()
-                    Triple(emptyList(), 0, 0f)
+                    FetchedDayFood.Empty
                 }
             } catch (e: Exception) {
                 Log.e("GRPCService", "Failed to fetch products", e)
-                Triple(emptyList(), 0, 0f)
+                FetchedDayFood.Empty
             }
         }
 
-    suspend fun fetchCustomDateProducts(dateString: String): Triple<List<Product>, Int, Float> =
+    suspend fun fetchCustomDateProducts(dateString: String): FetchedDayFood =
         withContext(Dispatchers.IO) {
             try {
                 val request =
@@ -352,24 +385,27 @@ class GRPCService(
                                     )
                                 }
 
-                            val remainingCalories = customDateFood.totalForDay.totalCalories
-                            val personWeight = customDateFood.personWeight
-
-                            Triple(products, remainingCalories, personWeight)
+                            FetchedDayFood(
+                                products = products,
+                                totalCalories = customDateFood.totalForDay.totalCalories,
+                                personWeight = customDateFood.personWeight,
+                                caloriesTotal = customDateFood.totalForDay.caloriesTotal,
+                                caloriesLeft = customDateFood.totalForDay.caloriesLeft,
+                            )
                         } catch (e: Exception) {
                             Log.e("GRPCService", "Failed to parse custom date protobuf response", e)
-                            Triple(emptyList(), 0, 0f)
+                            FetchedDayFood.Empty
                         }
                     } else {
-                        Triple(emptyList(), 0, 0f)
+                        FetchedDayFood.Empty
                     }
                 } else {
                     response?.close()
-                    Triple(emptyList(), 0, 0f)
+                    FetchedDayFood.Empty
                 }
             } catch (e: Exception) {
                 Log.e("GRPCService", "Failed to fetch custom date products", e)
-                Triple(emptyList(), 0, 0f)
+                FetchedDayFood.Empty
             }
         }
 
@@ -1157,6 +1193,38 @@ class GRPCService(
             }
         }
 
+    /** Daily calorie limit only. Weight and macro goals stay on goal_update. */
+    suspend fun setCalorieLimit(calorieLimit: Int): Boolean =
+        withContext(Dispatchers.IO) {
+            if (calorieLimit !in 1..20000) return@withContext false
+            try {
+                val jsonObject =
+                    org.json.JSONObject().apply {
+                        put("calorie_limit", calorieLimit)
+                    }
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
+                val request =
+                    Request
+                        .Builder()
+                        .url("${baseUrl}user_set_calorie_limit")
+                        .post(requestBody)
+                        .addHeader("Content-Type", "application/json")
+                val response = client.newCall(request.build()).execute()
+                if (!response.isSuccessful) {
+                    response.close()
+                    return@withContext false
+                }
+                val body = response.body.string()
+                response.close()
+                if (body.isNullOrBlank()) return@withContext false
+                org.json.JSONObject(body).optBoolean("success", false)
+            } catch (e: Exception) {
+                Log.e("GRPCService", "Failed to set calorie limit", e)
+                false
+            }
+        }
+
     suspend fun updateGoal(
         targetWeight: Double,
         goalMode: String,
@@ -1342,15 +1410,23 @@ class GRPCService(
     suspend fun recordChessGame(
         playerEmail: String,
         opponentEmail: String,
-        result: String
+        result: String,
+        color: String,
+        opponentColor: String? = null,
     ): Triple<Boolean, String?, String?> =
         withContext(Dispatchers.IO) {
             try {
+                val allowed = setOf("black", "white", "red")
+                val piece = color.lowercase()
+                if (piece !in allowed) return@withContext Triple(false, null, null)
+                val opponentPiece = opponentColor?.lowercase()?.takeIf { it in allowed }
                 val jsonObject = org.json.JSONObject().apply {
                     put("player_email", playerEmail)
                     put("opponent_email", opponentEmail)
                     put("result", result)
                     put("timestamp", System.currentTimeMillis())
+                    put("color", piece)
+                    if (opponentPiece != null) put("opponent_color", opponentPiece)
                 }
                 
                 val requestBody =
@@ -1474,6 +1550,50 @@ class GRPCService(
                 )
             } catch (e: Exception) {
                 Log.e("GRPCService", "getFoodScore failed", e)
+                null
+            }
+        }
+
+    /**
+     * dishTime 0 explains the whole day. Any other value explains that one meal.
+     * The same POST is what both Explain buttons call.
+     */
+    suspend fun explainFoodScore(
+        userName: String,
+        day: String,
+        languageCode: String,
+        dishTime: Long,
+    ): FoodScoreExplanation? =
+        withContext(Dispatchers.IO) {
+            try {
+                val request =
+                    ExplainFoodScore.ExplainFoodScoreRequest
+                        .newBuilder()
+                        .setUserName(userName)
+                        .setDay(day)
+                        .setLanguageCode(languageCode)
+                        .setDishTime(dishTime)
+                        .build()
+                val response =
+                    sendRequest(
+                        endpoint = "explain_food_score",
+                        httpMethod = "POST",
+                        body = request.toByteArray(),
+                        retriesLeft = 0,
+                    )
+                if (response?.isSuccessful != true) {
+                    response?.close()
+                    return@withContext null
+                }
+                val bytes = response.body.bytes()
+                response.close()
+                if (bytes == null) return@withContext null
+                val decoded = ExplainFoodScore.ExplainFoodScoreResponse.parseFrom(bytes)
+                val text = decoded.explanation.trim()
+                if (text.isEmpty()) null
+                else FoodScoreExplanation(text = text, basisDishTime = decoded.basisDishTime)
+            } catch (e: Exception) {
+                Log.e("GRPCService", "explainFoodScore failed", e)
                 null
             }
         }
@@ -1604,7 +1724,7 @@ class GRPCService(
     suspend fun getChessHistory(
         limit: Int = 50,
         offset: Int = 0
-    ): Pair<Int, List<Map<String, Any>>> =
+    ): ChessHistoryPage =
         withContext(Dispatchers.IO) {
             try {
                 val url = "${baseUrl}autocomplete/get_chess_history".toHttpUrlOrNull()?.newBuilder()
@@ -1633,21 +1753,26 @@ class GRPCService(
                             val parsedList: List<Map<String, Any>> = gson.fromJson(gamesArray.toString(), type)
                             gamesList.addAll(parsedList)
                         }
-                        Pair(total, gamesList)
+                        ChessHistoryPage(
+                            total = total,
+                            games = gamesList,
+                            pieceCounts = countMap(json.optJSONObject("piece_counts")),
+                            gameKinds = countMap(json.optJSONObject("game_kinds")),
+                        )
                     } else {
-                        Pair(0, emptyList())
+                        ChessHistoryPage()
                     }
                 } else {
                     response.close()
-                    Pair(0, emptyList())
+                    ChessHistoryPage()
                 }
             } catch (e: Exception) {
                 Log.e("GRPCService", "Failed to get chess history", e)
-                Pair(0, emptyList())
+                ChessHistoryPage()
             }
         }
 
-    suspend fun getAllChessData(): Pair<Int, Map<String, String>> =
+    suspend fun getAllChessData(): AllChessData =
         withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder()
@@ -1677,17 +1802,33 @@ class GRPCService(
                                 }
                             }
                         }
-                        Pair(totalWins, simpleOpponents)
+                        AllChessData(
+                            totalWins = totalWins,
+                            opponents = simpleOpponents,
+                            pieceCounts = countMap(json.optJSONObject("piece_counts")),
+                            gameKinds = countMap(json.optJSONObject("game_kinds")),
+                        )
                     } else {
-                        Pair(0, emptyMap())
+                        AllChessData()
                     }
                 } else {
                     response.close()
-                    Pair(0, emptyMap())
+                    AllChessData()
                 }
             } catch (e: Exception) {
                 Log.e("GRPCService", "Failed to get all chess data", e)
-                Pair(0, emptyMap())
+                AllChessData()
             }
         }
+
+    private fun countMap(obj: org.json.JSONObject?): Map<String, Int> {
+        if (obj == null) return emptyMap()
+        val counts = mutableMapOf<String, Int>()
+        val keys = obj.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            counts[key] = obj.optInt(key, 0)
+        }
+        return counts
+    }
 }

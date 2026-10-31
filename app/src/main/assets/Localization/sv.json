@@ -512,7 +512,7 @@
   "nickname.label": "Smeknamn (1-50 tecken, latinska små bokstäver a-z, 0-9)",
   "nickname.latin_lowercase_error": "Endast latinska små bokstäver och siffror (a-z, 0-9)",
   "nickname.length_error": "Smeknamn måste vara 50 tecken eller mindre",
-  "nickname.placeholder": "Ange ditt smeknamn",
+  "nickname.placeholder": "Hälsosam ätare",
   "nickname.save": "Spara Smeknamn",
   "nickname.success": "Ditt smeknamn har uppdaterats framgångsrikt!",
   "nickname.taken_error": "Detta smeknamn är redan taget",
@@ -683,7 +683,7 @@
   "profile.appearance": "Utseende",
   "profile.dailycalorie": "Dagligt Kalorimål:",
   "profile.datamode": "Dataläge",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Hälsosam ätare",
   "profile.delete": "Ta Bort Konto",
   "profile.dev_environment": "Servermiljö",
   "profile.edit_description": "Lägg till ett foto och ditt namn om du vill. Smeknamnet används fortfarande för vänner.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "Det gick inte att registrera vikten. Försök igen.",
   "weight.recorded.msg": "Din vikt har registrerats.",
   "weight.recorded.title": "Vikt registrerad",
-  "weight.take_photo": "Fotografera vågen"
+  "weight.take_photo": "Fotografera vågen",
+  "activities.chess.color.white": "Vit",
+  "activities.chess.color.black": "Svart",
+  "activities.chess.color.red": "Röd",
+  "activities.chess.color.xiangqi": "kinesiskt schack",
+  "chess.summary.unknown": "Okänd"
 }

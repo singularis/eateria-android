@@ -512,7 +512,7 @@
   "nickname.label": "Becenév (1-50 karakter, latin kisbetűk a-z, 0-9)",
   "nickname.latin_lowercase_error": "Csak latin kisbetűk és számjegyek (a-z, 0-9)",
   "nickname.length_error": "A becenév legfeljebb 50 karakter lehet",
-  "nickname.placeholder": "Adja meg a becenevét",
+  "nickname.placeholder": "Egészséges evő",
   "nickname.save": "Becenév mentése",
   "nickname.success": "A beceneve sikeresen frissítve!",
   "nickname.taken_error": "Ez a becenév már foglalt",
@@ -683,7 +683,7 @@
   "profile.appearance": "Megjelenés",
   "profile.dailycalorie": "Napi kalóriacél:",
   "profile.datamode": "Adatmód",
-  "profile.default_display_name": "Health Eater",
+  "profile.default_display_name": "Egészséges evő",
   "profile.delete": "Fiók törlése",
   "profile.dev_environment": "Szerver környezet",
   "profile.edit_description": "Adj hozzá fotót és nevet, ha szeretnéd. A becenevet a barátoknál továbbra is ezt használjuk.",
@@ -987,5 +987,10 @@
   "weight.record_failed.msg": "A testsúly rögzítése nem sikerült. Próbálja újra.",
   "weight.recorded.msg": "Testsúlyát sikeresen rögzítettük.",
   "weight.recorded.title": "Testsúly rögzítve",
-  "weight.take_photo": "Mérleg fotózása"
+  "weight.take_photo": "Mérleg fotózása",
+  "activities.chess.color.white": "Fehér",
+  "activities.chess.color.black": "Fekete",
+  "activities.chess.color.red": "Piros",
+  "activities.chess.color.xiangqi": "kínai sakk",
+  "chess.summary.unknown": "Ismeretlen"
 }

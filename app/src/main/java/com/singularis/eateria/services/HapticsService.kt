@@ -5,8 +5,6 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.view.HapticFeedbackConstants
-
 class HapticsService private constructor(context: Context) {
     private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
@@ -16,83 +14,75 @@ class HapticsService private constructor(context: Context) {
         context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     }
 
-    fun lightImpact() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator?.vibrate(VibrationEffect.createOneShot(10, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(10)
-        }
+    private fun allowed(): Boolean {
+        val motor = vibrator ?: return false
+        return motor.hasVibrator()
     }
 
-    fun mediumImpact() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator?.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(20)
-        }
-    }
-
-    fun heavyImpact() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator?.vibrate(VibrationEffect.createOneShot(50, 255))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(50)
-        }
-    }
-
-    fun success() {
-        // Double tap pattern for success
+    /** One-shot and waveforms. Predefined click effects stay silent on many phones. */
+    private fun pulse(ms: Long, amplitude: Int) {
+        if (!allowed()) return
+        val motor = vibrator ?: return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val pattern = longArrayOf(0, 20, 50, 20)
-            val amplitudes = intArrayOf(0, 100, 0, 150)
-            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, amplitudes, -1))
+            val strength = if (motor.hasAmplitudeControl()) {
+                amplitude.coerceIn(1, 255)
+            } else {
+                VibrationEffect.DEFAULT_AMPLITUDE
+            }
+            motor.vibrate(VibrationEffect.createOneShot(ms, strength))
         } else {
             @Suppress("DEPRECATION")
-            vibrator?.vibrate(longArrayOf(0, 20, 50, 20), -1)
+            motor.vibrate(ms)
         }
     }
 
-    fun warning() {
-        // Medium pattern for warning
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val pattern = longArrayOf(0, 30, 30, 30)
-            val amplitudes = intArrayOf(0, 120, 0, 120)
-            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, amplitudes, -1))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(longArrayOf(0, 30, 30, 30), -1)
-        }
-    }
-
-    fun error() {
-        // Triple tap pattern for error
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val pattern = longArrayOf(0, 30, 40, 30, 40, 30)
-            val amplitudes = intArrayOf(0, 150, 0, 150, 0, 150)
-            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, amplitudes, -1))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(longArrayOf(0, 30, 40, 30, 40, 30), -1)
-        }
-    }
-
-    fun select() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+    private fun pattern(timings: LongArray, amplitudes: IntArray) {
+        if (!allowed()) return
+        val motor = vibrator ?: return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && motor.hasAmplitudeControl()) {
+            motor.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator?.vibrate(VibrationEffect.createOneShot(5, VibrationEffect.DEFAULT_AMPLITUDE))
+            motor.vibrate(VibrationEffect.createWaveform(timings, -1))
         } else {
             @Suppress("DEPRECATION")
-            vibrator?.vibrate(5)
+            motor.vibrate(timings, -1)
+        }
+    }
+
+    fun lightImpact() = pulse(12, 80)
+
+    fun mediumImpact() = pulse(22, 140)
+
+    fun heavyImpact() = pulse(40, 255)
+
+    fun success() = pattern(longArrayOf(0, 24, 40, 28), intArrayOf(0, 120, 0, 180))
+
+    fun warning() = pattern(longArrayOf(0, 36, 30, 36), intArrayOf(0, 160, 0, 160))
+
+    fun error() = pattern(longArrayOf(0, 30, 40, 30, 40, 36), intArrayOf(0, 180, 0, 180, 0, 200))
+
+    fun select() = pulse(8, 60)
+
+    /**
+     * Buzz after a meal is logged. Cat, dog, and the plain theme each feel
+     * different, and a score of 50 or below feels different from a good one.
+     */
+    fun foodQuality(rating: Int) {
+        if (!AppSettingsService.getInstance().vibrationEnabled) return
+        val pleasant = rating > 50
+        val mascot = runCatching { ThemeService.getInstance().currentMascot }.getOrDefault(AppMascot.NONE)
+        when (mascot) {
+            AppMascot.CAT -> if (pleasant) {
+                pattern(longArrayOf(0, 18, 40, 18, 40, 22, 50, 16), intArrayOf(0, 50, 0, 70, 0, 90, 0, 50))
+            } else {
+                pattern(longArrayOf(0, 70, 80, 24), intArrayOf(0, 255, 0, 90))
+            }
+            AppMascot.DOG -> if (pleasant) {
+                pattern(longArrayOf(0, 40, 120, 36), intArrayOf(0, 220, 0, 180))
+            } else {
+                pulse(280, 200)
+            }
+            else -> if (pleasant) success() else error()
         }
     }
 

@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import kotlin.math.roundToInt
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.filled.Star
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.singularis.eateria.services.AnonymousUserIdentity
 import com.singularis.eateria.services.HealthDataService
 import com.singularis.eateria.services.LanguageService
@@ -108,6 +109,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
     var userOptimalWeight by remember { mutableStateOf(0.0) }
     var userRecommendedCalories by remember { mutableStateOf(0) }
     var showAddFriends by remember { mutableStateOf(false) }
+    var showMyFriends by remember { mutableStateOf(false) }
     var showNicknameSettings by remember { mutableStateOf(false) }
     var showMainAppTutorial by remember { mutableStateOf(false) }
 
@@ -140,8 +142,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
             Modifier
                 .fillMaxSize()
                 .background(AppTheme.backgroundGradient())
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .windowInsetsPadding(WindowInsets.navigationBars),
+                .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         Column(
             modifier =
@@ -154,33 +155,12 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         top = Dimensions.paddingM,
                     ),
         ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = { 
-                    com.singularis.eateria.services.HapticsService.getInstance().select()
-                    onBackClick() 
-                }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
-                        tint = AppTheme.textPrimary(),
-                    )
-                }
+            ScreenHeader(
+                title = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
+                onBack = onBackClick,
+            )
 
-                Text(
-                    text = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
-                    color = AppTheme.textPrimary(),
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-
-                Spacer(modifier = Modifier.width(Dimensions.paddingXL + Dimensions.paddingM))
-            }
-
-            Spacer(modifier = Modifier.height(Dimensions.paddingL))
+            Spacer(modifier = Modifier.height(Dimensions.paddingS))
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
@@ -228,12 +208,12 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
+                            .heightIn(min = 56.dp)
                             .background(
                                 brush = androidx.compose.ui.graphics.Brush.linearGradient(
                                     colors = listOf(CalorieGreen, Color(0xFF9C27B0))
                                 ),
-                                shape = RoundedCornerShape(Dimensions.cornerRadiusM)
+                                shape = RoundedCornerShape(25.dp)
                             )
                     ) {
                         Row(
@@ -253,23 +233,28 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                                 Icon(
                                     imageVector = Icons.Default.Pets,
                                     contentDescription = null,
-                                    tint = AppTheme.textPrimary().copy(alpha = 0.9f),
+                                    tint = AppTheme.onAccent.copy(alpha = 0.9f),
                                     modifier = Modifier.size(44.dp)
                                 )
                             }
                             
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.weight(1f).padding(horizontal = Dimensions.paddingS),
+                            ) {
                                 Icon(
                                     imageVector = androidx.compose.material.icons.Icons.Default.PlayCircleFilled,
                                     contentDescription = null,
-                                    tint = AppTheme.textPrimary()
+                                    tint = AppTheme.onAccent
                                 )
                                 Spacer(modifier = Modifier.width(Dimensions.paddingS))
                                 Text(
                                     text = Localization.tr(LocalContext.current, "profile.watch_me_first", "Watch me first!"),
-                                    color = AppTheme.textPrimary(),
+                                    color = AppTheme.onAccent,
                                     fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.bodyLarge
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                 )
                             }
                             
@@ -285,7 +270,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                                 Icon(
                                     imageVector = Icons.Default.Pets,
                                     contentDescription = null,
-                                    tint = AppTheme.textPrimary().copy(alpha = 0.9f),
+                                    tint = AppTheme.onAccent.copy(alpha = 0.9f),
                                     modifier = Modifier.size(44.dp)
                                 )
                             }
@@ -351,7 +336,7 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                             title = Localization.tr(LocalContext.current, "profile.addfriends", "Add Friends"),
                             onClick = {
                                 com.singularis.eateria.services.HapticsService.getInstance().mediumImpact()
-                                showAddFriends = true
+                                showMyFriends = true
                             }
                         )
                     }
@@ -365,8 +350,8 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         color = Color(0xFF9C27B0)
                     )
                     Card(
-                        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
-                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
+                        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.divider(), RoundedCornerShape(Dimensions.cornerRadiusM)),
+                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
                         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                     ) {
                         Column {
@@ -406,6 +391,53 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                                     appSettingsService.reduceMotion = it 
                                 }
                             )
+                            androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
+                            val followsSystemSize by appSettingsService.followsSystemTextSizeFlow.collectAsState()
+                            val effectiveScale = com.singularis.eateria.ui.theme.LocalAppScale.current
+                            val maxScale = com.singularis.eateria.services.AppSettingsService.maxScaleFor(
+                                androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp,
+                            )
+                            val minScale = com.singularis.eateria.services.AppSettingsService.FONT_SCALE_MIN
+                            Column(Modifier.padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingS)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            text = Localization.tr(LocalContext.current, "profile.font_size", "Text size"),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = AppTheme.textPrimary(),
+                                        )
+                                        Text(
+                                            text = "${(effectiveScale * 100).roundToInt()}%  " +
+                                                Localization.tr(LocalContext.current, "profile.font_size.desc", "Make text smaller or larger for your eyes"),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = AppTheme.textSecondary(),
+                                        )
+                                    }
+                                    if (!followsSystemSize) {
+                                        TextButton(onClick = {
+                                            com.singularis.eateria.services.HapticsService.getInstance().select()
+                                            appSettingsService.followSystemTextSize()
+                                        }) {
+                                            Text(
+                                                Localization.tr(LocalContext.current, "profile.font_size.system", "Use phone setting"),
+                                                color = AppTheme.accent(),
+                                                style = MaterialTheme.typography.labelLarge,
+                                            )
+                                        }
+                                    }
+                                }
+                                Slider(
+                                    value = effectiveScale.coerceIn(minScale, maxScale),
+                                    onValueChange = { appSettingsService.fontScale = (it * 20f).roundToInt() / 20f },
+                                    valueRange = minScale..maxScale,
+                                    colors = androidx.compose.material3.SliderDefaults.colors(
+                                        thumbColor = AppTheme.accent(),
+                                        activeTrackColor = AppTheme.accent(),
+                                        inactiveTrackColor = AppTheme.divider(),
+                                    ),
+                                )
+                            }
                             androidx.compose.material3.HorizontalDivider(color = AppTheme.divider(), modifier = Modifier.padding(horizontal = Dimensions.paddingS))
 
                             // Data Mode
@@ -486,8 +518,8 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
                         Button(
                             onClick = { showDeleteAccountDialog = true },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = CalorieRed,
-                                contentColor = AppTheme.textPrimary()
+                                containerColor = AppTheme.danger(),
+                                contentColor = AppTheme.onAccent
                             ),
                             shape = RoundedCornerShape(25.dp),
                             modifier = Modifier.fillMaxWidth().height(50.dp)
@@ -502,6 +534,12 @@ val themeService = com.singularis.eateria.services.ThemeService.getInstance()
         }
 
         // Add Friends dialog trigger from profile
+        if (showMyFriends) {
+            MyFriendsView(
+                onAdd = { showAddFriends = true },
+                onDismiss = { showMyFriends = false },
+            )
+        }
         if (showAddFriends) {
             AddFriendsView(onDismiss = { showAddFriends = false })
         }
@@ -658,7 +696,7 @@ private fun ProfileHeader(
                     if (isAnonymous) Modifier else Modifier.clickable { onEditNickname() },
                 )
                 .border(1.dp, AppTheme.textPrimary().copy(alpha = 0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
-        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(
@@ -752,8 +790,8 @@ private fun HealthDataCard(
     onUpdateHealthClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
-        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
+        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.divider(), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(
@@ -820,8 +858,8 @@ private fun HealthDataCard(
 @Composable
 private fun PersonalizeCard(onSetupHealthClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
-        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
+        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.divider(), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(
@@ -861,7 +899,7 @@ private fun PersonalizeCard(onSetupHealthClick: () -> Unit) {
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = AppTheme.accent(),
-                        contentColor = AppTheme.textPrimary(),
+                        contentColor = AppTheme.onAccent,
                     ),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimensions.cornerRadiusS),
@@ -931,8 +969,8 @@ private fun ProfileMenuSection(
         )
 
         Card(
-            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
-            colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
+            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.divider(), RoundedCornerShape(Dimensions.cornerRadiusM)),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
         ) {
             Column {
@@ -1064,7 +1102,7 @@ internal fun LanguageSelectorDialog(
                     ) {
                         Text(
                             text = language.flag,
-                            fontSize = 24.sp,
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Normal),
                             modifier = Modifier.width(40.dp),
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -1148,7 +1186,7 @@ private fun MascotButton(
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = if (isSelected) AppTheme.textPrimary() else AppTheme.textSecondary(),
+                    tint = if (isSelected) AppTheme.onAccent else AppTheme.textSecondary(),
                     modifier = Modifier.size(32.dp)
                 )
             } else {
@@ -1163,7 +1201,7 @@ private fun MascotButton(
                             modifier = Modifier.size(48.dp)
                         )
                     } else {
-                        Text(mascot.icon, fontSize = 32.sp)
+                        Text(mascot.icon, style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Normal))
                     }
                 }
             }
@@ -1187,8 +1225,8 @@ private fun ThemeSectionCard(
     loadMascotArtwork: Boolean = true,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.textPrimary().copy(alpha=0.2f), RoundedCornerShape(Dimensions.cornerRadiusM)),
-        colors = CardDefaults.cardColors(containerColor = AppTheme.surface().copy(alpha = 0.6f)),
+        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.divider(), RoundedCornerShape(Dimensions.cornerRadiusM)),
+        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
         shape = RoundedCornerShape(Dimensions.cornerRadiusM),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM)) {
@@ -1290,7 +1328,7 @@ private fun ThemeSectionCard(
 private fun ActionButton(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = CalorieGreen, contentColor = AppTheme.textPrimary()),
+        colors = ButtonDefaults.buttonColors(containerColor = AppTheme.success(), contentColor = AppTheme.onAccent),
         shape = RoundedCornerShape(25.dp),
         modifier = Modifier.fillMaxWidth().height(50.dp)
     ) {
@@ -1324,7 +1362,7 @@ private fun <T> PreferenceSegmentedRow(title: String, options: List<Pair<String,
     Column(modifier = Modifier.fillMaxWidth().padding(Dimensions.paddingM)) {
         Text(text = title, color = AppTheme.textSecondary(), style = MaterialTheme.typography.labelMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth().height(36.dp).clip(RoundedCornerShape(8.dp)).background(AppTheme.divider())) {
+        Row(modifier = Modifier.fillMaxWidth().height(44.dp).clip(RoundedCornerShape(AppTheme.smallRadius)).background(AppTheme.divider())) {
             options.forEach { option ->
                 val isSelected = option.second == selected
                 Box(

@@ -57,44 +57,19 @@ fun FeedbackView(
         modifier = Modifier
             .fillMaxSize()
             .background(AppTheme.backgroundGradient())
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .windowInsetsPadding(WindowInsets.navigationBars),
+            .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .imePadding()
-                .padding(horizontal = 20.dp, vertical = 10.dp)
+                .padding(horizontal = Dimensions.paddingM)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Header Top Bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TextButton(
-                    onClick = { 
-                        com.singularis.eateria.services.HapticsService.getInstance().select()
-                        onBackClick() 
-                    },
-                    enabled = !isSubmitting
-                ) {
-                    Text(
-                        text = Localization.tr(context, "common.close", "Close"),
-                        color = AppTheme.textPrimary()
-                    )
-                }
-                
-                Text(
-                    text = Localization.tr(context, "feedback.nav", "Feedback"),
-                    color = AppTheme.textPrimary(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                Spacer(modifier = Modifier.width(60.dp)) // To balance the Close button
-            }
+            ScreenHeader(
+                title = Localization.tr(context, "feedback.nav", "Feedback"),
+                onBack = { if (!isSubmitting) onBackClick() },
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 

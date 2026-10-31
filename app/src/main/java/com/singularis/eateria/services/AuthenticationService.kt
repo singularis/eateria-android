@@ -435,7 +435,11 @@ class AuthenticationService(
 
     private suspend fun handleGoogleIdToken(googleIdTokenCredential: GoogleIdTokenCredential): Boolean {
         val idToken = googleIdTokenCredential.idToken
-        val email = googleIdTokenCredential.id
+        val email = googleIdTokenCredential.email?.takeIf { it.isNotBlank() }
+        if (email == null) {
+            Log.e("AuthenticationService", "Google sign-in did not return an email")
+            return false
+        }
         val name = googleIdTokenCredential.displayName
         val profilePictureURL = googleIdTokenCredential.profilePictureUri?.toString()
 

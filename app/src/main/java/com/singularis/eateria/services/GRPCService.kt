@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import com.singularis.eateria.models.Product
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -33,6 +34,11 @@ import eater.AddFriend
 import eater.ShareFood
 import eater.Alcohol
 import eater.SetLanguage
+import eater.EaterText
+import eater.GetFoodScore
+import eater.MealSuggest
+import eater.StatisticsRange
+import java.util.TimeZone
 
 @Suppress("SENSELESS_COMPARISON")
 class GRPCService(
@@ -44,6 +50,9 @@ class GRPCService(
     private val baseDelaySeconds = 10L
 
     private val authService = AuthenticationService(context)
+
+    var lastDailyLimit: DailyLimit? = null
+        private set
 
     private val loggingInterceptor =
         HttpLoggingInterceptor().apply {
@@ -71,6 +80,7 @@ class GRPCService(
         retriesLeft: Int = maxRetries,
         headers: Map<String, String> = emptyMap(),
         contentType: String? = null,
+        timeoutSeconds: Long? = null,
     ): Response? =
         withContext(Dispatchers.IO) {
             try {
@@ -83,16 +93,16 @@ class GRPCService(
                 headers.forEach { (k, v) -> builder.header(k, v) }
                 val request = builder.build()
 
-                val response = client.newCall(request).execute()
+                val response = callClient(timeoutSeconds).newCall(request).execute()
 
                 if (response.isSuccessful) {
                     response
                 } else if (retriesLeft > 0 && response.code !in 400..499) {
-                    // Do not retry client errors (e.g. invalid share percentage).
+                    // Do not retry client errors (e.g. invalid share percentage or daily quota).
                     response.close()
                     val delay = baseDelaySeconds * 2.0.pow(maxRetries - retriesLeft).toLong()
                     kotlinx.coroutines.delay(delay * 1000)
-                    sendRequest(endpoint, httpMethod, body, retriesLeft - 1)
+                    sendRequest(endpoint, httpMethod, body, retriesLeft - 1, headers, contentType, timeoutSeconds)
                 } else {
                     response
                 }
@@ -100,13 +110,76 @@ class GRPCService(
                 if (retriesLeft > 0) {
                     val delay = baseDelaySeconds * 2.0.pow(maxRetries - retriesLeft).toLong()
                     kotlinx.coroutines.delay(delay * 1000)
-                    sendRequest(endpoint, httpMethod, body, retriesLeft - 1)
+                    sendRequest(endpoint, httpMethod, body, retriesLeft - 1, headers, contentType, timeoutSeconds)
                 } else {
                     Log.e("GRPCService", "Request failed after all retries", e)
                     null
                 }
             }
         }
+
+    private fun callClient(timeoutSeconds: Long?): OkHttpClient {
+        if (timeoutSeconds == null) return client
+        return client
+            .newBuilder()
+            .connectTimeout(timeoutSeconds, TimeUnit.SECONDS)
+            .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
+            .writeTimeout(timeoutSeconds, TimeUnit.SECONDS)
+            .callTimeout(timeoutSeconds, TimeUnit.SECONDS)
+            .build()
+    }
+
+    private fun isAnonymousUser(): Boolean =
+        try {
+            kotlinx.coroutines.runBlocking {
+                context.dataStore.data.first()[
+                    androidx.datastore.preferences.core.booleanPreferencesKey("is_anonymous"),
+                ] == true
+            }
+        } catch (_: Exception) {
+            false
+        }
+
+    private fun rememberDailyLimit(body: String?, statusCode: Int): DailyLimit? {
+        val limit = DailyLimit.parse(body, statusCode, isAnonymousUser()) ?: return null
+        lastDailyLimit = limit
+        return limit
+    }
+
+    private fun isoTimestamp(millis: Long): String {
+        val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+        format.timeZone = TimeZone.getTimeZone("UTC")
+        return format.format(Date(millis))
+    }
+
+    private fun productFromDish(
+        time: Long,
+        name: String,
+        calories: Int,
+        weight: Int,
+        ingredients: List<String>,
+        healthRating: Int,
+        imageId: String,
+        proteins: Double,
+        fats: Double,
+        carbohydrates: Double,
+        sugar: Double,
+        alternativeNames: List<String>,
+    ): Product =
+        Product(
+            time = time,
+            name = name,
+            calories = calories,
+            weight = weight,
+            ingredients = ingredients,
+            healthRating = healthRating,
+            imageId = imageId,
+            proteins = proteins,
+            fats = fats,
+            carbohydrates = carbohydrates,
+            sugar = sugar,
+            alternativeNames = alternativeNames,
+        )
 
     // Alcohol
     suspend fun fetchAlcoholLatest(): Alcohol.GetAlcoholLatestResponse? =
@@ -203,7 +276,8 @@ class GRPCService(
 
                             val products =
                                 todayFood.dishesTodayList.map { dish ->
-                                    Product(
+                                    val macros = if (dish.hasContains()) dish.contains else null
+                                    productFromDish(
                                         time = dish.time,
                                         name = dish.dishName,
                                         calories = dish.estimatedAvgCalories,
@@ -211,6 +285,11 @@ class GRPCService(
                                         ingredients = dish.ingredientsList,
                                         healthRating = dish.healthRating,
                                         imageId = dish.imageId,
+                                        proteins = macros?.proteins ?: 0.0,
+                                        fats = macros?.fats ?: 0.0,
+                                        carbohydrates = macros?.carbohydrates ?: 0.0,
+                                        sugar = macros?.sugar ?: 0.0,
+                                        alternativeNames = dish.alternativeNamesList,
                                     )
                                 }
 
@@ -256,7 +335,8 @@ class GRPCService(
 
                             val products =
                                 customDateFood.dishesForDateList.map { dish ->
-                                    Product(
+                                    val macros = if (dish.hasContains()) dish.contains else null
+                                    productFromDish(
                                         time = dish.time,
                                         name = dish.dishName,
                                         calories = dish.estimatedAvgCalories,
@@ -264,6 +344,11 @@ class GRPCService(
                                         ingredients = dish.ingredientsList,
                                         healthRating = dish.healthRating,
                                         imageId = dish.imageId,
+                                        proteins = macros?.proteins ?: 0.0,
+                                        fats = macros?.fats ?: 0.0,
+                                        carbohydrates = macros?.carbohydrates ?: 0.0,
+                                        sugar = macros?.sugar ?: 0.0,
+                                        alternativeNames = dish.alternativeNamesList,
                                     )
                                 }
 
@@ -383,6 +468,11 @@ class GRPCService(
 
                     Log.d("GRPCService", "Error Response - Status: $statusCode, Body: $responseBody, PhotoType: $photoType")
 
+                    if (rememberDailyLimit(responseBody, statusCode) != null) {
+                        withContext(Dispatchers.Main) { onFailure("DAILY_LIMIT") }
+                        return@withContext
+                    }
+
                     // Check if backend sent specific error message
                     if (responseBody != null) {
                         val lowerText = responseBody.lowercase()
@@ -468,39 +558,44 @@ class GRPCService(
             }
         }
 
-    suspend fun getRecommendation(days: Int): String =
+    suspend fun getRecommendation(days: Int): RecommendationResult =
         withContext(Dispatchers.IO) {
             try {
                 val request =
                     GetRecomendation.RecommendationRequest
                         .newBuilder()
                         .setDays(days)
+                        .setLanguageCode(LanguageService.getCurrentCode(context))
                         .build()
 
-                val response = sendRequest("get_recommendation", "POST", request.toByteArray())
+                val response = sendRequest("get_recommendation", "POST", request.toByteArray(), retriesLeft = 0)
 
-                if (response?.isSuccessful == true) {
-                    val responseBytes = response.body.bytes()
-                    response.close()
-
-                    if (responseBytes != null) {
-                        try {
-                            val recommendationResponse = GetRecomendation.RecommendationResponse.parseFrom(responseBytes)
-                            recommendationResponse.recommendation
-                        } catch (e: Exception) {
-                            Log.e("GRPCService", "Failed to parse recommendation response", e)
-                            ""
-                        }
+                if (response == null) return@withContext RecommendationResult.Failed
+                val responseBytes = response.body.bytes()
+                val code = response.code
+                response.close()
+                if (!response.isSuccessful) {
+                    val limit = rememberDailyLimit(responseBytes.toString(Charsets.UTF_8), code)
+                    return@withContext if (limit != null) {
+                        RecommendationResult.Quota(limit)
                     } else {
-                        ""
+                        RecommendationResult.Failed
                     }
-                } else {
-                    response?.close()
-                    ""
+                }
+                if (responseBytes == null) return@withContext RecommendationResult.Failed
+                try {
+                    val recommendationResponse = GetRecomendation.RecommendationResponse.parseFrom(responseBytes)
+                    RecommendationResult.Ok(
+                        text = recommendationResponse.recommendation,
+                        recScore = recommendationResponse.recscore,
+                    )
+                } catch (e: Exception) {
+                    Log.e("GRPCService", "Failed to parse recommendation response", e)
+                    RecommendationResult.Failed
                 }
             } catch (e: Exception) {
                 Log.e("GRPCService", "Failed to get recommendation", e)
-                ""
+                RecommendationResult.Failed
             }
         }
 
@@ -613,7 +708,7 @@ class GRPCService(
                     if (responseBytes != null) {
                         try {
                             val todayFood = TodayFoodOuterClass.TodayFood.parseFrom(responseBytes)
-                            val todayDateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+                            val todayDateString = SimpleDateFormat("dd-MM-yyyy", Locale.US).format(Date())
 
                             Log.d(
                                 "GRPCService",
@@ -694,7 +789,7 @@ class GRPCService(
 
                             val stats =
                                 com.singularis.eateria.models.DailyStatistics(
-                                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).parse(dateString) ?: Date(),
+                                    date = SimpleDateFormat("dd-MM-yyyy", Locale.US).parse(dateString) ?: Date(),
                                     dateString = dateString,
                                     totalCalories = customDateFood.totalForDay.totalCalories,
                                     totalFoodWeight = customDateFood.totalForDay.totalAvgWeight,
@@ -731,8 +826,6 @@ class GRPCService(
             }
         }
     }
-
-    suspend fun submitManualWeight(weight: Float): Boolean = sendManualWeight(weight, "")
 
     suspend fun updateNickname(nickname: String): Result<Unit> =
         withContext(Dispatchers.IO) {
@@ -913,6 +1006,9 @@ class GRPCService(
                     if (responseBytes != null) {
                         try {
                             val shareFoodResponse = ShareFood.ShareFoodResponse.parseFrom(responseBytes)
+                            if (shareFoodResponse.nicknameUsed.isNotEmpty()) {
+                                Log.d("GRPCService", "Shared as ${shareFoodResponse.nicknameUsed}")
+                            }
                             shareFoodResponse.success
                         } catch (e: Exception) {
                             Log.e("GRPCService", "Failed to parse share food response", e)
@@ -1294,45 +1390,214 @@ class GRPCService(
             }
         }
 
-    suspend fun getChessStats(
-        userEmail: String,
-        opponentEmail: String? = null
-    ): Result<Triple<String, String?, String?>> =
+    suspend fun sendFoodText(
+        text: String,
+        timestampMillis: Long? = null,
+    ): FoodTextResult =
         withContext(Dispatchers.IO) {
             try {
-                val jsonObject = org.json.JSONObject().apply {
-                    put("user_email", userEmail)
-                    opponentEmail?.let { put("opponent_email", it) }
+                val message =
+                    EaterText.FoodTextMessage
+                        .newBuilder()
+                        .setTime(isoTimestamp(timestampMillis ?: System.currentTimeMillis()))
+                        .setText(text)
+                        .build()
+                val response =
+                    sendRequest(
+                        endpoint = "eater_receive_text",
+                        httpMethod = "POST",
+                        body = message.toByteArray(),
+                        retriesLeft = 0,
+                        timeoutSeconds = 70,
+                    )
+                if (response == null) {
+                    return@withContext FoodTextResult(success = false, errorCode = "timeout")
                 }
-                
-                val requestBody =
-                    jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
-                
-                val request = Request.Builder()
-                    .url("${baseUrl}autocomplete/get_chess_stats")
-                    .post(requestBody)
-                    .addHeader("Content-Type", "application/json")
-                
-                val response = client.newCall(request.build()).execute()
-                if (response.isSuccessful) {
-                    val body = response.body.string()
-                    response.close()
-                    if (body != null) {
-                        val json = org.json.JSONObject(body)
-                        val score = json.optString("score", "0:0")
-                        val oppName = if (json.has("opponent_name") && !json.isNull("opponent_name")) json.getString("opponent_name") else null
-                        val lastDate = if (json.has("last_game_date") && !json.isNull("last_game_date")) json.getString("last_game_date") else null
-                        Result.success(Triple(score, oppName, lastDate))
-                    } else {
-                        Result.failure(Exception("Empty body"))
+                val bytes = response.body.bytes()
+                val code = response.code
+                response.close()
+                if (!response.isSuccessful) {
+                    val limit = rememberDailyLimit(bytes.toString(Charsets.UTF_8), code)
+                    if (limit != null) {
+                        return@withContext FoodTextResult(success = false, dailyLimit = limit, errorCode = "daily_limit_reached")
                     }
-                } else {
-                    response.close()
-                    Result.failure(Exception("Failed request"))
+                }
+                if (bytes == null) {
+                    return@withContext FoodTextResult(success = false, errorCode = "timeout")
+                }
+                try {
+                    val parsed = EaterText.FoodTextResponse.parseFrom(bytes)
+                    if (parsed.success) {
+                        FoodTextResult(success = true, dishName = parsed.dishName)
+                    } else {
+                        FoodTextResult(
+                            success = false,
+                            errorCode = parsed.errorCode.ifBlank { "timeout" },
+                            serverMessage = parsed.message,
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("GRPCService", "Failed to parse food text response", e)
+                    FoodTextResult(success = false, errorCode = "timeout")
                 }
             } catch (e: Exception) {
-                Log.e("GRPCService", "Failed to get chess stats", e)
-                Result.failure(e)
+                Log.e("GRPCService", "sendFoodText failed", e)
+                FoodTextResult(success = false, errorCode = "timeout")
+            }
+        }
+
+    suspend fun getFoodScore(
+        userName: String,
+        day: String,
+    ): DayFoodScore? =
+        withContext(Dispatchers.IO) {
+            try {
+                val request =
+                    GetFoodScore.FoodScoreRequest
+                        .newBuilder()
+                        .setUserName(userName)
+                        .setDay(day)
+                        .build()
+                val response = sendRequest("get_food_score", "POST", request.toByteArray())
+                if (response?.isSuccessful != true) {
+                    response?.close()
+                    return@withContext null
+                }
+                val bytes = response.body.bytes()
+                response.close()
+                if (bytes == null) return@withContext null
+                val decoded = GetFoodScore.FoodScoreResponse.parseFrom(bytes)
+                DayFoodScore(
+                    hasScore = decoded.hasScore,
+                    score = decoded.score,
+                    dishTime = decoded.dishTime,
+                )
+            } catch (e: Exception) {
+                Log.e("GRPCService", "getFoodScore failed", e)
+                null
+            }
+        }
+
+    suspend fun getMealSuggest(
+        languageCode: String,
+        variant: Int,
+        mealsToday: Int,
+        remaining: MealPlannerRemaining,
+    ): MealSuggestResult =
+        withContext(Dispatchers.IO) {
+            try {
+                val request =
+                    MealSuggest.MealSuggestRequest
+                        .newBuilder()
+                        .setDays(7)
+                        .setLanguageCode(languageCode)
+                        .setVariant(variant)
+                        .setRemainingKcal(remaining.kcal)
+                        .setRemainingProtein(remaining.protein)
+                        .setRemainingCarbs(remaining.carbs)
+                        .setRemainingFats(remaining.fats)
+                        .setRemainingSugar(remaining.sugar)
+                        .setMealsToday(mealsToday)
+                        .build()
+                val response =
+                    sendRequest(
+                        endpoint = "meal_suggest",
+                        httpMethod = "POST",
+                        body = request.toByteArray(),
+                        retriesLeft = 0,
+                        timeoutSeconds = 90,
+                    )
+                if (response == null) return@withContext MealSuggestResult.Failed
+                val bytes = response.body.bytes()
+                val code = response.code
+                response.close()
+                if (!response.isSuccessful) {
+                    val limit = rememberDailyLimit(bytes.toString(Charsets.UTF_8), code)
+                    return@withContext if (limit != null) MealSuggestResult.Quota(limit) else MealSuggestResult.Failed
+                }
+                if (bytes == null) return@withContext MealSuggestResult.Failed
+                val meal = MealSuggest.MealSuggestResponse.parseFrom(bytes)
+                val name = meal.dish.name.trim()
+                val text = meal.text.trim()
+                if (name.isEmpty() && text.isEmpty()) return@withContext MealSuggestResult.Failed
+                MealSuggestResult.Ok(
+                    MealPlanResult(
+                        text = text,
+                        name = name,
+                        why = meal.dish.why.trim(),
+                        howTo = meal.dish.howTo.trim(),
+                        basedOn = meal.dish.basedOn.trim(),
+                        variant = variant,
+                    ),
+                )
+            } catch (e: Exception) {
+                Log.e("GRPCService", "getMealSuggest failed", e)
+                MealSuggestResult.Failed
+            }
+        }
+
+    suspend fun fetchStatisticsRange(
+        startDate: String,
+        endDate: String,
+    ): StatisticsRangeResult =
+        withContext(Dispatchers.IO) {
+            try {
+                val request =
+                    StatisticsRange.GetStatisticsRangeRequest
+                        .newBuilder()
+                        .setStartDate(startDate)
+                        .setEndDate(endDate)
+                        .build()
+                val response =
+                    sendRequest(
+                        endpoint = "get_statistics_range",
+                        httpMethod = "POST",
+                        body = request.toByteArray(),
+                        retriesLeft = 1,
+                        headers =
+                            mapOf(
+                                "Accept" to "application/grpc+proto",
+                            ),
+                        contentType = "application/grpc+proto",
+                        timeoutSeconds = 30,
+                    )
+                if (response == null) return@withContext StatisticsRangeResult.Failed
+                val code = response.code
+                if (code == 401) {
+                    response.close()
+                    return@withContext StatisticsRangeResult.Unauthorized
+                }
+                if (!response.isSuccessful) {
+                    response.close()
+                    return@withContext StatisticsRangeResult.Failed
+                }
+                val bytes = response.body.bytes()
+                response.close()
+                if (bytes == null) return@withContext StatisticsRangeResult.Failed
+                val parsed = StatisticsRange.GetStatisticsRangeResponse.parseFrom(bytes)
+                val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                val days =
+                    parsed.daysList.mapNotNull { day ->
+                        val date = formatter.parse(day.date) ?: return@mapNotNull null
+                        com.singularis.eateria.models.DailyStatistics(
+                            date = date,
+                            dateString = day.date,
+                            totalCalories = day.totalCalories,
+                            totalFoodWeight = day.totalAvgWeight,
+                            personWeight = day.personWeight,
+                            proteins = day.proteins,
+                            fats = day.fats,
+                            carbohydrates = day.carbohydrates,
+                            sugar = day.sugar,
+                            numberOfMeals = day.numberOfMeals,
+                            hasData = true,
+                            averageHealthScore = if (day.avgHealthScore == 0) null else day.avgHealthScore,
+                        )
+                    }
+                StatisticsRangeResult.Days(days)
+            } catch (e: Exception) {
+                Log.e("GRPCService", "fetchStatisticsRange failed", e)
+                StatisticsRangeResult.Failed
             }
         }
 
@@ -1425,53 +1690,4 @@ class GRPCService(
                 Pair(0, emptyMap())
             }
         }
-
-    suspend fun sendMultiplePhotos(
-        images: List<Bitmap>,
-        photoType: String,
-        timestampMillis: Long? = null,
-        onSuccess: (Int) -> Unit,
-        onFailure: (String) -> Unit
-    ) {
-        if (images.isEmpty()) {
-            withContext(Dispatchers.Main) { onSuccess(0) }
-            return
-        }
-
-        withContext(Dispatchers.IO) {
-            var successCount = 0
-            var failed = false
-            var errorMessage = ""
-
-            for ((index, image) in images.withIndex()) {
-                kotlinx.coroutines.delay(index * 500L) // Small delay to avoid overwhelming backend
-
-                val deferred = kotlinx.coroutines.CompletableDeferred<Boolean>()
-                sendPhoto(
-                    bitmap = image,
-                    photoType = photoType,
-                    timestampMillis = timestampMillis,
-                    onSuccess = {
-                        successCount++
-                        deferred.complete(true)
-                    },
-                    onFailure = { error ->
-                        failed = true
-                        errorMessage = error
-                        deferred.complete(false)
-                    }
-                )
-                
-                deferred.await()
-            }
-
-            withContext(Dispatchers.Main) {
-                if (!failed) {
-                    onSuccess(successCount)
-                } else {
-                    onFailure(errorMessage)
-                }
-            }
-        }
-    }
 }

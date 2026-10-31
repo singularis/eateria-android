@@ -1,5 +1,7 @@
 package com.singularis.eateria.ui.views
 
+import com.singularis.eateria.ui.theme.appSurface
+import androidx.compose.foundation.verticalScroll
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -101,7 +103,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
@@ -138,6 +140,7 @@ fun ProductListView(
     onShare: ((Long, String) -> Unit)? = null,
     onSwipeToCamera: (() -> Unit)? = null,
     isAnonymous: Boolean = false,
+    pendingMealLabel: String? = null,
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
@@ -152,22 +155,27 @@ fun ProductListView(
         },
         modifier = Modifier.fillMaxSize(),
     ) {
-        if (sortedProducts.isEmpty()) {
-            androidx.compose.foundation.lazy.LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = Dimensions.paddingXL, vertical = Dimensions.paddingXL)
-            ) {
-                item {
+        if (sortedProducts.isEmpty() && pendingMealLabel.isNullOrBlank()) {
+            androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+                val viewport = maxHeight
+                // Scrolls when text is large instead of clipping; centered otherwise.
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(androidx.compose.foundation.rememberScrollState()),
+                ) {
                     Column(
-                        modifier = Modifier.fillParentMaxSize(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = viewport)
+                            .padding(horizontal = Dimensions.paddingL, vertical = Dimensions.paddingL),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
                             imageVector = Icons.Filled.PhotoLibrary,
-                            contentDescription = "No photos",
-                            modifier = Modifier.size(Dimensions.iconSizeXL * 2),
+                            contentDescription = null,
+                            modifier = Modifier.size(96.dp),
                             tint = AppTheme.accent().copy(alpha = 0.5f)
                         )
                         Spacer(modifier = Modifier.height(Dimensions.paddingL))
@@ -175,7 +183,8 @@ fun ProductListView(
                             text = Localization.tr(LocalContext.current, "list.empty.title", "No Meals Yet"),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = AppTheme.textPrimary()
+                            color = AppTheme.textPrimary(),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         )
                         Spacer(modifier = Modifier.height(Dimensions.paddingS))
                         Text(
@@ -190,9 +199,12 @@ fun ProductListView(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = Dimensions.paddingM),
+                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+                contentPadding = PaddingValues(vertical = Dimensions.paddingS),
             ) {
+                if (!pendingMealLabel.isNullOrBlank()) {
+                    item(key = "pending") { PendingMealRow(pendingMealLabel) }
+                }
                 items(
                     items = sortedProducts,
                     key = { product -> product.time },
@@ -218,6 +230,43 @@ fun ProductListView(
                         isAnonymous = isAnonymous,
                     )
                 }
+            }
+        }
+    }
+}
+
+/** Shown while a typed or photographed meal is being analyzed, before it lands in the list. */
+@Composable
+private fun PendingMealRow(label: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .appSurface()
+            .padding(Dimensions.paddingM),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
+    ) {
+        androidx.compose.material3.CircularProgressIndicator(
+            modifier = Modifier.size(Dimensions.iconSizeM),
+            strokeWidth = 2.dp,
+            color = AppTheme.accent(),
+        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = AppTheme.textPrimary(),
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+            val analyzing = Localization.tr(LocalContext.current, "loading.photo", "Analyzing food photo...")
+            if (label != analyzing) {
+                Text(
+                    text = analyzing,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppTheme.textSecondary(),
+                )
             }
         }
     }

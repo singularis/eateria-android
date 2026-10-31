@@ -36,7 +36,7 @@ class DailyRefreshManager private constructor(
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private val dateFormatter =
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+        SimpleDateFormat("yyyy-MM-dd", Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")
         }
 

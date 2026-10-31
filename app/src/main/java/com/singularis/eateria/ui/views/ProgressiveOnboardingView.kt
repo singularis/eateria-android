@@ -1,5 +1,7 @@
 package com.singularis.eateria.ui.views
 
+import com.singularis.eateria.util.toDecimalOrNull
+
 import android.content.Context
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -23,6 +25,9 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -40,7 +45,9 @@ enum class ProgressiveOnboardingStep {
 @Composable
 fun ProgressiveOnboardingView(
     step: ProgressiveOnboardingStep,
-    onComplete: () -> Unit
+    onComplete: () -> Unit,
+    /** Receives the calculated daily calories so the live calorie limits update. */
+    onPlanReady: (recommendedCalories: Int) -> Unit = {},
 ) {
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
@@ -49,7 +56,7 @@ fun ProgressiveOnboardingView(
     var isMale by remember { mutableStateOf(prefs.getBoolean("userIsMale", true)) }
     
     var height by remember { mutableStateOf(prefs.getFloat("userHeight", 0f).let { if (it > 0) it.roundToInt().toString() else "" }) }
-    var weight by remember { mutableStateOf(prefs.getFloat("userWeight", 0f).let { if (it > 0) String.format("%.1f", it) else "" }) }
+    var weight by remember { mutableStateOf(prefs.getFloat("userWeight", 0f).let { if (it > 0) String.format(java.util.Locale.US, "%.1f", it) else "" }) }
     
     var activityLevel by remember { mutableStateOf("Sedentary") }
     var showingResult by remember { mutableStateOf(false) }
@@ -92,15 +99,15 @@ fun ProgressiveOnboardingView(
 
     val isValid = when (step) {
         ProgressiveOnboardingStep.DEMOGRAPHICS -> age.isNotEmpty() && age.toIntOrNull() != null
-        ProgressiveOnboardingStep.MEASUREMENTS -> height.isNotEmpty() && weight.isNotEmpty() && height.toFloatOrNull() != null && weight.toFloatOrNull() != null
+        ProgressiveOnboardingStep.MEASUREMENTS -> height.isNotEmpty() && weight.isNotEmpty() && height.toDecimalOrNull()?.toFloat() != null && weight.toDecimalOrNull()?.toFloat() != null
         ProgressiveOnboardingStep.ACTIVITY -> true
         ProgressiveOnboardingStep.NOTIFICATIONS -> true
         ProgressiveOnboardingStep.NONE -> true
     }
 
     fun calculatePlan() {
-        val h = height.toFloatOrNull() ?: (if (prefs.getFloat("userHeight", 0f) > 0) prefs.getFloat("userHeight", 0f) else 175f)
-        val w = weight.toFloatOrNull() ?: (if (prefs.getFloat("userWeight", 0f) > 0) prefs.getFloat("userWeight", 0f) else 70f)
+        val h = height.toDecimalOrNull()?.toFloat() ?: (if (prefs.getFloat("userHeight", 0f) > 0) prefs.getFloat("userHeight", 0f) else 175f)
+        val w = weight.toDecimalOrNull()?.toFloat() ?: (if (prefs.getFloat("userWeight", 0f) > 0) prefs.getFloat("userWeight", 0f) else 70f)
         val a = age.toIntOrNull() ?: (if (prefs.getInt("userAge", 0) > 0) prefs.getInt("userAge", 0) else 25)
         
         val bmr = if (isMale) {
@@ -139,8 +146,8 @@ fun ProgressiveOnboardingView(
                 onComplete()
             }
             ProgressiveOnboardingStep.MEASUREMENTS -> {
-                editor.putFloat("userHeight", height.toFloatOrNull() ?: 175f)
-                editor.putFloat("userWeight", weight.toFloatOrNull() ?: 70f)
+                editor.putFloat("userHeight", height.toDecimalOrNull()?.toFloat() ?: 175f)
+                editor.putFloat("userWeight", weight.toDecimalOrNull()?.toFloat() ?: 70f)
                 editor.apply()
                 onComplete()
             }
@@ -153,11 +160,32 @@ fun ProgressiveOnboardingView(
                 } else {
                     editor.putBoolean("hasUserHealthData", true)
                     editor.apply()
+                    // Health Settings, Profile and HealthDataService read these stores, not app_settings.
+                    val h = prefs.getFloat("userHeight", 175f).toDouble()
+                    val w = prefs.getFloat("userWeight", 70f).toDouble()
+                    val a = prefs.getInt("userAge", 25)
+                    com.singularis.eateria.services.HealthDataService.getInstance(context)
+                        .saveHealthProfile(h, w, a, isMale, activityLevel)
+                    context.getSharedPreferences("eateria_prefs", Context.MODE_PRIVATE).edit()
+                        .putFloat("userHeight", h.toFloat())
+                        .putFloat("userWeight", w.toFloat())
+                        .putInt("userAge", a)
+                        .putBoolean("userIsMale", isMale)
+                        .putString("userActivityLevel", activityLevel)
+                        .putInt("userRecommendedCalories", recommendedCalories)
+                        .putBoolean("hasUserHealthData", true)
+                        .apply()
+                    if (recommendedCalories > 0) onPlanReady(recommendedCalories)
                     onComplete()
                 }
             }
             ProgressiveOnboardingStep.NOTIFICATIONS -> {
-                // TODO: Request notification permission
+                if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    // Permission is requested from the host; enabling reminders is the local half.
+                }
+                CoroutineScope(Dispatchers.Main).launch {
+                    com.singularis.eateria.services.ReminderService(context).setNotificationsEnabled(true)
+                }
                 onComplete()
             }
             ProgressiveOnboardingStep.NONE -> onComplete()
@@ -171,7 +199,7 @@ fun ProgressiveOnboardingView(
                 modifier = Modifier
                     .size(200.dp)
                     .offset(x = (-50).dp, y = (-50).dp)
-                    .blur(40.dp)
+                    .blur(40.dp, edgeTreatment = androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
                     .background(Color.Blue.copy(alpha = 0.1f), CircleShape)
             )
             Box(
@@ -179,7 +207,7 @@ fun ProgressiveOnboardingView(
                     .size(200.dp)
                     .align(Alignment.BottomEnd)
                     .offset(x = 50.dp, y = 50.dp)
-                    .blur(40.dp)
+                    .blur(40.dp, edgeTreatment = androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
                     .background(Color(0xFF9C27B0).copy(alpha = 0.1f), CircleShape) // Purple
             )
         }
@@ -209,12 +237,12 @@ fun ProgressiveOnboardingView(
                         .scale(scale)
                         .background(AppTheme.accent().copy(alpha = 0.1f), CircleShape)
                 )
-                Text(text = iconForStep, fontSize = 50.sp)
+                Text(text = iconForStep, style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Normal))
             }
             
             Text(
                 text = titleForStep,
-                fontSize = 28.sp,
+                style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.textPrimary(),
                 textAlign = TextAlign.Center
@@ -222,7 +250,7 @@ fun ProgressiveOnboardingView(
             
             Text(
                 text = subtitleForStep,
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = AppTheme.textSecondary(),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
@@ -231,7 +259,7 @@ fun ProgressiveOnboardingView(
             if (step == ProgressiveOnboardingStep.NOTIFICATIONS) {
                 Text(
                     text = Localization.tr(context, "onboarding.notifications.desc", "Enable reminders to snap your meals..."),
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = AppTheme.textSecondary(),
                     textAlign = TextAlign.Center,
@@ -246,7 +274,7 @@ fun ProgressiveOnboardingView(
                 ProgressiveOnboardingStep.DEMOGRAPHICS -> {
                     Column(modifier = Modifier.padding(horizontal = 30.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                         Column {
-                            Text(Localization.tr(context, "health.age", "Age"), color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                            Text(Localization.tr(context, "health.age", "Age"), color = Color.Gray, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal), modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
                             OutlinedTextField(
                                 value = age,
                                 onValueChange = { age = it },
@@ -259,7 +287,7 @@ fun ProgressiveOnboardingView(
                             Text(
                                 Localization.tr(context, "health.gender", "Gender:").trimEnd(':'),
                                 color = Color.Gray,
-                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
                                 modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
                             )
                             Row(
@@ -293,7 +321,7 @@ fun ProgressiveOnboardingView(
                 ProgressiveOnboardingStep.MEASUREMENTS -> {
                     Column(modifier = Modifier.padding(horizontal = 30.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                         Column {
-                            Text(Localization.tr(context, "health.height", "Height (cm)"), color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                            Text(Localization.tr(context, "health.height", "Height (cm)"), color = Color.Gray, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal), modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
                             OutlinedTextField(
                                 value = height,
                                 onValueChange = { height = it },
@@ -303,7 +331,7 @@ fun ProgressiveOnboardingView(
                             )
                         }
                         Column {
-                            Text(Localization.tr(context, "health.weight", "Weight (kg)"), color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                            Text(Localization.tr(context, "health.weight", "Weight (kg)"), color = Color.Gray, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal), modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
                             OutlinedTextField(
                                 value = weight,
                                 onValueChange = { weight = it },
@@ -320,7 +348,7 @@ fun ProgressiveOnboardingView(
                             Text(Localization.tr(context, "prog.result", "Your Daily Goal"), style = MaterialTheme.typography.titleMedium, color = AppTheme.textSecondary())
                             Text(
                                 text = "$recommendedCalories",
-                                fontSize = 60.sp,
+                                style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Black,
                                 color = AppTheme.accent()
                             )
@@ -335,7 +363,7 @@ fun ProgressiveOnboardingView(
                             Text(
                                 Localization.tr(context, "health.select_activity", "Select Activity Level"),
                                 color = Color.Gray,
-                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
                             )
                             // A simple selection list since Dropdown/Wheel might be complex
                             activityLevels.forEach { level ->
@@ -398,7 +426,7 @@ fun ProgressiveOnboardingView(
                     Text(
                         text = buttonTitle,
                         color = Color.White,
-                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold
                     )
                 }

@@ -1,0 +1,2378 @@
+{
+  "meta": {
+    "generated_at": "2026-10-31T08:54:14Z",
+    "ios_root": "/Users/dante/Documents/dante/Documents/eater/eater",
+    "ios_baseline": "working tree, marketing version 5.3",
+    "android_root": "/Users/dante/Documents/dante/AndroidStudioProjects/Eateria",
+    "android_version_at_audit_start": "5.1.1 (versionCode 28)",
+    "target_release": "5.3 (versionCode 29)",
+    "branch": "feature/ios-5.3-parity",
+    "replaces": [
+      "eater/.docs/ANDROID_PARITY_food_card_features.md (those 6 items are already done)",
+      "README.md Functionality Comparison"
+    ]
+  },
+  "features": [
+    {
+      "chapter": "1_network",
+      "feature": "Typed meal proto and sendFoodText",
+      "ios": {
+        "files": [
+          "Services/eater_text.proto",
+          "Services/GRPCService.swift"
+        ],
+        "symbols": [
+          "sendFoodText",
+          "FoodTextMessage",
+          "FoodTextResponse"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/eater_text.proto",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "sendFoodText"
+        ]
+      },
+      "endpoint": {
+        "path": "eater_receive_text",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "type_food",
+        "error"
+      ],
+      "status": "done",
+      "change": "Add eater_text.proto (package eater) and GRPCService.sendFoodText: POST eater_receive_text, protobuf, 70s timeout, error codes not_food|blocked|empty|too_long|timeout.",
+      "ios_commit": "bb93fee",
+      "notes": ""
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Day score proto and getFoodScore",
+      "ios": {
+        "files": [
+          "Services/get_food_score.proto",
+          "Services/GRPCService.swift"
+        ],
+        "symbols": [
+          "getFoodScore",
+          "FoodScoreRequest",
+          "FoodScoreResponse"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/get_food_score.proto",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "getFoodScore"
+        ]
+      },
+      "endpoint": {
+        "path": "get_food_score",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "health.score"
+      ],
+      "status": "done",
+      "change": "Add get_food_score.proto and GRPCService.getFoodScore. Request user_name + day yyyy-MM-dd. Response has_score, score, dish_time.",
+      "ios_commit": "921884d",
+      "notes": ""
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Explain score proto and explainFoodScore",
+      "ios": {
+        "files": [
+          "Services/explain_food_score.proto",
+          "Services/GRPCService.swift"
+        ],
+        "symbols": [
+          "explainFoodScore"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/explain_food_score.proto",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "explainFoodScore"
+        ]
+      },
+      "endpoint": {
+        "path": "explain_food_score",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "health",
+        "disc"
+      ],
+      "status": "done",
+      "change": "Add explain_food_score.proto and GRPCService.explainFoodScore. dish_time 0 explains the day; otherwise that dish.",
+      "ios_commit": "921884d",
+      "notes": ""
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Meal suggest proto and getMealSuggest",
+      "ios": {
+        "files": [
+          "Services/meal_suggest.proto",
+          "Services/GRPCService.swift"
+        ],
+        "symbols": [
+          "getMealSuggest"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/meal_suggest.proto",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "getMealSuggest"
+        ]
+      },
+      "endpoint": {
+        "path": "meal_suggest",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "meal_planner",
+        "meal"
+      ],
+      "status": "done",
+      "change": "Add meal_suggest.proto and GRPCService.getMealSuggest: POST meal_suggest, protobuf, 90s, no retry, quota-aware. days=7, variant 0-based, remaining macros, meals_today.",
+      "ios_commit": "b92d6e6",
+      "notes": ""
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Statistics range proto and fetchStatisticsRange",
+      "ios": {
+        "files": [
+          "Services/statistics_range.proto",
+          "Services/GRPCService.swift"
+        ],
+        "symbols": [
+          "fetchStatisticsRange"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/statistics_range.proto",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "fetchStatisticsRange"
+        ]
+      },
+      "endpoint": {
+        "path": "get_statistics_range",
+        "method": "POST",
+        "content_type": "application/grpc+proto"
+      },
+      "loc_prefixes": [
+        "stats"
+      ],
+      "status": "done",
+      "change": "Add statistics_range.proto and GRPCService.fetchStatisticsRange. Raw protobuf body, Content-Type and Accept application/grpc+proto, not gRPC-framed. Dates dd-MM-yyyy. 401 is unauthorized, not a retry.",
+      "ios_commit": "db07278",
+      "notes": ""
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Dish contains and alternative_names",
+      "ios": {
+        "files": [
+          "Services/today_food.proto",
+          "Services/custom_date_food.proto"
+        ],
+        "symbols": [
+          "Dish.contains",
+          "Dish.alternative_names"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/today_food.proto",
+          "app/src/main/proto/custom_date_food.proto",
+          "models/Product.kt"
+        ],
+        "symbols": [
+          "Product.alternativeNames",
+          "Product.contains"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Add Dish.contains = 8 and repeated alternative_names = 9 to both today_food and custom_date_food. Map them onto Product when parsing.",
+      "ios_commit": "ce0db0e",
+      "notes": "Android today_food has no package; custom_date_food uses package eater. Keep that split."
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Share response nickname_used",
+      "ios": {
+        "files": [
+          "Services/share_food.proto"
+        ],
+        "symbols": [
+          "ShareFoodResponse.nickname_used"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/share_food.proto",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "shareFood"
+        ]
+      },
+      "endpoint": {
+        "path": "autocomplete/sharefood",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "share"
+      ],
+      "status": "done",
+      "change": "Add nickname_used = 2 on ShareFoodResponse. Keep package eater.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Profile JSON endpoints",
+      "ios": {
+        "files": [
+          "Services/GRPCService.swift"
+        ],
+        "symbols": [
+          "fetchProfile",
+          "updateProfile",
+          "uploadProfilePhoto"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "profileGet",
+          "profileUpdate",
+          "profilePhoto"
+        ]
+      },
+      "endpoint": {
+        "path": "profile_get",
+        "method": "GET",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "profile"
+      ],
+      "status": "done",
+      "change": "Add profile_get GET JSON, profile_update POST JSON (first_name, last_name, optional profile_picture_id), profile_photo multipart JPEG field photo.",
+      "ios_commit": "",
+      "notes": "Also profile_update and profile_photo."
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Daily limit JSON parser",
+      "ios": {
+        "files": [
+          "Services/GRPCService.swift"
+        ],
+        "symbols": [
+          "presentDailyLimitIfNeeded"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/GRPCService.kt",
+          "ui/views/AlertHelper.kt"
+        ],
+        "symbols": [
+          "dailyLimitOrNull"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "quota"
+      ],
+      "status": "done",
+      "change": "Parse {error_code:daily_limit_reached, is_guest, limit} on photo, text, recommendation and meal_suggest. Do not retry those 4xx bodies.",
+      "ios_commit": "db07278",
+      "notes": ""
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Remove multi-photo proto",
+      "ios": {
+        "files": [],
+        "symbols": []
+      },
+      "android": {
+        "files": [
+          "app/src/main/proto/multiple_photos.proto",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "sendMultiplePhotos"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Delete multiple_photos.proto and the sendMultiplePhotos loop. iOS removed the batch pipeline in the 5.3 working tree.",
+      "ios_commit": "",
+      "notes": "iOS deleted multiple_photos.proto, MultiplePhotoPickerView, MealDetailSheet."
+    },
+    {
+      "chapter": "1_network",
+      "feature": "Remove getChessStats",
+      "ios": {
+        "files": [
+          "Services/GRPCService.swift"
+        ],
+        "symbols": []
+      },
+      "android": {
+        "files": [
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "getChessStats"
+        ]
+      },
+      "endpoint": {
+        "path": "autocomplete/get_chess_stats",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "chess"
+      ],
+      "status": "done",
+      "change": "Delete GRPCService.getChessStats (POST autocomplete/get_chess_stats). iOS working tree removed it. Keep get_chess_history and get_all_chess_data.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "2_localization",
+      "feature": "Import missing and changed strings",
+      "ios": {
+        "files": [
+          "Localization/en.json",
+          "Localization/*.json"
+        ],
+        "symbols": [
+          "loc"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/assets/Localization/en.json",
+          "scripts/sync-localization.py"
+        ],
+        "symbols": [
+          "Localization.tr"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Import iOS keys missing on Android and overwrite the 27 changed English (and locale) values. Map pt-BR.json to pt-br.json.",
+      "ios_commit": "c30ac9c",
+      "notes": ""
+    },
+    {
+      "chapter": "2_localization",
+      "feature": "Clean Android-only keys",
+      "ios": {
+        "files": [
+          "Localization/en.json"
+        ],
+        "symbols": []
+      },
+      "android": {
+        "files": [
+          "app/src/main/assets/Localization/en.json"
+        ],
+        "symbols": []
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Drop Android-only keys that no Kotlin file references. Keep keys still used, or rename them onto the iOS key when one exists.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "2_localization",
+      "feature": "Quote files",
+      "ios": {
+        "files": [
+          "Localization/quotes"
+        ],
+        "symbols": [
+          "FoodQuotesLocalized"
+        ]
+      },
+      "android": {
+        "files": [
+          "app/src/main/assets/Localization/quotes",
+          "services/QuotesService.kt"
+        ],
+        "symbols": [
+          "QuotesService"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "notif"
+      ],
+      "status": "done",
+      "change": "Copy quote txt files from iOS when the Android copy differs.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "3_design",
+      "feature": "Design tokens",
+      "ios": {
+        "files": [
+          "DesignSystem.swift"
+        ],
+        "symbols": [
+          "AppTheme"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/theme/DesignSystem.kt",
+          "ui/theme/Color.kt",
+          "ui/theme/Dimensions.kt"
+        ],
+        "symbols": [
+          "AppTheme"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Match 5.3 colors (accent light 0,0.42,0.82 / dark 0.1,0.58,1), success, warning, danger, macro colors, radii 16/12/8, card shadow, background gradient, mascot callout blue-to-violet. Drop tokens iOS removed.",
+      "ios_commit": "0e89e57",
+      "notes": ""
+    },
+    {
+      "chapter": "3_design",
+      "feature": "Liquid glass surfaces",
+      "ios": {
+        "files": [
+          "DesignSystem.swift"
+        ],
+        "symbols": [
+          "appSurface",
+          "appCircleSurface",
+          "appTintedGlass",
+          "appSheetBackground"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/theme/DesignSystem.kt"
+        ],
+        "symbols": [
+          "appSurface",
+          "appCircleSurface",
+          "appTintedGlass",
+          "appSheetBackground"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Compose modifiers: translucent tint, stroke, blur on API 31+, solid fallback below.",
+      "ios_commit": "0e89e57",
+      "notes": ""
+    },
+    {
+      "chapter": "3_design",
+      "feature": "Unified sheets and notices",
+      "ios": {
+        "files": [
+          "Views/ScaledNotice.swift",
+          "DesignSystem.swift"
+        ],
+        "symbols": [
+          "ScaledNotice",
+          "appSheetBackground"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/AppSheet.kt",
+          "ui/views/AlertHelper.kt"
+        ],
+        "symbols": [
+          "AppSheet",
+          "AppNotice"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "common"
+      ],
+      "status": "done",
+      "change": "One ModalBottomSheet helper (medium/large, drag handle, sheet background) and an AppNotice. Replace AlertDialog/Dialog flows so sheets open the same way.",
+      "ios_commit": "0e89e57",
+      "notes": ""
+    },
+    {
+      "chapter": "3_design",
+      "feature": "App font scale",
+      "ios": {
+        "files": [
+          "DesignSystem.swift",
+          "Services/AppSettingsService.swift"
+        ],
+        "symbols": [
+          "appInterfaceScale",
+          "fontScale"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/AppSettingsService.kt",
+          "MainActivity.kt",
+          "ui/views/UserProfileView.kt"
+        ],
+        "symbols": [
+          "fontScale"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "profile.font_size",
+        "a11y"
+      ],
+      "status": "done",
+      "change": "Store fontScale 0.80-1.60 and apply it with CompositionLocalProvider(LocalDensity) in MainActivity. Profile control uses profile.font_size* keys.",
+      "ios_commit": "0c38ce5",
+      "notes": ""
+    },
+    {
+      "chapter": "4_shell",
+      "feature": "Bottom tab bar",
+      "ios": {
+        "files": [
+          "Views/RootTabView.swift"
+        ],
+        "symbols": [
+          "AppTab",
+          "AppBottomBar"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/RootTabView.kt",
+          "ui/views/ContentView.kt"
+        ],
+        "symbols": [
+          "RootTabView",
+          "AppBottomBar"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "tab",
+        "camera"
+      ],
+      "status": "done",
+      "change": "Replace the 3-page HorizontalPager with Today, Ideas, raised Camera, Upload, Stats.",
+      "ios_commit": "db07278",
+      "notes": ""
+    },
+    {
+      "chapter": "4_shell",
+      "feature": "App navigation state",
+      "ios": {
+        "files": [
+          "Services/AppNavigation.swift"
+        ],
+        "symbols": [
+          "AppNavigation",
+          "PendingMeal"
+        ]
+      },
+      "android": {
+        "files": [
+          "navigation/AppNavigation.kt"
+        ],
+        "symbols": [
+          "AppNavigation",
+          "PendingMeal"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "State holder for selected tab, sheet requests (camera, type food, weight, activities, alcohol, guest login, backdating), toasts and PendingMeal.",
+      "ios_commit": "0e89e57",
+      "notes": ""
+    },
+    {
+      "chapter": "4_shell",
+      "feature": "Swipe down to Today",
+      "ios": {
+        "files": [
+          "Views/SwipeDownToTodayModifier.swift"
+        ],
+        "symbols": [
+          "swipeDownToToday"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/RootTabView.kt"
+        ],
+        "symbols": [
+          "swipeDownToToday"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "common.close"
+      ],
+      "status": "done",
+      "change": "Swipe down on Ideas and Stats returns to Today. Keep food-row swipe-right camera.",
+      "ios_commit": "d7abb40",
+      "notes": ""
+    },
+    {
+      "chapter": "5_home",
+      "feature": "Today header",
+      "ios": {
+        "files": [
+          "ContentView.swift"
+        ],
+        "symbols": [
+          "macrosLineView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/ComponentViews.kt",
+          "ui/views/ContentView.kt"
+        ],
+        "symbols": [
+          "TopBarView",
+          "StatsButtonsView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "type_food",
+        "calories",
+        "backdating",
+        "macro"
+      ],
+      "status": "done",
+      "change": "Header: profile, alcohol, date chip with return-to-today, server day-score ring, sport. Second row: weight, calories left, Type.",
+      "ios_commit": "0e89e57",
+      "notes": ""
+    },
+    {
+      "chapter": "5_home",
+      "feature": "Calories left sheet",
+      "ios": {
+        "files": [
+          "Views/CaloriesLeftSheet.swift"
+        ],
+        "symbols": [
+          "CaloriesLeftSheet"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/CaloriesLeftSheet.kt"
+        ],
+        "symbols": [
+          "CaloriesLeftSheet"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "calories"
+      ],
+      "status": "done",
+      "change": "Port the calories-left sheet.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "5_home",
+      "feature": "Weight prompt sheet",
+      "ios": {
+        "files": [
+          "Views/WeightPromptSheet.swift",
+          "Views/WeightCameraView.swift"
+        ],
+        "symbols": [
+          "WeightPromptSheet"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/WeightPromptSheet.kt",
+          "ui/views/CameraViews.kt"
+        ],
+        "symbols": [
+          "WeightPromptSheet"
+        ]
+      },
+      "endpoint": {
+        "path": "manual_weight",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "weight"
+      ],
+      "status": "done",
+      "change": "Port the typed-weight sheet. Weight camera already exists.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "5_home",
+      "feature": "Dish health sheet",
+      "ios": {
+        "files": [
+          "Views/DishHealthSheet.swift",
+          "Views/FoodHealthPopup.swift"
+        ],
+        "symbols": [
+          "DishHealthSheet",
+          "FoodHealthPopup"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/DishHealthSheet.kt",
+          "ui/views/ProductRowView.kt"
+        ],
+        "symbols": [
+          "DishHealthSheet"
+        ]
+      },
+      "endpoint": {
+        "path": "food_health_level",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "health",
+        "disc"
+      ],
+      "status": "done",
+      "change": "Open DishHealthSheet from the existing health popup. Card popup stays on food_health_level; the sheet explains via explain_food_score.",
+      "ios_commit": "b71b144",
+      "notes": ""
+    },
+    {
+      "chapter": "5_home",
+      "feature": "Fix food name",
+      "ios": {
+        "files": [
+          "Views/FixFoodNameView.swift",
+          "Services/DishNameNormalizer.swift"
+        ],
+        "symbols": [
+          "FixFoodNameView",
+          "DishNameNormalizer"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/FixFoodNameView.kt",
+          "services/DishNameNormalizer.kt"
+        ],
+        "symbols": [
+          "FixFoodNameView",
+          "DishNameNormalizer"
+        ]
+      },
+      "endpoint": {
+        "path": "suggest_dish_names",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "manual_food"
+      ],
+      "status": "done",
+      "change": "Show alternative_names first, then suggest_dish_names. Run typed input through DishNameNormalizer. Save still calls modify_food_manual.",
+      "ios_commit": "0e89e57",
+      "notes": ""
+    },
+    {
+      "chapter": "5_home",
+      "feature": "Pending meal row",
+      "ios": {
+        "files": [
+          "Services/AppNavigation.swift",
+          "Views/ProductListView.swift"
+        ],
+        "symbols": [
+          "PendingMeal"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/ProductListView.kt",
+          "navigation/AppNavigation.kt"
+        ],
+        "symbols": [
+          "PendingMeal"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Show a placeholder row while a photo or typed meal is being analyzed.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "6_camera",
+      "feature": "Camera and upload from the tab bar",
+      "ios": {
+        "files": [
+          "Views/CameraView.swift"
+        ],
+        "symbols": [
+          "CameraView",
+          "PhotoLibraryView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/CameraViews.kt",
+          "ui/views/CameraButtonView.kt"
+        ],
+        "symbols": [
+          "FoodCameraView",
+          "CameraButtonView"
+        ]
+      },
+      "endpoint": {
+        "path": "eater_receive_photo",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "camera"
+      ],
+      "status": "done",
+      "change": "Rename CameraButtonView usage to CameraView. Camera and Upload are tab-bar actions, photoType default_prompt.",
+      "ios_commit": "",
+      "notes": "iOS renamed CameraButtonView.swift to CameraView.swift in the working tree."
+    },
+    {
+      "chapter": "6_camera",
+      "feature": "Type food sheet",
+      "ios": {
+        "files": [
+          "Views/TypeFoodSheet.swift"
+        ],
+        "symbols": [
+          "TypeFoodSheet"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/TypeFoodSheet.kt"
+        ],
+        "symbols": [
+          "TypeFoodSheet"
+        ]
+      },
+      "endpoint": {
+        "path": "eater_receive_text",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "type_food"
+      ],
+      "status": "done",
+      "change": "Sheet calls sendFoodText. Banner when the selected date is in the past.",
+      "ios_commit": "bb93fee",
+      "notes": ""
+    },
+    {
+      "chapter": "6_camera",
+      "feature": "Backdating notice",
+      "ios": {
+        "files": [
+          "Services/AppNavigation.swift",
+          "Views/ScaledNotice.swift"
+        ],
+        "symbols": [
+          "presentBackdatingPrompt"
+        ]
+      },
+      "android": {
+        "files": [
+          "navigation/AppNavigation.kt",
+          "ui/views/AppSheet.kt"
+        ],
+        "symbols": [
+          "presentBackdatingPrompt"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "backdating"
+      ],
+      "status": "done",
+      "change": "Confirm / Log today / Cancel as AppNotice. Backdated meals use a noon-UTC timestamp.",
+      "ios_commit": "6a4d9da",
+      "notes": ""
+    },
+    {
+      "chapter": "6_camera",
+      "feature": "Remove multi-photo upload button",
+      "ios": {
+        "files": [],
+        "symbols": []
+      },
+      "android": {
+        "files": [
+          "ui/views/CameraButtonView.kt"
+        ],
+        "symbols": [
+          "MultiplePhotoUploadButton"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Delete MultiplePhotoUploadButton. Uploads stay one photo at a time.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "7_day_score",
+      "feature": "Day score fetch and poll",
+      "ios": {
+        "files": [
+          "ContentView.swift"
+        ],
+        "symbols": [
+          "refreshDayFoodScore",
+          "requestDayFoodScore"
+        ]
+      },
+      "android": {
+        "files": [
+          "viewmodels/MainViewModel.kt",
+          "ui/views/ContentView.kt"
+        ],
+        "symbols": [
+          "refreshDayFoodScore"
+        ]
+      },
+      "endpoint": {
+        "path": "get_food_score",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "health.score"
+      ],
+      "status": "done",
+      "change": "Replace the local health-rating average with getFoodScore. Fetch after load, date change, photo/text success and account merge. Poll at 2s, 4s, 8s while newest dish time is newer than dish_time. Ring shows spinner, dash, or 0-100.",
+      "ios_commit": "921884d",
+      "notes": ""
+    },
+    {
+      "chapter": "7_day_score",
+      "feature": "Score explanation cache",
+      "ios": {
+        "files": [
+          "Services/FoodScoreExplainStore.swift",
+          "Views/HealthDisclaimerView.swift",
+          "Views/DishHealthSheet.swift"
+        ],
+        "symbols": [
+          "FoodScoreExplainStore"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/FoodScoreExplainStore.kt",
+          "ui/views/HealthDisclaimerView.kt",
+          "ui/views/DishHealthSheet.kt"
+        ],
+        "symbols": [
+          "FoodScoreExplainStore"
+        ]
+      },
+      "endpoint": {
+        "path": "explain_food_score",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "disc",
+        "health"
+      ],
+      "status": "done",
+      "change": "Cache day|email and dish|email|time. Invalidate when basisDishTime changes. Disclaimer explains the day (dish_time 0). Dish sheet explains that dish.",
+      "ios_commit": "98b2d11",
+      "notes": ""
+    },
+    {
+      "chapter": "7_day_score",
+      "feature": "Health plan calculator",
+      "ios": {
+        "files": [
+          "Services/HealthPlanCalculator.swift"
+        ],
+        "symbols": [
+          "HealthPlanCalculator",
+          "HealthUnits"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/HealthPlanCalculator.kt",
+          "services/HealthDataService.kt"
+        ],
+        "symbols": [
+          "HealthPlanCalculator"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "health"
+      ],
+      "status": "done",
+      "change": "Port BMR, TDEE, BMI and calorie caps. HealthDataService already stores the same preference keys.",
+      "ios_commit": "921884d",
+      "notes": ""
+    },
+    {
+      "chapter": "7_day_score",
+      "feature": "Health settings layout",
+      "ios": {
+        "files": [
+          "Views/HealthSettingsView.swift",
+          "Views/HealthFormComponents.swift"
+        ],
+        "symbols": [
+          "HealthSettingsView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/HealthSettingsView.kt"
+        ],
+        "symbols": [
+          "HealthSettingsView"
+        ]
+      },
+      "endpoint": {
+        "path": "goal_update",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "health"
+      ],
+      "status": "done",
+      "change": "Save at the bottom, Back at the top right, onSaved callback. Remove the BMI scale bar.",
+      "ios_commit": "0095c5a",
+      "notes": ""
+    },
+    {
+      "chapter": "7_day_score",
+      "feature": "Health Connect",
+      "ios": {
+        "files": [
+          "Services/AppleHealthService.swift"
+        ],
+        "symbols": [
+          "AppleHealthService"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/HealthConnectService.kt",
+          "ui/views/HealthSettingsView.kt"
+        ],
+        "symbols": [
+          "HealthConnectService"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "health.apple"
+      ],
+      "status": "done",
+      "change": "Read profile (height, weight, age, sex) and optional active-energy share 50/75/100 percent into the local calorie limit. Never upload.",
+      "ios_commit": "921884d",
+      "notes": "Android equivalent of Apple Health. Reads only."
+    },
+    {
+      "chapter": "8_stats",
+      "feature": "Statistics range service",
+      "ios": {
+        "files": [
+          "Services/StatisticsService.swift",
+          "Services/StatisticsCacheService.swift"
+        ],
+        "symbols": [
+          "fetchStatisticsForPeriod"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/StatisticsService.kt",
+          "services/StatisticsCacheService.kt"
+        ],
+        "symbols": [
+          "fetchStatisticsForPeriod"
+        ]
+      },
+      "endpoint": {
+        "path": "get_statistics_range",
+        "method": "POST",
+        "content_type": "application/grpc+proto"
+      },
+      "loc_prefixes": [
+        "stats"
+      ],
+      "status": "done",
+      "change": "Stop per-day eater_get_today / get_food_custom_date loops. Use get_statistics_range and fill empty days locally. Trim the cache to the iOS shape.",
+      "ios_commit": "db07278",
+      "notes": ""
+    },
+    {
+      "chapter": "8_stats",
+      "feature": "Statistics cards and graphs",
+      "ios": {
+        "files": [
+          "Views/StatisticsView.swift",
+          "Views/StatisticsGraphsView.swift"
+        ],
+        "symbols": [
+          "StatisticsView",
+          "StatisticsGraphsView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/StatisticsView.kt",
+          "ui/views/StatisticsGraphsView.kt"
+        ],
+        "symbols": [
+          "StatisticsView",
+          "StatisticsGraphsView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "stats"
+      ],
+      "status": "done",
+      "change": "Week/month cards: hero, energy, body, plate, protein, consistency, plus a day detail sheet. Move the current charts into StatisticsGraphsView, one tap away.",
+      "ios_commit": "facece2",
+      "notes": ""
+    },
+    {
+      "chapter": "8_stats",
+      "feature": "Statistics guest 401",
+      "ios": {
+        "files": [
+          "Services/GRPCService.swift",
+          "Views/StatisticsView.swift"
+        ],
+        "symbols": [
+          "fetchStatisticsRange"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/StatisticsService.kt",
+          "ui/views/StatisticsView.kt"
+        ],
+        "symbols": [
+          "fetchStatisticsRange"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "login"
+      ],
+      "status": "done",
+      "change": "A 401 on the range call opens the sign-in sheet for guests.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "9_ideas",
+      "feature": "Ideas tab",
+      "ios": {
+        "files": [
+          "Views/IdeasTabView.swift"
+        ],
+        "symbols": [
+          "IdeasTabView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/IdeasTabView.kt"
+        ],
+        "symbols": [
+          "IdeasTabView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "tab.ideas",
+        "ideas",
+        "rec"
+      ],
+      "status": "done",
+      "change": "Ideas tab hosts the meal planner and weekly advice. Swipe down returns to Today.",
+      "ios_commit": "db07278",
+      "notes": ""
+    },
+    {
+      "chapter": "9_ideas",
+      "feature": "Meal planner",
+      "ios": {
+        "files": [
+          "Views/MealPlannerView.swift"
+        ],
+        "symbols": [
+          "MealPlannerView",
+          "MealPlannerRemaining",
+          "MealPlanResult"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/MealPlannerView.kt"
+        ],
+        "symbols": [
+          "MealPlannerView"
+        ]
+      },
+      "endpoint": {
+        "path": "meal_suggest",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "meal_planner",
+        "meal"
+      ],
+      "status": "done",
+      "change": "Call meal_suggest and cycle 3 cached variants from remaining macros and meals_today.",
+      "ios_commit": "7f30c72",
+      "notes": ""
+    },
+    {
+      "chapter": "9_ideas",
+      "feature": "Weekly advice inside Ideas",
+      "ios": {
+        "files": [
+          "Views/RecommendationView.swift",
+          "Views/IdeasTabView.swift"
+        ],
+        "symbols": [
+          "RecommendationView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/RecommendationView.kt",
+          "ui/views/IdeasTabView.kt"
+        ],
+        "symbols": [
+          "RecommendationView"
+        ]
+      },
+      "endpoint": {
+        "path": "get_recommendation",
+        "method": "POST",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "rec",
+        "quota"
+      ],
+      "status": "done",
+      "change": "Move the existing get_recommendation (7 days) view into Ideas. Honor the daily limit.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "10_activities",
+      "feature": "Slim chess entry",
+      "ios": {
+        "files": [
+          "Views/ActivitiesView.swift"
+        ],
+        "symbols": [
+          "ActivitiesView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/ActivitiesView.kt",
+          "services/GRPCService.kt"
+        ],
+        "symbols": [
+          "ActivitiesView"
+        ]
+      },
+      "endpoint": {
+        "path": "record_chess_game",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "activities",
+        "chess"
+      ],
+      "status": "done",
+      "change": "Match the simplified iOS chess entry. Do not call getChessStats. Keep history and record_chess_game.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "10_activities",
+      "feature": "Remove unused ActivitiesViewModel",
+      "ios": {
+        "files": [],
+        "symbols": []
+      },
+      "android": {
+        "files": [
+          "viewmodels/ActivitiesViewModel.kt"
+        ],
+        "symbols": [
+          "ActivitiesViewModel"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [],
+      "status": "done",
+      "change": "Delete ActivitiesViewModel.kt. The screen already talks to GRPCService.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "10_activities",
+      "feature": "Activity calorie budget",
+      "ios": {
+        "files": [
+          "Views/ActivitiesView.swift",
+          "ContentView.swift"
+        ],
+        "symbols": []
+      },
+      "android": {
+        "files": [
+          "ui/views/ActivitiesView.kt",
+          "viewmodels/MainViewModel.kt"
+        ],
+        "symbols": []
+      },
+      "endpoint": {
+        "path": "activity_log",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "activities"
+      ],
+      "status": "done",
+      "change": "Logged activities adjust the Home calorie budget the same way iOS does.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "11_profile",
+      "feature": "Local profile stores",
+      "ios": {
+        "files": [
+          "Services/ProfileLocalStore.swift",
+          "Services/ProfilePhotoStore.swift"
+        ],
+        "symbols": [
+          "ProfileLocalStore",
+          "ProfilePhotoStore"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/ProfileLocalStore.kt",
+          "services/ProfilePhotoStore.kt"
+        ],
+        "symbols": [
+          "ProfileLocalStore",
+          "ProfilePhotoStore"
+        ]
+      },
+      "endpoint": {
+        "path": "profile_update",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "profile"
+      ],
+      "status": "done",
+      "change": "Store profile under filesDir/EateriaProfile/<email>/ so it survives logout. Sync with profile_get, profile_update and profile_photo.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "11_profile",
+      "feature": "My friends",
+      "ios": {
+        "files": [
+          "Views/MyFriendsView.swift",
+          "Views/AddFriendsView.swift"
+        ],
+        "symbols": [
+          "MyFriendsView",
+          "AddFriendsView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/MyFriendsView.kt",
+          "ui/views/AddFriendsView.kt"
+        ],
+        "symbols": [
+          "MyFriendsView"
+        ]
+      },
+      "endpoint": {
+        "path": "autocomplete/getfriend",
+        "method": "GET",
+        "content_type": "application/protobuf"
+      },
+      "loc_prefixes": [
+        "friends"
+      ],
+      "status": "done",
+      "change": "Add MyFriendsView. AddFriendsView and the websocket search already exist. Hide anonymous emails.",
+      "ios_commit": "b11cf37",
+      "notes": ""
+    },
+    {
+      "chapter": "11_profile",
+      "feature": "Language sheet and app info",
+      "ios": {
+        "files": [
+          "Views/LanguageSelectionSheet.swift",
+          "Views/AppInfoView.swift"
+        ],
+        "symbols": [
+          "LanguageSelectionSheet",
+          "AppInfoView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/LanguageSelectionSheet.kt",
+          "ui/views/AppInfoView.kt",
+          "ui/views/LoginView.kt"
+        ],
+        "symbols": [
+          "LanguageSelectionSheet",
+          "AppInfoView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "profile.language",
+        "info"
+      ],
+      "status": "done",
+      "change": "Language picker sheet. App info is reachable before login.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "11_profile",
+      "feature": "Profile section order",
+      "ios": {
+        "files": [
+          "Views/UserProfileView.swift"
+        ],
+        "symbols": [
+          "UserProfileView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/UserProfileView.kt"
+        ],
+        "symbols": [
+          "UserProfileView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "profile",
+        "appearance",
+        "nickname"
+      ],
+      "status": "done",
+      "change": "Order: avatar, nickname, health, appearance, font size, language, notifications, mascot, friends, feedback, delete.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "12_onboarding",
+      "feature": "Onboarding rewrite",
+      "ios": {
+        "files": [
+          "Views/OnboardingView.swift",
+          "Assets.xcassets"
+        ],
+        "symbols": [
+          "OnboardingView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/OnboardingView.kt",
+          "ui/views/OnboardingStepViews.kt"
+        ],
+        "symbols": [
+          "OnboardingView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "onboarding"
+      ],
+      "status": "done",
+      "change": "Port the 5.2 onboarding screens and typing animation. Copy onboarding_* and meal_planner images.",
+      "ios_commit": "b71b144",
+      "notes": ""
+    },
+    {
+      "chapter": "12_onboarding",
+      "feature": "Tutorial steps",
+      "ios": {
+        "files": [
+          "Views/MainAppTutorialView.swift"
+        ],
+        "symbols": [
+          "TutorialStep"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/MainAppTutorialView.kt",
+          "ui/views/ContentView.kt"
+        ],
+        "symbols": [
+          "MainAppTutorialView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "tutorial"
+      ],
+      "status": "done",
+      "change": "Steps: Camera, Calories, HealthScore, Sport, Weight, TypeGuide, Calendar, Alcohol, Stats. Wire the camera tutorial (onRequestTutorial is currently null).",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "12_onboarding",
+      "feature": "Notification permission in progressive onboarding",
+      "ios": {
+        "files": [
+          "Views/ProgressiveOnboardingView.swift"
+        ],
+        "symbols": [
+          "ProgressiveOnboardingView"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/ProgressiveOnboardingView.kt"
+        ],
+        "symbols": [
+          "ProgressiveOnboardingView"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "onboarding"
+      ],
+      "status": "done",
+      "change": "Request POST_NOTIFICATIONS on the notifications step. The TODO is already in the file.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "13_notifications",
+      "feature": "Cancel remaining reminders after a snap",
+      "ios": {
+        "files": [
+          "Services/NotificationService.swift"
+        ],
+        "symbols": [
+          "recordFoodSnap"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/ReminderService.kt",
+          "services/ReminderScheduler.kt",
+          "work/FoodReminderWorker.kt"
+        ],
+        "symbols": [
+          "recordFoodSnap",
+          "scheduleAll"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "notif"
+      ],
+      "status": "done",
+      "change": "Times 12:00 / 17:00 / 21:00 and the 14-day horizon already match. A snap today must cancel every remaining reminder today, not only the next one.",
+      "ios_commit": "921884d",
+      "notes": ""
+    },
+    {
+      "chapter": "13_notifications",
+      "feature": "Reschedule triggers",
+      "ios": {
+        "files": [
+          "Services/NotificationService.swift"
+        ],
+        "symbols": [
+          "rescheduleIfEnabled"
+        ]
+      },
+      "android": {
+        "files": [
+          "EateriaApplication.kt",
+          "services/LanguageService.kt",
+          "services/ReminderScheduler.kt"
+        ],
+        "symbols": [
+          "scheduleAll"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "notif"
+      ],
+      "status": "done",
+      "change": "Reschedule on app start, day change and language change.",
+      "ios_commit": "921884d",
+      "notes": ""
+    },
+    {
+      "chapter": "14_auth",
+      "feature": "In-place sign-in sheet",
+      "ios": {
+        "files": [
+          "Views/SignInSheet.swift",
+          "Services/AppNavigation.swift"
+        ],
+        "symbols": [
+          "SignInSheet",
+          "queueAnonymousLoginPrompt"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/SignInSheet.kt",
+          "navigation/AppNavigation.kt"
+        ],
+        "symbols": [
+          "SignInSheet",
+          "queueAnonymousLoginPrompt"
+        ]
+      },
+      "endpoint": {
+        "path": "eater_auth",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "login"
+      ],
+      "status": "done",
+      "change": "Guest upgrades in place. The sheet waits until the camera has closed.",
+      "ios_commit": "db07278",
+      "notes": ""
+    },
+    {
+      "chapter": "14_auth",
+      "feature": "Guest scan prompt cadence",
+      "ios": {
+        "files": [
+          "Services/AuthenticationService.swift"
+        ],
+        "symbols": [
+          "recordAnonymousFoodScanIfNeeded"
+        ]
+      },
+      "android": {
+        "files": [
+          "services/AuthenticationService.kt",
+          "viewmodels/MainViewModel.kt"
+        ],
+        "symbols": [
+          "recordAnonymousFoodScanIfNeeded"
+        ]
+      },
+      "endpoint": {
+        "path": "anonymous_auth",
+        "method": "POST",
+        "content_type": "application/json"
+      },
+      "loc_prefixes": [
+        "login.scan_prompt"
+      ],
+      "status": "done",
+      "change": "Prompt after scan 5, then every 3 scans. anonymous_auth already exists.",
+      "ios_commit": "",
+      "notes": ""
+    },
+    {
+      "chapter": "14_auth",
+      "feature": "Quota dialog and guest gates",
+      "ios": {
+        "files": [
+          "Views/AlertHelper.swift",
+          "ContentView.swift"
+        ],
+        "symbols": [
+          "showDailyLimitReached"
+        ]
+      },
+      "android": {
+        "files": [
+          "ui/views/AlertHelper.kt",
+          "ui/views/ContentView.kt",
+          "ui/views/ShareFoodView.kt"
+        ],
+        "symbols": [
+          "showDailyLimitReached"
+        ]
+      },
+      "endpoint": null,
+      "loc_prefixes": [
+        "quota",
+        "login"
+      ],
+      "status": "done",
+      "change": "Shared daily-limit sheet (quota.*). Guest invite banner on Home. Share and friends stay gated for guests.",
+      "ios_commit": "",
+      "notes": ""
+    }
+  ],
+  "endpoints": [
+    {
+      "path": "eater_get_today",
+      "method": "GET",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "get_food_custom_date",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "eater_receive_photo",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "eater_receive_text",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "delete_food",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "modify_food_record",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "modify_food_manual",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "suggest_dish_names",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "get_food_score",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "explain_food_score",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "food_health_level",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "get_recommendation",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "meal_suggest",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "get_statistics_range",
+      "method": "POST",
+      "content_type": "application/grpc+proto",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "manual_weight",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "alcohol_latest",
+      "method": "GET",
+      "content_type": "application/grpc+proto",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "alcohol_range",
+      "method": "POST",
+      "content_type": "application/grpc+proto",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "activity_log",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "activity_summary",
+      "method": "GET",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "record_chess_game",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "autocomplete/get_chess_history",
+      "method": "GET",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "autocomplete/get_all_chess_data",
+      "method": "GET",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "autocomplete/get_chess_stats",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": false,
+      "android": false
+    },
+    {
+      "path": "autocomplete/addfriend",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "autocomplete/getfriend",
+      "method": "GET",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "autocomplete/sharefood",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "set_language",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "feedback",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "delete_user",
+      "method": "POST",
+      "content_type": "application/protobuf",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "nickname_update",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "goal_update",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "profile_get",
+      "method": "GET",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "profile_update",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "profile_photo",
+      "method": "POST",
+      "content_type": "multipart/form-data",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "eater_auth",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "anonymous_auth",
+      "method": "POST",
+      "content_type": "application/json",
+      "ios": true,
+      "android": true
+    },
+    {
+      "path": "get_photo",
+      "method": "GET",
+      "content_type": "image",
+      "ios": true,
+      "android": true
+    }
+  ],
+  "protos": [
+    {
+      "file": "add_friend.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "alcohol.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "custom_date_food.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "delete_food.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "delete_user.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "eater_text.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "explain_food_score.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "feedback.proto",
+      "status": "diff",
+      "messages": [
+        {
+          "message": "FeedbackRequest",
+          "missing_on_android": [],
+          "android_only_fields": [],
+          "type_mismatch": [
+            {
+              "number": 2,
+              "ios": "string userEmail",
+              "android": "string user_email"
+            }
+          ],
+          "missing_message": false
+        },
+        {
+          "message": "FeedbackResponse",
+          "missing_on_android": [],
+          "android_only_fields": [
+            {
+              "number": 2,
+              "field": "string message"
+            }
+          ],
+          "type_mismatch": [],
+          "missing_message": false
+        }
+      ]
+    },
+    {
+      "file": "food_health_level.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "get_food_score.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "get_friends.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "get_recomendation.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "manual_weight.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "meal_suggest.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "modify_food_record.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "photo_message.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "set_language.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "share_food.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "statistics_range.proto",
+      "status": "match",
+      "messages": []
+    },
+    {
+      "file": "today_food.proto",
+      "status": "match",
+      "messages": []
+    }
+  ],
+  "localization": {
+    "ios_en_count": 861,
+    "android_en_count": 983,
+    "missing_in_android_count": 0,
+    "changed_count": 0,
+    "android_only_count": 122,
+    "locale_file_map": "iOS pt-BR.json maps to Android pt-br.json. iOS en-US.json has no Android file.",
+    "ios_only_locale_files": [
+      "en-us.json"
+    ],
+    "android_only_locale_files": [],
+    "missing_in_android": [],
+    "changed": [],
+    "android_only": [
+      "activities.chess.win",
+      "alcohol.addiction_mode.subtitle",
+      "appearance.system",
+      "calories.label",
+      "camera.takefood",
+      "camera.upload_multiple",
+      "common.back",
+      "common.back_to_edit",
+      "common.full",
+      "common.hello",
+      "common.more",
+      "common.simplified",
+      "disc.nav",
+      "friends.none",
+      "health.activity",
+      "health.age",
+      "health.age.placeholder",
+      "health.bmi.target",
+      "health.calc_plan",
+      "health.daily_calorie",
+      "health.daily_score.subtitle",
+      "health.daily_score.text",
+      "health.daily_score.title",
+      "health.estimated_timeline",
+      "health.female",
+      "health.goal.activity_hint",
+      "health.goal.maintain",
+      "health.goal.mode",
+      "health.goal.period",
+      "health.goal.weeks",
+      "health.goal.years",
+      "health.height",
+      "health.height.placeholder",
+      "health.invalid.msg",
+      "health.invalid.msg_fields",
+      "health.invalid.title",
+      "health.male",
+      "health.optimal_weight",
+      "health.plan.daily_calorie_title",
+      "health.plan.target_weight_title",
+      "health.plan.timeline_title",
+      "health.plan.title",
+      "health.score.explainer.text",
+      "health.score.explainer.title",
+      "health.select_activity",
+      "health.setup.title",
+      "health.target_invalid.msg",
+      "health.target_invalid.title",
+      "health.target_weight",
+      "health.update.title",
+      "health.updated_plan",
+      "health.weight",
+      "health.weight.placeholder",
+      "login.failed",
+      "macro.no_data",
+      "macro.reset_recommended",
+      "manual.login_required.message",
+      "manual.login_required.title",
+      "manual_food.suggestions",
+      "nickname.empty_error",
+      "nickname.save",
+      "nickname.success",
+      "onboarding.getstarted",
+      "onboarding.next",
+      "onboarding.personalize",
+      "onboarding.plates.score",
+      "onboarding.plates.slide1.desc",
+      "onboarding.plates.slide1.title",
+      "onboarding.plates.slide2.desc",
+      "onboarding.plates.slide2.title",
+      "onboarding.plates.slide3.desc",
+      "onboarding.plates.slide3.title",
+      "onboarding.skip_step",
+      "onboarding.tap_to_learn",
+      "onboarding.team.role.co_founder",
+      "onboarding.tips.addons.desc2",
+      "onboarding.tips.addons.title",
+      "onboarding.tips.chess_activities.desc",
+      "onboarding.tips.chess_activities.title",
+      "onboarding.tips.try_manual.desc",
+      "onboarding.tips.try_manual.title",
+      "onboarding.understand",
+      "portion.25",
+      "profile.actions",
+      "profile.addfriends",
+      "profile.datamode",
+      "profile.healthprofile",
+      "profile.name",
+      "profile.personalize",
+      "profile.reduce_motion",
+      "profile.setuphealth",
+      "prog.act.sub",
+      "prog.act.title",
+      "prog.calc",
+      "prog.demo.sub",
+      "prog.demo.title",
+      "prog.meas.sub",
+      "prog.meas.title",
+      "prog.notif.sub",
+      "prog.result",
+      "search.no_emails",
+      "settings.appearance",
+      "settings.appearance.dark",
+      "settings.appearance.light",
+      "settings.appearance.system",
+      "settings.reduce_motion",
+      "settings.reduce_motion.desc",
+      "share.portion.custom.button",
+      "share.portion.custom.placeholder",
+      "share.portion.custom.title",
+      "share.portion.question",
+      "share.portion.same_amount",
+      "sport.msg",
+      "sport.placeholder",
+      "sport.title",
+      "stats.avg_calories",
+      "stats.avg_food",
+      "stats.insights",
+      "stats.summary",
+      "stats.timeperiod",
+      "stats.trend",
+      "stats.trend.body"
+    ],
+    "quotes_ios_only": [],
+    "quotes_android_only": [],
+    "quotes_different": []
+  },
+  "removed_on_ios": [
+    {
+      "ios": "Services/multiple_photos.proto",
+      "android": "app/src/main/proto/multiple_photos.proto",
+      "action": "delete on Android"
+    },
+    {
+      "ios": "Services/GRPCService+MultiplePhotos.swift",
+      "android": "services/GRPCService.kt sendMultiplePhotos",
+      "action": "delete on Android"
+    },
+    {
+      "ios": "Views/MultiplePhotoPickerView.swift",
+      "android": "ui/views/CameraButtonView.kt MultiplePhotoUploadButton",
+      "action": "delete on Android"
+    },
+    {
+      "ios": "Views/MealDetailSheet.swift",
+      "android": null,
+      "action": "do not port"
+    },
+    {
+      "ios": "GRPCService.getChessStats",
+      "android": "services/GRPCService.kt getChessStats",
+      "action": "delete on Android"
+    },
+    {
+      "ios": "Views/HealthFormComponents.swift BMIScaleBar",
+      "android": "ui/views/HealthSettingsView.kt BMI bar if present",
+      "action": "remove if present"
+    },
+    {
+      "ios": "Views/CameraButtonView.swift renamed to Views/CameraView.swift",
+      "android": "ui/views/CameraButtonView.kt",
+      "action": "rename call sites to CameraView; file may keep the old name if the composable is renamed"
+    }
+  ]
+}

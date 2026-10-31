@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.LocalIndication
@@ -146,9 +147,9 @@ private fun CalendarContent(
                             (currentMonth.clone() as Calendar).apply {
                                 add(Calendar.MONTH, 1)
                             }
-                        if (nextMonth.get(Calendar.YEAR) <= today.get(Calendar.YEAR) &&
-                            nextMonth.get(Calendar.MONTH) <= today.get(Calendar.MONTH)
-                        ) {
+                        val nextKey = nextMonth.get(Calendar.YEAR) * 12 + nextMonth.get(Calendar.MONTH)
+                        val todayKey = today.get(Calendar.YEAR) * 12 + today.get(Calendar.MONTH)
+                        if (nextKey <= todayKey) {
                             currentMonth = nextMonth
                         }
                     },
@@ -169,7 +170,8 @@ private fun CalendarContent(
                 val weekdays =
                     remember {
                         val symbols = DateFormatSymbols.getInstance(Locale.getDefault())
-                        (1..7).map { symbols.shortWeekdays[it] }
+                        val first = Calendar.getInstance().firstDayOfWeek
+                        (0 until 7).map { symbols.shortWeekdays[(first - 1 + it) % 7 + 1] }
                     }
                 weekdays.forEach { day ->
                     Text(
@@ -213,7 +215,7 @@ private fun CalendarContent(
                     onClick = {
                         com.singularis.eateria.services.HapticsService.getInstance().select()
                         // Select today's date
-                        val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(today.time)
+                        val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.US).format(today.time)
                         onDateSelected(dateString)
                     },
                     colors =
@@ -242,13 +244,12 @@ private fun CalendarGrid(
 ) {
     val daysInMonth = getDaysInMonth(currentMonth)
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(7),
-        modifier = Modifier.height(192.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        items(daysInMonth) { day ->
+    // Plain rows instead of a fixed-height lazy grid: six weeks always fit without inner scrolling.
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+      daysInMonth.chunked(7).forEach { week ->
+       Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        week.forEach { day ->
+          Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
             CalendarDay(
                 day = day,
                 isSelected =
@@ -266,12 +267,15 @@ private fun CalendarGrid(
                                 set(Calendar.MONTH, currentMonth.get(Calendar.MONTH))
                                 set(Calendar.DAY_OF_MONTH, dayNumber)
                             }
-                        val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(selectedDate.time)
+                        val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.US).format(selectedDate.time)
                         onDateSelected(dateString)
                     }
                 },
             )
+          }
         }
+       }
+      }
     }
 }
 
@@ -286,7 +290,9 @@ private fun CalendarDay(
     Box(
         modifier =
             Modifier
-                .size(32.dp)
+                .widthIn(max = 44.dp)
+                .fillMaxWidth()
+                .aspectRatio(1f)
                 .clip(CircleShape)
                 .background(
                     when {
@@ -310,11 +316,10 @@ private fun CalendarDay(
                 color =
                     when {
                         !isClickable -> AppTheme.textSecondary().copy(alpha = 0.5f)
-                        isSelected -> Color.White
-                        isToday -> Color.White
+                        isSelected -> AppTheme.onAccent
                         else -> AppTheme.textPrimary()
                     },
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
             )
         }
@@ -332,7 +337,7 @@ private fun getDaysInMonth(calendar: Calendar): List<CalendarDayModel> {
             set(Calendar.DAY_OF_MONTH, 1)
         }
 
-    val startDayOfWeek = firstDayOfMonth.get(Calendar.DAY_OF_WEEK) - 1
+    val startDayOfWeek = (firstDayOfMonth.get(Calendar.DAY_OF_WEEK) - firstDayOfMonth.firstDayOfWeek + 7) % 7
     val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
 
     val days = mutableListOf<CalendarDayModel>()
@@ -347,8 +352,8 @@ private fun getDaysInMonth(calendar: Calendar): List<CalendarDayModel> {
         days.add(CalendarDayModel(day = day))
     }
 
-    // Fill remaining cells to complete the grid (42 total cells for 6 rows)
-    while (days.size < 42) {
+    // Complete the last week only, so short months do not show an empty row.
+    while (days.size % 7 != 0) {
         days.add(CalendarDayModel())
     }
 

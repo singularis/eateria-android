@@ -111,34 +111,9 @@ Key dependencies include:
 - DataStore for preferences
 - Coil for image loading
 
-## Functionality Comparison with iOS App
+## Parity with iOS
 
-### Core Features ✅
-- [x] Google Authentication
-- [x] Food photo upload and analysis
-- [x] Weight tracking (photo and manual)
-- [x] Calorie limit management
-- [x] Product list with nutrition info
-- [x] Historical date viewing
-- [x] Health recommendations
-- [x] Dark theme UI
-- [x] Loading states and error handling
-
-### UI Components ✅
-- [x] Login screen
-- [x] Top bar with profile, date, and info buttons
-- [x] Stats buttons (weight, calories, trends)
-- [x] Product cards with delete functionality
-- [x] Camera button
-- [x] Custom date picker navigation
-- [x] Loading overlays
-
-### Backend Integration ✅
-- [x] Same API endpoints as iOS app
-- [x] Protocol buffer communication
-- [x] JWT authentication
-- [x] Retry logic with exponential backoff
-- [x] Image storage and retrieval
+Android 5.3 tracks the iOS 5.3 working tree. The function and screen map is [docs/ios_android_parity_map.json](docs/ios_android_parity_map.json). Refresh the localization and proto sections with `python3 scripts/parity_audit.py`.
 
 ## Development Notes
 

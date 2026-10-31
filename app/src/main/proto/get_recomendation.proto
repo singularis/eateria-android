@@ -4,8 +4,10 @@ package eater;
 
 message RecommendationRequest {
   int32 days = 1;
+  string language_code = 2;
 }
 
 message RecommendationResponse {
   string recommendation = 1;
+  int32 recscore = 2;
 } 

@@ -9,36 +9,85 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.singularis.eateria.services.AppSettingsService
 
+// Every role Material components read is mapped to the app palette, so stock
+// sliders, switches, text fields, chips and dialogs match AppTheme instead of
+// falling back to the baseline purple scheme.
 private val DarkColorScheme =
     darkColorScheme(
-        primary = DarkPrimary,
-        secondary = DarkSecondary,
-        tertiary = DarkTertiary,
-        background = DarkBackground,
-        surface = DarkSurface,
+        primary = AccentDark,
         onPrimary = DarkOnPrimary,
+        primaryContainer = AccentDark.copy(alpha = 0.24f).compositeOver(DarkSurface),
+        onPrimaryContainer = DarkTextPrimary,
+        secondary = AccentDark,
         onSecondary = DarkOnSecondary,
-        onTertiary = DarkOnSurface,
+        secondaryContainer = AccentDark.copy(alpha = 0.24f).compositeOver(DarkSurface),
+        onSecondaryContainer = DarkTextPrimary,
+        tertiary = DarkTertiary,
+        onTertiary = DarkOnPrimary,
+        background = DarkBackground,
         onBackground = DarkOnBackground,
+        surface = DarkSurface,
         onSurface = DarkOnSurface,
+        surfaceVariant = DarkSurfaceVariant,
+        onSurfaceVariant = DarkTextSecondary,
+        surfaceTint = Color.Transparent,
+        surfaceBright = DarkSurface,
+        surfaceDim = DarkBackground,
+        surfaceContainerLowest = DarkBackground,
+        surfaceContainerLow = DarkSurfaceVariant,
+        surfaceContainer = DarkSurface,
+        surfaceContainerHigh = DarkSurface,
+        surfaceContainerHighest = Color(0xFF30303B),
+        inverseSurface = LightSurface,
+        inverseOnSurface = LightTextPrimary,
+        inversePrimary = AccentLight,
+        outline = DarkTextSecondary.copy(alpha = 0.5f),
+        outlineVariant = DarkDivider,
+        error = DangerColor,
+        onError = Color.White,
+        scrim = Color.Black,
     )
 
 private val LightColorScheme =
     lightColorScheme(
-        primary = LightPrimary,
-        secondary = LightSecondary,
-        tertiary = LightTertiary,
-        background = LightBackground,
-        surface = LightSurface,
+        primary = AccentLight,
         onPrimary = LightOnPrimary,
+        primaryContainer = AccentLight.copy(alpha = 0.14f).compositeOver(LightSurface),
+        onPrimaryContainer = LightTextPrimary,
+        secondary = AccentLight,
         onSecondary = LightOnSecondary,
-        onTertiary = LightOnSurface,
+        secondaryContainer = AccentLight.copy(alpha = 0.14f).compositeOver(LightSurface),
+        onSecondaryContainer = LightTextPrimary,
+        tertiary = LightTertiary,
+        onTertiary = LightOnPrimary,
+        background = LightBackground,
         onBackground = LightOnBackground,
+        surface = LightSurface,
         onSurface = LightOnSurface,
+        surfaceVariant = LightSurfaceVariant,
+        onSurfaceVariant = LightTextSecondary,
+        surfaceTint = Color.Transparent,
+        surfaceBright = LightSurface,
+        surfaceDim = LightBgEnd,
+        surfaceContainerLowest = LightSurface,
+        surfaceContainerLow = LightSurface,
+        surfaceContainer = LightSurface,
+        surfaceContainerHigh = LightSurface,
+        surfaceContainerHighest = LightSurfaceVariant,
+        inverseSurface = DarkSurface,
+        inverseOnSurface = DarkTextPrimary,
+        inversePrimary = AccentDark,
+        outline = LightTextSecondary.copy(alpha = 0.5f),
+        outlineVariant = LightDivider,
+        error = DangerColor,
+        onError = Color.White,
+        scrim = Color.Black,
     )
 
 @Composable

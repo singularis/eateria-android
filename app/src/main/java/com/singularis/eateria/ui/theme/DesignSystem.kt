@@ -9,12 +9,17 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -28,6 +33,9 @@ import com.singularis.eateria.services.HapticsService
 
 object AppTheme {
     @Composable fun accent() = if (isInLightMode()) AccentLight else AccentDark
+
+    /** Text and icons on accent, success, danger and other filled colors. */
+    val onAccent = Color.White
     @Composable fun success() = SuccessColor
     @Composable fun warning() = WarningColor
     @Composable fun danger() = DangerColor
@@ -42,18 +50,19 @@ object AppTheme {
 
     @Composable fun textPrimary() = if (isInLightMode()) LightTextPrimary else DarkTextPrimary
     @Composable fun textSecondary() = if (isInLightMode()) LightTextSecondary else DarkTextSecondary
+    @Composable fun trialUsage() = if (isInLightMode()) LightTrialUsage else DarkTrialUsage
     @Composable fun divider() = if (isInLightMode()) LightDivider else DarkDivider
 
-    val cornerRadius = 20.dp  // Compromise: iOS 16dp, was 24dp
-    val smallRadius = 14.dp    // Compromise: iOS 12dp, was 16dp
-    val cardPadding = 16.dp
+    val cornerRadius = 16.dp
+    val smallRadius = 12.dp
+    val tinyRadius = 8.dp
 
     @Composable
     fun cardShadow(): CardShadow {
         return if (isInLightMode()) {
-            CardShadow(Color(0xFF6A85B6).copy(alpha = 0.15f), 12.dp, 0.dp, 6.dp)
+            CardShadow(Color.Black.copy(alpha = 0.08f), 4.dp, 0.dp, 2.dp)
         } else {
-            CardShadow(Color.Black.copy(alpha = 0.4f), 12.dp, 0.dp, 6.dp)
+            CardShadow(Color.Black.copy(alpha = 0.28f), 4.dp, 0.dp, 2.dp)
         }
     }
 
@@ -67,13 +76,28 @@ object AppTheme {
     }
 
     @Composable
-    fun primaryButtonGradient(): Brush {
-        return if (isInLightMode()) {
-            Brush.linearGradient(listOf(LightBtnStart, LightBtnEnd))
+    fun primaryButtonFill(): Color = accent()
+
+    @Composable
+    fun primaryButtonGradient(): Brush = Brush.linearGradient(listOf(accent(), accent()))
+
+    @Composable
+    fun mascotCalloutGradient(): Brush =
+        if (isInLightMode()) {
+            Brush.horizontalGradient(
+                listOf(
+                    Color(red = 0.05f, green = 0.36f, blue = 0.76f),
+                    Color(red = 0.38f, green = 0.24f, blue = 0.70f),
+                ),
+            )
         } else {
-            Brush.linearGradient(listOf(DarkBtnStart, DarkBtnEnd))
+            Brush.horizontalGradient(
+                listOf(
+                    Color(red = 0.14f, green = 0.38f, blue = 0.78f),
+                    Color(red = 0.42f, green = 0.28f, blue = 0.76f),
+                ),
+            )
         }
-    }
 
     @Composable
     fun liquidGlassStroke(): Brush {
@@ -113,19 +137,18 @@ fun Modifier.cardContainer(padding: Dp = 12.dp): Modifier {
         )
         .clip(RoundedCornerShape(AppTheme.cornerRadius))
         .background(AppTheme.surface())
-        .background(Color.White.copy(alpha = 0.1f)) // Simulated ultraThinMaterial
-        .background(AppTheme.surface().copy(alpha = 0.3f))
-        .border(1.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(AppTheme.cornerRadius))
+        .border(1.dp, AppTheme.divider(), RoundedCornerShape(AppTheme.cornerRadius))
         .padding(padding)
 }
 
 @Composable
 fun Modifier.liquidGlass(padding: Dp = 12.dp, cornerRadius: Dp = AppTheme.cornerRadius): Modifier {
+    val shadow = AppTheme.cardShadow()
     return this
-        .shadow(elevation = 12.dp, shape = RoundedCornerShape(cornerRadius), ambientColor = Color.Black.copy(alpha = 0.15f), spotColor = Color.Black.copy(alpha = 0.15f))
+        .shadow(elevation = shadow.radius, shape = RoundedCornerShape(cornerRadius), ambientColor = shadow.color, spotColor = shadow.color)
         .clip(RoundedCornerShape(cornerRadius))
-        .background(Color.White.copy(alpha = 0.15f)) // Enhanced frosted glass
-        .border(1.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(cornerRadius))
+        .background(AppTheme.surface())
+        .border(1.dp, AppTheme.divider(), RoundedCornerShape(cornerRadius))
         .padding(padding)
 }
 
@@ -177,9 +200,11 @@ private fun BaseButton(
 
     Box(
         modifier = modifier
+            .heightIn(min = Dimensions.buttonHeight)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
+                alpha = if (enabled) 1f else 0.5f
             }
             .shadow(
                 elevation = if (isPressed) shadow.radius - 2.dp else shadow.radius,
@@ -199,20 +224,18 @@ private fun BaseButton(
                     onClick()
                 }
             )
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        content()
+        CompositionLocalProvider(LocalContentColor provides AppTheme.onAccent) {
+            content()
+        }
     }
 }
 
 @Composable
 fun PrimaryButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, content: @Composable () -> Unit) {
-    BaseButton(onClick = onClick, modifier = modifier, enabled = enabled, backgroundBrush = AppTheme.primaryButtonGradient(), content = content)
-}
-
-@Composable
-fun GreenToPurpleButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, content: @Composable () -> Unit) {
-    BaseButton(onClick = onClick, modifier = modifier, enabled = enabled, backgroundBrush = Brush.horizontalGradient(listOf(Color.Green, Color(0xFF800080))), scalePressed = 0.98f, content = content)
+    BaseButton(onClick = onClick, modifier = modifier, enabled = enabled, backgroundBrush = Brush.linearGradient(listOf(AppTheme.primaryButtonFill(), AppTheme.primaryButtonFill())), content = content)
 }
 
 @Composable
@@ -240,14 +263,15 @@ fun SecondaryButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled:
 
     Box(
         modifier = modifier
+            .heightIn(min = Dimensions.buttonHeight)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
+                alpha = if (enabled) 1f else 0.5f
             }
             .clip(RoundedCornerShape(32.dp))
-            .background(Color.White.copy(alpha = 0.15f)) // Enhanced frosted glass
-            .background(AppTheme.surface().copy(alpha = 0.5f))
-            .border(1.dp, AppTheme.liquidGlassStroke(), RoundedCornerShape(32.dp))
+            .background(AppTheme.surface())
+            .border(1.dp, AppTheme.divider(), RoundedCornerShape(32.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -257,8 +281,47 @@ fun SecondaryButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled:
                     onClick()
                 }
             )
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        content()
+        CompositionLocalProvider(LocalContentColor provides AppTheme.textPrimary()) {
+            content()
+        }
     }
 }
+
+@Composable
+fun Modifier.appSurface(cornerRadius: Dp = AppTheme.cornerRadius): Modifier {
+    val shape = RoundedCornerShape(cornerRadius)
+    val shadow = AppTheme.cardShadow()
+    return this
+        .shadow(shadow.radius, shape, ambientColor = shadow.color, spotColor = shadow.color)
+        .clip(shape)
+        .background(AppTheme.surface())
+        .border(1.dp, AppTheme.divider(), shape)
+}
+
+@Composable
+fun Modifier.appCircleSurface(): Modifier {
+    val shadow = AppTheme.cardShadow()
+    return this
+        .shadow(shadow.radius, CircleShape, ambientColor = shadow.color, spotColor = shadow.color)
+        .clip(CircleShape)
+        .background(AppTheme.surface())
+        .border(1.dp, AppTheme.divider(), CircleShape)
+}
+
+@Composable
+fun Modifier.appTintedGlass(
+    tint: Color,
+    cornerRadius: Dp = AppTheme.smallRadius,
+): Modifier {
+    val shape = RoundedCornerShape(cornerRadius)
+    val glass = android.os.Build.VERSION.SDK_INT >= 31
+    return this
+        .clip(shape)
+        .background(if (glass) tint.copy(alpha = 0.82f) else tint)
+}
+
+@Composable
+fun Modifier.appSheetBackground(): Modifier = this.background(AppTheme.surface())

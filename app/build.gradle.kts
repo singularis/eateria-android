@@ -17,14 +17,18 @@ secrets {
 
 android {
     namespace = "com.singularis.eateria"
-    compileSdk = 36
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "com.singularis.eateria"
         minSdk = 26
         targetSdk = 36
-        versionCode = 28
-        versionName = "5.1.1"
+        versionCode = 29
+        versionName = "5.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -113,7 +117,7 @@ kotlin {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:4.35.1"
+        artifact = "com.google.protobuf:protoc:4.36.2"
     }
     generateProtoTasks {
         all().forEach { task ->
@@ -163,7 +167,7 @@ dependencies {
     implementation(libs.gson)
     
     // Protobuf
-    implementation("com.google.protobuf:protobuf-kotlin-lite:4.35.1")
+    implementation("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
     
     // Google Services
     implementation(libs.play.services.maps)
@@ -183,10 +187,10 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     
     // Security Crypto for Token Storage
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.security:security-crypto:1.1.0")
     
     // WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.11.2")
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
     
     // Testing
     testImplementation(libs.junit)
@@ -200,13 +204,14 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // Material Compose for pull-to-refresh and swipe gestures
-    implementation("androidx.compose.material:material:1.11.4")
+    implementation("androidx.compose.material:material:1.12.1")
     
     // Kotlinx Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
     
     // Coil for image loading
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("io.coil-kt.coil3:coil-compose:3.6.3")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.3")
 
     // Accompanist - Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")

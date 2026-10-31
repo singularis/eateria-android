@@ -1,5 +1,8 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.material3.MaterialTheme
+import com.singularis.eateria.util.toDecimalOrNull
+
 import android.content.Context
 import androidx.compose.animation.core.*
 import androidx.compose.animation.AnimatedVisibility
@@ -20,6 +23,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -162,6 +167,9 @@ fun OnboardingView(
     }
     val pagerState = rememberPagerState(pageCount = { onboardingPages.size })
     val coroutineScope = rememberCoroutineScope()
+    androidx.activity.compose.BackHandler(enabled = pagerState.currentPage > 0) {
+        coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+    }
 
     // Health data collection state
     var height by remember { mutableStateOf("") }
@@ -199,8 +207,7 @@ fun OnboardingView(
                 Modifier
                     .fillMaxSize()
                     .background(AppTheme.backgroundGradient())
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .windowInsetsPadding(WindowInsets.navigationBars),
+                    .windowInsetsPadding(WindowInsets.statusBars),
         ) {
             Column(
                 modifier =
@@ -221,18 +228,18 @@ fun OnboardingView(
                             coroutineScope.launch {
                                 LanguageService.syncDetectedLanguageToBackend(context)
                             }
-                            onComplete(null, true)
+                            onComplete(null, notificationsOptIn)
                         },
                         colors =
                             ButtonDefaults.textButtonColors(
                                 contentColor = AppTheme.textSecondary(),
                             ),
                     ) {
-                        Text(Localization.tr(LocalContext.current, "onboarding.skip", "Skip"), fontSize = 16.sp)
+                        Text(Localization.tr(LocalContext.current, "onboarding.skip", "Skip"), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(Dimensions.paddingS))
 
                 // Page content
                 HorizontalPager(
@@ -349,12 +356,10 @@ fun OnboardingView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
-
                 // Page indicators
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(vertical = 16.dp),
+                    modifier = Modifier.padding(vertical = Dimensions.paddingM),
                 ) {
                     repeat(onboardingPages.size) { index ->
                         PageIndicator(
@@ -363,8 +368,6 @@ fun OnboardingView(
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
 
                 // Navigation buttons
                 Row(
@@ -386,7 +389,7 @@ fun OnboardingView(
                                     contentColor = AppTheme.textSecondary(),
                                 ),
                         ) {
-                            Text(Localization.tr(LocalContext.current, "common.back", "Previous"), fontSize = 16.sp)
+                            Text(Localization.tr(LocalContext.current, "common.back", "Previous"), style = MaterialTheme.typography.bodyMedium)
                         }
                     } else {
                         Spacer(modifier = Modifier.width(80.dp))
@@ -433,8 +436,8 @@ fun OnboardingView(
                                                     height.isNotEmpty() && weight.isNotEmpty() && age.isNotEmpty()
                                                 ) {
                                                     OnboardingHealthData(
-                                                        height = height.toDoubleOrNull() ?: 0.0,
-                                                        weight = weight.toDoubleOrNull() ?: 0.0,
+                                                        height = height.toDecimalOrNull() ?: 0.0,
+                                                        weight = weight.toDecimalOrNull() ?: 0.0,
                                                         age = age.toIntOrNull() ?: 0,
                                                         isMale = isMale,
                                                         activityLevel = activityLevel,
@@ -457,15 +460,15 @@ fun OnboardingView(
                                         },
                                     contentColor =
                                         when (onboardingPages[pagerState.currentPage].anchor) {
-                                            "disclaimer" -> AppTheme.danger()
-                                            else -> AppTheme.textPrimary()
+                                            "disclaimer" -> Color.Black
+                                            else -> AppTheme.onAccent
                                         },
                                 ),
                             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                             modifier =
                                 Modifier
-                                    .height(56.dp)
-                                    .width(160.dp),
+                                    .heightIn(min = 56.dp)
+                                    .widthIn(min = 160.dp),
                         ) {
                             Text(
                                 text =
@@ -481,7 +484,7 @@ fun OnboardingView(
                                                 Localization.tr(LocalContext.current, "onboarding.getstarted", "Get Started")
                                             }
                                     },
-                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center,
                                 lineHeight = 22.sp,
@@ -562,7 +565,7 @@ private fun DisplayModeOnboardingView(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -573,7 +576,7 @@ private fun DisplayModeOnboardingView(
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -593,7 +596,7 @@ private fun DisplayModeOnboardingView(
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = if (!isFullMode) CalorieGreen else AppTheme.surface(),
-                        contentColor = AppTheme.textPrimary(),
+                        contentColor = if (!isFullMode) AppTheme.onAccent else AppTheme.textPrimary(),
                     ),
                 modifier =
                     Modifier
@@ -612,7 +615,7 @@ private fun DisplayModeOnboardingView(
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = if (isFullMode) CalorieGreen else AppTheme.surface(),
-                        contentColor = AppTheme.textPrimary(),
+                        contentColor = if (isFullMode) AppTheme.onAccent else AppTheme.textPrimary(),
                     ),
                 modifier =
                     Modifier
@@ -658,7 +661,7 @@ private fun NotificationsOnboardingView(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -669,7 +672,7 @@ private fun NotificationsOnboardingView(
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -688,7 +691,7 @@ private fun NotificationsOnboardingView(
             Text(
                 text = Localization.tr(LocalContext.current, "onboarding.notifications.enable", "Enable Reminders"),
                 color = AppTheme.textPrimary(),
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
             )
             Switch(
                 checked = notificationsOptIn,
@@ -743,7 +746,7 @@ private fun HealthSetupView(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -755,7 +758,7 @@ private fun HealthSetupView(
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -787,7 +790,7 @@ private fun HealthSetupView(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "onboarding.personalize", "Yes, Let's Personalize"),
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                 )
             }
@@ -799,7 +802,7 @@ private fun HealthSetupView(
                 },
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = Color.White.copy(alpha = 0.2f),
+                        containerColor = AppTheme.surface(),
                         contentColor = AppTheme.textPrimary(),
                     ),
                 modifier =
@@ -811,7 +814,7 @@ private fun HealthSetupView(
             ) {
                 Text(
                     text = Localization.tr(LocalContext.current, "onboarding.skip_step", "Skip This Step"),
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                 )
             }
@@ -838,8 +841,8 @@ private fun HealthFormView(
 ) {
     val focusManager = LocalFocusManager.current
     val isFormValid =
-        height.toDoubleOrNull()?.let { it >= 100 && it <= 300 } == true &&
-            weight.toDoubleOrNull()?.let { it >= 30 && it <= 500 } == true &&
+        height.toDecimalOrNull()?.let { it >= 100 && it <= 300 } == true &&
+            weight.toDecimalOrNull()?.let { it >= 30 && it <= 500 } == true &&
             age.toIntOrNull()?.let { it >= 13 && it <= 120 } == true
 
     Column(
@@ -874,7 +877,7 @@ private fun HealthFormView(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 24.sp,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
@@ -892,7 +895,7 @@ private fun HealthFormView(
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = if (isFormValid) CalorieGreen else AppTheme.surface(),
-                    contentColor = AppTheme.textPrimary(),
+                    contentColor = if (isFormValid) AppTheme.onAccent else AppTheme.textPrimary(),
                     disabledContainerColor = AppTheme.surface(),
                     disabledContentColor = AppTheme.textPrimary().copy(alpha = 0.6f),
                 ),
@@ -905,7 +908,7 @@ private fun HealthFormView(
         ) {
             Text(
                 text = Localization.tr(LocalContext.current, "health.calc_plan", "Calculate My Plan"),
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 lineHeight = 22.sp,
@@ -925,13 +928,13 @@ private fun HealthFormView(
                 Text(
                     text = Localization.tr(LocalContext.current, "health.height", "Height (cm):"),
                     color = AppTheme.textPrimary(),
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.width(100.dp),
                 )
                 TextField(
                     value = height,
                     onValueChange = { newValue ->
-                        if (newValue.isEmpty() || (newValue.toDoubleOrNull()?.let { it <= 300 } == true)) {
+                        if (newValue.isEmpty() || (newValue.toDecimalOrNull()?.let { it <= 300 } == true)) {
                             onHeightChange(newValue.filter { it.isDigit() || it == '.' })
                         }
                     },
@@ -945,7 +948,7 @@ private fun HealthFormView(
                             unfocusedContainerColor = Color.Transparent,
                             cursorColor = CalorieGreen,
                             focusedIndicatorColor =
-                                if (height.toDoubleOrNull()?.let { it >= 100 && it <= 300 } ==
+                                if (height.toDecimalOrNull()?.let { it >= 100 && it <= 300 } ==
                                     true
                                 ) {
                                     CalorieGreen
@@ -965,13 +968,13 @@ private fun HealthFormView(
                 Text(
                     text = Localization.tr(LocalContext.current, "health.weight", "Weight (kg):"),
                     color = AppTheme.textPrimary(),
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.width(100.dp),
                 )
                 TextField(
                     value = weight,
                     onValueChange = { newValue ->
-                        if (newValue.isEmpty() || (newValue.toDoubleOrNull()?.let { it <= 500 } == true)) {
+                        if (newValue.isEmpty() || (newValue.toDecimalOrNull()?.let { it <= 500 } == true)) {
                             onWeightChange(newValue.filter { it.isDigit() || it == '.' })
                         }
                     },
@@ -985,7 +988,7 @@ private fun HealthFormView(
                             unfocusedContainerColor = Color.Transparent,
                             cursorColor = CalorieGreen,
                             focusedIndicatorColor =
-                                if (weight.toDoubleOrNull()?.let { it >= 30 && it <= 500 } ==
+                                if (weight.toDecimalOrNull()?.let { it >= 30 && it <= 500 } ==
                                     true
                                 ) {
                                     CalorieGreen
@@ -1005,7 +1008,7 @@ private fun HealthFormView(
                 Text(
                     text = Localization.tr(LocalContext.current, "health.age", "Age (years):"),
                     color = AppTheme.textPrimary(),
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.width(100.dp),
                 )
                 TextField(
@@ -1045,7 +1048,7 @@ private fun HealthFormView(
                 Text(
                     text = Localization.tr(LocalContext.current, "health.gender", "Gender:"),
                     color = AppTheme.textPrimary(),
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.width(100.dp),
                 )
                 Row(
@@ -1060,14 +1063,14 @@ private fun HealthFormView(
                         colors =
                             ButtonDefaults.buttonColors(
                                 containerColor = if (isMale) CalorieGreen else AppTheme.accent(),
-                                contentColor = AppTheme.textPrimary(),
+                                contentColor = AppTheme.onAccent,
                             ),
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(
                             text = Localization.tr(LocalContext.current, "health.gender.male", "Male"),
                             maxLines = 1,
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
                     Button(
@@ -1078,14 +1081,14 @@ private fun HealthFormView(
                         colors =
                             ButtonDefaults.buttonColors(
                                 containerColor = if (!isMale) CalorieGreen else AppTheme.accent(),
-                                contentColor = AppTheme.textPrimary(),
+                                contentColor = AppTheme.onAccent,
                             ),
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(
                             text = Localization.tr(LocalContext.current, "health.gender.female", "Female"),
                             maxLines = 1,
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 }
@@ -1099,7 +1102,7 @@ private fun HealthFormView(
                 Text(
                     text = Localization.tr(LocalContext.current, "health.activity", "Activity Level:"),
                     color = AppTheme.textPrimary(),
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.width(100.dp),
                 )
 
@@ -1130,14 +1133,14 @@ private fun HealthFormView(
                                 colors =
                                     ButtonDefaults.buttonColors(
                                         containerColor = if (activityLevel == level) CalorieGreen else AppTheme.surface(),
-                                        contentColor = AppTheme.textPrimary(),
+                                        contentColor = if (activityLevel == level) AppTheme.onAccent else AppTheme.textPrimary(),
                                     ),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp),
                             ) {
                                 Text(
                                     text = Localization.translateActivityLevel(LocalContext.current, level),
-                                    fontSize = 14.sp,
+                                    style = MaterialTheme.typography.bodySmall,
                                     fontWeight = if (activityLevel == level) FontWeight.Bold else FontWeight.Normal,
                                 )
                             }
@@ -1183,7 +1186,7 @@ private fun HealthResultsView(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 24.sp,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
@@ -1236,7 +1239,7 @@ private fun ResultCard(
             Text(
                 text = title,
                 color = color,
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
             )
 
@@ -1245,7 +1248,7 @@ private fun ResultCard(
             Text(
                 text = value,
                 color = AppTheme.textPrimary(),
-                fontSize = 20.sp,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
             )
@@ -1265,8 +1268,8 @@ private fun validateAndCalculateHealthData(
     onTimeToOptimalWeightCalculated: (String) -> Unit,
     context: Context,
 ): Boolean {
-    val heightValue = height.toDoubleOrNull()
-    val weightValue = weight.toDoubleOrNull()
+    val heightValue = height.toDecimalOrNull()
+    val weightValue = weight.toDecimalOrNull()
     val ageValue = age.toIntOrNull()
 
     if (heightValue == null || weightValue == null || ageValue == null ||
@@ -1454,7 +1457,7 @@ private fun OnboardingPageContent(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -1466,7 +1469,7 @@ private fun OnboardingPageContent(
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -1505,7 +1508,7 @@ private fun FriendsOnboardingView(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -1516,7 +1519,7 @@ private fun FriendsOnboardingView(
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -1542,7 +1545,7 @@ private fun FriendsOnboardingView(
         ) {
             Text(
                 text = Localization.tr(LocalContext.current, "friends.add", "Add Friend"),
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -1593,7 +1596,7 @@ private fun LanguageSelectOnboardingView(page: OnboardingPage) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -1609,7 +1612,7 @@ private fun LanguageSelectOnboardingView(page: OnboardingPage) {
                     "Choose your preferred language. You can change this later in Profile.",
                 ),
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -1637,13 +1640,13 @@ private fun LanguageSelectOnboardingView(page: OnboardingPage) {
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = if (isDeviceDefault) CalorieGreen else AppTheme.surface(),
-                            contentColor = AppTheme.textPrimary(),
+                            contentColor = if (isDeviceDefault) AppTheme.onAccent else AppTheme.textPrimary(),
                         ),
                     modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimensions.cornerRadiusM),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = if (lang.flag.isNotEmpty()) lang.flag else "", fontSize = 20.sp)
+                        Text(text = if (lang.flag.isNotEmpty()) lang.flag else "", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Normal))
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(text = lang.nativeName)
                     }
@@ -1663,7 +1666,7 @@ private fun PageIndicator(
             modifier
                 .clip(CircleShape)
                 .background(
-                    if (isSelected) AppTheme.accent() else AppTheme.surface(),
+                    if (isSelected) AppTheme.accent() else AppTheme.textSecondary().copy(alpha = 0.3f),
                 ),
     )
 }
@@ -1701,7 +1704,7 @@ private fun AppearanceOnboardingView(page: OnboardingPage) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -1712,7 +1715,7 @@ private fun AppearanceOnboardingView(page: OnboardingPage) {
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -1728,7 +1731,7 @@ private fun AppearanceOnboardingView(page: OnboardingPage) {
             Text(
                 text = Localization.tr(context, "settings.appearance", "Appearance"),
                 color = AppTheme.textPrimary(),
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
             )
 
@@ -1791,14 +1794,14 @@ private fun AppearanceOnboardingView(page: OnboardingPage) {
                     Text(
                         text = Localization.tr(context, "settings.reduce_motion", "Reduce Motion"),
                         color = AppTheme.textPrimary(),
-                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = Localization.tr(context, "settings.reduce_motion.desc", "Minimize animations"),
                         color = AppTheme.textSecondary(),
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
                 Switch(
@@ -1851,7 +1854,7 @@ private fun WelcomeOnboardingView(
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -1862,7 +1865,7 @@ private fun WelcomeOnboardingView(
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -1896,7 +1899,7 @@ private fun PetsOnboardingView(page: OnboardingPage) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp,
@@ -1907,7 +1910,7 @@ private fun PetsOnboardingView(page: OnboardingPage) {
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
         )
@@ -1929,7 +1932,7 @@ private fun PetsOnboardingView(page: OnboardingPage) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text("Cat", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
-                    Text(Localization.tr(context, "onboarding.pets.cat.desc", "Elegant and opinionated. Purrs when you eat well, hisses when you don't."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                    Text(Localization.tr(context, "onboarding.pets.cat.desc", "Elegant and opinionated. Purrs when you eat well, hisses when you don't."), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -1951,7 +1954,7 @@ private fun PetsOnboardingView(page: OnboardingPage) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text("Root", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
-                    Text(Localization.tr(context, "onboarding.pets.dog.desc", "Loyal and expressive. Barks with joy for healthy meals, growls at junk food."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                    Text(Localization.tr(context, "onboarding.pets.dog.desc", "Loyal and expressive. Barks with joy for healthy meals, growls at junk food."), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -1972,7 +1975,7 @@ private fun PetsOnboardingView(page: OnboardingPage) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(Localization.tr(context, "onboarding.pets.default.title", "Default Style"), fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
-                    Text(Localization.tr(context, "onboarding.pets.default.desc", "Clean and simple. Standard icons without pet reactions."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                    Text(Localization.tr(context, "onboarding.pets.default.desc", "Clean and simple. Standard icons without pet reactions."), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -2060,7 +2063,7 @@ fun ToolsStepView(page: OnboardingPage) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 30.sp,
+            style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
@@ -2068,7 +2071,7 @@ fun ToolsStepView(page: OnboardingPage) {
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 18.sp,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -2076,7 +2079,7 @@ fun ToolsStepView(page: OnboardingPage) {
         Text(
             text = Localization.tr(context, "onboarding.tap_to_learn", "👆 Tap each card to learn more"),
             color = AppTheme.accent(),
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -2100,11 +2103,11 @@ fun ToolsStepView(page: OnboardingPage) {
                 )
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
-                    Text(Localization.tr(context, "onboarding.tools.scales.title", "Kitchen Scales"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.tools.scales.title", "Kitchen Scales"), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary())
                     AnimatedVisibility(visible = "scales" in expandedCards) {
                         Column {
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(Localization.tr(context, "onboarding.tools.scales.desc", "Weigh your food to understand real portions. You will be surprised how much a \"small\" serving actually weighs."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                            Text(Localization.tr(context, "onboarding.tools.scales.desc", "Weigh your food to understand real portions. You will be surprised how much a \"small\" serving actually weighs."), style = MaterialTheme.typography.bodyMedium, color = AppTheme.textSecondary(), lineHeight = 22.sp)
                         }
                     }
                 }
@@ -2131,11 +2134,11 @@ fun ToolsStepView(page: OnboardingPage) {
                 )
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
-                    Text(Localization.tr(context, "onboarding.tools.containers.title", "Food Containers"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.tools.containers.title", "Food Containers"), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary())
                     AnimatedVisibility(visible = "containers" in expandedCards) {
                         Column {
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(Localization.tr(context, "onboarding.tools.containers.desc", "Organize meals so nothing goes to waste. Containers make meal prep effortless and keep your eating structured."), fontSize = 16.sp, color = AppTheme.textSecondary(), lineHeight = 22.sp)
+                            Text(Localization.tr(context, "onboarding.tools.containers.desc", "Organize meals so nothing goes to waste. Containers make meal prep effortless and keep your eating structured."), style = MaterialTheme.typography.bodyMedium, color = AppTheme.textSecondary(), lineHeight = 22.sp)
                         }
                     }
                 }
@@ -2157,7 +2160,7 @@ fun ToolsStepView(page: OnboardingPage) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(Localization.tr(context, "onboarding.tools.track.title", "Track Everything"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.tools.track.title", "Track Everything"), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary())
                 }
                 AnimatedVisibility(visible = "track" in expandedCards) {
                     Column {
@@ -2182,7 +2185,7 @@ fun PetMoodBubble(imageRes: Int, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Image(painter = painterResource(id = imageRes), contentDescription = null, modifier = Modifier.size(48.dp))
         Spacer(modifier = Modifier.height(4.dp))
-        Text(label, fontSize = 12.sp, color = AppTheme.textSecondary())
+        Text(label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal), color = AppTheme.textSecondary())
     }
 }
 
@@ -2201,7 +2204,7 @@ fun PetsStepView(page: OnboardingPage) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
@@ -2210,7 +2213,7 @@ fun PetsStepView(page: OnboardingPage) {
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 17.sp,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -2233,8 +2236,8 @@ fun PetsStepView(page: OnboardingPage) {
                     Image(painter = painterResource(id = R.drawable.british_cat_happy), contentDescription = null, modifier = Modifier.size(64.dp).clip(CircleShape))
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text("Cat", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
-                        Text(Localization.tr(context, "onboarding.pets.cat.desc", "Elegant and opinionated. Purrs when you eat well, hisses when you don't."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                        Text("Cat", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary())
+                        Text(Localization.tr(context, "onboarding.pets.cat.desc", "Elegant and opinionated. Purrs when you eat well, hisses when you don't."), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
                     }
                 }
                 Spacer(modifier = Modifier.height(14.dp))
@@ -2266,8 +2269,8 @@ fun PetsStepView(page: OnboardingPage) {
                     Image(painter = painterResource(id = R.drawable.french_bulldog_happy), contentDescription = null, modifier = Modifier.size(64.dp).clip(CircleShape))
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text("Root", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
-                        Text(Localization.tr(context, "onboarding.pets.dog.desc", "Loyal and expressive. Barks with joy for healthy meals, growls at junk food."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                        Text("Root", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary())
+                        Text(Localization.tr(context, "onboarding.pets.dog.desc", "Loyal and expressive. Barks with joy for healthy meals, growls at junk food."), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
                     }
                 }
                 Spacer(modifier = Modifier.height(14.dp))
@@ -2298,8 +2301,8 @@ fun PetsStepView(page: OnboardingPage) {
                     Icon(imageVector = androidx.compose.material.icons.Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(32.dp).background(Color(0xFFFF9800).copy(alpha=0.1f), CircleShape).padding(6.dp))
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text(Localization.tr(context, "onboarding.pets.default.title", "Default Style"), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.textPrimary())
-                        Text(Localization.tr(context, "onboarding.pets.default.desc", "Clean and simple. Standard icons without pet reactions."), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                        Text(Localization.tr(context, "onboarding.pets.default.title", "Default Style"), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary())
+                        Text(Localization.tr(context, "onboarding.pets.default.desc", "Clean and simple. Standard icons without pet reactions."), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

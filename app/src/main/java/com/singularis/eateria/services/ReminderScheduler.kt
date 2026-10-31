@@ -29,61 +29,11 @@ object ReminderScheduler {
         wm.cancelAllWorkByTag(TAG_REMINDER)
     }
 
-    fun scheduleBreakfast(context: Context) {
-        scheduleAt(context, hour = 12, minute = 0, type = FoodReminderWorker.TYPE_BREAKFAST, uniqueName = WORK_BREAKFAST)
-    }
-
-    fun scheduleLunch(context: Context) {
-        scheduleAt(context, hour = 17, minute = 0, type = FoodReminderWorker.TYPE_LUNCH, uniqueName = WORK_LUNCH)
-    }
-
-    fun scheduleDinner(context: Context) {
-        scheduleAt(context, hour = 21, minute = 0, type = FoodReminderWorker.TYPE_DINNER, uniqueName = WORK_DINNER)
-    }
-
-    private fun scheduleAt(
-        context: Context,
-        hour: Int,
-        minute: Int,
-        type: String,
-        uniqueName: String,
-    ) {
-        val delayMs = millisUntilNext(hour, minute)
-        val builder =
-            OneTimeWorkRequestBuilder<FoodReminderWorker>()
-                .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
-                .setInputData(workDataOf(FoodReminderWorker.KEY_TYPE to type))
-                .addTag(TAG_REMINDER)
-                .addTag(tagForMeal(type))
-                .addTag(tagForDateFromDelay(delayMs))
-        val request = builder.build()
-        WorkManager.getInstance(context).enqueueUniqueWork(uniqueName, ExistingWorkPolicy.REPLACE, request)
-    }
-
-    private fun millisUntilNext(
-        hour: Int,
-        minute: Int,
-    ): Long {
-        val now = Calendar.getInstance()
-        val next =
-            Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-                if (timeInMillis <= now.timeInMillis) {
-                    add(Calendar.DAY_OF_YEAR, 1)
-                }
-            }
-        return next.timeInMillis - now.timeInMillis
-    }
-
     fun scheduleNextNDays(
         context: Context,
         days: Int,
     ) {
         val wm = WorkManager.getInstance(context)
-        val now = System.currentTimeMillis()
         val today =
             Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0)
@@ -147,11 +97,6 @@ object ReminderScheduler {
             else -> TAG_DINNER
         }
 
-    private fun tagForDateFromDelay(delayMs: Long): String {
-        val target = System.currentTimeMillis() + delayMs
-        return tagForDate(target)
-    }
-
     private fun tagForDate(timeInMillis: Long): String {
         val date = SimpleDateFormat("yyyyMMdd", Locale.US).format(java.util.Date(timeInMillis))
         return "tag_day_$date"
@@ -161,39 +106,5 @@ object ReminderScheduler {
         val wm = WorkManager.getInstance(context)
         val tag = tagForDate(System.currentTimeMillis())
         wm.cancelAllWorkByTag(tag)
-    }
-
-    fun cancelNextUpcomingToday(context: Context) {
-        val wm = WorkManager.getInstance(context)
-        val now = Calendar.getInstance()
-        val today =
-            (now.clone() as Calendar).apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-        val times =
-            listOf(
-                Triple(FoodReminderWorker.TYPE_BREAKFAST, 12, 0),
-                Triple(FoodReminderWorker.TYPE_LUNCH, 17, 0),
-                Triple(FoodReminderWorker.TYPE_DINNER, 21, 0),
-            )
-
-        for ((type, hour, minute) in times) {
-            val target =
-                (today.clone() as Calendar).apply {
-                    set(Calendar.HOUR_OF_DAY, hour)
-                    set(Calendar.MINUTE, minute)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-            if (target.timeInMillis > now.timeInMillis) {
-                val uniqueName = uniqueNameFor(type, target.timeInMillis)
-                wm.cancelUniqueWork(uniqueName)
-                return
-            }
-        }
     }
 }

@@ -68,21 +68,9 @@ class FoodExtrasStore private constructor(private val context: Context) {
             
             val sugarTsp = ex.remove(SUGAR_KEY) ?: 0
             
-            // Rebuild product with extras
-            // Note: Since Product properties might be val, we need a copy function or recreate it
-            // Product(time = p.time, name = p.name, calories = p.calories, weight = p.weight, ingredients = p.ingredients, healthRating = p.healthRating, imageId = p.imageId, addedSugarTsp = p.addedSugarTsp + sugarTsp.toFloat(), extras = ex)
-            
-            // To be robust, let's create a copy method equivalent logic
-            Product(
-                time = p.time,
-                name = p.name,
-                calories = p.calories,
-                weight = p.weight,
-                ingredients = p.ingredients,
-                healthRating = p.healthRating,
-                imageId = p.imageId,
+            p.copy(
                 addedSugarTsp = p.addedSugarTsp + sugarTsp.toFloat(),
-                extras = ex
+                extras = ex,
             )
         }
     }

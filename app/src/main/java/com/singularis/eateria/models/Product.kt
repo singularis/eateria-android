@@ -18,6 +18,11 @@ data class Product(
     val imageId: String = "",
     val addedSugarTsp: Float = 0f,
     val extras: Map<String, Int> = emptyMap(),
+    val proteins: Double = 0.0,
+    val fats: Double = 0.0,
+    val carbohydrates: Double = 0.0,
+    val sugar: Double = 0.0,
+    val alternativeNames: List<String> = emptyList(),
     /** Bumped when a remote photo finishes downloading so Compose/StateFlow see a new value. */
     val imageRevision: Int = 0,
 ) : Parcelable {

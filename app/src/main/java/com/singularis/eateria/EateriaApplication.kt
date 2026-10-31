@@ -1,6 +1,10 @@
 package com.singularis.eateria
 
 import android.app.Application
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import com.singularis.eateria.services.AppSettingsService
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.NotificationHelper
@@ -11,7 +15,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class EateriaApplication : Application() {
+class EateriaApplication : Application(), SingletonImageLoader.Factory {
+    override fun newImageLoader(context: PlatformContext): ImageLoader =
+        ImageLoader.Builder(context)
+            .components {
+                add(OkHttpNetworkFetcherFactory())
+            }
+            .build()
+
     override fun onCreate() {
         super.onCreate()
 

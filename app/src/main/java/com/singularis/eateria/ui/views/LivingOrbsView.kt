@@ -1,5 +1,7 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -92,6 +94,7 @@ fun LivingOrbsView(
             modifier = Modifier
                 .size((72 * 2).dp + 24.dp)
                 .align(Alignment.Center)
+                .semantics { contentDescription = com.singularis.eateria.services.Localization.tr(context, "activities.stats.short", "Stats") }
                 .clickable(enabled = onCentralTap != null) { onCentralTap?.invoke() }
         ) {
             val sizeDp = (72 * 2).dp
@@ -189,6 +192,7 @@ fun LivingOrbsView(
                             }
                         )
                     }
+                    .semantics { contentDescription = getActivityDisplayName(context, item.key) }
                     .clickable {
                         onSelectedActivityChange(if (selectedActivity == item.key) null else item.key)
                     }

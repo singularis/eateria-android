@@ -215,12 +215,12 @@ private fun OpponentRow(email: String, wins: Int, losses: Int) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("$wins", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Green)
-                Text("W", fontSize = 10.sp, color = AppTheme.textSecondary())
+                Text("W", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal), color = AppTheme.textSecondary())
             }
             Text("-", color = AppTheme.textSecondary())
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("$losses", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.Red)
-                Text("L", fontSize = 10.sp, color = AppTheme.textSecondary())
+                Text("L", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal), color = AppTheme.textSecondary())
             }
         }
     }

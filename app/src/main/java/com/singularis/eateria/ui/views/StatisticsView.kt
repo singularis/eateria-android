@@ -14,6 +14,10 @@ import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -119,7 +123,7 @@ private val organicButtonShape = RoundedCornerShape(Dimensions.cornerRadiusXL)
 private val organicChipShape = RoundedCornerShape(Dimensions.cornerRadiusXL)
 
 @Composable
-fun StatisticsView(onBackClick: () -> Unit) {
+fun StatisticsView() {
     val context = LocalContext.current
     val statisticsService = remember { StatisticsService.getInstance(context) }
 
@@ -152,14 +156,16 @@ fun StatisticsView(onBackClick: () -> Unit) {
                     }
                 }
 
-            if (statistics != null) {
-                currentStatistics = statistics
-                currentAverages = statisticsService.calculateAverages(statistics)
-                weightTrend = statisticsService.calculateWeightTrend(statistics)
-                calorieTrend = statisticsService.calculateCalorieTrend(statistics)
-            }
+            val loaded = statistics.orEmpty()
+            currentStatistics = loaded
+            currentAverages = statisticsService.calculateAverages(loaded)
+            weightTrend = statisticsService.calculateWeightTrend(loaded)
+            calorieTrend = statisticsService.calculateCalorieTrend(loaded)
         } catch (e: Exception) {
-            // Handle error silently or show user-friendly message
+            currentStatistics = emptyList()
+            currentAverages = null
+            weightTrend = null
+            calorieTrend = null
         } finally {
             isLoading = false
         }
@@ -170,32 +176,28 @@ fun StatisticsView(onBackClick: () -> Unit) {
             Modifier
                 .fillMaxSize()
                 .background(AppTheme.backgroundGradient())
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .windowInsetsPadding(WindowInsets.navigationBars),
+                .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
         ) {
-            // Header with enhanced styling
+            ScreenHeader(
+                title = Localization.tr(context, "nav.statistics", "Statistics"),
+                modifier = Modifier.padding(horizontal = Dimensions.paddingS),
+            )
             Box(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(
-                            start = Dimensions.paddingM,
-                            end = Dimensions.paddingM,
-                            top = Dimensions.paddingM,
-                            bottom = Dimensions.paddingM,
-                        ),
+                        .padding(horizontal = Dimensions.paddingM),
             ) {
                 Column {
                     StatisticsHeader(
-                        onBackClick = onBackClick,
                         selectedTimeRange = selectedTimeRange,
                         onTimeRangeChange = { selectedTimeRange = it },
                     )
 
-                    Spacer(modifier = Modifier.height(Dimensions.paddingL))
+                    Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
                     if (isLoading) {
                         LoadingStatistics()
@@ -234,9 +236,11 @@ fun StatisticsView(onBackClick: () -> Unit) {
                                 }
                             }
                             ChartType.CALORIES ->
-                                CaloriesChartViewFullWidth(
+                                ChartCard {
+                                    CaloriesChartViewFullWidth(
                                     statistics = currentStatistics,
                                 )
+                                }
                             ChartType.MACROS -> {
                                 Box(modifier = Modifier.padding(horizontal = Dimensions.paddingM)) {
                                     MacrosChartView(
@@ -245,14 +249,18 @@ fun StatisticsView(onBackClick: () -> Unit) {
                                 }
                             }
                             ChartType.PERSON_WEIGHT ->
-                                PersonWeightChartViewFullWidth(
+                                ChartCard {
+                                    PersonWeightChartViewFullWidth(
                                     statistics = currentStatistics,
                                     weightTrend = weightTrend,
                                 )
+                                }
                             ChartType.FOOD_WEIGHT ->
-                                FoodWeightChartViewFullWidth(
+                                ChartCard {
+                                    FoodWeightChartViewFullWidth(
                                     statistics = currentStatistics,
                                 )
+                                }
                             ChartType.TRENDS -> {
                                 Box(modifier = Modifier.padding(horizontal = Dimensions.paddingM)) {
                                     TrendsView(
@@ -289,73 +297,25 @@ fun StatisticsView(onBackClick: () -> Unit) {
 
 @Composable
 private fun StatisticsHeader(
-    onBackClick: () -> Unit,
     selectedTimeRange: StatisticsTimeRange,
     onTimeRangeChange: (StatisticsTimeRange) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        // First row: Back button and title with enhanced styling
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(
-                onClick = { 
-                    com.singularis.eateria.services.HapticsService.getInstance().select()
-                    onBackClick() 
-                },
-                modifier =
-                    Modifier
-                        .clip(CircleShape)
-                        .background(
-                            brush =
-                                Brush.radialGradient(
-                                    colors =
-                                        listOf(
-                                            AppTheme.surface().copy(alpha = 0.3f),
-                                            AppTheme.surface().copy(alpha = 0.1f),
-                                        ),
-                                ),
-                        ),
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = Localization.tr(LocalContext.current, "common.back", "Previous"),
-                    tint = AppTheme.textPrimary(),
-                    modifier = Modifier.size(Dimensions.iconSizeM),
-                )
-            }
-
-            Spacer(modifier = Modifier.width(Dimensions.paddingM))
-
-            Text(
-                text = Localization.tr(LocalContext.current, "nav.statistics", "Statistics"),
-                color = AppTheme.textPrimary(),
-                style =
-                    MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.SemiBold,
-                    ),
-            )
-        }
-
-        Spacer(modifier = Modifier.height(Dimensions.paddingL))
-
         Text(
             text = Localization.tr(LocalContext.current, "stats.timeperiod", "Time Period"),
             color = AppTheme.textPrimary(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = Dimensions.paddingM)
+            modifier = Modifier.padding(bottom = Dimensions.paddingS)
         )
 
-        // Time range buttons with organic styling
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
         ) {
             TimeRangeButton(
                 text =
@@ -406,39 +366,53 @@ private fun ChartTypeSelector(
             Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
     ) {
         ChartType.values().forEach { chartType ->
-            val isSelected = selectedChart == chartType
-            Button(
-                onClick = {
-                    com.singularis.eateria.services.HapticsService.getInstance().select()
-                    onChartTypeChange(chartType) 
+            StatsChip(
+                text = when (chartType) {
+                    ChartType.INSIGHTS -> Localization.tr(LocalContext.current, "stats.chart.insights", "Insights")
+                    ChartType.CALORIES -> Localization.tr(LocalContext.current, "stats.chart.calories", "Calories")
+                    ChartType.MACROS -> Localization.tr(LocalContext.current, "stats.chart.macros", "Macronutrients")
+                    ChartType.PERSON_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight")
+                    ChartType.FOOD_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight")
+                    ChartType.TRENDS -> Localization.tr(LocalContext.current, "stats.chart.trends", "Trends")
                 },
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) AppTheme.accent() else AppTheme.surfaceAlt(),
-                    contentColor = if (isSelected) Color.Black.copy(alpha = 0.9f) else AppTheme.textPrimary()
-                ),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 1.dp)
-            ) {
-                Text(
-                    text = when (chartType) {
-                        ChartType.INSIGHTS -> Localization.tr(LocalContext.current, "stats.chart.insights", "Insights")
-                        ChartType.CALORIES -> Localization.tr(LocalContext.current, "stats.chart.calories", "Calories")
-                        ChartType.MACROS -> Localization.tr(LocalContext.current, "stats.chart.macros", "Macronutrients")
-                        ChartType.PERSON_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.personweight", "Body Weight")
-                        ChartType.FOOD_WEIGHT -> Localization.tr(LocalContext.current, "stats.chart.foodweight", "Food Weight")
-                        ChartType.TRENDS -> Localization.tr(LocalContext.current, "stats.chart.trends", "Trends")
-                    },
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 12.sp
-                    )
-                )
-            }
+                isSelected = selectedChart == chartType,
+                onClick = { onChartTypeChange(chartType) },
+            )
         }
+    }
+}
+
+/** Shared pill for the period and chart pickers so both rows look and behave the same. */
+@Composable
+private fun StatsChip(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(50)
+    Box(
+        modifier = Modifier
+            .heightIn(min = 48.dp)
+            .clip(shape)
+            .clickable(role = androidx.compose.ui.semantics.Role.Tab) {
+                com.singularis.eateria.services.HapticsService.getInstance().select()
+                onClick()
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            color = if (isSelected) AppTheme.onAccent else AppTheme.textPrimary(),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+            maxLines = 1,
+            modifier = Modifier
+                .background(if (isSelected) AppTheme.accent() else AppTheme.surface(), shape)
+                .border(1.dp, if (isSelected) Color.Transparent else AppTheme.divider(), shape)
+                .padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingS),
+        )
     }
 }
 
@@ -511,8 +485,15 @@ private fun InsightCard(title: String, value: String) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = title, color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodyMedium)
-            Text(text = value, color = AppTheme.textPrimary(), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
+            Text(
+                text = title,
+                color = AppTheme.textSecondary(),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f).padding(end = Dimensions.paddingS),
+            )
+            Text(text = value, color = AppTheme.textPrimary(), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), maxLines = 1)
         }
     }
 }
@@ -522,30 +503,7 @@ private fun TimeRangeButton(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-) {
-    Button(
-        onClick = onClick,
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = if (isSelected) AppTheme.accent() else AppTheme.surfaceAlt(),
-                contentColor = if (isSelected) AppTheme.textPrimary() else AppTheme.textSecondary(),
-            ),
-        shape = organicButtonShape,
-        modifier =
-            Modifier.shadow(
-                elevation = if (isSelected) Dimensions.elevationM else Dimensions.elevationS,
-                shape = organicButtonShape,
-            ),
-    ) {
-        Text(
-            text = text,
-            style =
-                MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                ),
-        )
-    }
-}
+) = StatsChip(text = text, isSelected = isSelected, onClick = onClick)
 
 @Composable
 private fun LoadingStatistics() {
@@ -598,7 +556,7 @@ private fun SummaryStatsView(
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
         )
 
-        if (averages != null) {
+        if (averages != null && statistics.any { it.hasData }) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(modifier = Modifier.weight(1f)) {
@@ -651,9 +609,10 @@ private fun SummaryCard(title: String, value: String, subtitle: String) {
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+            style = MaterialTheme.typography.labelSmall,
             color = AppTheme.textSecondary(),
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = value,
@@ -663,9 +622,10 @@ private fun SummaryCard(title: String, value: String, subtitle: String) {
         )
         Text(
             text = subtitle,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+            style = MaterialTheme.typography.labelSmall,
             color = AppTheme.textSecondary(),
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -728,16 +688,7 @@ private fun CaloriesChartViewFullWidth(statistics: List<DailyStatistics>) {
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .shadow(
-                        elevation = 6.dp,
-                        shape =
-                            RoundedCornerShape(
-                                topStart = 0.dp,
-                                topEnd = 0.dp,
-                                bottomStart = 0.dp,
-                                bottomEnd = 0.dp,
-                            ),
-                    ).background(
+                    .background(
                         brush =
                             Brush.verticalGradient(
                                 colors =
@@ -795,11 +746,6 @@ private fun CaloriesChartViewFullWidth(statistics: List<DailyStatistics>) {
                                     selectedLabelColor = AppTheme.textPrimary(),
                                     containerColor = AppTheme.surfaceAlt().copy(alpha = 0.6f),
                                     labelColor = AppTheme.textSecondary(),
-                                ),
-                            modifier =
-                                Modifier.shadow(
-                                    elevation = if (useLogScale) 4.dp else 2.dp,
-                                    shape = organicChipShape,
                                 ),
                         )
                     }
@@ -940,16 +886,7 @@ private fun PersonWeightChartViewFullWidth(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .shadow(
-                        elevation = 6.dp,
-                        shape =
-                            RoundedCornerShape(
-                                topStart = 0.dp,
-                                topEnd = 0.dp,
-                                bottomStart = 0.dp,
-                                bottomEnd = 0.dp,
-                            ),
-                    ).background(
+                    .background(
                         brush =
                             Brush.verticalGradient(
                                 colors =
@@ -1047,16 +984,7 @@ private fun PersonWeightChartViewFullWidth(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .shadow(
-                                elevation = 6.dp,
-                                shape =
-                                    RoundedCornerShape(
-                                        topStart = 0.dp,
-                                        topEnd = 0.dp,
-                                        bottomStart = 0.dp,
-                                        bottomEnd = 0.dp,
-                                    ),
-                            ).background(
+                            .background(
                                 brush =
                                     Brush.verticalGradient(
                                         colors =
@@ -1121,16 +1049,7 @@ private fun FoodWeightChartViewFullWidth(statistics: List<DailyStatistics>) {
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .shadow(
-                        elevation = 6.dp,
-                        shape =
-                            RoundedCornerShape(
-                                topStart = 0.dp,
-                                topEnd = 0.dp,
-                                bottomStart = 0.dp,
-                                bottomEnd = 0.dp,
-                            ),
-                    ).background(
+                    .background(
                         brush =
                             Brush.verticalGradient(
                                 colors =
@@ -1313,8 +1232,12 @@ private fun CalorieLineChart(
     val chartData = statistics.filter { it.hasData && it.totalCalories > 0 }
     if (chartData.isEmpty()) return
 
-    val maxCalories = chartData.maxOf { it.totalCalories }.toFloat()
-    val minCalories = chartData.minOf { it.totalCalories }.toFloat()
+    // A flat series (one day, or equal days) would give a zero range and identical axis labels.
+    val rawMaxCalories = chartData.maxOf { it.totalCalories }.toFloat()
+    val rawMinCalories = chartData.minOf { it.totalCalories }.toFloat()
+    val caloriePad = if (rawMaxCalories - rawMinCalories < 1f) maxOf(50f, rawMaxCalories * 0.1f) else 0f
+    val maxCalories = rawMaxCalories + caloriePad
+    val minCalories = (rawMinCalories - caloriePad).coerceAtLeast(1f)
     val calorieRange = maxCalories - minCalories
 
     // Log scaling calculations
@@ -1782,8 +1705,11 @@ private fun FoodWeightLineChart(
     val chartData = statistics.filter { it.hasData && it.totalFoodWeight > 0 }
     if (chartData.isEmpty()) return
 
-    val maxWeight = chartData.maxOf { it.totalFoodWeight }.toFloat()
-    val minWeight = chartData.minOf { it.totalFoodWeight }.toFloat()
+    val rawMaxWeight = chartData.maxOf { it.totalFoodWeight }.toFloat()
+    val rawMinWeight = chartData.minOf { it.totalFoodWeight }.toFloat()
+    val weightPad = if (rawMaxWeight - rawMinWeight < 1f) maxOf(50f, rawMaxWeight * 0.1f) else 0f
+    val maxWeight = rawMaxWeight + weightPad
+    val minWeight = (rawMinWeight - weightPad).coerceAtLeast(0f)
     val weightRange = maxWeight - minWeight
 
     // Remember data points for value labels
@@ -2061,130 +1987,6 @@ private fun MacroBarRow(
 }
 
 @Composable
-private fun MacroCompositionChart(
-    modifier: Modifier = Modifier,
-    statistics: List<DailyStatistics>,
-) {
-    val chartData = statistics.filter { it.hasData }
-    if (chartData.isEmpty()) return
-
-    // Calculate average macro percentages across all days
-    val totalCalories = chartData.sumOf { it.totalCalories }
-    val avgProtein = chartData.map { it.proteins }.average().toFloat()
-    val avgCarbs = chartData.map { it.carbohydrates }.average().toFloat()
-    val avgFat = chartData.map { it.fats }.average().toFloat()
-
-    // Calculate percentages for visualization
-    val totalMacros = avgProtein + avgCarbs + avgFat
-    val proteinPercentage = if (totalMacros > 0) (avgProtein / totalMacros * 100).toInt() else 0
-    val carbsPercentage = if (totalMacros > 0) (avgCarbs / totalMacros * 100).toInt() else 0
-    val fatPercentage = if (totalMacros > 0) (avgFat / totalMacros * 100).toInt() else 0
-
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(Dimensions.paddingL), // Better spacing
-    ) {
-        // Title with better spacing
-        Text(
-            text = Localization.tr(LocalContext.current, "stats.macro.distribution", "Average Macro Distribution"),
-            color = AppTheme.textPrimary(),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = Dimensions.paddingM),
-        )
-
-        // Macro bars with improved spacing
-        MacroBarRow(
-            label = Localization.tr(LocalContext.current, "stats.macro.protein", "Protein"),
-            value = avgProtein.toInt(),
-            percentage = proteinPercentage,
-            color = CalorieBlue,
-        )
-
-        Spacer(modifier = Modifier.height(Dimensions.paddingM)) // More space between bars
-
-        MacroBarRow(
-            label = Localization.tr(LocalContext.current, "stats.macro.carbs", "Carbs"),
-            value = avgCarbs.toInt(),
-            percentage = carbsPercentage,
-            color = CalorieOrange,
-        )
-
-        Spacer(modifier = Modifier.height(Dimensions.paddingM))
-
-        MacroBarRow(
-            label = Localization.tr(LocalContext.current, "stats.macro.fat", "Fat"),
-            value = avgFat.toInt(),
-            percentage = fatPercentage,
-            color = CalorieYellow,
-        )
-
-        // Summary statistics with better layout
-        Card(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = Dimensions.paddingL),
-            colors = CardDefaults.cardColors(containerColor = AppTheme.surfaceAlt()),
-            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
-        ) {
-            Column(
-                modifier = Modifier.padding(Dimensions.paddingL),
-                verticalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
-            ) {
-                Text(
-                    text = Localization.tr(LocalContext.current, "stats.daily.averages", "Daily Averages"),
-                    color = AppTheme.textPrimary(),
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    MacroSummaryItem(
-                        Localization.tr(LocalContext.current, "stats.macro.protein", "Protein"),
-                        "${avgProtein.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        CalorieBlue,
-                    )
-                    MacroSummaryItem(
-                        Localization.tr(LocalContext.current, "stats.macro.carbs", "Carbs"),
-                        "${avgCarbs.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        CalorieOrange,
-                    )
-                    MacroSummaryItem(
-                        Localization.tr(LocalContext.current, "stats.macro.fat", "Fat"),
-                        "${avgFat.toInt()}${Localization.tr(LocalContext.current, "units.g", "g")}",
-                        CalorieYellow,
-                    )
-                }
-
-                HorizontalDivider(
-                    color = AppTheme.textSecondary().copy(alpha = 0.3f),
-                    modifier = Modifier.padding(vertical = Dimensions.paddingS),
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "stats.total.calories", "Total Calories"),
-                        color = AppTheme.textSecondary(),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                    Text(
-                        text = "${totalCalories / chartData.size} ${Localization.tr(LocalContext.current, "units.kcal", "kcal")}",
-                        color = AppTheme.textPrimary(),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun MacroSummaryItem(
     label: String,
     value: String,
@@ -2228,4 +2030,18 @@ private fun TrendIcon(direction: WeightTrendDirection) {
             },
         modifier = Modifier.size(Dimensions.iconSizeS),
     )
+}
+
+/** Rounded, inset container so edge-to-edge charts line up with the other Stats cards. */
+@Composable
+private fun ChartCard(content: @Composable () -> Unit) {
+    val shape = RoundedCornerShape(AppTheme.cornerRadius)
+    Box(
+        modifier = Modifier
+            .padding(horizontal = Dimensions.paddingM)
+            .clip(shape)
+            .border(1.dp, AppTheme.divider(), shape),
+    ) {
+        content()
+    }
 }

@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import com.singularis.eateria.ui.theme.Dimensions
 import android.content.Context
 import androidx.compose.animation.core.*
 import androidx.compose.animation.AnimatedVisibility
@@ -52,7 +53,7 @@ enum class GoalMode(val rawValue: String) {
 fun HealthSettingsView(
     authViewModel: AuthViewModel,
     onBackClick: () -> Unit,
-    onLimitsChanged: (() -> Unit)? = null,
+    onLimitsChanged: ((recommendedCalories: Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var height by remember { mutableStateOf("") }
@@ -92,11 +93,11 @@ fun HealthSettingsView(
     fun loadExistingData() {
         val userPrefs = context.getSharedPreferences("eateria_prefs", Context.MODE_PRIVATE)
         if (userPrefs.getBoolean("hasUserHealthData", false)) {
-            height = String.format("%.0f", userPrefs.getFloat("userHeight", 0f).toDouble())
-            weight = String.format("%.1f", userPrefs.getFloat("userWeight", 0f).toDouble())
+            height = String.format(java.util.Locale.US, "%.0f", userPrefs.getFloat("userHeight", 0f).toDouble())
+            weight = String.format(java.util.Locale.US, "%.1f", userPrefs.getFloat("userWeight", 0f).toDouble())
             val storedTarget = userPrefs.getFloat("userTargetWeight", 0f).toDouble()
             if (storedTarget > 0) {
-                targetWeight = String.format("%.1f", storedTarget)
+                targetWeight = String.format(java.util.Locale.US, "%.1f", storedTarget)
             }
             age = userPrefs.getInt("userAge", 0).toString()
             isMale = userPrefs.getBoolean("userIsMale", true)
@@ -105,11 +106,11 @@ fun HealthSettingsView(
             val months = userPrefs.getInt("userGoalMonths", 0)
             if (months > 0) selectedMonths = months
         } else if (prefs.getBoolean("hasUserHealthData", false)) {
-            height = String.format("%.0f", prefs.getFloat("userHeight", 0f).toDouble())
-            weight = String.format("%.1f", prefs.getFloat("userWeight", 0f).toDouble())
+            height = String.format(java.util.Locale.US, "%.0f", prefs.getFloat("userHeight", 0f).toDouble())
+            weight = String.format(java.util.Locale.US, "%.1f", prefs.getFloat("userWeight", 0f).toDouble())
             val storedTarget = prefs.getFloat("userTargetWeight", 0f).toDouble()
             if (storedTarget > 0) {
-                targetWeight = String.format("%.1f", storedTarget)
+                targetWeight = String.format(java.util.Locale.US, "%.1f", storedTarget)
             }
             age = prefs.getInt("userAge", 0).toString()
             isMale = prefs.getBoolean("userIsMale", true)
@@ -246,18 +247,18 @@ fun HealthSettingsView(
             val maxAllowed = min(targetWeightMax, maxTargetWeightForCurrentHeight(h))
             targetValue = min(max(targetValue, minTargetByBmi), maxAllowed)
             if (showAlerts) {
-                targetWeight = String.format("%.1f", targetValue)
+                targetWeight = String.format(java.util.Locale.US, "%.1f", targetValue)
             }
         }
         if (showAlerts) {
-            height = String.format("%.0f", h)
-            weight = String.format("%.1f", w)
+            height = String.format(java.util.Locale.US, "%.0f", h)
+            weight = String.format(java.util.Locale.US, "%.1f", w)
             age = a.toString()
         }
         optimalWeight = 21.5 * heightInMeters * heightInMeters
 
         if (showAlerts && (parseDoubleFlexible(targetWeight) == null || parseDoubleFlexible(targetWeight)!! <= 0)) {
-            targetWeight = String.format("%.1f", optimalWeight)
+            targetWeight = String.format(java.util.Locale.US, "%.1f", optimalWeight)
         }
 
         if (!isTargetBMIValid(h)) {
@@ -292,9 +293,9 @@ fun HealthSettingsView(
     }
 
     fun saveHealthData() {
-        val heightValue = height.toDoubleOrNull() ?: return
-        val weightValue = weight.toDoubleOrNull() ?: return
-        val ageValue = age.toIntOrNull() ?: return
+        val heightValue = parseDoubleFlexible(height) ?: return
+        val weightValue = parseDoubleFlexible(weight) ?: return
+        val ageValue = age.trim().toIntOrNull() ?: return
 
         val userPrefs = context.getSharedPreferences("eateria_prefs", Context.MODE_PRIVATE)
         val heightStored = heightValue.roundToInt().toFloat()
@@ -337,22 +338,11 @@ fun HealthSettingsView(
     Box(modifier = Modifier.fillMaxSize().background(AppTheme.backgroundGradient())) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { 
-                        Text(
-                            if (showResults) Localization.tr(context, "health.plan.title", "Your Plan") 
-                            else Localization.tr(context, "nav.health_settings", "Health Settings"), 
-                            color = Color.White
-                        ) 
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            HapticsService.getInstance().select()
-                            onBackClick()
-                        }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cancel", tint = Color.White)
-                        }
-                    },
+                ScreenHeader(
+                    title = if (showResults) Localization.tr(context, "health.plan.title", "Your Plan")
+                    else Localization.tr(context, "nav.health_settings", "Health Settings"),
+                    onBack = onBackClick,
+                    modifier = Modifier.padding(horizontal = Dimensions.paddingS),
                     actions = {
                         TextButton(onClick = {
                             if (!showResults) {
@@ -363,14 +353,13 @@ fun HealthSettingsView(
                                 if (!validateAndCalculateHealthData(showTargetWeightAlertArg = true, showAlerts = true)) return@TextButton
                                 HapticsService.getInstance().success()
                                 saveHealthData()
-                                onLimitsChanged?.invoke()
+                                onLimitsChanged?.invoke(recommendedCalories)
                                 onBackClick()
                             }
                         }) {
-                            Text(Localization.tr(context, "common.save", "Save"), color = AppTheme.textPrimary(), fontWeight = FontWeight.SemiBold)
+                            Text(Localization.tr(context, "common.save", "Save"), color = AppTheme.accent(), fontWeight = FontWeight.SemiBold)
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
                 )
             },
             containerColor = Color.Transparent
@@ -388,7 +377,7 @@ fun HealthSettingsView(
                             text = Localization.tr(context, "health.updated_plan", "Your Updated Plan"),
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = AppTheme.textPrimary()
                         )
                     }
                 }
@@ -396,11 +385,11 @@ fun HealthSettingsView(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Gray4),
+                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
                         shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                     ) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text(Localization.tr(context, "health.goal.title", "Goal"), style = MaterialTheme.typography.titleMedium, color = Color.White)
+                            Text(Localization.tr(context, "health.goal.title", "Goal"), style = MaterialTheme.typography.titleMedium, color = AppTheme.textPrimary())
                             
                             OutlinedTextField(
                                 value = targetWeight,
@@ -408,7 +397,7 @@ fun HealthSettingsView(
                                 label = { Text(Localization.tr(context, "health.target_weight", "Target (kg)")) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = AppTheme.textPrimary(), unfocusedTextColor = AppTheme.textPrimary())
                             )
 
                             val targetBmi = targetBMIValue()
@@ -416,12 +405,12 @@ fun HealthSettingsView(
                                 val maxBmi = if (goalMode == GoalMode.GAIN) bmiMaxGain else bmiMaxStandard
                                 Text(
                                     String.format(Localization.tr(context, "health.bmi.target.range", "Target BMI: %.1f (18.5–%.1f)"), targetBmi, maxBmi),
-                                    color = if (isTargetBMIValid()) Color.Gray else CalorieRed,
+                                    color = if (isTargetBMIValid()) AppTheme.textSecondary() else AppTheme.danger(),
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
                             
-                            Text(Localization.tr(context, "health.goal.mode", "Goal Mode"), color = Color.Gray)
+                            Text(Localization.tr(context, "health.goal.mode", "Goal Mode"), color = AppTheme.textSecondary())
                             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                                 GoalMode.values().forEachIndexed { index, mode ->
                                     val label = when(mode) {
@@ -435,13 +424,13 @@ fun HealthSettingsView(
                                         onClick = { goalMode = mode; recalcFromInputs() },
                                         shape = SegmentedButtonDefaults.itemShape(index = index, count = GoalMode.values().size)
                                     ) {
-                                        Text(label, fontSize = 11.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                        Text(label, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                                     }
                                 }
                             }
 
                             if (goalMode == GoalMode.LOSE || goalMode == GoalMode.GAIN) {
-                                Text(Localization.tr(context, "health.goal.period", "Period (Months)"), color = Color.Gray)
+                                Text(Localization.tr(context, "health.goal.period", "Period (Months)"), color = AppTheme.textSecondary())
                                 val suggested = if (goalMode == GoalMode.GAIN) listOf(2, 4, 6) else listOf(2, 4, 6, 9, 12).filter { it >= 2 }.take(3)
                                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                                     suggested.forEachIndexed { index, m ->
@@ -450,19 +439,19 @@ fun HealthSettingsView(
                                             onClick = { selectedMonths = m; recalcFromInputs() },
                                             shape = SegmentedButtonDefaults.itemShape(index = index, count = suggested.size)
                                         ) {
-                                            Text(String.format(Localization.tr(context, "health.goal.months", "%d months"), m), fontSize = 12.sp)
+                                            Text(String.format(Localization.tr(context, "health.goal.months", "%d months"), m), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal))
                                         }
                                     }
                                 }
                             } else if (goalMode == GoalMode.ACTIVITY_ONLY) {
-                                Text(Localization.tr(context, "health.goal.activity_hint", "Strategy: increase activity without changing calories."), color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                                Text(Localization.tr(context, "health.goal.activity_hint", "Strategy: increase activity without changing calories."), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
                 }
 
                 item {
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Gray4)) {
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = AppTheme.surface())) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = CalorieGreen)
@@ -470,13 +459,13 @@ fun HealthSettingsView(
                                 Text(Localization.tr(context, "health.plan.target_weight_title", "Target weight"), color = CalorieGreen, fontWeight = FontWeight.Bold)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("${String.format("%.1f", currentTargetWeightValue())} ${Localization.tr(context, "units.kg", "kg")}", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("${String.format("%.1f", currentTargetWeightValue())} ${Localization.tr(context, "units.kg", "kg")}", style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary(), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
 
                 item {
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Gray4)) {
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = AppTheme.surface())) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Warning, contentDescription = null, tint = CalorieOrange)
@@ -484,13 +473,13 @@ fun HealthSettingsView(
                                 Text(Localization.tr(context, "health.plan.daily_calorie_title", "Daily calorie target"), color = CalorieOrange, fontWeight = FontWeight.Bold)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("$recommendedCalories ${Localization.tr(context, "units.kcal", "kcal")}", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("$recommendedCalories ${Localization.tr(context, "units.kcal", "kcal")}", style = MaterialTheme.typography.titleLarge, color = AppTheme.textPrimary(), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
 
                 item {
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Gray4)) {
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = AppTheme.surface())) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = null, tint = AppTheme.accent())
@@ -498,7 +487,7 @@ fun HealthSettingsView(
                                 Text(Localization.tr(context, "health.plan.timeline_title", "Estimated timeline"), color = AppTheme.accent(), fontWeight = FontWeight.Bold)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(timeToOptimalWeight, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(timeToOptimalWeight, style = MaterialTheme.typography.titleMedium, color = AppTheme.textPrimary(), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -510,7 +499,7 @@ fun HealthSettingsView(
                             showResults = false
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = DarkPrimary)
+                        colors = ButtonDefaults.buttonColors(containerColor = AppTheme.accent(), contentColor = AppTheme.onAccent)
                     ) {
                         Text(Localization.tr(context, "common.back_to_edit", "Back to Edit"))
                     }
@@ -541,7 +530,7 @@ fun HealthSettingsView(
                             text = Localization.tr(context, "health.update.title", "Update Your Health Data"),
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = AppTheme.textPrimary(),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -550,7 +539,7 @@ fun HealthSettingsView(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Gray4),
+                        colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
                         shape = RoundedCornerShape(Dimensions.cornerRadiusM)
                     ) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -560,7 +549,7 @@ fun HealthSettingsView(
                                 label = { Text(Localization.tr(context, "health.height", "Height (cm)")) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = AppTheme.textPrimary(), unfocusedTextColor = AppTheme.textPrimary())
                             )
                             OutlinedTextField(
                                 value = weight,
@@ -568,14 +557,14 @@ fun HealthSettingsView(
                                 label = { Text(Localization.tr(context, "health.weight", "Weight (kg)")) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = AppTheme.textPrimary(), unfocusedTextColor = AppTheme.textPrimary())
                             )
 
                             val currentBmi = currentBMIValue()
                             if (currentBmi != null) {
                                 Text(
                                     String.format(Localization.tr(context, "health.bmi.current", "BMI: %.1f"), currentBmi),
-                                    color = Color.Gray,
+                                    color = AppTheme.textSecondary(),
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -586,7 +575,7 @@ fun HealthSettingsView(
                                 label = { Text(Localization.tr(context, "health.target_weight", "Target (kg)")) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = AppTheme.textPrimary(), unfocusedTextColor = AppTheme.textPrimary())
                             )
                             OutlinedTextField(
                                 value = age,
@@ -594,11 +583,11 @@ fun HealthSettingsView(
                                 label = { Text(Localization.tr(context, "health.age", "Age (years)")) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = AppTheme.textPrimary(), unfocusedTextColor = AppTheme.textPrimary())
                             )
                             
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(Localization.tr(context, "health.gender", "Gender:"), color = Color.Gray)
+                                Text(Localization.tr(context, "health.gender", "Gender:"), color = AppTheme.textSecondary())
                                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                                     SegmentedButton(
                                         selected = isMale,
@@ -635,7 +624,7 @@ fun HealthSettingsView(
                                                 ExposedDropdownMenuAnchorType.PrimaryNotEditable,
                                                 enabled = true,
                                             ),
-                                    colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                                    colors = OutlinedTextFieldDefaults.colors(focusedTextColor = AppTheme.textPrimary(), unfocusedTextColor = AppTheme.textPrimary())
                                 )
                                 ExposedDropdownMenu(
                                     expanded = expanded,
@@ -663,7 +652,7 @@ fun HealthSettingsView(
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth().height(56.dp).padding(top = 16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = DarkPrimary)
+                                colors = ButtonDefaults.buttonColors(containerColor = AppTheme.accent(), contentColor = AppTheme.onAccent)
                             ) {
                                 Text(Localization.tr(context, "health.calc_plan", "Calculate My Plan"))
                             }

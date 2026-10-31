@@ -54,10 +54,11 @@ fun NicknameSettingsView(
     var alertMessage by remember { mutableStateOf("") }
     var alertTitle by remember { mutableStateOf("") }
 
-    // Load saved nickname initially (simplified logic for Android since we don't have AppStorage directly without SharedPreferences)
+    // Profile and the greeting read eateria_prefs; older builds wrote app_settings.
     LaunchedEffect(Unit) {
-        val prefs = context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE)
-        nickname = prefs.getString("user_nickname", "") ?: ""
+        val prefs = context.getSharedPreferences("eateria_prefs", android.content.Context.MODE_PRIVATE)
+        val legacy = context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE)
+        nickname = prefs.getString("user_nickname", null) ?: legacy.getString("user_nickname", "") ?: ""
     }
 
     fun isNicknameValid(s: String): Boolean {
@@ -93,7 +94,7 @@ fun NicknameSettingsView(
             
             if (result.isSuccess) {
                 // Save nickname locally
-                context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE)
+                context.getSharedPreferences("eateria_prefs", android.content.Context.MODE_PRIVATE)
                     .edit().putString("user_nickname", trimmed).apply()
                 nickname = trimmed
                 
@@ -126,6 +127,7 @@ fun NicknameSettingsView(
             .fillMaxSize()
             .background(AppTheme.backgroundGradient())
             .systemBarsPadding()
+            .imePadding()
     ) {
         Column(
             modifier = Modifier.fillMaxSize()

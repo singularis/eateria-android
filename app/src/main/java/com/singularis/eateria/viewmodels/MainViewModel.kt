@@ -15,6 +15,7 @@ import com.singularis.eateria.services.GRPCService
 import com.singularis.eateria.services.ImageStorageService
 import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.ProductStorageService
+import com.singularis.eateria.services.RecommendationResult
 import com.singularis.eateria.services.ReminderService
 import com.singularis.eateria.services.WeightMotivationService
 import com.singularis.eateria.ui.theme.CalorieGreen
@@ -112,9 +113,6 @@ class MainViewModel(
     private val _showOnboarding = MutableStateFlow(false)
     val showOnboarding: StateFlow<Boolean> = _showOnboarding.asStateFlow()
 
-    private val _showStatistics = MutableStateFlow(false)
-    val showStatistics: StateFlow<Boolean> = _showStatistics.asStateFlow()
-
     private val _showHealthSettings = MutableStateFlow(false)
     val showHealthSettings: StateFlow<Boolean> = _showHealthSettings.asStateFlow()
 
@@ -133,6 +131,12 @@ class MainViewModel(
 
     private val _recommendationText = MutableStateFlow("")
     val recommendationText: StateFlow<String> = _recommendationText.asStateFlow()
+
+    private val _recommendationGeneratedAt = MutableStateFlow(0L)
+    val recommendationGeneratedAt: StateFlow<Long> = _recommendationGeneratedAt.asStateFlow()
+
+    private val _recommendationFailed = MutableStateFlow(false)
+    val recommendationFailed: StateFlow<Boolean> = _recommendationFailed.asStateFlow()
 
     private val _showPhotoErrorAlert = MutableStateFlow(false)
     val showPhotoErrorAlert: StateFlow<Boolean> = _showPhotoErrorAlert.asStateFlow()
@@ -260,7 +264,7 @@ class MainViewModel(
                     return@launch
                 }
                 // Check last 30 days
-                val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.US)
                 val end = Date()
                 val cal = Calendar.getInstance().apply { time = end }
                 cal.add(Calendar.DAY_OF_YEAR, -30)
@@ -269,7 +273,7 @@ class MainViewModel(
                 val range = grpcService.fetchAlcoholRange(startStr, endStr)
                 val mostRecent = range?.eventsList?.maxByOrNull { it.date }?.date
                 if (mostRecent != null) {
-                    val parsed = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(mostRecent)
+                    val parsed = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(mostRecent)
                     _lastAlcoholDate.value = parsed
                     _alcoholIconColor.value = colorForLastAlcoholDate(parsed ?: end)
                 } else {
@@ -305,7 +309,7 @@ class MainViewModel(
 
     private fun getTodayDateKey(): String {
         val today = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-        return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return SimpleDateFormat("yyyy-MM-dd", Locale.US)
             .apply {
                 timeZone = TimeZone.getTimeZone("UTC")
             }.format(today.time)
@@ -350,7 +354,7 @@ class MainViewModel(
             val (cachedProducts, cachedCalories, cachedWeight) = productStorageService.loadProducts()
             _products.value = cachedProducts
             _caloriesLeft.value = getAdjustedSoftLimit() - cachedCalories
-            _personWeight.value = cachedWeight
+            if (cachedWeight > 0f) _personWeight.value = cachedWeight
             // Even when product JSON is fresh, photos may still be missing on disk —
             // prefetch so cards auto-refresh as each picture downloads.
             prefetchProductPhotos(cachedProducts)
@@ -364,7 +368,7 @@ class MainViewModel(
                     // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
                     val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                     _caloriesLeft.value = actualCaloriesLeft
-                    _personWeight.value = weight
+                    if (weight > 0f) _personWeight.value = weight
                     _isLoadingData.value = false
                     prefetchProductPhotos(fetchedProducts)
                     checkProgressiveOnboarding()
@@ -401,7 +405,7 @@ class MainViewModel(
                 // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
                 val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
-                _personWeight.value = weight
+                if (weight > 0f) _personWeight.value = weight
                 // Prefetch remote photos for products missing local images (iOS parity)
                 prefetchProductPhotos(fetchedProducts)
                 checkProgressiveOnboarding()
@@ -419,10 +423,42 @@ class MainViewModel(
                 // Recalculate caloriesLeft based on our local soft limit, not backend's calculation
                 val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
-                _personWeight.value = weight
+                if (weight > 0f) _personWeight.value = weight
                 prefetchProductPhotos(fetchedProducts)
                 checkProgressiveOnboarding()
             }
+        }
+    }
+
+    /**
+     * The backend files typed meals asynchronously, so one refresh right after the 200
+     * usually comes back without the new dish. Poll briefly, keeping the pending row up.
+     */
+    fun refreshAfterMealLogged() {
+        if (_isViewingCustomDate.value) {
+            com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
+            fetchCustomDateData(_currentViewingDateString.value)
+            return
+        }
+        val before = _products.value.size
+        viewModelScope.launch {
+            for (wait in longArrayOf(0L, 2000L, 4000L, 8000L)) {
+                if (wait > 0) delay(wait)
+                var count = before
+                productStorageService.fetchAndProcessProducts(forceRefresh = true) { fetched, totalCaloriesConsumed, weight ->
+                    _products.value = fetched
+                    _caloriesLeft.value = getAdjustedSoftLimit() - totalCaloriesConsumed
+                    if (weight > 0f) _personWeight.value = weight
+                    count = fetched.size
+                }
+                if (count > before) {
+                    prefetchProductPhotos(_products.value)
+                    break
+                }
+            }
+            com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
+            refreshDayFoodScore()
+            checkProgressiveOnboarding()
         }
     }
 
@@ -449,8 +485,13 @@ class MainViewModel(
         photoType: String,
         tempTimestamp: Long,
     ) {
-        viewModelScope.launch {
+            viewModelScope.launch {
             _isLoadingFoodPhoto.value = true
+            if (photoType != "weight_prompt") {
+                com.singularis.eateria.navigation.AppNavigation.beginPendingMeal(
+                    Localization.tr(context, "loading.photo", "Analyzing food photo..."),
+                )
+            }
             
             checkAnonymousScanLimits()
 
@@ -475,8 +516,9 @@ class MainViewModel(
                                 // Recalculate caloriesLeft based on our local soft limit
                                 val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                                 _caloriesLeft.value = actualCaloriesLeft
-                                _personWeight.value = weight
+                                if (weight > 0f) _personWeight.value = weight
                                 _isLoadingFoodPhoto.value = false
+                                com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
 
                                 // Return to today after successful food photo
                                 returnToToday()
@@ -484,9 +526,11 @@ class MainViewModel(
                         }
                     },
                     onFailure = { errorMessage ->
+                        android.util.Log.w("MainViewModel", "Photo rejected ($photoType): $errorMessage")
                         // Clean up temporary image on failure
                         imageStorageService.deleteTemporaryImage(tempTimestamp)
                         _isLoadingFoodPhoto.value = false
+                        com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
 
                         // Show error alert based on backend response (iOS behavior)
                         when {
@@ -497,8 +541,7 @@ class MainViewModel(
                                         context,
                                         "error.food.msg",
                                         "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.",
-                                    ) +
-                                    "\n\nReceived error: $errorMessage"
+                                    )
                             }
                             errorMessage == "SCALE_ERROR" -> {
                                 _photoErrorTitle.value = Localization.tr(context, "error.scale.title", "Scale Not Recognized")
@@ -507,8 +550,17 @@ class MainViewModel(
                                         context,
                                         "error.scale.msg",
                                         "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on",
-                                    ) +
-                                    "\n\nReceived error: $errorMessage"
+                                    )
+                            }
+                            errorMessage == "DAILY_LIMIT" -> {
+                                _photoErrorTitle.value = Localization.tr(context, "error.daily_limit.title", "Daily Limit Reached")
+                                val limit = grpcService.lastDailyLimit?.limit
+                                _photoErrorMessage.value =
+                                    Localization.tr(
+                                        context,
+                                        "quota.reached",
+                                        "You have reached today's limit${if (limit != null) " ($limit)" else ""}.",
+                                    )
                             }
                             errorMessage.startsWith("Unfortuantly, you have reached your daily limit") -> {
                                 _photoErrorTitle.value = Localization.tr(context, "error.daily_limit.title", "Daily Limit Reached")
@@ -523,8 +575,7 @@ class MainViewModel(
                                             context,
                                             "error.scale.msg",
                                             "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on",
-                                        ) +
-                                        "\n\nReceived error: $errorMessage"
+                                        )
                                 } else {
                                     _photoErrorTitle.value = Localization.tr(context, "error.food.title", "Food Not Recognized")
                                     _photoErrorMessage.value =
@@ -532,8 +583,7 @@ class MainViewModel(
                                             context,
                                             "error.food.msg",
                                             "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.",
-                                        ) +
-                                        "\n\nReceived error: $errorMessage"
+                                        )
                                 }
                             }
                         }
@@ -541,9 +591,11 @@ class MainViewModel(
                     },
                 )
             } catch (e: Exception) {
+                android.util.Log.w("MainViewModel", "Photo upload failed ($photoType)", e)
                 // Clean up temporary image on error
                 imageStorageService.deleteTemporaryImage(tempTimestamp)
                 _isLoadingFoodPhoto.value = false
+                com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
 
                 // Show error alert based on photo type (fallback for network errors)
                 if (photoType == "weight_prompt") {
@@ -553,8 +605,7 @@ class MainViewModel(
                             context,
                             "error.scale.msg",
                             "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on",
-                        ) +
-                        "\n\nReceived error: ${e.message}"
+                        )
                 } else {
                     _photoErrorTitle.value = Localization.tr(context, "error.food.title", "Food Not Recognized")
                     _photoErrorMessage.value =
@@ -562,8 +613,7 @@ class MainViewModel(
                             context,
                             "error.food.msg",
                             "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.",
-                        ) +
-                        "\n\nReceived error: ${e.message}"
+                        )
                 }
                 _showPhotoErrorAlert.value = true
             }
@@ -633,8 +683,7 @@ class MainViewModel(
                                     context,
                                     "error.food.msg",
                                     "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.",
-                                ) +
-                                "\n\nReceived error: $errorMessage"
+                                )
                         }
                         errorMessage == "SCALE_ERROR" -> {
                             _photoErrorTitle.value = Localization.tr(context, "error.scale.title", "Scale Not Recognized")
@@ -643,8 +692,17 @@ class MainViewModel(
                                     context,
                                     "error.scale.msg",
                                     "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on",
-                                ) +
-                                "\n\nReceived error: $errorMessage"
+                                )
+                        }
+                        errorMessage == "DAILY_LIMIT" -> {
+                            _photoErrorTitle.value = Localization.tr(context, "error.daily_limit.title", "Daily Limit Reached")
+                            val limit = grpcService.lastDailyLimit?.limit
+                            _photoErrorMessage.value =
+                                Localization.tr(
+                                    context,
+                                    "quota.reached",
+                                    "You have reached today's limit${if (limit != null) " ($limit)" else ""}.",
+                                )
                         }
                         errorMessage.startsWith("Unfortuantly, you have reached your daily limit") -> {
                             _photoErrorTitle.value = Localization.tr(context, "error.daily_limit.title", "Daily Limit Reached")
@@ -659,8 +717,7 @@ class MainViewModel(
                                         context,
                                         "error.scale.msg",
                                         "We couldn't read your weight scale. Please make sure:\n• The scale display shows a clear number\n• The lighting is good\n• The scale is on a flat surface\n• Take the photo straight on",
-                                    ) +
-                                    "\n\nReceived error: $errorMessage"
+                                    )
                             } else {
                                 _photoErrorTitle.value = Localization.tr(context, "error.food.title", "Food Not Recognized")
                                 _photoErrorMessage.value =
@@ -668,8 +725,7 @@ class MainViewModel(
                                         context,
                                         "error.food.msg",
                                         "We couldn't identify the food in your photo. Please try taking another photo with better lighting and make sure the food is clearly visible.",
-                                    ) +
-                                    "\n\nReceived error: $errorMessage"
+                                    )
                             }
                         }
                     }
@@ -698,7 +754,7 @@ class MainViewModel(
                         ->
                         _products.value = fetchedProducts
                         _caloriesLeft.value = getAdjustedSoftLimit() - totalCaloriesConsumed
-                        _personWeight.value = weight
+                        if (weight > 0f) _personWeight.value = weight
                         prefetchProductPhotos(fetchedProducts)
                         _deletingProductTime.value = null
                     }
@@ -808,12 +864,23 @@ class MainViewModel(
         viewModelScope.launch {
             try {
                 val success = grpcService.sendManualWeight(weight, userEmail)
+                if (!success) {
+                    showWeightSaveError(context)
+                    return@launch
+                }
+                _personWeight.value = weight
                 triggerWeightMotivation(context, weight)
                 returnToToday()
             } catch (e: Exception) {
-                // Handle error silently
+                showWeightSaveError(context)
             }
         }
+    }
+
+    private fun showWeightSaveError(context: Context) {
+        _photoErrorTitle.value = Localization.tr(context, "weight.record.title", "Record Weight")
+        _photoErrorMessage.value = Localization.tr(context, "weight.record_failed.msg", "Failed to record your weight. Please try again.")
+        _showPhotoErrorAlert.value = true
     }
 
     fun triggerWeightMotivation(context: Context, newWeight: Float) {
@@ -891,22 +958,24 @@ class MainViewModel(
         
         viewModelScope.launch {
             _isLoadingRecommendation.value = true
+            _recommendationFailed.value = false
             try {
-                val recommendation = grpcService.getRecommendation(days)
-
-                // Store the recommendation; the pager navigates to the dedicated
-                // RecommendationView page (no separate overlay dialog — that duplicated
-                // this same content and appeared stacked on top of the page).
-                _recommendationText.value = recommendation
-                _isLoadingRecommendation.value = false
-
-                // Return to today after getting recommendation (iOS behavior)
-                if (_isViewingCustomDate.value) {
-                    returnToToday()
+                when (val recommendation = grpcService.getRecommendation(days)) {
+                    is RecommendationResult.Ok -> {
+                        _recommendationText.value = recommendation.text
+                        _recommendationGeneratedAt.value = System.currentTimeMillis()
+                        _recommendationFailed.value = recommendation.text.isBlank()
+                    }
+                    is RecommendationResult.Quota -> {
+                        _recommendationFailed.value = _recommendationText.value.isBlank()
+                        com.singularis.eateria.navigation.AppNavigation.presentDailyLimit(recommendation.limit)
+                    }
+                    RecommendationResult.Failed -> _recommendationFailed.value = _recommendationText.value.isBlank()
                 }
             } catch (e: Exception) {
+                _recommendationFailed.value = _recommendationText.value.isBlank()
+            } finally {
                 _isLoadingRecommendation.value = false
-                // Handle error - could show error dialog
             }
         }
     }
@@ -919,7 +988,7 @@ class MainViewModel(
             _currentViewingDateString.value = dateString
 
             // Convert dateString to display format
-            val inputFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val inputFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
             val displayFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
             val displayDate =
@@ -936,7 +1005,7 @@ class MainViewModel(
                 // Recalculate caloriesLeft based on our local soft limit for custom date too
                 val actualCaloriesLeft = getAdjustedSoftLimit() - totalCaloriesConsumed
                 _caloriesLeft.value = actualCaloriesLeft
-                _personWeight.value = weight
+                if (weight > 0f) _personWeight.value = weight
                 _isLoadingData.value = false
                 prefetchProductPhotos(fetchedProducts)
             }
@@ -1047,14 +1116,6 @@ class MainViewModel(
 
     fun hideOnboarding() {
         _showOnboarding.value = false
-    }
-
-    fun showStatistics() {
-        _showStatistics.value = true
-    }
-
-    fun hideStatistics() {
-        _showStatistics.value = false
     }
 
     fun showHealthSettings() {
@@ -1173,6 +1234,59 @@ class MainViewModel(
         }
     }
 
+    private val _dayFoodScore = MutableStateFlow<com.singularis.eateria.services.DayFoodScore?>(null)
+    val dayFoodScore: StateFlow<com.singularis.eateria.services.DayFoodScore?> = _dayFoodScore.asStateFlow()
+    private val _dayScoreLoading = MutableStateFlow(false)
+    val dayScoreLoading: StateFlow<Boolean> = _dayScoreLoading.asStateFlow()
+    private var scoreJob: kotlinx.coroutines.Job? = null
+
+    fun refreshDayFoodScore() {
+        scoreJob?.cancel()
+        scoreJob =
+            viewModelScope.launch {
+                val email = authService.getUserEmail() ?: return@launch
+                val day = scoreDayString()
+                _dayScoreLoading.value = true
+                val waits = longArrayOf(0L, 2000L, 4000L, 8000L)
+                for (wait in waits) {
+                    if (wait > 0) delay(wait)
+                    val score = grpcService.getFoodScore(email, day)
+                    _dayFoodScore.value = score
+                    val newest = _products.value.maxOfOrNull { it.time } ?: 0L
+                    if (score == null || score.hasScore && score.dishTime >= newest) break
+                }
+                _dayScoreLoading.value = false
+            }
+    }
+
+    fun scoreDayString(): String {
+        val raw = _currentViewingDateString.value
+        if (raw.isNotBlank()) {
+            val parsed = runCatching { SimpleDateFormat("dd-MM-yyyy", Locale.US).parse(raw) }.getOrNull()
+            if (parsed != null) {
+                return SimpleDateFormat("yyyy-MM-dd", Locale.US).format(parsed)
+            }
+        }
+        return SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+    }
+
+    fun captureTimestampMillis(): Long {
+        if (!_isViewingCustomDate.value) return System.currentTimeMillis()
+        val parsed =
+            runCatching { SimpleDateFormat("dd-MM-yyyy", Locale.US).parse(_currentViewingDateString.value) }.getOrNull()
+                ?: return System.currentTimeMillis()
+        val parts = Calendar.getInstance().apply { time = parsed }
+        return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            set(Calendar.YEAR, parts.get(Calendar.YEAR))
+            set(Calendar.MONTH, parts.get(Calendar.MONTH))
+            set(Calendar.DAY_OF_MONTH, parts.get(Calendar.DAY_OF_MONTH))
+            set(Calendar.HOUR_OF_DAY, 12)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
     fun onSuccessDialogDismissed() {
         _modifiedProductTime.value = null
     }
@@ -1187,6 +1301,7 @@ class MainViewModel(
             } else {
                 fetchData()
             }
+            com.singularis.eateria.services.ReminderScheduler.scheduleAll(context)
         }
     }
 
@@ -1212,7 +1327,7 @@ class MainViewModel(
                 add(Calendar.DAY_OF_YEAR, -1)
             }
         val yesterdayString =
-            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            SimpleDateFormat("yyyy-MM-dd", Locale.US)
                 .apply {
                     timeZone = TimeZone.getTimeZone("UTC")
                 }.format(yesterday.time)

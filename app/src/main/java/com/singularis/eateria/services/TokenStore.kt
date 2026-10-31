@@ -9,6 +9,7 @@ object TokenStore {
     private const val PREFS_FILE = "secure_prefs"
     const val KEY_JWT = "jwt_token"
 
+    @Suppress("DEPRECATION")
     private fun prefs(context: Context): SharedPreferences {
         val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)

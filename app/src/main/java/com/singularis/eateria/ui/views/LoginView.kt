@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import com.singularis.eateria.ui.theme.appSurface
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -7,6 +8,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -119,26 +122,26 @@ fun LoginView(
                 .background(background)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars),
-        contentAlignment = Alignment.Center,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-                Modifier
-                    .widthIn(max = 420.dp)
-                    .fillMaxWidth()
-                    .graphicsLayer {
-                        alpha = enterAlpha
-                        translationY = enterOffset
-                    }
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
-                    .shakeAnimation(
-                        trigger = triggerErrorShake,
-                        onAnimationEnd = { triggerErrorShake = false },
-                    ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = maxHeight)
+                        .graphicsLayer {
+                            alpha = enterAlpha
+                            translationY = enterOffset
+                        }
+                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                        .shakeAnimation(
+                            trigger = triggerErrorShake,
+                            onAnimationEnd = { triggerErrorShake = false },
+                        ),
+                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            ) {
             // Header mark
             Box(
                 modifier =
@@ -172,7 +175,7 @@ fun LoginView(
 
             Text(
                 text = Localization.tr(context, "login.welcome", "Welcome to Eateria"),
-                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 28.sp),
+                style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = textPrimary,
                 textAlign = TextAlign.Center,
@@ -195,10 +198,7 @@ fun LoginView(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(AppTheme.cornerRadius))
-                        .clip(RoundedCornerShape(AppTheme.cornerRadius))
-                        .background(surface.copy(alpha = 0.92f))
-                        .border(1.dp, AppTheme.divider().copy(alpha = 0.5f), RoundedCornerShape(AppTheme.cornerRadius))
+                        .appSurface()
                         .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
@@ -249,7 +249,10 @@ fun LoginView(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isSigningIn,
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
                     Text(
                         text = "✨ " + Localization.tr(context, "login.let_me_try", "Let Me Try"),
                         style = MaterialTheme.typography.titleMedium,
@@ -320,7 +323,8 @@ fun LoginView(
                 enabled = !isSigningIn,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
@@ -333,7 +337,7 @@ fun LoginView(
                     ) {
                         Text(
                             text = "G",
-                            fontSize = 18.sp,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
                         )
@@ -343,6 +347,7 @@ fun LoginView(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -381,7 +386,7 @@ fun LoginView(
             Row(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
@@ -393,8 +398,8 @@ fun LoginView(
                     text =
                         Localization.tr(
                             context,
-                            "login.trust.footer",
-                            "Secure sign-in with Apple or Google. No ads, no spam, and we never sell your data.",
+                            "login.trust.footer.android",
+                            "Secure sign-in with Google. No ads, no spam, and we never sell your data.",
                         ),
                     style = MaterialTheme.typography.bodySmall,
                     color = textSecondary,
@@ -431,6 +436,7 @@ fun LoginView(
             AppInfoSheet(
                 onDismiss = { showAbout = false },
             )
+        }
         }
     }
 }

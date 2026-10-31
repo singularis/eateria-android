@@ -1,0 +1,6 @@
+Eateria 5.3
+• Glass-style surfaces and sheets that open the same way
+• Text size scales the whole app
+• Type a meal, including a past day
+• Day score from the server, meal ideas, and range stats
+• Friends, profile and guest sign-in in place

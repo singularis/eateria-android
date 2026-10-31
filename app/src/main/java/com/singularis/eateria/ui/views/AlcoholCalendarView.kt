@@ -1,5 +1,9 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.LocalIndication
@@ -115,7 +119,9 @@ fun AlcoholCalendarView(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 24.dp)
+                        .windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.systemBars)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
                         .pointerInput(anchorMonth) {
                             detectHorizontalDragGestures { change, dragAmount ->
                                 change.consume()
@@ -127,7 +133,10 @@ fun AlcoholCalendarView(
                             }
                         },
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
+                ScreenHeader(
+                    title = Localization.tr(LocalContext.current, "onboarding.alcohol.title", "Alcohol"),
+                    onBack = onDismiss,
+                )
                 AddictionModeExplanation()
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -160,28 +169,14 @@ fun AlcoholCalendarView(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Button(
-                    onClick = { 
-                        com.singularis.eateria.services.HapticsService.getInstance().select()
-                        onDismiss() 
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(
-                            androidx.compose.ui.graphics.Brush.linearGradient(
-                                colors = listOf(Color.Green, Color(0xFF800080))
-                            )
-                        )
+                com.singularis.eateria.ui.theme.PrimaryButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = Localization.tr(LocalContext.current, "common.done", "Done"),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        color = com.singularis.eateria.ui.theme.AppTheme.onAccent,
+                        style = MaterialTheme.typography.titleMedium,
                     )
                 }
             }
@@ -198,10 +193,10 @@ fun AlcoholCalendarView(
             title = { Text(detailsTitle, color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(), fontWeight = FontWeight.Bold) },
             text = { Text(detailsMessage, color = com.singularis.eateria.ui.theme.AppTheme.textSecondary()) },
             confirmButton = {
-                Button(onClick = { 
+                androidx.compose.material3.TextButton(onClick = {
                     com.singularis.eateria.services.HapticsService.getInstance().select()
-                    detailsVisible = false 
-                }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK")) }
+                    detailsVisible = false
+                }) { Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = com.singularis.eateria.ui.theme.AppTheme.accent()) }
             },
             containerColor = com.singularis.eateria.ui.theme.AppTheme.surface(),
             shape = RoundedCornerShape(24.dp)
@@ -224,8 +219,12 @@ private fun Header(
         IconButton(onClick = { 
             com.singularis.eateria.services.HapticsService.getInstance().select()
             onPrev() 
-        }) { 
-            Text("<", color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(), style = MaterialTheme.typography.titleLarge) 
+        }) {
+            androidx.compose.material3.Icon(
+                androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = Localization.tr(LocalContext.current, "calendar.prev", "Previous month"),
+                tint = com.singularis.eateria.ui.theme.AppTheme.textPrimary(),
+            )
         }
         Text(
             text = monthTitle(date),
@@ -236,8 +235,12 @@ private fun Header(
         IconButton(onClick = { 
             com.singularis.eateria.services.HapticsService.getInstance().select()
             onNext() 
-        }) { 
-            Text(">", color = com.singularis.eateria.ui.theme.AppTheme.textPrimary(), style = MaterialTheme.typography.titleLarge) 
+        }) {
+            androidx.compose.material3.Icon(
+                androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = Localization.tr(LocalContext.current, "calendar.next", "Next month"),
+                tint = com.singularis.eateria.ui.theme.AppTheme.textPrimary(),
+            )
         }
     }
 }
@@ -247,7 +250,8 @@ private fun WeekdayHeader() {
     val labels =
         remember {
             val weekdays = DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays
-            (1..7).map { weekdays[it] }
+            val first = Calendar.getInstance().firstDayOfWeek
+            (0 until 7).map { weekdays[(first - 1 + it) % 7 + 1] }
         }
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         labels.forEach { label ->
@@ -281,7 +285,7 @@ private fun MonthGrid(
     val prevDays = prevMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
 
     val cells = mutableListOf<DayCell>()
-    val padding = (firstWeekday + 6) % 7
+    val padding = (firstWeekday - cal.firstDayOfWeek + 7) % 7
     val year = cal.get(Calendar.YEAR)
     val month = cal.get(Calendar.MONTH) + 1
     val prevYear = prevMonth.get(Calendar.YEAR)
@@ -337,7 +341,7 @@ private fun RowScope.DayCellView(
         modifier =
             Modifier
                 .weight(1f)
-                .height(44.dp)
+                .height(48.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(if (cell.isCurrentMonth) com.singularis.eateria.ui.theme.AppTheme.surface() else Color.Transparent)
                 .clickable(
@@ -365,7 +369,7 @@ private fun RowScope.DayCellView(
                         .padding(bottom = 4.dp)
                         .size(size)
                         .clip(RoundedCornerShape(50))
-                        .background(Color.Red),
+                        .background(com.singularis.eateria.ui.theme.AppTheme.danger()),
             )
         }
     }
@@ -378,10 +382,11 @@ private data class DayCell(
 )
 
 private fun dotSize(amount: Int): androidx.compose.ui.unit.Dp {
-    val base = 16.dp
-    val max = 56.dp
+    // Stays inside the 48dp day cell, under the day number.
+    val base = 6.dp
+    val max = 14.dp
     if (amount <= 0) return base
-    val scaled = base * amount
+    val scaled = base + 2.dp * (amount - 1)
     return if (scaled > max) max else scaled
 }
 
@@ -404,7 +409,7 @@ private fun monthStartEnd(date: Date): Pair<String, String> {
     val days = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
     cal.set(Calendar.DAY_OF_MONTH, days)
     val last = cal.time
-    val fmt = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    val fmt = SimpleDateFormat("dd-MM-yyyy", Locale.US)
     return Pair(fmt.format(first), fmt.format(last))
 }
 
@@ -419,7 +424,7 @@ private fun addMonths(
 
 private fun prettyDate(ymd: String): String {
     return try {
-        val inFmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val inFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val outFmt = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
         outFmt.format(inFmt.parse(ymd) ?: return ymd)
     } catch (_: Exception) {
@@ -454,7 +459,7 @@ private fun AddictionModeExplanation() {
             Text(
                 text = Localization.tr(LocalContext.current, "alcohol.addiction_mode.title", "🍷 Addiction Mode"),
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp, // Using sp instead of dp for font size
+                style = MaterialTheme.typography.bodyLarge, // Using sp instead of dp for font size
                 color = com.singularis.eateria.ui.theme.AppTheme.textPrimary()
             )
             

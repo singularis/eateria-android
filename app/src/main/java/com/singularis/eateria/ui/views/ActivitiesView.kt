@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.interaction.MutableInteractionSource
 
 import androidx.compose.foundation.background
@@ -80,6 +81,7 @@ fun ActivitiesView(
     var summaryActivityTypes by remember { mutableStateOf<List<String>>(emptyList()) }
 
     val context = androidx.compose.ui.platform.LocalContext.current
+    var chessWins by remember { mutableIntStateOf(com.singularis.eateria.services.ActivityLocalStore.chessTotalWins(context)) }
     val scope = rememberCoroutineScope()
     val grpcService = remember { GRPCService(context) }
 
@@ -89,6 +91,7 @@ fun ActivitiesView(
             val (totalCal, types) = grpcService.getActivitySummary(dateISO)
             summaryTotalCalories = totalCal
             summaryActivityTypes = types
+            com.singularis.eateria.services.ActivityLocalStore.saveSummary(context, dateISO, totalCal, types)
         } catch (_: Exception) { }
     }
 
@@ -102,24 +105,11 @@ fun ActivitiesView(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = Localization.tr(context, "activities.title", "Activities"),
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = AppTheme.textPrimary()
-                )
-                
-                TextButton(onClick = onDismiss) {
-                    Text(Localization.tr(context, "common.done", "Done"), color = AppTheme.textPrimary())
-                }
-            }
+            ScreenHeader(
+                title = Localization.tr(context, "activities.title", "Activities"),
+                onBack = onDismiss,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
             
             // Scrollable Content
             Column(
@@ -178,6 +168,7 @@ fun ActivitiesView(
                         if (key !in summaryActivityTypes) {
                             summaryActivityTypes = summaryActivityTypes + key
                         }
+                        com.singularis.eateria.services.ActivityLocalStore.saveSummary(context, dateISO, summaryTotalCalories, summaryActivityTypes)
                         showInputSheet = false
                         // Call GRPC in background
                         scope.launch {
@@ -221,6 +212,7 @@ fun ActivitiesView(
                         }
                     }
                     ChessActivityCard(
+                        totalWins = chessWins,
                         onRecordGameClick = { showChessWinnerSheet = true },
                         onHistoryClick = { showChessHistory = true }
                     )
@@ -251,9 +243,17 @@ fun ActivitiesView(
         // Opponent Picker
         if (showOpponentPicker) {
             ChessOpponentPickerView(
-                onOpponentSelected = { opponentNickname, opponentEmail ->
+                onOpponentSelected = { _, opponentEmail ->
                     showOpponentPicker = false
-                    // Record chess game with opponent via GRPC
+                    val winner = pendingGameResult
+                    if (opponentEmail.isNotBlank()) {
+                        com.singularis.eateria.services.ActivityLocalStore.recordChessResult(context, opponentEmail, winner)
+                    }
+                    chessWins = com.singularis.eateria.services.ActivityLocalStore.chessTotalWins(context)
+                    if ("chess" !in summaryActivityTypes) {
+                        summaryActivityTypes = summaryActivityTypes + "chess"
+                        com.singularis.eateria.services.ActivityLocalStore.saveSummary(context, dateISO, summaryTotalCalories, summaryActivityTypes)
+                    }
                     scope.launch {
                         try {
                             grpcService.logActivity(
@@ -262,6 +262,18 @@ fun ActivitiesView(
                                 calories = 0,
                                 dateISO = dateISO
                             )
+                            val playerEmail = com.singularis.eateria.services.AuthenticationService(context).getUserEmail().orEmpty()
+                            if (playerEmail.isNotBlank() && opponentEmail.isNotBlank()) {
+                                val result = when (winner) {
+                                    "me" -> "win"
+                                    "opponent" -> "loss"
+                                    else -> "draw"
+                                }
+                                val (ok, playerScore, _) = grpcService.recordChessGame(playerEmail, opponentEmail, result)
+                                if (ok && playerScore != null) {
+                                    com.singularis.eateria.services.ActivityLocalStore.setOpponentScore(context, opponentEmail, playerScore)
+                                }
+                            }
                         } catch (_: Exception) { }
                     }
                     HapticsService.getInstance().success()
@@ -322,13 +334,13 @@ private fun BurnedCaloriesCard(dateISO: String, totalCalories: Int) {
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "$totalCalories",
-                    fontSize = 48.sp,
+                    style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFFFA500) // Orange
                 )
                 Text(
                     text = Localization.tr(context, "units.kcal", "kcal"),
-                    fontSize = 20.sp,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Normal),
                     color = AppTheme.textSecondary(),
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
@@ -359,10 +371,17 @@ private fun HoneycombActivitiesGrid(
     val originX = gridX(1, 1)
     val originY = gridY(1)
 
+    // The grid is laid out for 360dp; shrink it as a whole when the scaled screen is narrower.
+    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+    val fit = (maxWidth / 360.dp).coerceAtMost(1f)
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(350.dp),
+            .height(350.dp * fit)
+            .graphicsLayer {
+                scaleX = fit
+                scaleY = fit
+            },
         contentAlignment = Alignment.Center
     ) {
         // Neighbors
@@ -410,7 +429,7 @@ private fun HoneycombActivitiesGrid(
             color = Color.Green,
             modifier = Modifier.offset(0.dp, 0.dp)
         ) { onStatisticsClick() }
-    }
+    }}
 }
 
 @Composable
@@ -438,10 +457,10 @@ private fun HoneycombCell(
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(icon, fontSize = 24.sp)
+            Text(icon, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Normal))
             Text(
                 text = title,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.textPrimary()
             )
@@ -536,6 +555,7 @@ private fun ActivityInputSheet(
 
 @Composable
 private fun ChessActivityCard(
+    totalWins: Int,
     onRecordGameClick: () -> Unit,
     onHistoryClick: () -> Unit
 ) {
@@ -560,12 +580,12 @@ private fun ChessActivityCard(
                 }
                 TextButton(
                     onClick = onHistoryClick,
-                    modifier = Modifier.background(Color.Blue.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                    modifier = Modifier.background(AppTheme.accent().copy(alpha = 0.1f), RoundedCornerShape(8.dp))
                 ) {
                     Text(
                         Localization.tr(context, "activities.chess.history", "History"),
-                        color = Color.Blue,
-                        fontSize = 12.sp,
+                        color = AppTheme.accent(),
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                     )
                 }
@@ -575,10 +595,15 @@ private fun ChessActivityCard(
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         Localization.tr(context, "activities.chess.wins_label", "Wins:"),
-                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Normal),
                         color = AppTheme.textSecondary(),
                     )
-                    Text("0", fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Color.Gray) // Placeholder for total wins
+                    Text(
+                        "$totalWins",
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (totalWins > 0) AppTheme.success() else AppTheme.textSecondary(),
+                    )
                 }
                 Text(
                     text = "🎯 ${Localization.tr(context, "activities.no_league_yet", "No League Yet")}",
@@ -591,12 +616,12 @@ private fun ChessActivityCard(
             Button(
                 onClick = onRecordGameClick,
                 modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Magenta),
+                colors = ButtonDefaults.buttonColors(containerColor = AppTheme.accent(), contentColor = AppTheme.onAccent),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     Localization.tr(context, "activities.chess.record", "Record Game"),
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     modifier = Modifier.padding(8.dp),
@@ -667,7 +692,7 @@ private fun WinnerButton(title: String, icon: String, color: Color, modifier: Mo
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(icon, fontSize = 40.sp)
+            Text(icon, style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Normal))
             Text(title, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
         }
     }

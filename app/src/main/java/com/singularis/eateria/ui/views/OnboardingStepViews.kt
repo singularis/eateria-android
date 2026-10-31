@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -56,13 +57,13 @@ import com.singularis.eateria.ui.theme.AppTheme
 fun BalancedPlateStepView(page: OnboardingPage) {
     val context = LocalContext.current
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 26.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
@@ -70,7 +71,7 @@ fun BalancedPlateStepView(page: OnboardingPage) {
         Text(
             text = page.description,
             color = AppTheme.textSecondary(),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -104,16 +105,16 @@ fun BalancedPlateStepView(page: OnboardingPage) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(20.dp)) {
                     Image(painter = painterResource(id = imageRes), contentDescription = null, modifier = Modifier.size(200.dp))
                     Spacer(modifier = Modifier.height(20.dp))
-                    Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), textAlign = TextAlign.Center)
+                    Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         Localization.tr(context, "onboarding.plates.score", "Score: %d").replace("%d", "$score"),
-                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF4CAF50),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(desc, fontSize = 16.sp, color = AppTheme.textSecondary(), textAlign = TextAlign.Center)
+                    Text(desc, style = MaterialTheme.typography.bodyMedium, color = AppTheme.textSecondary(), textAlign = TextAlign.Center)
                 }
             }
         }
@@ -136,7 +137,7 @@ fun SmartTipsStepView(page: OnboardingPage) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 30.sp,
+            style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
@@ -164,10 +165,10 @@ fun SmartTipsStepView(page: OnboardingPage) {
                         Icon(imageVector = Icons.Default.LocalFireDepartment, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(44.dp).background(Color(0xFFFF9800).copy(alpha=0.12f), CircleShape).padding(10.dp))
                     }
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(Localization.tr(context, "onboarding.tips.chess_activities.title", "Chess & Activity tracking"), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.tips.chess_activities.title", "Chess & Activity tracking"), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(Localization.tr(context, "onboarding.tips.chess_activities.desc", "• Track your chess score with real time updates during games\n• Log activities: gym, steps, treadmill, elliptical, yoga\n• Calories burned are calculated automatically"), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
+                Text(Localization.tr(context, "onboarding.tips.chess_activities.desc", "• Track your chess score with real time updates during games\n• Log activities: gym, steps, treadmill, elliptical, yoga\n• Calories burned are calculated automatically"), style = MaterialTheme.typography.bodySmall, color = AppTheme.textSecondary(), lineHeight = 20.sp)
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -183,10 +184,10 @@ fun SmartTipsStepView(page: OnboardingPage) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.TouchApp, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(44.dp).background(Color(0xFFFF9800).copy(alpha=0.12f), CircleShape).padding(10.dp))
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(Localization.tr(context, "onboarding.tips.try_manual.title", "Try Manually"), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.tips.try_manual.title", "Try Manually"), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(Localization.tr(context, "onboarding.tips.try_manual.desc", "If you want to enter a dish manually, tap \"Try manually\". The app will then:\n\n• automatically recalculate calories\n• automatically update the health score"), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
+                Text(Localization.tr(context, "onboarding.tips.try_manual.desc", "If you want to enter a dish manually, tap \"Try manually\". The app will then:\n\n• automatically recalculate calories\n• automatically update the health score"), style = MaterialTheme.typography.bodySmall, color = AppTheme.textSecondary(), lineHeight = 20.sp)
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -202,10 +203,10 @@ fun SmartTipsStepView(page: OnboardingPage) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.LocalCafe, contentDescription = null, tint = Color(0xFFFFEB3B), modifier = Modifier.size(44.dp).background(Color(0xFFFFEB3B).copy(alpha=0.12f), CircleShape).padding(10.dp))
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(Localization.tr(context, "onboarding.tips.addons.title", "Additives"), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
+                    Text(Localization.tr(context, "onboarding.tips.addons.title", "Additives"), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = AppTheme.textPrimary())
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(Localization.tr(context, "onboarding.tips.addons.desc2", "Tap any dish → Additives to add milk, wasabi, etc."), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
+                Text(Localization.tr(context, "onboarding.tips.addons.desc2", "Tap any dish → Additives to add milk, wasabi, etc."), style = MaterialTheme.typography.bodySmall, color = AppTheme.textSecondary(), lineHeight = 20.sp)
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -222,7 +223,7 @@ fun TeamStepView(page: OnboardingPage) {
         Text(
             text = page.title,
             color = AppTheme.textPrimary(),
-            fontSize = 26.sp,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
@@ -241,15 +242,15 @@ fun TeamStepView(page: OnboardingPage) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                 Image(painter = painterResource(id = R.drawable.team_eugen), contentDescription = null, modifier = Modifier.size(100.dp).clip(CircleShape))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Eugen", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), fontSize = 18.sp)
-                Text(Localization.tr(context, "onboarding.team.role.founder", "Cat"), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                Text("Eugen", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
+                Text(Localization.tr(context, "onboarding.team.role.founder", "Cat"), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
             }
             // Olha
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                 Image(painter = painterResource(id = R.drawable.team_olha), contentDescription = null, modifier = Modifier.size(100.dp).clip(CircleShape))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Olha", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), fontSize = 18.sp)
-                Text(Localization.tr(context, "onboarding.team.role.co_founder", "Dog"), color = AppTheme.textSecondary(), fontSize = 14.sp)
+                Text("Olha", fontWeight = FontWeight.Bold, color = AppTheme.textPrimary(), style = MaterialTheme.typography.bodyLarge)
+                Text(Localization.tr(context, "onboarding.team.role.co_founder", "Dog"), color = AppTheme.textSecondary(), style = MaterialTheme.typography.bodySmall)
             }
         }
         Spacer(modifier = Modifier.height(40.dp))
@@ -277,7 +278,7 @@ fun PlanStepView(page: OnboardingPage) {
         
         Text(
             text = page.title,
-            fontSize = 30.sp,
+            style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             color = AppTheme.textPrimary(),
             textAlign = TextAlign.Center,
@@ -288,7 +289,7 @@ fun PlanStepView(page: OnboardingPage) {
         
         Text(
             text = Localization.tr(context, "onboarding.plan.subtitle", "Set a safe goal and let the app build a realistic path for you."),
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             color = AppTheme.textSecondary(),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 28.dp),
@@ -307,17 +308,17 @@ fun PlanStepView(page: OnboardingPage) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.Favorite, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(Localization.tr(context, "onboarding.plan.point.weight", "Choose your target weight. BMI never goes below 18.5, so the goal stays safe."), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
+                    Text(Localization.tr(context, "onboarding.plan.point.weight", "Choose your target weight. BMI never goes below 18.5, so the goal stays safe."), style = MaterialTheme.typography.bodySmall, color = AppTheme.textSecondary(), lineHeight = 20.sp)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = null, tint = Color(0xFF2196F3), modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(Localization.tr(context, "onboarding.plan.point.activity", "Pick your activity level or use the activity only mode to focus on movement instead of diet."), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
+                    Text(Localization.tr(context, "onboarding.plan.point.activity", "Pick your activity level or use the activity only mode to focus on movement instead of diet."), style = MaterialTheme.typography.bodySmall, color = AppTheme.textSecondary(), lineHeight = 20.sp)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.AccessTime, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(Localization.tr(context, "onboarding.plan.point.timeline", "We calculate a daily calorie range and a timeline that fits your lifestyle."), fontSize = 14.sp, color = AppTheme.textSecondary(), lineHeight = 20.sp)
+                    Text(Localization.tr(context, "onboarding.plan.point.timeline", "We calculate a daily calorie range and a timeline that fits your lifestyle."), style = MaterialTheme.typography.bodySmall, color = AppTheme.textSecondary(), lineHeight = 20.sp)
                 }
             }
         }

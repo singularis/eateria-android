@@ -73,7 +73,7 @@ fun LoadingOverlay(
                     Text(
                         text = message,
                         color = AppTheme.textPrimary(),
-                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center
                     )

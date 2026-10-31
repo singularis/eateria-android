@@ -42,6 +42,33 @@ class AppSettingsService private constructor(context: Context) {
             _reduceMotionFlow.value = value
         }
 
+    private val _fontScaleFlow = MutableStateFlow(loadFontScale())
+    val fontScaleFlow: StateFlow<Float> = _fontScaleFlow.asStateFlow()
+
+    private val _followsSystemTextSizeFlow = MutableStateFlow(!prefs.contains(KEY_FONT_SCALE))
+
+    /** True until the user picks a size in the app; the phone's text size drives the scale meanwhile. */
+    val followsSystemTextSizeFlow: StateFlow<Boolean> = _followsSystemTextSizeFlow.asStateFlow()
+
+    var fontScale: Float
+        get() = _fontScaleFlow.value
+        set(value) {
+            val clamped = value.coerceIn(FONT_SCALE_MIN, FONT_SCALE_MAX)
+            prefs.edit().putFloat(KEY_FONT_SCALE, clamped).apply()
+            _fontScaleFlow.value = clamped
+            _followsSystemTextSizeFlow.value = false
+        }
+
+    fun stepFontScale(deltaPercent: Int) {
+        fontScale = ((fontScale * 100f).toInt() + deltaPercent) / 100f
+    }
+
+    fun followSystemTextSize() {
+        prefs.edit().remove(KEY_FONT_SCALE).apply()
+        _fontScaleFlow.value = 1f
+        _followsSystemTextSizeFlow.value = true
+    }
+
     var savePhotosToLibrary: Boolean
         get() = prefs.getBoolean("save_photos_to_library", true)
         set(value) = prefs.edit().putBoolean("save_photos_to_library", value).apply()
@@ -82,10 +109,39 @@ class AppSettingsService private constructor(context: Context) {
         return prefs.getBoolean(KEY_REDUCE_MOTION, false)
     }
 
+    private fun loadFontScale(): Float {
+        if (!prefs.contains(KEY_FONT_SCALE)) return 1f
+        return prefs.getFloat(KEY_FONT_SCALE, 1f).coerceIn(FONT_SCALE_MIN, FONT_SCALE_MAX)
+    }
+
     companion object {
         private const val PREFS_NAME = "app_settings"
         private const val KEY_APPEARANCE_MODE = "app_appearance_mode"
         private const val KEY_REDUCE_MOTION = "app_reduce_motion"
+        private const val KEY_FONT_SCALE = "app_dish_card_scale_v4"
+        const val FONT_SCALE_MIN = 0.80f
+        const val FONT_SCALE_MAX = 1.60f
+
+        /** Narrowest scaled width the home header and stat tiles are laid out for. */
+        private const val MIN_LAYOUT_WIDTH_DP = 260f
+
+        /** Largest whole-app scale this screen can take without the home rows overflowing. */
+        fun maxScaleFor(screenWidthDp: Int): Float =
+            (screenWidthDp / MIN_LAYOUT_WIDTH_DP).coerceIn(1f, FONT_SCALE_MAX)
+
+        /**
+         * The scale applied to the whole UI. It replaces the system font scale rather than
+         * stacking on it, so a large phone text size cannot push text to 2x on top of the slider.
+         */
+        fun effectiveScale(
+            stored: Float,
+            followsSystem: Boolean,
+            systemFontScale: Float,
+            screenWidthDp: Int,
+        ): Float {
+            val chosen = if (followsSystem) systemFontScale else stored
+            return chosen.coerceIn(FONT_SCALE_MIN, maxScaleFor(screenWidthDp))
+        }
 
         @Volatile
         private var instance: AppSettingsService? = null

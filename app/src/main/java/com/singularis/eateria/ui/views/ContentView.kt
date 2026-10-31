@@ -84,7 +84,6 @@ fun ContentView(
     val currentViewingDateString by viewModel.currentViewingDateString.collectAsState()
     val isLoadingFoodPhoto by viewModel.isLoadingFoodPhoto.collectAsState()
     val isLoadingWeightPhoto by viewModel.isLoadingWeightPhoto.collectAsState()
-    val isLoadingRecommendation by viewModel.isLoadingRecommendation.collectAsState()
     val deletingProductTime by viewModel.deletingProductTime.collectAsState()
     val modifiedProductTime by viewModel.modifiedProductTime.collectAsState()
     val userEmail by authViewModel.userEmail.collectAsState(initial = null)
@@ -97,7 +96,6 @@ fun ContentView(
     val showUserProfile by viewModel.showUserProfile.collectAsState()
     val showHealthDisclaimer by viewModel.showHealthDisclaimer.collectAsState()
     val showOnboarding by viewModel.showOnboarding.collectAsState()
-    val showStatistics by viewModel.showStatistics.collectAsState()
     val showAlcoholCalendar by viewModel.showAlcoholCalendar.collectAsState()
     val showHealthSettings by viewModel.showHealthSettings.collectAsState()
     val showCalendarPicker by viewModel.showCalendarPicker.collectAsState()
@@ -107,7 +105,6 @@ fun ContentView(
     val manualWeightInput by viewModel.manualWeightInput.collectAsState()
     val tempSoftLimit by viewModel.tempSoftLimit.collectAsState()
     val tempHardLimit by viewModel.tempHardLimit.collectAsState()
-    val recommendationText by viewModel.recommendationText.collectAsState()
     val showPhotoErrorAlert by viewModel.showPhotoErrorAlert.collectAsState()
     val photoErrorTitle by viewModel.photoErrorTitle.collectAsState()
     val photoErrorMessage by viewModel.photoErrorMessage.collectAsState()
@@ -128,7 +125,12 @@ fun ContentView(
     val isPullRefreshing by viewModel.isPullRefreshing.collectAsState()
 
     // Camera states
+    var showTypeFood by remember { mutableStateOf(false) }
     var showFoodCamera by remember { mutableStateOf(false) }
+    var showCaloriesSheet by remember { mutableStateOf(false) }
+    var showCameraTutorial by remember { mutableStateOf(false) }
+    val pendingMeal by com.singularis.eateria.navigation.AppNavigation.pendingMeal.collectAsState()
+    val shellSignIn by com.singularis.eateria.navigation.AppNavigation.showSignIn.collectAsState()
     var showWeightCamera by remember { mutableStateOf(false) }
 
     // Full screen photo state
@@ -138,21 +140,52 @@ fun ContentView(
     var showTryManualDialog by remember { mutableStateOf<Triple<Long, String, String>?>(null) }
     // Increment to open camera via CameraButtonView (same path as Take Food Photo, incl. backdating)
     var cameraOpenRequest by remember { mutableStateOf(0) }
+    var uploadOpenRequest by remember { mutableStateOf(0) }
+    val shellCamera by com.singularis.eateria.navigation.AppNavigation.cameraRequest.collectAsState()
+    val shellUpload by com.singularis.eateria.navigation.AppNavigation.uploadRequest.collectAsState()
+    // First camera open shows the camera tip, then opens the camera (iOS checkTutorial).
+    var openCameraAfterTutorial by remember { mutableStateOf(false) }
+    val tutorialPrefs = remember { context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE) }
+    fun requestCamera() {
+        if (!tutorialPrefs.getBoolean("hasSeenCameraTutorial", false)) {
+            openCameraAfterTutorial = true
+            showCameraTutorial = true
+        } else {
+            cameraOpenRequest++
+        }
+    }
+    fun finishCameraTutorial() {
+        tutorialPrefs.edit().putBoolean("hasSeenCameraTutorial", true).apply()
+        showCameraTutorial = false
+        if (openCameraAfterTutorial) {
+            openCameraAfterTutorial = false
+            cameraOpenRequest++
+        }
+    }
+    LaunchedEffect(shellCamera) {
+        if (shellCamera > 0) {
+            com.singularis.eateria.navigation.AppNavigation.consumeCameraRequest()
+            requestCamera()
+        }
+    }
+    LaunchedEffect(shellUpload) {
+        if (shellUpload > 0) {
+            com.singularis.eateria.navigation.AppNavigation.consumeUploadRequest()
+            uploadOpenRequest++
+        }
+    }
     // Guests must sign in for share / try-manual; ask first instead of dropping them on login
     var guestSignInPrompt by remember { mutableStateOf<GuestSignInReason?>(null) }
     // Explains what the daily average health score ring in the top bar means and how it's generated
     var showDailyHealthScoreInfo by remember { mutableStateOf(false) }
 
     // Average of today's (or the viewed day's) per-meal health scores, shown as a ring in the top bar
-    val scoredProducts = products.filter { it.healthRating >= 0 }
-    val averageHealthScore =
-        if (scoredProducts.isNotEmpty()) {
-            val sum = scoredProducts.sumOf { it.effectiveHealthRating }
-            val avg = Math.round(sum.toDouble() / scoredProducts.size).toInt()
-            maxOf(0, minOf(100, avg))
-        } else {
-            null
-        }
+    val dayScore by viewModel.dayFoodScore.collectAsState()
+    val newestMeal = products.maxOfOrNull { it.time }
+    LaunchedEffect(newestMeal, currentViewingDateString) {
+        viewModel.refreshDayFoodScore()
+    }
+    val averageHealthScore = if (dayScore?.hasScore == true) dayScore?.score else null
     val healthScoreColor =
         averageHealthScore?.let { rating ->
             when (rating) {
@@ -193,28 +226,7 @@ fun ContentView(
         }
     }
 
-    // Pager state for TabView mimicking
-    val pagerState = androidx.compose.foundation.pager.rememberPagerState(
-        initialPage = 1,
-        pageCount = { 3 }
-    )
-
-    // Sync button clicks with pager
-    LaunchedEffect(showStatistics) {
-        if (showStatistics && pagerState.currentPage != 0) {
-            pagerState.animateScrollToPage(0)
-        } else if (!showStatistics && pagerState.currentPage != 1) {
-            pagerState.animateScrollToPage(1)
-        }
-    }
-
-    LaunchedEffect(pagerState.currentPage) {
-        if (pagerState.currentPage == 0 && !showStatistics) {
-            viewModel.showStatistics()
-        } else if (pagerState.currentPage == 1 && showStatistics) {
-            viewModel.hideStatistics()
-        }
-    }
+    androidx.activity.compose.BackHandler(enabled = isViewingCustomDate) { viewModel.returnToToday() }
 
     key(currentLanguage) {
         Box(
@@ -222,37 +234,21 @@ fun ContentView(
                 Modifier
                     .fillMaxSize()
                     .background(AppTheme.backgroundGradient())
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .windowInsetsPadding(WindowInsets.navigationBars),
+                    .windowInsetsPadding(WindowInsets.statusBars),
         ) {
-            androidx.compose.foundation.pager.HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                userScrollEnabled = true // Allow swipe right to Statistics
-            ) { page ->
-                when (page) {
-                    0 -> {
-                        StatisticsView(
-                            onBackClick = {
-                                scope.launch { pagerState.animateScrollToPage(1) }
-                            }
-                        )
-                    }
-                    1 -> {
-                        Column(
+            Column(
                             modifier =
                                 Modifier
                                     .fillMaxSize()
                                     .padding(
                                         start = Dimensions.paddingM,
                                         end = Dimensions.paddingM,
-                                        bottom = Dimensions.paddingM,
-                                        top = Dimensions.paddingM,
+                                        top = Dimensions.paddingS,
                                     ),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                 val todaySportCalories by viewModel.todaySportCalories.collectAsState()
-                val sportIconColor = if (todaySportCalories > 0) Color.Green else AppTheme.warning()
+                val sportIconColor = if (todaySportCalories > 0) AppTheme.success() else AppTheme.warning()
 
                 // Top Bar
                 TopBarView(
@@ -276,25 +272,24 @@ fun ContentView(
                     onAlcoholClick = { viewModel.showAlcoholCalendar() },
                 )
 
-                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+                Spacer(modifier = Modifier.height(Dimensions.paddingS))
 
-                // Stats Buttons Row
+                if (isAnonymous) {
+                    GuestInviteCard(onClick = { com.singularis.eateria.navigation.AppNavigation.queueAnonymousLoginPrompt() })
+                    Spacer(modifier = Modifier.height(Dimensions.paddingS))
+                }
+
                 StatsButtonsView(
                     personWeight = personWeight,
-                    caloriesConsumed = softLimit - caloriesLeft,
                     caloriesLeft = caloriesLeft,
                     isLoadingWeightPhoto = isLoadingWeightPhoto,
-                    isLoadingRecommendation = isLoadingRecommendation,
                     onWeightClick = { viewModel.showWeightActionSheet() },
-                    onCaloriesClick = { viewModel.showLimitsAlert() },
-                    onRecommendationClick = { 
-                        viewModel.getRecommendation(7) 
-                        scope.launch { pagerState.animateScrollToPage(2) }
-                    },
+                    onCaloriesClick = { showCaloriesSheet = true },
+                    onTypeFoodClick = { showTypeFood = true },
                     getColor = viewModel::getColor,
                 )
 
-                Spacer(modifier = Modifier.height(Dimensions.paddingM))
+                Spacer(modifier = Modifier.height(Dimensions.paddingS))
 
                 if (isFullMode) {
                     MacrosSummaryRow(
@@ -367,7 +362,8 @@ fun ContentView(
                                 }
                             },
                             isAnonymous = isAnonymous,
-                            onSwipeToCamera = { cameraOpenRequest++ },
+                            onSwipeToCamera = { requestCamera() },
+                            pendingMealLabel = pendingMeal?.label,
                             deletingProductTime = deletingProductTime,
                             modifiedProductTime = modifiedProductTime,
                             onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
@@ -375,10 +371,9 @@ fun ContentView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(Dimensions.paddingM))
-
-                // Camera Button - Always visible at bottom
+                // Camera and upload live in the tab bar; this keeps their pickers and backdating notice.
                 CameraButtonView(
+                    showButtons = false,
                     isLoadingFoodPhoto = isLoadingFoodPhoto,
                     isViewingCustomDate = isViewingCustomDate,
                     selectedDate = if (currentViewingDate.isNotEmpty()) {
@@ -391,14 +386,15 @@ fun ContentView(
                         java.util.Date()
                     },
                     onReturnToToday = { viewModel.returnToToday() },
-                    onRequestTutorial = null, // Tutorial logic not fully ported yet
+                    onRequestTutorial = { showCameraTutorial = true },
                     externalCameraRequest = cameraOpenRequest,
+                    externalUploadRequest = uploadOpenRequest,
                     onCameraClick = {
                         showFoodCamera = true
                     },
                     onGalleryImageSelected = { bitmap ->
                         // Use same temporary image logic as camera (iOS behavior)
-                        val tempTimestamp = System.currentTimeMillis()
+                        val tempTimestamp = viewModel.captureTimestampMillis()
                         val imageStorage =
                             com.singularis.eateria.services.ImageStorageService
                                 .getInstance(context)
@@ -409,25 +405,6 @@ fun ContentView(
                             viewModel.sendPhotoWithImageSync(bitmap, "default_prompt", tempTimestamp)
                         }
                     },
-                )
-                        } // End of Column
-                    } // End of Main Content Page (Page 1)
-                    2 -> {
-                        RecommendationView(
-                            recommendationText = recommendationText,
-                            onDismiss = {
-                                scope.launch { pagerState.animateScrollToPage(1) }
-                            }
-                        )
-                    }
-                } // End of when (page)
-            } // End of HorizontalPager
-
-            // Loading overlays with modern animated icons
-            if (isLoadingData) {
-                LoadingOverlayWithAnimation(
-                    isVisible = true,
-                    message = Localization.tr(LocalContext.current, "loading.food", "Loading food data..."),
                 )
             }
 
@@ -494,18 +471,22 @@ fun ContentView(
             }
 
             if (showUserProfile) {
-                UserProfileView(
-                    authViewModel = authViewModel,
-                    onBackClick = { viewModel.hideUserProfile() },
-                    onStatisticsClick = { 
-                        viewModel.hideUserProfile()
-                        viewModel.showStatistics() 
-                    },
-                    onHealthSettingsClick = { viewModel.showHealthSettings() },
-                    onHealthDisclaimerClick = { viewModel.showHealthDisclaimer() },
-                    onOnboardingClick = { viewModel.showOnboarding() },
-                    onFeedbackClick = { viewModel.showFeedback() },
-                )
+                FullScreenOverlay(onDismiss = { viewModel.hideUserProfile() }) {
+                    UserProfileView(
+                        authViewModel = authViewModel,
+                        onBackClick = { viewModel.hideUserProfile() },
+                        onStatisticsClick = {
+                            viewModel.hideUserProfile()
+                            com.singularis.eateria.navigation.AppNavigation.select(
+                                com.singularis.eateria.navigation.AppTab.STATS,
+                            )
+                        },
+                        onHealthSettingsClick = { viewModel.showHealthSettings() },
+                        onHealthDisclaimerClick = { viewModel.showHealthDisclaimer() },
+                        onOnboardingClick = { viewModel.showOnboarding() },
+                        onFeedbackClick = { viewModel.showFeedback() },
+                    )
+                }
             }
 
             if (showHealthDisclaimer) {
@@ -575,7 +556,7 @@ fun ContentView(
                 )
             }
 
-            if (showOnboarding) {
+            if (showOnboarding) FullScreenOverlay(onDismiss = { if (hasSeenOnboarding) viewModel.hideOnboarding() }) {
                 OnboardingView(
                     isPresented = true,
                     onComplete = { healthData, notificationsEnabled ->
@@ -616,17 +597,16 @@ fun ContentView(
                 )
             }
 
-            // showStatistics is now handled by the HorizontalPager
-
             if (showHealthSettings) {
-                HealthSettingsView(
-                    authViewModel = authViewModel,
-                    onBackClick = { viewModel.hideHealthSettings() },
-                    onLimitsChanged = {
-                        // Reload limits in MainViewModel when they're changed in health settings
-                        viewModel.reloadLimitsFromStorage()
-                    },
-                )
+                FullScreenOverlay(onDismiss = { viewModel.hideHealthSettings() }) {
+                    HealthSettingsView(
+                        authViewModel = authViewModel,
+                        onBackClick = { viewModel.hideHealthSettings() },
+                        onLimitsChanged = { recommendedCalories ->
+                            if (recommendedCalories > 0) viewModel.saveHealthBasedLimits(recommendedCalories)
+                        },
+                    )
+                }
             }
 
 
@@ -700,53 +680,27 @@ fun ContentView(
                 )
             }
 
-            if (showAnonymousLoginPrompt) {
-                AlertDialog(
-                    onDismissRequest = { viewModel.dismissAnonymousLoginPrompt() },
-                    title = {
-                        Text(
-                            text = Localization.tr(LocalContext.current, "login.scan_prompt_title", "Unlock All Features"),
-                            color = AppTheme.textPrimary(),
-                            fontWeight = FontWeight.Bold,
-                        )
+            if (showAnonymousLoginPrompt || shellSignIn) {
+                SignInSheet(
+                    onDismiss = {
+                        viewModel.dismissAnonymousLoginPrompt()
+                        com.singularis.eateria.navigation.AppNavigation.closeSignIn()
                     },
-                    text = {
-                        Text(
-                            text = Localization.tr(LocalContext.current, "login.scan_prompt_message", "Please login to Google if you are ready or want to recover past food."),
-                            color = AppTheme.textSecondary(),
-                        )
+                    onGoogle = {
+                        viewModel.dismissAnonymousLoginPrompt()
+                        com.singularis.eateria.navigation.AppNavigation.closeSignIn()
+                        authViewModel.signOutForAccountUpgrade()
                     },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                viewModel.dismissAnonymousLoginPrompt()
-                                // Shows the login view while keeping the guest history linkable
-                                authViewModel.signOutForAccountUpgrade()
-                            },
-                        ) {
-                            Text(Localization.tr(LocalContext.current, "login.prompt.confirm", "Login Now"), color = AppTheme.accent())
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = { 
-                                viewModel.dismissAnonymousLoginPrompt() 
-                            },
-                        ) {
-                            Text(Localization.tr(LocalContext.current, "common.not_yet", "Not Yet"), color = AppTheme.textSecondary())
-                        }
-                    },
-                    containerColor = AppTheme.surface(),
-                    titleContentColor = AppTheme.textPrimary(),
-                    textContentColor = AppTheme.textSecondary(),
                 )
             }
 
             if (showFeedback) {
-                FeedbackView(
-                    authViewModel = authViewModel,
-                    onBackClick = { viewModel.hideFeedback() },
-                )
+                FullScreenOverlay(onDismiss = { viewModel.hideFeedback() }) {
+                    FeedbackView(
+                        authViewModel = authViewModel,
+                        onBackClick = { viewModel.hideFeedback() },
+                    )
+                }
             }
 
             if (showCalendarPicker) {
@@ -789,9 +743,7 @@ fun ContentView(
                     onSubmit = {
                         val weight = manualWeightInput.replace(",", ".").toFloatOrNull()
                         if (weight != null && weight > 0) {
-                            userEmail?.let { email ->
-                                viewModel.sendManualWeight(weight, email, context)
-                            }
+                            viewModel.sendManualWeight(weight, userEmail.orEmpty(), context)
                             viewModel.hideManualWeightEntry()
                         }
                     },
@@ -806,6 +758,33 @@ fun ContentView(
                     message = photoErrorMessage,
                     onDismiss = { viewModel.hidePhotoErrorAlert() },
                 )
+            }
+
+            if (showTypeFood) {
+                TypeFoodSheet(
+                    pastDayLabel = if (isViewingCustomDate) currentViewingDate else null,
+                    timestampMillis = if (isViewingCustomDate) viewModel.captureTimestampMillis() else null,
+                    onDismiss = { showTypeFood = false },
+                    onLogged = { viewModel.refreshAfterMealLogged() },
+                )
+            }
+            if (showCaloriesSheet) {
+                CaloriesLeftSheet(
+                    caloriesLeft = caloriesLeft,
+                    softLimit = softLimit,
+                    onDismiss = { showCaloriesSheet = false },
+                    onCalculateLimits = { viewModel.showHealthSettings() },
+                    onSetLimits = { viewModel.showLimitsAlert() },
+                )
+            }
+            if (showCameraTutorial) {
+                FullScreenOverlay(onDismiss = { finishCameraTutorial() }) {
+                    MainAppTutorialView(
+                        isPresented = true,
+                        specificStepKey = "hasSeenCameraTutorial",
+                        onDismiss = { finishCameraTutorial() },
+                    )
+                }
             }
 
             // Sport Calories Dialog
@@ -830,36 +809,43 @@ fun ContentView(
             
             // Progressive Onboarding
             if (showProgressiveOnboarding) {
-                ProgressiveOnboardingView(
-                    step = progressiveStep,
-                    onComplete = {
-                        viewModel.dismissProgressiveOnboarding()
-                    }
-                )
+                FullScreenOverlay(onDismiss = { viewModel.dismissProgressiveOnboarding() }) {
+                    ProgressiveOnboardingView(
+                        step = progressiveStep,
+                        onComplete = {
+                            viewModel.dismissProgressiveOnboarding()
+                        },
+                        onPlanReady = viewModel::saveHealthBasedLimits,
+                    )
+                }
             }
 
             // Activities View
             if (showActivitiesView) {
                 // Determine date to pass (either custom or today)
                 val dateISO = if (isViewingCustomDate) currentViewingDateString else ""
-                ActivitiesView(
-                    dateISO = dateISO,
-                    onDismiss = { viewModel.hideActivitiesView() }
-                )
+                FullScreenOverlay(onDismiss = { viewModel.hideActivitiesView() }) {
+                    ActivitiesView(
+                        dateISO = dateISO,
+                        onDismiss = { viewModel.hideActivitiesView() }
+                    )
+                }
             }
 
             // Food camera
             if (showFoodCamera) {
-                FoodCameraView(
-                    viewModel = viewModel,
-                    onPhotoSuccess = { showFoodCamera = false },
-                    onPhotoFailure = { showFoodCamera = false },
-                    onPhotoStarted = { },
-                    onDismiss = { showFoodCamera = false },
-                )
+                FullScreenOverlay(onDismiss = { showFoodCamera = false }, padNavigationBars = false) {
+                    FoodCameraView(
+                        viewModel = viewModel,
+                        onPhotoSuccess = { showFoodCamera = false },
+                        onPhotoFailure = { showFoodCamera = false },
+                        onPhotoStarted = { },
+                        onDismiss = { showFoodCamera = false },
+                    )
+                }
             }
 
-            if (showWeightCamera) {
+            if (showWeightCamera) FullScreenOverlay(onDismiss = { showWeightCamera = false }, padNavigationBars = false) {
                 WeightCameraView(
                     viewModel = viewModel,
                     onPhotoSuccess = {
@@ -874,62 +860,6 @@ fun ContentView(
                     onDismiss = {
                         showWeightCamera = false
                     },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun LoadingView(message: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            com.singularis.eateria.ui.components.AnimatedLoadingIcon(
-                size = 48.dp,
-                color = AppTheme.accent(),
-                strokeWidth = 4.dp
-            )
-            Text(
-                text = message,
-                color = AppTheme.textPrimary(),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-        }
-    }
-}
-
-@Composable
-fun LoadingOverlay(
-    isVisible: Boolean,
-    message: String,
-) {
-    if (isVisible) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(AppTheme.surface().copy(alpha = 0.95f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                com.singularis.eateria.ui.components.AnimatedLoadingIcon(
-                    size = 48.dp,
-                    color = AppTheme.accent(),
-                    strokeWidth = 4.dp
-                )
-                Text(
-                    text = message,
-                    color = AppTheme.textPrimary(),
-                    style = MaterialTheme.typography.bodyLarge,
                 )
             }
         }

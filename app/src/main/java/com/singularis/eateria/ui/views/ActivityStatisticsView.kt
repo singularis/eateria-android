@@ -226,7 +226,7 @@ fun ActivityStatisticsView(
                                 ) {
                                     Text(
                                         text = Localization.tr(context, "activities.stats.range.${range.displayKey.replace(" ", "_")}", range.displayKey),
-                                        fontSize = 12.sp,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
                                         maxLines = 1
                                     )
                                 }
@@ -288,7 +288,7 @@ fun ActivityStatisticsView(
 private fun OrbInfoCard(orb: OrbData, prefs: android.content.SharedPreferences, onClose: () -> Unit) {
     val context = LocalContext.current
     val chessScores = remember {
-        val jsonStr = prefs.getString("chessOpponents", "{}") ?: "{}"
+        val jsonStr = context.getSharedPreferences("eateria_prefs", Context.MODE_PRIVATE).getString("chessOpponents", "{}") ?: "{}"
         try {
             val obj = JSONObject(jsonStr)
             val list = mutableListOf<Triple<String, Int, Int>>()

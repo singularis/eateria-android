@@ -134,31 +134,18 @@ object AlertHelper {
         }
 
         if (isVisible) {
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = AppTheme.textPrimary(),
-                    )
-                },
-                text = {
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = AppTheme.textSecondary(),
-                    )
-                },
-                confirmButton = {
-                    TextButton(onClick = { 
-                        HapticsService.getInstance().select()
-                        onDismiss() 
-                    }) {
-                        Text(Localization.tr(LocalContext.current, "common.ok", "OK"), color = AppTheme.accent())
-                    }
-                },
-                containerColor = AppTheme.surface(),
+            AppNotice(
+                title = title,
+                message = message,
+                actions = listOf(
+                    AppNoticeAction(
+                        title = Localization.tr(LocalContext.current, "common.ok", "OK"),
+                        onClick = {
+                            HapticsService.getInstance().select()
+                        },
+                    ),
+                ),
+                onDismiss = onDismiss,
             )
         }
     }

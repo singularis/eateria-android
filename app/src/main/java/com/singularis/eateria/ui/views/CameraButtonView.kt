@@ -103,7 +103,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
@@ -135,6 +135,9 @@ fun CameraButtonView(
     onRequestTutorial: ((String) -> Unit)? = null,
     /** Increment to trigger the same camera path as the Take Food Photo button (incl. backdating). */
     externalCameraRequest: Int = 0,
+    externalUploadRequest: Int = 0,
+    /** False when the tab bar owns the Photo and Upload buttons; requests still flow through here. */
+    showButtons: Boolean = true,
 ) {
     val context = LocalContext.current
     var showBackdatingAlert by remember { mutableStateOf(false) }
@@ -199,13 +202,19 @@ fun CameraButtonView(
             checkBackdating(true)
         }
     }
+    LaunchedEffect(externalUploadRequest) {
+        if (externalUploadRequest > 0 && !isLoadingFoodPhoto) {
+            checkBackdating(false)
+        }
+    }
 
     if (showBackdatingAlert) {
         val diffSeconds = (Date().time - selectedDate.time) / 1000
         val days = diffSeconds / 86400
         val hours = diffSeconds / 3600
         
-        val format = SimpleDateFormat("EEEE, d 'of' MMMM", Locale.getDefault())
+        val locale = Locale.getDefault()
+        val format = SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(locale, "EEEEdMMMM"), locale)
         val dateString = format.format(selectedDate)
         
         val timeAgo = if (days >= 1) {
@@ -221,7 +230,7 @@ fun CameraButtonView(
         }
         
         val message = Localization.tr(context, "backdating.message.submitting", "Submitting for %@\n(%@)")
-            .replace("%@", dateString, ignoreCase = false).replaceFirst("%@", dateString).replace("%@", timeAgo)
+            .replaceFirst("%@", dateString).replaceFirst("%@", timeAgo)
             
         AlertDialog(
             onDismissRequest = { showBackdatingAlert = false },
@@ -273,6 +282,8 @@ fun CameraButtonView(
             containerColor = AppTheme.surface()
         )
     }
+
+    if (!showButtons) return
 
     Row(
         modifier =

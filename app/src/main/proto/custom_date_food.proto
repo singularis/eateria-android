@@ -27,6 +27,8 @@ message Dish {
   int32 total_avg_weight = 5;
   int32 health_rating = 6;
   string image_id = 7;
+  Contains contains = 8;
+  repeated string alternative_names = 9;
 }
 
 message TotalForDay {

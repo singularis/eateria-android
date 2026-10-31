@@ -1,5 +1,6 @@
 package com.singularis.eateria.ui.views
 
+import com.singularis.eateria.ui.theme.Dimensions
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -41,36 +42,28 @@ fun HealthDisclaimerView(
             onDismissRequest = onDismiss,
             properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text(Localization.tr(context, "disc.nav", "Health Information"), fontWeight = FontWeight.Bold) },
-                        actions = {
-                            TextButton(onClick = onDismiss) {
-                                Text(Localization.tr(context, "common.done", "Done"), color = AppTheme.textPrimary(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                            titleContentColor = AppTheme.textPrimary(),
-                            actionIconContentColor = AppTheme.textPrimary()
-                        )
-                    )
-                },
-                containerColor = Color.Transparent
-            ) { paddingValues ->
-                Box(modifier = Modifier.fillMaxSize().background(AppTheme.backgroundGradient())) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(AppTheme.backgroundGradient())
+                    .windowInsetsPadding(WindowInsets.systemBars),
+            ) {
+                ScreenHeader(
+                    title = Localization.tr(context, "disc.nav", "Health Information"),
+                    onBack = onDismiss,
+                    modifier = Modifier.padding(horizontal = Dimensions.paddingS),
+                )
+                Box(modifier = Modifier.fillMaxSize()) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues)
                             .verticalScroll(rememberScrollState())
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
                         Text(
                             text = Localization.tr(context, "disc.title", "Health Information Disclaimer"),
-                            fontSize = 28.sp,
+                            style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.textPrimary(),
                             modifier = Modifier.padding(bottom = 10.dp)
@@ -94,7 +87,7 @@ fun HealthDisclaimerView(
                         Column {
                             Text(
                                 text = Localization.tr(context, "disc.section.sources", "Data Sources & Citations"),
-                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AppTheme.textPrimary()
                             )
@@ -145,7 +138,7 @@ fun HealthDisclaimerView(
                         Column {
                             Text(
                                 text = Localization.tr(context, "disc.section.features", "App Features & Limitations"),
-                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AppTheme.textPrimary()
                             )
@@ -161,7 +154,7 @@ fun HealthDisclaimerView(
                             features.forEach { (key, defaultText) ->
                                 Text(
                                     text = Localization.tr(context, key, defaultText),
-                                    fontSize = 16.sp,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = AppTheme.textPrimary(),
                                     modifier = Modifier.padding(bottom = 4.dp)
                                 )
@@ -170,7 +163,7 @@ fun HealthDisclaimerView(
 
                         Text(
                             text = lastUpdatedText,
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
                             color = AppTheme.textSecondary(),
                             modifier = Modifier.padding(top = 20.dp, bottom = 40.dp)
                         )
@@ -189,14 +182,14 @@ private fun DisclaimerSection(
     Column {
         Text(
             text = title,
-            fontSize = 18.sp,
+            style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
             color = AppTheme.textPrimary()
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = content,
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             color = AppTheme.textPrimary(),
             lineHeight = 24.sp
         )
@@ -214,14 +207,14 @@ private fun CitationView(
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(
             text = Localization.tr(context, titleKey, titleFallback),
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium,
             color = AppTheme.textPrimary()
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = Localization.tr(context, sourceKey, sourceFallback),
-            fontSize = 12.sp,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
             color = AppTheme.accent(),
             modifier = Modifier.clickable {
                 try {
@@ -235,7 +228,7 @@ private fun CitationView(
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = Localization.tr(context, descKey, descFallback),
-            fontSize = 12.sp,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
             color = AppTheme.textSecondary()
         )
     }

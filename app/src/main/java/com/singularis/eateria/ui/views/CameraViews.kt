@@ -4,8 +4,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.filled.PhotoLibrary
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.AsyncImage
 import com.singularis.eateria.ui.theme.AppTheme
 import android.net.Uri
 
@@ -85,6 +85,7 @@ import com.singularis.eateria.services.Localization
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.ui.theme.DarkPrimary
 import com.singularis.eateria.ui.theme.Dimensions
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -152,7 +153,7 @@ fun FoodCameraView(
                     onPhotoStarted()
 
                     // Save as temporary image first (iOS logic)
-                    val tempTimestamp = System.currentTimeMillis()
+                        val tempTimestamp = viewModel.captureTimestampMillis()
                     val imageStorage =
                         com.singularis.eateria.services.ImageStorageService
                             .getInstance(context)
@@ -161,6 +162,11 @@ fun FoodCameraView(
                     if (saved) {
                         // Send photo to ViewModel with temporary timestamp for processing
                         viewModel.sendPhotoWithImageSync(bitmap, "default_prompt", tempTimestamp)
+                        if (com.singularis.eateria.services.AppSettingsService.getInstance().savePhotosToLibrary) {
+                            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                                com.singularis.eateria.util.GallerySaver.save(context.applicationContext, bitmap)
+                            }
+                        }
                         onPhotoSuccess()
                     } else {
                         onPhotoFailure()
@@ -199,8 +205,7 @@ private fun CameraPreviewView(
             Modifier
                 .fillMaxSize()
                 .background(Color.Black)
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .windowInsetsPadding(WindowInsets.navigationBars),
+                .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // Camera preview
         AndroidView(
@@ -278,7 +283,9 @@ private fun CameraPreviewView(
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
             )
 
             IconButton(
@@ -312,20 +319,20 @@ private fun CameraPreviewView(
                 Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .padding(24.dp),
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(Dimensions.paddingL),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text =
                     if (isWeightCamera) {
-                        "Position your weight scale in the frame\nMake sure the display is clearly visible"
+                        Localization.tr(context, "camera.hint.weight", "Position your weight scale in the frame\nMake sure the display is clearly visible")
                     } else {
-                        "Center your food in the frame\nEnsure good lighting for best results"
+                        Localization.tr(context, "camera.hint.food", "Center your food in the frame\nEnsure good lighting for best results")
                     },
                 color = Color.White,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                lineHeight = 18.sp,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -338,11 +345,8 @@ private fun CameraPreviewView(
                         isCapturing = true
 
                         // Take photo and convert to bitmap
-                        val outputFileOptions =
-                            ImageCapture.OutputFileOptions
-                                .Builder(
-                                    File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg"),
-                                ).build()
+                        val photoFile = File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg")
+                        val outputFileOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
                         imageCapture?.takePicture(
                             outputFileOptions,
@@ -353,9 +357,7 @@ private fun CameraPreviewView(
 
                                     // Convert saved file to bitmap
                                     try {
-                                        val savedFile =
-                                            output.savedUri?.path?.let { File(it) }
-                                                ?: File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg")
+                                        val savedFile = output.savedUri?.path?.let { File(it) } ?: photoFile
 
                                         if (savedFile.exists()) {
                                             val bitmap = ImageDecodeUtils.decodeFile(savedFile)
@@ -381,7 +383,8 @@ private fun CameraPreviewView(
                     }
                 },
                 modifier = Modifier.size(72.dp),
-                containerColor = DarkPrimary,
+                shape = CircleShape,
+                containerColor = AppTheme.accent(),
             ) {
                 if (isCapturing) {
                     CircularProgressIndicator(
@@ -414,8 +417,7 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
             Modifier
                 .fillMaxSize()
                 .background(Color.Black)
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .windowInsetsPadding(WindowInsets.navigationBars),
+                .windowInsetsPadding(WindowInsets.statusBars),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -455,14 +457,21 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            val settingsContext = LocalContext.current
             Button(
-                onClick = { 
+                onClick = {
                     HapticsService.getInstance().mediumImpact()
-                    onDismiss() 
+                    settingsContext.startActivity(
+                        android.content.Intent(
+                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            android.net.Uri.fromParts("package", settingsContext.packageName, null),
+                        ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                    onDismiss()
                 },
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = DarkPrimary,
+                        containerColor = AppTheme.accent(),
                         contentColor = Color.White,
                     ),
                 modifier = Modifier.fillMaxWidth(),
@@ -511,239 +520,6 @@ private fun PermissionDeniedView(onDismiss: () -> Unit) {
                 tint = Color.White,
                 modifier = Modifier.size(24.dp),
             )
-        }
-    }
-}
-
-@Composable
-fun FullScreenPhotoView(
-    image: Bitmap?,
-    foodName: String,
-    isPresented: Boolean,
-    onDismiss: () -> Unit,
-) {
-    if (isPresented) {
-        Dialog(
-            onDismissRequest = onDismiss,
-            properties =
-                DialogProperties(
-                    dismissOnBackPress = true,
-                    dismissOnClickOutside = true,
-                    usePlatformDefaultWidth = false,
-                ),
-        ) {
-            var scale by remember { mutableStateOf(1f) }
-            var offset by remember { mutableStateOf(Offset.Zero) }
-
-            val transformableState =
-                rememberTransformableState { _, zoomChange, offsetChange, _ ->
-                    scale = (scale * zoomChange).coerceIn(0.5f, 5f)
-                    offset += offsetChange
-                }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(AppTheme.backgroundGradient()),
-            ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // Header with food name and close button
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = foodName,
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = AppTheme.textPrimary(),
-                            modifier = Modifier.padding(start = 16.dp)
-                        )
-                        
-                        IconButton(
-                            onClick = { 
-                                HapticsService.getInstance().select()
-                                onDismiss() 
-                            },
-                            modifier = Modifier.padding(end = 16.dp),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .background(AppTheme.surfaceAlt(), shape = androidx.compose.foundation.shape.CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = Localization.tr(LocalContext.current, "common.close", "Close"),
-                                    tint = AppTheme.textPrimary(),
-                                    modifier = Modifier.size(20.dp),
-                                )
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    // Image
-                    if (image != null) {
-                        androidx.compose.foundation.Image(
-                            bitmap = image.asImageBitmap(),
-                            contentDescription = foodName,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(4f)
-                                .graphicsLayer(
-                                    scaleX = scale,
-                                    scaleY = scale,
-                                    translationX = offset.x,
-                                    translationY = offset.y,
-                                )
-                                .transformable(state = transformableState),
-                            contentScale = ContentScale.Fit,
-                        )
-                    } else {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().weight(4f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                painter = androidx.compose.ui.res.painterResource(android.R.drawable.ic_menu_gallery),
-                                contentDescription = null,
-                                tint = AppTheme.textSecondary(),
-                                modifier = Modifier.size(80.dp)
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Text(
-                                text = Localization.tr(LocalContext.current, "fs.no_photo", "No photo available"),
-                                color = AppTheme.textSecondary(),
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    // Instructions text
-                    Text(
-                        text = Localization.tr(LocalContext.current, "fs.hint", "Double tap to reset • Pinch to zoom • Drag to pan"),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AppTheme.textSecondary(),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 20.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MultiplePhotoUploadButton(
-    onPhotosSelected: (List<Bitmap>) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    var isUploading by remember { mutableStateOf(false) }
-
-    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
-    ) { uris: List<Uri> ->
-        if (uris.isNotEmpty()) {
-            isUploading = true
-            val bitmaps = mutableListOf<Bitmap>()
-            var failedUnsupported = false
-            for (uri in uris) {
-                val bitmap = com.singularis.eateria.util.ImageDecodeUtils.decodeBitmap(context, uri)
-                if (bitmap != null) {
-                    bitmaps.add(bitmap)
-                } else if (com.singularis.eateria.util.ImageDecodeUtils.isLikelyUnsupportedFormat(context, uri)) {
-                    failedUnsupported = true
-                }
-            }
-            if (bitmaps.isNotEmpty()) {
-                onPhotosSelected(bitmaps)
-            } else {
-                val message =
-                    if (failedUnsupported) {
-                        Localization.tr(
-                            context,
-                            "error.image.unsupported",
-                            "This image format (AVIF/HEIC) is not supported on this device. Convert it to JPG or PNG and try again.",
-                        )
-                    } else {
-                        Localization.tr(
-                            context,
-                            "error.image.decode",
-                            "Could not read that image. Try JPG or PNG.",
-                        )
-                    }
-                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
-            }
-            isUploading = false
-        }
-    }
-
-    Button(
-        onClick = {
-            HapticsService.getInstance().select()
-            multiplePhotoPickerLauncher.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            )
-        },
-        enabled = !isUploading,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-        shape = RoundedCornerShape(AppTheme.cornerRadius),
-        contentPadding = PaddingValues(0.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
-                        colors = listOf(
-                            Color.Blue.copy(alpha = 0.7f),
-                            Color.Magenta.copy(alpha = 0.6f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(AppTheme.cornerRadius)
-                )
-                .border(
-                    width = 2.dp,
-                    color = Color.Blue.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(AppTheme.cornerRadius)
-                )
-                .padding(vertical = 24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PhotoLibrary, // approximate "photo.on.rectangle.angled"
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = Localization.tr(context, "camera.upload_multiple", "Upload Multiple"),
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    textAlign = TextAlign.Center,
-                    maxLines = 2
-                )
-            }
         }
     }
 }

@@ -110,11 +110,11 @@ class ProductStorageService private constructor(
             try {
                 if (tempImageTime != null) {
                     val date = Date(tempImageTime)
-                    val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                    val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
                     formatter.timeZone = TimeZone.getTimeZone("UTC")
                     val dateStr = formatter.format(date)
 
-                    val todayFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                    val todayFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
                     val isToday = dateStr == todayFormatter.format(Date())
 
                     val (fetchedProducts, fetchedCalories, weight) = grpcService.fetchCustomDateProducts(dateStr)
@@ -309,7 +309,12 @@ private data class ProductData(
     val healthRating: Int = -1,
     val imageId: String = "",
     val addedSugarTsp: Float = 0f,
-    val extras: Map<String, Int> = emptyMap()
+    val extras: Map<String, Int> = emptyMap(),
+    val proteins: Double = 0.0,
+    val fats: Double = 0.0,
+    val carbohydrates: Double = 0.0,
+    val sugar: Double = 0.0,
+    val alternativeNames: List<String> = emptyList(),
 ) {
     companion object {
         fun fromProduct(product: Product): ProductData =
@@ -322,7 +327,12 @@ private data class ProductData(
                 healthRating = product.healthRating,
                 imageId = product.imageId,
                 addedSugarTsp = product.addedSugarTsp,
-                extras = product.extras
+                extras = product.extras,
+                proteins = product.proteins,
+                fats = product.fats,
+                carbohydrates = product.carbohydrates,
+                sugar = product.sugar,
+                alternativeNames = product.alternativeNames,
             )
     }
 
@@ -336,7 +346,12 @@ private data class ProductData(
             healthRating = healthRating,
             imageId = imageId,
             addedSugarTsp = addedSugarTsp,
-            extras = extras
+            extras = extras,
+            proteins = proteins,
+            fats = fats,
+            carbohydrates = carbohydrates,
+            sugar = sugar,
+            alternativeNames = alternativeNames,
         )
 }
 

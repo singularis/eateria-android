@@ -109,7 +109,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
@@ -236,7 +236,7 @@ fun ProductCard(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .background(color, shape = RoundedCornerShape(Dimensions.cornerRadiusM))
+                    .background(color, shape = RoundedCornerShape(AppTheme.cornerRadius))
                     .padding(horizontal = Dimensions.paddingL),
                 contentAlignment =
                     when {
@@ -264,22 +264,23 @@ fun ProductCard(
                     .fillMaxWidth()
                     .alpha(if (isDeleting) 0.6f else 1.0f),
             colors = CardDefaults.cardColors(containerColor = AppTheme.surface()),
-            shape = RoundedCornerShape(Dimensions.cornerRadiusM),
+            shape = RoundedCornerShape(AppTheme.cornerRadius),
         ) {
             Row(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(Dimensions.paddingM),
-                horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
+                        .padding(Dimensions.paddingS),
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Food photo - clickable for full screen (matches iOS)
+                val photoSize = 64.dp - 16.dp * com.singularis.eateria.ui.theme.scaleTravel(com.singularis.eateria.ui.theme.LocalAppScale.current)
                 Box(
                     modifier =
                         Modifier
-                            .size(Dimensions.iconSizeL)
-                            .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
+                            .size(photoSize)
+                            .clip(RoundedCornerShape(AppTheme.smallRadius))
                             .background(AppTheme.divider())
                             .pointerInput(Unit) {
                                 detectTapGestures(
@@ -334,8 +335,10 @@ fun ProductCard(
                     Text(
                         text = product.name,
                         color = AppTheme.textPrimary(),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
 
                     Spacer(modifier = Modifier.height(Dimensions.paddingXS))
@@ -422,7 +425,7 @@ fun ProductCard(
                                     HapticsService.getInstance().select()
                                     onShare(product.time, product.name)
                                 },
-                                modifier = Modifier.size(36.dp),
+                                modifier = Modifier.size(40.dp),
                             ) {
                                 Icon(
                                     imageVector = AppIcons.Actions.share,
@@ -438,7 +441,7 @@ fun ProductCard(
                                 HapticsService.getInstance().select()
                                 showPortionDialog = true
                             },
-                            modifier = Modifier.size(36.dp),
+                            modifier = Modifier.size(40.dp),
                         ) {
                             Icon(
                                 imageVector = AppIcons.Navigation.more,
@@ -989,7 +992,7 @@ fun PortionSelectionDialog(
                                         colors =
                                             ButtonDefaults.buttonColors(
                                                 containerColor = CalorieGreen,
-                                                contentColor = AppTheme.textPrimary(),
+                                                contentColor = AppTheme.onAccent,
                                             ),
                                         shape = RoundedCornerShape(Dimensions.cornerRadiusS),
                                         contentPadding = PaddingValues(vertical = Dimensions.paddingXS),
@@ -1128,7 +1131,7 @@ fun DeleteConfirmationDialog(
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = AppTheme.danger(), // Destructive action color
-                        contentColor = AppTheme.textPrimary(),
+                        contentColor = AppTheme.onAccent,
                     ),
             ) {
                 Text(Localization.tr(LocalContext.current, "common.remove", "Remove"))
@@ -1196,24 +1199,6 @@ fun HealthRatingRing(
             )
         )
     }
-}
-
-private fun runDiagnostic(context: Context, product: Product) {
-    val imageId = product.imageId
-    val hasLocal = ImageStorageService.getInstance(context).imageExists(product.time)
-    val hasCached = ImageStorageService.getInstance(context).cachedImageExists(imageId)
-    
-    var message = "Image ID: ${if (imageId.isEmpty()) "EMPTY" else imageId}\n"
-    message += "Local File Exists: $hasLocal\n"
-    message += "Cached File Exists: $hasCached\n"
-    message += "Needs Remote Fetch: ${product.needsRemoteFetch(context)}\n"
-    
-    // In Android we can just show this diagnostic alert
-    android.widget.Toast.makeText(
-        context,
-        "Diagnostic Result:\n$message",
-        android.widget.Toast.LENGTH_LONG
-    ).show()
 }
 
 /**

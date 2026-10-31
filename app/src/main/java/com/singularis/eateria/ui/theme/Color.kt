@@ -3,8 +3,8 @@ package com.singularis.eateria.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Direct translations from iOS DesignSystem.swift
-val AccentLight = Color(0xFF007AFF) // Premium iOS Blue
-val AccentDark = Color(0xFF0A84FF) // iOS Dark Blue
+val AccentLight = Color(red = 0f, green = 0.42f, blue = 0.82f)
+val AccentDark = Color(red = 0.1f, green = 0.58f, blue = 1f)
 
 val SuccessColor = Color(0xFF33C759) // (0.2, 0.78, 0.35)
 val WarningColor = Color(0xFFFF9900) // (1.0, 0.6, 0.0)
@@ -15,16 +15,21 @@ val MacroFat = Color(0xFFFFCC00) // (1.0, 0.8, 0.0)
 val MacroCarb = Color(0xFF3399FF) // (0.2, 0.6, 1.0)
 val MacroFiber = SuccessColor
 
-val LightSurface = Color.White.copy(alpha = 0.9f)
-val DarkSurface = Color(0xFF262630).copy(alpha = 0.95f) // iOS: (0.15, 0.15, 0.18)
+// Surfaces are opaque: Android draws elevation shadows through translucent fills,
+// which shows up as a grey frame around every card.
+val LightSurface = Color.White
+val DarkSurface = Color(0xFF262630) // iOS: (0.15, 0.15, 0.18)
 
-val LightSurfaceVariant = Color.White.copy(alpha = 0.7f)
-val DarkSurfaceVariant = Color(0xFF1F1F26).copy(alpha = 0.8f) // iOS: (0.12, 0.12, 0.15)
+val LightSurfaceVariant = Color(0xFFF1F4FA)
+val DarkSurfaceVariant = Color(0xFF1C1C23) // iOS: (0.12, 0.12, 0.15) over the dark background
 
 val LightTextPrimary = Color(0xFF1A1A1A)
 val DarkTextPrimary = Color.White
-val LightTextSecondary = Color(0xFF666666)
-val DarkTextSecondary = Color(0xFFB3B3B3)
+val LightTextSecondary = Color(red = 0.28f, green = 0.28f, blue = 0.30f)
+val DarkTextSecondary = Color(red = 0.78f, green = 0.78f, blue = 0.80f)
+
+val LightTrialUsage = Color(red = 0.42f, green = 0.55f, blue = 0.62f)
+val DarkTrialUsage = Color(red = 0.62f, green = 0.72f, blue = 0.78f)
 
 val LightDivider = Color.Black.copy(alpha = 0.12f)
 val DarkDivider = Color.White.copy(alpha = 0.15f)

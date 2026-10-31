@@ -17,6 +17,7 @@ data class DailyStatistics(
     val sugar: Double,
     val numberOfMeals: Int,
     val hasData: Boolean,
+    val averageHealthScore: Int? = null,
 ) : Parcelable {
     val id: String get() = dateString
 

@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken
 import com.singularis.eateria.models.DailyStatistics
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -34,7 +33,8 @@ class StatisticsCacheService private constructor(
     private val cacheFile: File by lazy {
         File(context.filesDir, CACHE_FILE_NAME)
     }
-    private val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    // New instance per use: SimpleDateFormat is not thread-safe and this singleton is called from IO threads.
+    private val dateFormatter get() = SimpleDateFormat("dd-MM-yyyy", Locale.US)
 
     private var memoryCache: MutableMap<String, CachedStatistics> = mutableMapOf()
 
@@ -86,18 +86,6 @@ class StatisticsCacheService private constructor(
         } catch (e: Exception) {
             Log.e("StatisticsCacheService", "Failed to get cached statistics for $dateString", e)
             null
-        }
-
-    // Batch operations to match iOS functionality
-    fun getCachedStatistics(dateStrings: List<String>): List<DailyStatistics> =
-        dateStrings.mapNotNull { dateString ->
-            getCachedStatistics(dateString)
-        }
-
-    fun getMissingDates(dateStrings: List<String>): List<String> =
-        dateStrings.filter { dateString ->
-            val cachedStats = memoryCache[dateString]
-            cachedStats == null || isCacheExpired(dateString, cachedStats.cachedAt)
         }
 
     fun isCacheExpired(dateString: String): Boolean {
@@ -157,21 +145,6 @@ class StatisticsCacheService private constructor(
         }
     }
 
-    fun getCacheSize(): Int = memoryCache.size
-
-    fun getCachedDates(): List<String> = memoryCache.keys.toList().sorted()
-
-    fun getCacheInfo(): Pair<Int, Int> {
-        val totalEntries = memoryCache.size
-        val cacheFileSize =
-            if (cacheFile.exists()) {
-                cacheFile.length().toInt()
-            } else {
-                0
-            }
-        return Pair(totalEntries, cacheFileSize)
-    }
-
     private fun loadCacheFromDisk() {
         try {
             if (cacheFile.exists()) {
@@ -197,39 +170,6 @@ class StatisticsCacheService private constructor(
         }
     }
 
-    fun getStatisticsForDateRange(
-        startDate: String,
-        endDate: String,
-    ): List<DailyStatistics> =
-        try {
-            memoryCache
-                .filterKeys { dateString ->
-                    dateString >= startDate && dateString <= endDate
-                }.values
-                .map { it.statistics }
-                .sortedBy { it.dateString }
-        } catch (e: Exception) {
-            Log.e("StatisticsCacheService", "Failed to get statistics for date range", e)
-            emptyList()
-        }
-
-    fun preloadWeeklyData() {
-        // Pre-load the last 7 days of data if not cached
-        val calendar = Calendar.getInstance()
-
-        for (i in 0..6) {
-            calendar.time = Date()
-            calendar.add(Calendar.DAY_OF_YEAR, -i)
-            val dateString = dateFormatter.format(calendar.time)
-
-            if (!memoryCache.containsKey(dateString) || isCacheExpired(dateString)) {
-                // Mark for background loading
-                Log.d("StatisticsCacheService", "Date $dateString needs loading")
-            }
-        }
-    }
-
-    // iOS-style cache validation with one-time fix mechanism
     fun validateCacheIntegrity() {
         val sharedPrefs = context.getSharedPreferences("cache_validation", Context.MODE_PRIVATE)
         val hasCacheFix = sharedPrefs.getBoolean("hasDataLogicCacheFix", false)

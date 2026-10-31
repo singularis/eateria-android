@@ -1,5 +1,9 @@
 package com.singularis.eateria.ui.views
 
+import com.singularis.eateria.ui.theme.Dimensions
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.verticalScroll
 import android.content.Context
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -19,6 +23,8 @@ import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -105,7 +111,21 @@ fun getTutorialSteps(context: Context): List<TutorialStep> {
             description = Localization.tr(context, "tutorial.alcohol.desc", "Keep an eye on alcohol consumption separately."),
             iconRes = Icons.Default.WineBar,
             color = Color(0xFFE91E63) // Pink
-        )
+        ),
+        TutorialStep(
+            key = "hasSeenTypeGuideTutorial",
+            title = Localization.tr(context, "tutorial.type.title", "Type a meal"),
+            description = Localization.tr(context, "tutorial.type.desc", "Log a meal by typing it, not only by photo."),
+            iconRes = Icons.Default.Edit,
+            color = Color(0xFF009688),
+        ),
+        TutorialStep(
+            key = "hasSeenStatsTutorial",
+            title = Localization.tr(context, "tutorial.stats.title", "Statistics"),
+            description = Localization.tr(context, "tutorial.stats.desc", "Open Stats for the week and month."),
+            iconRes = Icons.Default.BarChart,
+            color = Color(0xFF3F51B5),
+        ),
     )
 }
 
@@ -153,7 +173,7 @@ fun MainAppTutorialView(
                 .size(200.dp)
                 .align(Alignment.TopStart)
                 .offset(x = (-50).dp, y = (-50).dp)
-                .blur(40.dp)
+                .blur(40.dp, edgeTreatment = androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
                 .background(Color.Blue.copy(alpha = 0.1f), CircleShape)
         )
         Box(
@@ -161,7 +181,7 @@ fun MainAppTutorialView(
                 .size(200.dp)
                 .align(Alignment.BottomEnd)
                 .offset(x = 50.dp, y = 50.dp)
-                .blur(40.dp)
+                .blur(40.dp, edgeTreatment = androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
                 .background(Color.Magenta.copy(alpha = 0.1f), CircleShape)
         )
 
@@ -190,7 +210,7 @@ fun MainAppTutorialView(
                         Text(
                             text = Localization.tr(context, "common.skip", "Skip"),
                             color = AppTheme.textSecondary(),
-                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -266,7 +286,7 @@ fun MainAppTutorialView(
                     Text(
                         text = buttonText,
                         color = Color.White,
-                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -292,13 +312,17 @@ fun TutorialCardView(step: TutorialStep) {
         appearAnimation = true
     }
 
+    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+    val viewport = maxHeight
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .verticalScroll(androidx.compose.foundation.rememberScrollState())
+            .heightIn(min = viewport)
             .padding(horizontal = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Spacer(modifier = Modifier.weight(1f))
 
         // Icon with Pulse
         Box(
@@ -326,7 +350,7 @@ fun TutorialCardView(step: TutorialStep) {
         ) {
             Text(
                 text = step.title,
-                fontSize = 28.sp,
+                style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.textPrimary(),
                 textAlign = TextAlign.Center
@@ -334,7 +358,7 @@ fun TutorialCardView(step: TutorialStep) {
 
             Text(
                 text = step.description,
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 color = AppTheme.textSecondary(),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp),
@@ -342,6 +366,7 @@ fun TutorialCardView(step: TutorialStep) {
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(Dimensions.paddingL))
+    }
     }
 }

@@ -1,5 +1,7 @@
 package com.singularis.eateria.ui.views
 
+import com.singularis.eateria.util.toDecimalOrNull
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -103,9 +105,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
+import com.singularis.eateria.ui.theme.appCircleSurface
+import com.singularis.eateria.ui.theme.appSurface
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.singularis.eateria.models.Product
 import com.singularis.eateria.services.HapticsService
 import com.singularis.eateria.services.Localization
@@ -126,6 +141,34 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
+/**
+ * Shared height of the header circles and the date chip. Shrinks a little as the
+ * interface scale grows so four circles and the date still fit one row (iOS homeControlHeight).
+ */
+private val HomeControlHeight: androidx.compose.ui.unit.Dp
+    @Composable get() = 44.dp - 10.dp * com.singularis.eateria.ui.theme.scaleTravel(com.singularis.eateria.ui.theme.LocalAppScale.current)
+
+@Composable
+private fun HeaderCircle(
+    contentDescription: String,
+    onClick: () -> Unit,
+    border: androidx.compose.ui.graphics.Brush? = null,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .minimumInteractiveComponentSize()
+            .size(HomeControlHeight)
+            .appCircleSurface()
+            .then(if (border != null) Modifier.border(2.dp, border, CircleShape) else Modifier)
+            .semantics { this.contentDescription = contentDescription }
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
+    }
+}
+
 @Composable
 fun TopBarView(
     isViewingCustomDate: Boolean,
@@ -136,347 +179,321 @@ fun TopBarView(
     onHealthInfoClick: () -> Unit,
     onSportClick: () -> Unit,
     onReturnToTodayClick: () -> Unit,
-    alcoholIconColor: Color = Color.Green,
+    alcoholIconColor: Color = AppTheme.success(),
     sportIconColor: Color = AppTheme.warning(),
     healthScore: Int = 0,
     healthColor: Color = AppTheme.textSecondary(),
     hasFoods: Boolean = false,
     onAlcoholClick: (() -> Unit)? = null,
 ) {
+    val context = LocalContext.current
+    val locale = Locale.getDefault()
+    val today = remember(locale) { Date() }
+    val fullDate =
+        if (isViewingCustomDate) currentViewingDate
+        else java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, locale).format(today)
+    val shortDate =
+        if (isViewingCustomDate) currentViewingDate
+        else SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(locale, "dMMM"), locale).format(today)
+    val isDev = com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment
+
+    // Equal-width sides keep the date centered; the date gets measured first so it is never clipped.
     Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(top = Dimensions.paddingS),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Left side: Profile + Alcohol
         Row(
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
         ) {
-            // Profile picture
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .shadow(elevation = 4.dp, shape = CircleShape)
-                    .clip(CircleShape)
-                    .background(AppTheme.surface())
-                    .border(
-                        width = 2.dp,
-                        brush = androidx.compose.ui.graphics.Brush.linearGradient(
-                            colors = listOf(Color.Green.copy(alpha = 0.9f), Color(0xFFA020F0).copy(alpha = 0.9f)),
-                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                        ),
-                        shape = CircleShape
-                    )
-                    .clickable(
-                        indication = LocalIndication.current,
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                    ) { 
-                        HapticsService.getInstance().lightImpact()
-                        onProfileClick() 
-                    },
-                contentAlignment = Alignment.Center,
+            HeaderCircle(
+                contentDescription = Localization.tr(context, "nav.profile", "Profile"),
+                onClick = {
+                    HapticsService.getInstance().lightImpact()
+                    onProfileClick()
+                },
+                border = androidx.compose.ui.graphics.Brush.linearGradient(
+                    listOf(AppTheme.success(), AppTheme.accent()),
+                ),
             ) {
                 if (!userProfilePictureURL.isNullOrEmpty()) {
                     AsyncImage(
                         model = userProfilePictureURL,
-                        contentDescription = Localization.tr(LocalContext.current, "profile.name", "Profile Picture"),
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(CircleShape),
+                        contentDescription = null,
+                        modifier = Modifier.size(HomeControlHeight * 30f / 44f).clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
                 } else {
                     Icon(
                         imageVector = AppIcons.Navigation.profile,
-                        contentDescription = Localization.tr(LocalContext.current, "nav.profile", "Profile"),
+                        contentDescription = null,
                         tint = AppTheme.textPrimary(),
-                        modifier = Modifier.size(30.dp),
+                        modifier = Modifier.size(HomeControlHeight * 30f / 44f),
                     )
                 }
             }
-            
-            // Alcohol button
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .shadow(elevation = 4.dp, shape = CircleShape)
-                    .clip(CircleShape)
-                    .background(AppTheme.surface())
-                    .border(
-                        width = 2.dp,
-                        brush = androidx.compose.ui.graphics.Brush.linearGradient(
-                            colors = listOf(alcoholIconColor.copy(alpha = 0.9f), alcoholIconColor.copy(alpha = 0.3f)),
-                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                        ),
-                        shape = CircleShape
-                    )
-                    .clickable(
-                        indication = LocalIndication.current,
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                    ) {
-                        HapticsService.getInstance().select()
-                        onAlcoholClick?.invoke()
-                    },
-                contentAlignment = Alignment.Center
+            HeaderCircle(
+                contentDescription = Localization.tr(context, "onboarding.alcohol.title", "Alcohol"),
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onAlcoholClick?.invoke()
+                },
             ) {
                 Icon(
                     imageVector = AppIcons.FoodHealth.wineBar,
-                    contentDescription = Localization.tr(LocalContext.current, "onboarding.alcohol.title", "Alcohol"),
+                    contentDescription = null,
                     tint = alcoholIconColor,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(Dimensions.iconSizeS),
                 )
             }
         }
 
-        // Center: Date display
-        Box(
-            contentAlignment = Alignment.Center
-        ) {
+        BoxWithConstraints(contentAlignment = Alignment.Center) {
+            val measurer = rememberTextMeasurer()
+            val dateStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+            val density = LocalDensity.current
+            // Each side holds two circles (at least one touch target wide); the row has two 4dp gaps.
+            val circle = maxOf(HomeControlHeight, androidx.compose.material3.LocalMinimumInteractiveComponentSize.current)
+            val dateRoom = maxWidth - circle * 4 - Dimensions.paddingXS * 2
+            val chipPadH = Dimensions.paddingM - Dimensions.paddingS * com.singularis.eateria.ui.theme.scaleTravel(com.singularis.eateria.ui.theme.LocalAppScale.current)
+            val chipPadding = with(density) { (chipPadH * 2).toPx() }
+            val fits = measurer.measure(fullDate, dateStyle).size.width + chipPadding <= with(density) { dateRoom.toPx() }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier =
-                    Modifier
-                        .clip(RoundedCornerShape(Dimensions.cornerRadiusL))
-                        .background(AppTheme.surfaceAlt())
-                        .clickable(
-                            indication = LocalIndication.current,
-                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                        ) { 
-                            HapticsService.getInstance().select()
-                            onDateClick() 
-                        }
-                        .padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingS),
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .widthIn(max = dateRoom.coerceAtLeast(64.dp))
+                    .heightIn(min = HomeControlHeight)
+                    .appSurface(cornerRadius = AppTheme.smallRadius)
+                    .clickable(role = Role.Button) {
+                        HapticsService.getInstance().select()
+                        onDateClick()
+                    }
+                    .padding(horizontal = chipPadH, vertical = Dimensions.paddingXS),
             ) {
-                Text(
-                    text =
-                        if (isViewingCustomDate) {
-                            currentViewingDate
-                        } else {
-                            SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
-                        },
-                    color = AppTheme.textPrimary(),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                androidx.compose.foundation.text.BasicText(
+                    text = if (fits) fullDate else shortDate,
+                    style = dateStyle.copy(color = if (isViewingCustomDate) AppTheme.warning() else AppTheme.textPrimary()),
+                    maxLines = 1,
+                    autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(
+                        minFontSize = dateStyle.fontSize * 0.7f,
+                        maxFontSize = dateStyle.fontSize,
+                    ),
                 )
-
                 if (isViewingCustomDate) {
                     Text(
-                        text = Localization.tr(LocalContext.current, "date.custom", "Custom Date"),
-                        color = AppTheme.warning(),
-                        style = MaterialTheme.typography.labelSmall,
+                        text = Localization.tr(context, "date.today", "Today"),
+                        color = AppTheme.onAccent,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        modifier = Modifier
+                            .padding(vertical = Dimensions.paddingXS)
+                            .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
+                            .background(AppTheme.accent())
+                            .clickable(role = Role.Button) {
+                                HapticsService.getInstance().select()
+                                onReturnToTodayClick()
+                            }
+                            .padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingXS),
                     )
-
-                    Spacer(modifier = Modifier.height(Dimensions.paddingXS))
-
-                    Button(
-                        onClick = {
-                            HapticsService.getInstance().select()
-                            onReturnToTodayClick()
-                        },
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = AppTheme.accent(),
-                                contentColor = AppTheme.textPrimary(),
-                            ),
-                        modifier = Modifier.height(28.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                        shape = RoundedCornerShape(AppTheme.smallRadius),
-                    ) {
-                        Text(
-                            text = Localization.tr(LocalContext.current, "date.today", "Today"),
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        )
-                    }
+                } else if (isDev) {
+                    Text(
+                        text = "DEV",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
+                        modifier = Modifier
+                            .background(AppTheme.danger(), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp),
+                    )
                 }
             }
         }
 
-        // Right side: Sport + Health info
         Row(
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
         ) {
-            Spacer(modifier = Modifier.weight(1f))
-            // DEV badge when using dev environment
-            if (com.singularis.eateria.services.AppEnvironment.getInstance().useDevEnvironment) {
-                Text(
-                    text = "DEV",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold, fontSize = 10.sp),
-                    modifier = Modifier
-                        .background(Color.Red, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-            }
-            // Sport button
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .shadow(elevation = 4.dp, shape = CircleShape)
-                    .clip(CircleShape)
-                    .background(AppTheme.surface())
-                    .border(
-                        width = 2.dp,
-                        brush = androidx.compose.ui.graphics.Brush.linearGradient(
-                            colors = listOf(sportIconColor.copy(alpha = 0.9f), sportIconColor.copy(alpha = 0.3f)),
-                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                        ),
-                        shape = CircleShape
-                    )
-                    .clickable(
-                        indication = LocalIndication.current,
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                    ) {
-                        HapticsService.getInstance().select()
-                        onSportClick()
-                    },
-                contentAlignment = Alignment.Center
+            HeaderCircle(
+                contentDescription = Localization.tr(context, "sport.title", "Sport Calories"),
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onSportClick()
+                },
             ) {
                 Icon(
                     imageVector = AppIcons.FoodHealth.fitnessCentercompany,
-                    contentDescription = Localization.tr(LocalContext.current, "sport.title", "Sport Calories"),
+                    contentDescription = null,
                     tint = sportIconColor,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(Dimensions.iconSizeS),
                 )
             }
-
-            // Health info button
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .shadow(elevation = 4.dp, shape = CircleShape)
-                    .clip(CircleShape)
-                    .background(AppTheme.surface())
-                    .clickable(
-                        indication = LocalIndication.current,
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                    ) {
-                        HapticsService.getInstance().select()
-                        onHealthInfoClick()
-                    },
-                contentAlignment = Alignment.Center
+            HeaderCircle(
+                contentDescription = Localization.tr(context, "health.daily_score.title", "Daily Health Score") + " $healthScore",
+                onClick = {
+                    HapticsService.getInstance().select()
+                    onHealthInfoClick()
+                },
             ) {
-                    val surfaceAltColor = AppTheme.surfaceAlt()
-                    // Background ring track
-                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(
-                            color = healthColor.copy(alpha = 0.25f),
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(
-                                width = 3.dp.toPx()
-                            )
-                        )
-                    }
-                    // Foreground progress arc
-                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawArc(
-                            color = healthColor,
-                            startAngle = -90f,
-                            sweepAngle = 360f * (healthScore.toFloat() / 100f),
-                            useCenter = false,
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(
-                                width = 3.dp.toPx(),
-                                cap = androidx.compose.ui.graphics.StrokeCap.Round
-                            )
-                        )
-                    }
-                    // Score number (matches iOS)
-                    Text(
-                        text = "$healthScore",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                        ),
-                        color = healthColor,
+                androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize().padding(3.dp)) {
+                    val stroke = 3.dp.toPx()
+                    drawCircle(
+                        color = healthColor.copy(alpha = 0.25f),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke),
                     )
+                    drawArc(
+                        color = healthColor,
+                        startAngle = -90f,
+                        sweepAngle = 360f * (healthScore.coerceIn(0, 100) / 100f),
+                        useCenter = false,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(
+                            width = stroke,
+                            cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                        ),
+                    )
+                }
+                Text(
+                    text = "$healthScore",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = healthColor,
+                    maxLines = 1,
+                )
             }
         }
+    }
+}
+
+/** Shown to guests above the stat tiles. Opens the in-place sign-in sheet. */
+@Composable
+fun GuestInviteCard(onClick: () -> Unit) {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .appSurface(cornerRadius = AppTheme.smallRadius)
+            .clickable(role = Role.Button) {
+                HapticsService.getInstance().select()
+                onClick()
+            }
+            .padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingS),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
+    ) {
+        Icon(
+            imageVector = Icons.Default.AccountCircle,
+            contentDescription = null,
+            tint = AppTheme.accent(),
+            modifier = Modifier.size(Dimensions.iconSizeM),
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = Localization.tr(context, "login.scan_prompt_title", "Unlock All Features"),
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = AppTheme.textPrimary(),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = Localization.tr(context, "login.prompt.confirm", "Login Now"),
+                style = MaterialTheme.typography.labelMedium,
+                color = AppTheme.accent(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = AppTheme.textSecondary(),
+        )
     }
 }
 
 @Composable
 fun StatsButtonsView(
     personWeight: Float,
-    caloriesConsumed: Int,
     caloriesLeft: Int,
     isLoadingWeightPhoto: Boolean,
-    isLoadingRecommendation: Boolean,
     onWeightClick: () -> Unit,
     onCaloriesClick: () -> Unit,
-    onRecommendationClick: () -> Unit,
+    onTypeFoodClick: () -> Unit,
     getColor: (Int) -> Color,
 ) {
+    val context = LocalContext.current
+    val numberStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
     Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Dimensions.paddingS),
-        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingXS),
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingS),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Weight button - Left aligned
         StatButton(
             onClick = onWeightClick,
             isLoading = isLoadingWeightPhoto,
+            contentDescription = Localization.tr(context, "units.kg", "kg"),
             modifier = Modifier.weight(1f),
         ) {
-            Text(
-                text = String.format(Locale.getDefault(), "%.1f %s", personWeight, Localization.tr(LocalContext.current, "units.kg", "kg")),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = AppTheme.textPrimary(),
-                textAlign = TextAlign.Center,
+            val kg = Localization.tr(context, "units.kg", "kg")
+            FitText(
+                text = if (personWeight > 0f) String.format(Locale.getDefault(), "%.1f %s", personWeight, kg) else "– $kg",
+                style = numberStyle.copy(color = AppTheme.textPrimary()),
             )
         }
 
-        // Calories button - Center
+        val calorieColor = if (caloriesLeft < 0) AppTheme.danger() else getColor(caloriesLeft)
         StatButton(
             onClick = onCaloriesClick,
             isLoading = false,
-            modifier = Modifier.weight(1f),
+            contentDescription = "$caloriesLeft " + Localization.tr(context, "calories.left", "left"),
+            modifier = Modifier.weight(1.2f),
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "$caloriesLeft ${Localization.tr(LocalContext.current, "calories.left", "left")}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = getColor(caloriesLeft),
-                    textAlign = TextAlign.Center,
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                Icon(
+                    imageVector = Icons.Default.LocalFireDepartment,
+                    contentDescription = null,
+                    tint = calorieColor,
+                    modifier = Modifier.size(Dimensions.iconSizeS),
                 )
-                Text(
-                    text = "${Localization.tr(LocalContext.current, "calories.label", "Calories")}: $caloriesConsumed",
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                    color = AppTheme.textSecondary(),
-                    textAlign = TextAlign.Center,
-                )
+                FitText(text = "$caloriesLeft", style = numberStyle.copy(color = calorieColor))
             }
         }
 
-        // Trend button - Right aligned
         StatButton(
-            onClick = onRecommendationClick,
-            isLoading = isLoadingRecommendation,
+            onClick = onTypeFoodClick,
+            isLoading = false,
+            contentDescription = Localization.tr(context, "type_food.button", "Type"),
             modifier = Modifier.weight(1f),
         ) {
-            Text(
-                text = Localization.tr(LocalContext.current, "stats.trend", "Trend"),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = AppTheme.textPrimary(),
-                textAlign = TextAlign.Center,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null,
+                    tint = AppTheme.textPrimary(),
+                    modifier = Modifier.size(Dimensions.iconSizeS),
+                )
+                FitText(
+                    text = Localization.tr(context, "type_food.button", "Type"),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold, color = AppTheme.textPrimary()),
+                )
+            }
         }
     }
+}
+
+/** One line that shrinks down to 65% before it would clip, like iOS minimumScaleFactor. */
+@Composable
+private fun FitText(text: String, style: androidx.compose.ui.text.TextStyle) {
+    androidx.compose.foundation.text.BasicText(
+        text = text,
+        style = style,
+        maxLines = 1,
+        autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(
+            minFontSize = style.fontSize * 0.65f,
+            maxFontSize = style.fontSize,
+        ),
+    )
 }
 
 @Composable
@@ -484,18 +501,20 @@ fun StatButton(
     onClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
     content: @Composable () -> Unit,
 ) {
     Box(
         modifier =
             modifier
-                .height(Dimensions.buttonHeight) // Keep height but remove fixed width
-                .clip(RoundedCornerShape(AppTheme.cornerRadius))
-                .background(AppTheme.surface())
-                .clickable { 
+                .heightIn(min = 48.dp)
+                .appSurface(cornerRadius = AppTheme.smallRadius)
+                .then(if (contentDescription != null) Modifier.semantics { this.contentDescription = contentDescription } else Modifier)
+                .clickable(role = Role.Button) {
                     HapticsService.getInstance().select()
-                    onClick() 
-                },
+                    onClick()
+                }
+                .padding(horizontal = Dimensions.paddingS, vertical = Dimensions.paddingXS),
         contentAlignment = Alignment.Center,
     ) {
         if (isLoading) {
@@ -641,19 +660,19 @@ fun MacrosSummaryRow(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("$proLabel ${fmt(proteins)}$grams", color = proColor,
-                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
                 maxLines = 1)
             Text(" • ", color = dotColor, fontSize = 14.sp)
             Text("$fatLabel ${fmt(fats)}$grams", color = fatColor,
-                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
                 maxLines = 1)
             Text(" • ", color = dotColor, fontSize = 14.sp)
             Text("$carLabel ${fmt(carbs)}$grams", color = carColor,
-                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
                 maxLines = 1)
             Text(" • ", color = dotColor, fontSize = 14.sp)
             Text("$sugLabel ${fmt(sugar)}$grams", color = sugColor,
-                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
                 maxLines = 1)
         }
     }
@@ -714,9 +733,9 @@ private fun MacroTargetsSheet(
         mutableStateOf(fmt(customCarbsGoal ?: recommended.carbs))
     }
 
-    val proteinVal = proteinText.toDoubleOrNull()
-    val fatVal = fatText.toDoubleOrNull()
-    val carbsVal = carbsText.toDoubleOrNull()
+    val proteinVal = proteinText.toDecimalOrNull()
+    val fatVal = fatText.toDecimalOrNull()
+    val carbsVal = carbsText.toDecimalOrNull()
     val isValid =
         proteinVal != null && proteinVal > 0 &&
             fatVal != null && fatVal > 0 &&
@@ -953,7 +972,7 @@ fun CalorieLimitsDialog(
                 colors =
                     ButtonDefaults.buttonColors(
                         containerColor = if (isValidLimits) AppTheme.accent() else AppTheme.textSecondary(),
-                        contentColor = AppTheme.textPrimary(),
+                        contentColor = AppTheme.onAccent,
                     ),
             ) {
                 Text(Localization.tr(LocalContext.current, "limits.save_manual", "Save Manual Limits"))
@@ -1116,7 +1135,7 @@ fun ManualWeightDialog(
                 HapticsService.getInstance().mediumImpact()
                 onSubmit() 
             }) {
-                Text(Localization.tr(LocalContext.current, "feedback.submit", "Submit Feedback"))
+                Text(Localization.tr(LocalContext.current, "common.save", "Save"), color = AppTheme.accent())
             }
         },
         dismissButton = {
@@ -1124,9 +1143,12 @@ fun ManualWeightDialog(
                 HapticsService.getInstance().select()
                 onDismiss() 
             }) {
-                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"))
+                Text(Localization.tr(LocalContext.current, "common.cancel", "Cancel"), color = AppTheme.textSecondary())
             }
         },
+        containerColor = AppTheme.surface(),
+        titleContentColor = AppTheme.textPrimary(),
+        textContentColor = AppTheme.textPrimary(),
     )
 }
 

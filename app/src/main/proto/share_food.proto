@@ -11,4 +11,5 @@ message ShareFoodRequest {
 
 message ShareFoodResponse {
   bool success = 1;
+  string nickname_used = 2;
 }

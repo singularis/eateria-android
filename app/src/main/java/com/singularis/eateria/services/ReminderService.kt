@@ -42,8 +42,7 @@ class ReminderService(
         context.dataStore.edit { prefs ->
             prefs[LAST_SNAP_TIME] = timestampMillis
         }
-        // Cancel only the next upcoming reminder for today when a snap occurs
-        ReminderScheduler.cancelNextUpcomingToday(context)
+        ReminderScheduler.cancelToday(context)
     }
 
     val firstSnapToday: Flow<Long> =

@@ -730,6 +730,7 @@ fun ContentView(
             if (showCalendarPicker) {
                 CalendarDatePickerView(
                     isVisible = true,
+                    selectedDateString = if (isViewingCustomDate) currentViewingDateString else null,
                     onDateSelected = { dateString ->
                         viewModel.fetchCustomDateData(dateString)
                     },

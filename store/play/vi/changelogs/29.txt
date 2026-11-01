@@ -1,0 +1,6 @@
+Eateria 5.3
+• Ảnh bữa ăn nằm trên thẻ
+• Giới hạn calo, đã ăn hôm nay và phần còn lại
+• Thẻ bữa ăn: ảnh, điểm và khẩu phần
+• Cỡ chữ phóng to cả ứng dụng
+• Mở một ngày trước và thêm ứng dụng bằng ngôn ngữ của bạn

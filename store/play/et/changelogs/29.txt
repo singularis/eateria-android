@@ -1,0 +1,6 @@
+Eateria 5.3
+• Toidufoto jääb kaardile
+• Kalorilimiit, täna söödud ja mis jääb
+• Toidukaart: foto, hinne ja portsjon
+• Teksti suurus suurendab kogu rakendust
+• Ava varasem päev ja rohkem rakendusest sinu keeles

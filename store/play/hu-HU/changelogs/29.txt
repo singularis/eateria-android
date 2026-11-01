@@ -1,0 +1,6 @@
+Eateria 5.3
+• Az étel fotója a kártyán marad
+• Kalóriacél, ma megevett és ami maradt
+• Étkezéskártya: fotó, pont és adag
+• A szövegméret az egész appot nagyítja
+• Nyisson meg egy korábbi napot, és az app több része legyen a nyelvén

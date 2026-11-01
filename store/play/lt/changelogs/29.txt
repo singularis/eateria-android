@@ -1,0 +1,6 @@
+Eateria 5.3
+• Patiekalo nuotrauka lieka kortelėje
+• Kalorijų riba, suvalgyta šiandien ir kiek liko
+• Patiekalo kortelė: nuotrauka, įvertinimas ir porcija
+• Teksto dydis didina visą programą
+• Atverkite praėjusią dieną ir daugiau programos jūsų kalba

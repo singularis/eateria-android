@@ -1,6 +1,6 @@
 Eateria 5.3
-• Glass-style surfaces and sheets that open the same way
+• Your meal photo stays on the card
+• Calorie goal, eaten today, and what is left
+• Meal card with photo, score, and portion
 • Text size scales the whole app
-• Type a meal, including a past day
-• Day score from the server, meal ideas, and range stats
-• Friends, profile and guest sign-in in place
+• Open a past day, with more of the app in your language

@@ -3,6 +3,8 @@ package com.singularis.eateria.ui.views
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,51 +64,63 @@ import java.util.Locale
 @Composable
 fun CalendarDatePickerView(
     isVisible: Boolean,
+    selectedDateString: String? = null,
     onDateSelected: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    if (isVisible) {
-        Dialog(
-            onDismissRequest = onDismiss,
-            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true),
-        ) {
-            CalendarContent(
-                onDateSelected = { dateString ->
-                    onDateSelected(dateString)
-                    onDismiss()
-                },
-                onDismiss = onDismiss,
-            )
-        }
+    if (!isVisible) return
+    AppSheet(onDismiss = onDismiss) {
+        CalendarContent(
+            selectedDateString = selectedDateString,
+            onDateSelected = { dateString ->
+                onDateSelected(dateString)
+                onDismiss()
+            },
+            onDismiss = onDismiss,
+        )
     }
 }
 
 @Composable
 private fun CalendarContent(
+    selectedDateString: String?,
     onDateSelected: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val today = Calendar.getInstance()
-    var currentMonth by remember { mutableStateOf(today.clone() as Calendar) }
+    val selected = remember(selectedDateString) { parseDay(selectedDateString) ?: today.clone() as Calendar }
+    var currentMonth by remember(selectedDateString) { mutableStateOf(selected.clone() as Calendar) }
+    val context = LocalContext.current
 
-    Surface(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(Dimensions.paddingM),
-        shape = RoundedCornerShape(Dimensions.cornerRadiusL),
-        color = AppTheme.surface(),
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(Dimensions.paddingL),
-        ) {
-            // Header
             Text(
-                text = Localization.tr(LocalContext.current, "calendar.selectdate", "Select Date"),
-                style = MaterialTheme.typography.headlineSmall,
+                text = Localization.tr(context, "calendar.selectdate", "Select Date"),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
                 color = AppTheme.textPrimary(),
-                modifier = Modifier.padding(bottom = Dimensions.paddingM),
+                maxLines = 1,
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = Localization.tr(
+                    context,
+                    "calendar.explain",
+                    "Pick a past day to see the meals you logged. You can also add a meal you forgot.",
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppTheme.textSecondary(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AppTheme.cornerRadius))
+                    .background(AppTheme.surfaceAlt())
+                    .padding(16.dp),
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Month navigation
             Row(
@@ -189,57 +203,36 @@ private fun CalendarContent(
             // Calendar grid
             CalendarGrid(
                 currentMonth = currentMonth,
-                today = today,
+                selected = selected,
                 onDateSelected = onDateSelected,
             )
 
             Spacer(modifier = Modifier.height(Dimensions.paddingM))
 
-            // Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.End,
             ) {
-                TextButton(onClick = { 
-                    com.singularis.eateria.services.HapticsService.getInstance().select()
-                    onDismiss() 
-                }) {
-                    Text(
-                        text = Localization.tr(LocalContext.current, "common.cancel", "Cancel"),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = AppTheme.textSecondary(),
-                    )
-                }
-
-                Button(
+                com.singularis.eateria.ui.theme.SecondaryButton(
                     onClick = {
                         com.singularis.eateria.services.HapticsService.getInstance().select()
-                        // Select today's date
-                        val dateString = SimpleDateFormat("dd-MM-yyyy", Locale.US).format(today.time)
-                        onDateSelected(dateString)
+                        onDismiss()
                     },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = AppTheme.accent(),
-                            contentColor = Color.White,
-                        ),
-                    modifier = Modifier.width(100.dp),
                 ) {
                     Text(
-                        text = Localization.tr(LocalContext.current, "date.today", "Today"),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
+                        text = Localization.tr(context, "common.done", "Done"),
+                        color = AppTheme.textPrimary(),
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             }
-        }
     }
 }
 
 @Composable
 private fun CalendarGrid(
     currentMonth: Calendar,
-    today: Calendar,
+    selected: Calendar,
     onDateSelected: (String) -> Unit,
 ) {
     val daysInMonth = getDaysInMonth(currentMonth)
@@ -254,9 +247,9 @@ private fun CalendarGrid(
                 day = day,
                 isSelected =
                     day.day != null &&
-                        day.day == today.get(Calendar.DAY_OF_MONTH) &&
-                        currentMonth.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
-                        currentMonth.get(Calendar.YEAR) == today.get(Calendar.YEAR),
+                        day.day == selected.get(Calendar.DAY_OF_MONTH) &&
+                        currentMonth.get(Calendar.MONTH) == selected.get(Calendar.MONTH) &&
+                        currentMonth.get(Calendar.YEAR) == selected.get(Calendar.YEAR),
                 isToday = day.day?.let { isToday(it, currentMonth) } ?: false,
                 isClickable = day.day?.let { !isFutureDate(it, currentMonth) } ?: false,
                 onClick = { dayNumber ->
@@ -329,6 +322,15 @@ private fun CalendarDay(
 private data class CalendarDayModel(
     val day: Int? = null,
 )
+
+private fun parseDay(dateString: String?): Calendar? {
+    if (dateString.isNullOrBlank()) return null
+    val parsed = runCatching { SimpleDateFormat("dd-MM-yyyy", Locale.US).parse(dateString) }.getOrNull() ?: return null
+    return Calendar.getInstance().apply {
+        time = parsed
+        set(Calendar.HOUR_OF_DAY, 12)
+    }
+}
 
 private fun getDaysInMonth(calendar: Calendar): List<CalendarDayModel> {
     val firstDayOfMonth =

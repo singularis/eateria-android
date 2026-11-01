@@ -1,0 +1,6 @@
+Eateria 5.3
+• Das Foto bleibt auf der Mahlzeitkarte
+• Kalorienziel, heute gegessen und was übrig ist
+• Karte mit Foto, Bewertung und Portion
+• Die Textgröße vergrößert die ganze App
+• Einen vergangenen Tag öffnen, mehr von der App in Ihrer Sprache

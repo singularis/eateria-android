@@ -1,0 +1,6 @@
+Eateria 5.3
+• Dit måltidsfoto bliver på kortet
+• Kaloriegrænse, spist i dag, og hvad der er tilbage
+• Måltidskort med foto, score og portion
+• Tekststørrelse skalerer hele appen
+• Åbn en tidligere dag, og mere af appen på dit sprog

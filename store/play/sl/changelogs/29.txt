@@ -1,0 +1,6 @@
+Eateria 5.3
+• Fotografija obroka ostane na kartici
+• Omejitev kalorij, zaužito danes in koliko ostane
+• Kartica obroka: fotografija, ocena in porcija
+• Velikost besedila poveča celotno aplikacijo
+• Odprite pretekli dan in več aplikacije v vašem jeziku

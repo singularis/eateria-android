@@ -1,0 +1,6 @@
+Eateria 5.3
+• La foto de la comida se queda en la tarjeta
+• Límite de calorías, lo comido hoy y lo que queda
+• Tarjeta con foto, puntuación y porción
+• El tamaño del texto agranda toda la app
+• Abre un día pasado y más de la app en tu idioma

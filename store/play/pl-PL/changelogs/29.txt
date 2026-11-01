@@ -1,0 +1,6 @@
+Eateria 5.3
+• Zdjęcie posiłku zostaje na karcie
+• Limit kalorii, zjedzone dziś i ile zostało
+• Karta posiłku: zdjęcie, wynik i porcja
+• Rozmiar tekstu powiększa całą aplikację
+• Otwórz miniony dzień i więcej aplikacji w Twoim języku

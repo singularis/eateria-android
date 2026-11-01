@@ -285,19 +285,25 @@ fun TopBarView(
                 )
                 if (isViewingCustomDate) {
                     Text(
+                        text = Localization.tr(context, "date.custom", "Custom Date"),
+                        color = AppTheme.warning(),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                    )
+                    Text(
                         text = Localization.tr(context, "date.today", "Today"),
                         color = AppTheme.onAccent,
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         maxLines = 1,
                         modifier = Modifier
-                            .padding(vertical = Dimensions.paddingXS)
+                            .padding(top = 2.dp)
                             .clip(RoundedCornerShape(Dimensions.cornerRadiusS))
                             .background(AppTheme.accent())
                             .clickable(role = Role.Button) {
                                 HapticsService.getInstance().select()
                                 onReturnToTodayClick()
                             }
-                            .padding(horizontal = Dimensions.paddingM, vertical = Dimensions.paddingXS),
+                            .padding(horizontal = Dimensions.paddingS, vertical = 2.dp),
                     )
                 } else if (isDev) {
                     Text(

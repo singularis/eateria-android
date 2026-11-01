@@ -352,14 +352,45 @@ class MainViewModel(
             }
     }
 
+    private var pendingLocalPhoto: Pair<Long, Bitmap>? = null
+
     private fun applyDayFood(day: DayFoodSnapshot) {
-        _products.value = day.products
+        val shown = attachLocalPhoto(day)
+        _products.value = shown.products
         _eatenWithExtras.value = day.eatenWithExtras
         _serverEaten.value = day.serverEaten
         _caloriesTotal.value = day.caloriesTotal
         _serverCaloriesLeft.value = day.caloriesLeft
         if (day.personWeight > 0f) _personWeight.value = day.personWeight
         publishFlame()
+    }
+
+    /**
+     * The photo was saved on the phone before upload. Once the meal comes back,
+     * keep that bitmap on the card. Same idea as iOS moveTemporaryImage.
+     */
+    private fun attachLocalPhoto(day: DayFoodSnapshot): DayFoodSnapshot {
+        val (tempTime, bitmap) = pendingLocalPhoto ?: return day
+        if (day.products.isEmpty()) return day
+        val match = day.products.minByOrNull { kotlin.math.abs(it.time - tempTime) } ?: return day
+        if (kotlin.math.abs(match.time - tempTime) >= 14_400_000L) return day
+        imageStorageService.moveTemporaryImage(tempTime, match.time)
+        if (!imageStorageService.imageExists(forTime = match.time)) {
+            imageStorageService.saveImage(bitmap, match.time)
+        }
+        if (match.imageId.isNotEmpty()) {
+            imageStorageService.saveCachedImage(bitmap, match.imageId)
+        }
+        pendingLocalPhoto = null
+        return day.copy(
+            products = day.products.map { product ->
+                if (product.time == match.time) {
+                    product.copy(imageRevision = product.imageRevision + 1).also { it.setImage(bitmap) }
+                } else {
+                    product
+                }
+            },
+        )
     }
 
     private fun refreshVisibleDay() {
@@ -512,20 +543,23 @@ class MainViewModel(
     }
 
     /** A visible card finished downloading. Bumps imageRevision so the row redraws. */
-    fun onFoodPhotoLoaded(imageId: String, bitmap: Bitmap) {
-        injectPhotoIntoProduct(imageId, bitmap)
+    fun onFoodPhotoLoaded(dishTime: Long, imageId: String, bitmap: Bitmap) {
+        injectPhotoIntoProduct(imageId, bitmap, dishTime)
     }
 
     /** Injects a downloaded photo into the matching product so the UI refreshes without a full re-fetch */
-    private fun injectPhotoIntoProduct(imageId: String, bitmap: Bitmap) {
+    private fun injectPhotoIntoProduct(imageId: String, bitmap: Bitmap, dishTime: Long? = null) {
         // Must change a data-class field (imageRevision). Mutating only the transient
         // bitmap cache leaves Product.equals() unchanged, so StateFlow skips the emit
         // and the list preview never redraws after a remote download.
         _products.value =
             _products.value.map { product ->
-                if (product.imageId == imageId) {
+                if (product.imageId == imageId || (dishTime != null && product.time == dishTime)) {
                     product
-                        .copy(imageRevision = product.imageRevision + 1)
+                        .copy(
+                            imageId = imageId.ifEmpty { product.imageId },
+                            imageRevision = product.imageRevision + 1,
+                        )
                         .also { it.setImage(bitmap) }
                 } else {
                     product
@@ -539,14 +573,15 @@ class MainViewModel(
         photoType: String,
         tempTimestamp: Long,
     ) {
-            viewModelScope.launch {
+        if (photoType != "weight_prompt") {
+            pendingLocalPhoto = tempTimestamp to bitmap
+            com.singularis.eateria.navigation.AppNavigation.beginPendingMeal(
+                Localization.tr(context, "loading.photo", "Analyzing food photo..."),
+                bitmap,
+            )
+        }
+        viewModelScope.launch {
             _isLoadingFoodPhoto.value = true
-            if (photoType != "weight_prompt") {
-                com.singularis.eateria.navigation.AppNavigation.beginPendingMeal(
-                    Localization.tr(context, "loading.photo", "Analyzing food photo..."),
-                )
-            }
-            
             checkAnonymousScanLimits()
 
             try {
@@ -579,6 +614,7 @@ class MainViewModel(
                         android.util.Log.w("MainViewModel", "Photo rejected ($photoType): $errorMessage")
                         // Clean up temporary image on failure
                         imageStorageService.deleteTemporaryImage(tempTimestamp)
+                        pendingLocalPhoto = null
                         _isLoadingFoodPhoto.value = false
                         com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
 
@@ -644,6 +680,7 @@ class MainViewModel(
                 android.util.Log.w("MainViewModel", "Photo upload failed ($photoType)", e)
                 // Clean up temporary image on error
                 imageStorageService.deleteTemporaryImage(tempTimestamp)
+                pendingLocalPhoto = null
                 _isLoadingFoodPhoto.value = false
                 com.singularis.eateria.navigation.AppNavigation.clearPendingMeal()
 

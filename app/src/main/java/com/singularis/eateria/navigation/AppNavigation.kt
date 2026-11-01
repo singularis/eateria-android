@@ -1,5 +1,6 @@
 package com.singularis.eateria.navigation
 
+import android.graphics.Bitmap
 import com.singularis.eateria.services.MealPlannerRemaining
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,7 @@ enum class AppTab {
 
 data class PendingMeal(
     val label: String,
+    val image: Bitmap? = null,
     val startedAt: Long = System.currentTimeMillis(),
 )
 
@@ -83,8 +85,8 @@ object AppNavigation {
         _uploadRequest.value = 0
     }
 
-    fun beginPendingMeal(label: String) {
-        _pendingMeal.value = PendingMeal(label)
+    fun beginPendingMeal(label: String, image: Bitmap? = null) {
+        _pendingMeal.value = PendingMeal(label, image)
     }
 
     fun clearPendingMeal() {

@@ -141,7 +141,8 @@ fun ProductListView(
     onSwipeToCamera: (() -> Unit)? = null,
     isAnonymous: Boolean = false,
     pendingMealLabel: String? = null,
-    onPhotoLoaded: ((String, android.graphics.Bitmap) -> Unit)? = null,
+    pendingMealImage: android.graphics.Bitmap? = null,
+    onPhotoLoaded: ((Long, String, android.graphics.Bitmap) -> Unit)? = null,
 ) {
     // Sort products by time (most recent first) like iOS app
     val sortedProducts = products.sortedByDescending { it.time }
@@ -204,7 +205,7 @@ fun ProductListView(
                 contentPadding = PaddingValues(vertical = Dimensions.paddingS),
             ) {
                 if (!pendingMealLabel.isNullOrBlank()) {
-                    item(key = "pending") { PendingMealRow(pendingMealLabel) }
+                    item(key = "pending") { PendingMealRow(pendingMealLabel, pendingMealImage) }
                 }
                 items(
                     items = sortedProducts,
@@ -239,7 +240,7 @@ fun ProductListView(
 
 /** Shown while a typed or photographed meal is being analyzed, before it lands in the list. */
 @Composable
-private fun PendingMealRow(label: String) {
+private fun PendingMealRow(label: String, image: android.graphics.Bitmap?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,6 +249,16 @@ private fun PendingMealRow(label: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimensions.paddingM),
     ) {
+        if (image != null) {
+            androidx.compose.foundation.Image(
+                bitmap = image.asImageBitmap(),
+                contentDescription = label,
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(RoundedCornerShape(AppTheme.smallRadius)),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            )
+        }
         androidx.compose.material3.CircularProgressIndicator(
             modifier = Modifier.size(Dimensions.iconSizeM),
             strokeWidth = 2.dp,

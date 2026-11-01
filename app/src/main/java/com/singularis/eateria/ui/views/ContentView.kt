@@ -133,7 +133,6 @@ fun ContentView(
     var showFoodCamera by remember { mutableStateOf(false) }
     var showCaloriesSheet by remember { mutableStateOf(false) }
     var introKey by remember { mutableStateOf<String?>(null) }
-    var introAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val pendingMeal by com.singularis.eateria.navigation.AppNavigation.pendingMeal.collectAsState()
     val shellSignIn by com.singularis.eateria.navigation.AppNavigation.showSignIn.collectAsState()
     var showWeightCamera by remember { mutableStateOf(false) }
@@ -148,23 +147,19 @@ fun ContentView(
     var uploadOpenRequest by remember { mutableStateOf(0) }
     val shellCamera by com.singularis.eateria.navigation.AppNavigation.cameraRequest.collectAsState()
     val shellUpload by com.singularis.eateria.navigation.AppNavigation.uploadRequest.collectAsState()
-    // First tap of a control explains that screen, then does the action.
+    // Open the screen first. If this account has not seen it, the explanation
+    // sits on top of that screen. The next visit goes straight in.
     val tutorialPrefs = remember { context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE) }
     fun introduce(key: String, force: Boolean = false, action: () -> Unit) {
-        if (!force && tutorialPrefs.getBoolean(key, false)) {
-            action()
-        } else {
-            introAction = if (force) null else action
+        if (!force) action()
+        if (force || !tutorialPrefs.getBoolean(key, false)) {
             introKey = key
         }
     }
     fun finishIntro() {
         val key = introKey
-        val action = introAction
         if (key != null) tutorialPrefs.edit().putBoolean(key, true).apply()
         introKey = null
-        introAction = null
-        action?.invoke()
     }
     fun requestCamera() {
         introduce("hasSeenCameraTutorial") { cameraOpenRequest++ }
@@ -178,7 +173,7 @@ fun ContentView(
     LaunchedEffect(shellUpload) {
         if (shellUpload > 0) {
             com.singularis.eateria.navigation.AppNavigation.consumeUploadRequest()
-            uploadOpenRequest++
+            introduce("hasSeenCameraTutorial") { uploadOpenRequest++ }
         }
     }
     // Guests must sign in for share / try-manual; ask first instead of dropping them on login
@@ -372,6 +367,7 @@ fun ContentView(
                             isAnonymous = isAnonymous,
                             onSwipeToCamera = { requestCamera() },
                             pendingMealLabel = pendingMeal?.label,
+                            pendingMealImage = pendingMeal?.image,
                             deletingProductTime = deletingProductTime,
                             modifiedProductTime = modifiedProductTime,
                             onSuccessDialogDismissed = { viewModel.onSuccessDialogDismissed() },
@@ -807,14 +803,6 @@ fun ContentView(
                     onSetLimits = { viewModel.showLimitsAlert() },
                 )
             }
-            if (introKey != null) {
-                MainAppTutorialView(
-                    isPresented = true,
-                    specificStepKey = introKey,
-                    onDismiss = { finishIntro() },
-                )
-            }
-
             // Sport Calories Dialog
             if (showSportCaloriesDialog) {
                 SportCaloriesDialog(
@@ -888,6 +876,13 @@ fun ContentView(
                     onDismiss = {
                         showWeightCamera = false
                     },
+                )
+            }
+            if (introKey != null) {
+                MainAppTutorialView(
+                    isPresented = true,
+                    specificStepKey = introKey,
+                    onDismiss = { finishIntro() },
                 )
             }
         }

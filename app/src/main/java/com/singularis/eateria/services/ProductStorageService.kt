@@ -154,22 +154,15 @@ class ProductStorageService private constructor(
                     val isToday = dateStr == todayFormatter.format(Date())
 
                     val fetched = grpcService.fetchCustomDateProducts(dateStr)
+                    // Rename temp_<capture>.jpg to <meal time>.jpg before the cards
+                    // read it. Otherwise getImage caches a miss and the card downloads.
+                    val match = fetched.products.minByOrNull { kotlin.math.abs(it.time - tempImageTime) }
+                    if (match != null && kotlin.math.abs(match.time - tempImageTime) < 14_400_000L) {
+                        imageStorageService.moveTemporaryImage(tempImageTime, match.time)
+                    }
                     val snapshot = snapshotFromFetch(fetched)
 
                     withContext(Dispatchers.Main) {
-                        if (snapshot.products.isNotEmpty()) {
-                            val matchingProduct = snapshot.products.minByOrNull { Math.abs(it.time - tempImageTime) }
-                            if (matchingProduct != null) {
-                                val diff = Math.abs(matchingProduct.time - tempImageTime)
-                                if (diff < 14400000) { // 4 hours
-                                    imageStorageService.moveTemporaryImage(
-                                        fromTime = tempImageTime,
-                                        toTime = matchingProduct.time,
-                                    )
-                                }
-                            }
-                        }
-
                         if (isToday) {
                             saveSnapshot(snapshot)
                         }

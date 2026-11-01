@@ -409,6 +409,12 @@ class GRPCService(
             }
         }
 
+    private fun isoPhotoTime(millis: Long): String {
+        val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+        format.timeZone = TimeZone.getTimeZone("UTC")
+        return format.format(Date(millis))
+    }
+
     suspend fun sendPhoto(
         bitmap: Bitmap,
         photoType: String,
@@ -422,12 +428,9 @@ class GRPCService(
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
                 val imageData = byteArrayOutputStream.toByteArray()
 
-                val timestamp =
-                    if (timestampMillis != null) {
-                        timestampMillis.toString()
-                    } else {
-                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
-                    }
+                // iOS sends ISO-8601. A raw millis string is not the meal time, so the
+                // saved photo cannot be attached to the card and has to be downloaded later.
+                val timestamp = isoPhotoTime(timestampMillis ?: System.currentTimeMillis())
 
                 val photoMessage =
                     PhotoMessageOuterClass.PhotoMessage

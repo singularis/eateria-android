@@ -137,6 +137,29 @@ import android.content.Context
 import com.singularis.eateria.services.ImageStorageService
 import com.singularis.eateria.services.AppEnvironment
 
+/** Today uses the today endpoint. Any other day uses that date. */
+private suspend fun fetchedDayFor(
+    dishTime: Long,
+    grpc: com.singularis.eateria.services.GRPCService,
+): com.singularis.eateria.services.FetchedDayFood {
+    val calendar = java.util.Calendar.getInstance()
+    val todayYear = calendar.get(java.util.Calendar.YEAR)
+    val todayMonth = calendar.get(java.util.Calendar.MONTH)
+    val todayDay = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+    calendar.timeInMillis = dishTime
+    val sameDay =
+        todayYear == calendar.get(java.util.Calendar.YEAR) &&
+            todayMonth == calendar.get(java.util.Calendar.MONTH) &&
+            todayDay == calendar.get(java.util.Calendar.DAY_OF_MONTH)
+    if (sameDay) return grpc.fetchProducts()
+    val day = "%04d-%02d-%02d".format(
+        calendar.get(java.util.Calendar.YEAR),
+        calendar.get(java.util.Calendar.MONTH) + 1,
+        calendar.get(java.util.Calendar.DAY_OF_MONTH),
+    )
+    return grpc.fetchCustomDateProducts(day)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCard(
@@ -154,7 +177,7 @@ fun ProductCard(
     onAddFoodExtra: ((String) -> Unit)? = null,
     onSwipeToCamera: (() -> Unit)? = null,
     isAnonymous: Boolean = false,
-    onPhotoLoaded: ((String, android.graphics.Bitmap) -> Unit)? = null,
+    onPhotoLoaded: ((Long, String, android.graphics.Bitmap) -> Unit)? = null,
 ) {
     var showPortionDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
@@ -167,29 +190,37 @@ fun ProductCard(
     val context = LocalContext.current
     val grpcService = remember { com.singularis.eateria.services.GRPCService(context) }
     var showMealIntro by remember { mutableStateOf(false) }
-    var openHealthAfterIntro by remember { mutableStateOf(false) }
     fun closeMealIntro() {
         context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE)
             .edit().putBoolean("hasSeenMealCardTutorial", true).apply()
-        openHealthAfterIntro = true
         showMealIntro = false
     }
 
-    LaunchedEffect(product.imageId, product.imageRevision) {
-        if (product.imageId.isEmpty() || !product.needsRemoteFetch(context)) return@LaunchedEffect
-        val bitmap = com.singularis.eateria.services.FoodPhotoService.getInstance(context)
-            .fetchVisiblePhoto(product.imageId) ?: return@LaunchedEffect
-        onPhotoLoaded?.invoke(product.imageId, bitmap)
+    LaunchedEffect(product.time, product.imageId, product.imageRevision) {
+        if (product.getImage(context) != null) return@LaunchedEffect
+        val photos = com.singularis.eateria.services.FoodPhotoService.getInstance(context)
+        var imageId = product.imageId
+        if (imageId.isEmpty()) {
+            // The dish can show up before the server has a photo path. Ask again
+            // immediately, then after 1s, 2s, 4s, and 8s.
+            val waits = longArrayOf(0L, 1_000L, 2_000L, 4_000L, 8_000L)
+            for (wait in waits) {
+                if (wait > 0) kotlinx.coroutines.delay(wait)
+                val day = fetchedDayFor(product.time, grpcService)
+                imageId = day.products.firstOrNull { it.time == product.time }?.imageId.orEmpty()
+                if (imageId.isNotEmpty()) break
+            }
+        }
+        if (imageId.isEmpty()) return@LaunchedEffect
+        val bitmap = photos.fetchVisiblePhoto(imageId) ?: return@LaunchedEffect
+        onPhotoLoaded?.invoke(product.time, imageId, bitmap)
     }
 
     fun openHealthInfo() {
         if (isDeleting || isLoadingHealth) return
         val seenMeal = context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE)
             .getBoolean("hasSeenMealCardTutorial", false)
-        if (!seenMeal) {
-            showMealIntro = true
-            return
-        }
+        if (!seenMeal) showMealIntro = true
         HapticsService.getInstance().select()
         if (healthInfoTitle.isNotEmpty()) {
             showHealthInfoDialog = true
@@ -212,13 +243,6 @@ fun ProductCard(
             } catch (_: Exception) {
             }
             isLoadingHealth = false
-        }
-    }
-
-    LaunchedEffect(showMealIntro, openHealthAfterIntro) {
-        if (!showMealIntro && openHealthAfterIntro) {
-            openHealthAfterIntro = false
-            openHealthInfo()
         }
     }
 
@@ -540,14 +564,6 @@ fun ProductCard(
         )
     }
 
-    if (showMealIntro) {
-        MainAppTutorialView(
-            isPresented = true,
-            specificStepKey = "hasSeenMealCardTutorial",
-            onDismiss = { closeMealIntro() },
-        )
-    }
-
     if (showDeleteConfirmationDialog) {
         DeleteConfirmationDialog(
             onConfirm = {
@@ -571,6 +587,14 @@ fun ProductCard(
             healthSummaryJson = healthInfoSummary,
             dishTime = product.time,
             onDismiss = { showHealthInfoDialog = false }
+        )
+    }
+
+    if (showMealIntro && showHealthInfoDialog) {
+        MainAppTutorialView(
+            isPresented = true,
+            specificStepKey = "hasSeenMealCardTutorial",
+            onDismiss = { closeMealIntro() },
         )
     }
 }

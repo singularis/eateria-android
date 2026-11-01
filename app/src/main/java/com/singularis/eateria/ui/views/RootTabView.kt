@@ -104,6 +104,7 @@ fun RootTabView(
             selection = tab,
             onSelect = { next ->
                 HapticsService.getInstance().select()
+                AppNavigation.select(next)
                 val intro = when (next) {
                     AppTab.STATS -> "hasSeenStatsTutorial"
                     AppTab.IDEAS -> "hasSeenAdviceTutorial"
@@ -112,7 +113,6 @@ fun RootTabView(
                 if (intro != null && !tutorialPrefs.getBoolean(intro, false)) {
                     introKey = intro
                 }
-                AppNavigation.select(next)
             },
             onCamera = {
                 HapticsService.getInstance().select()

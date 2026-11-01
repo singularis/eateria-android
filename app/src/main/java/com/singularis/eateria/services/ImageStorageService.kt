@@ -80,13 +80,14 @@ class ImageStorageService private constructor(
                 return false
             }
 
-            val success = tempFile.renameTo(finalFile)
-            if (success) {
+            if (tempFile.renameTo(finalFile)) {
                 Log.d("ImageStorage", "Moved temporary image from $fromTime to $toTime")
-            } else {
-                Log.e("ImageStorage", "Failed to move temporary image from $fromTime to $toTime")
+                return true
             }
-            success
+            tempFile.copyTo(finalFile, overwrite = true)
+            val removed = tempFile.delete()
+            Log.d("ImageStorage", "Copied temporary image from $fromTime to $toTime (removed=$removed)")
+            true
         } catch (e: Exception) {
             Log.e("ImageStorage", "Error moving temporary image from $fromTime to $toTime", e)
             false

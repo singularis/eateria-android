@@ -1,7 +1,6 @@
-Eateria 5.3
-• Toidufoto jääb kaardile
-• Kalorilimiit, täna söödud ja mis jääb
-• Toidukaart: foto, hinne ja portsjon
-• Suurem tekst mahub ikka ekraanile
+Pildista eine ja näe kohe, kui palju kaloreid on jäänud.
+• Foto jääb kaardile
+• Hinne ja portsjon igal toidul
+• Suur tekst mahub ekraanile
 • Ava ükskõik milline varasem päev
 • Rohkem rakendusest sinu keeles

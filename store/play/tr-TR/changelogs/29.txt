@@ -1,7 +1,6 @@
-Eateria 5.3
-• Yemek fotoğrafı kartta kalır
-• Kalori hedefi, bugün yenen ve kalan
-• Yemek kartı: fotoğraf, puan ve porsiyon
-• Daha büyük yazı yine ekrana sığar
-• Geçmiş herhangi bir günü açın
-• Uygulamanın daha fazlası dilinizde
+Yemeğin fotoğrafını çek, kalan kaloriyi hemen gör.
+• Fotoğraf kartta kalır
+• Her öğünde puan ve porsiyon
+• Büyük yazı ekrana sığar
+• Geçmiş herhangi bir günü aç
+• Uygulamanın daha fazlası senin dilinde

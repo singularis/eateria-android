@@ -1,7 +1,6 @@
-Eateria 5.3
-• Dit måltidsfoto bliver på kortet
-• Kaloriegrænse, spist i dag, og hvad der er tilbage
-• Måltidskort med foto, score og portion
-• Større tekst passer stadig på skærmen
+Tag et foto. Se straks, hvor mange kalorier der er tilbage.
+• Fotoet bliver på kortet
+• Score og portion på hvert måltid
+• Stor tekst passer stadig på skærmen
 • Åbn en hvilken som helst tidligere dag
 • Mere af appen på dit sprog

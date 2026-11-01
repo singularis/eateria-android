@@ -1,7 +1,6 @@
-Eateria 5.3
-• La photo du repas reste sur la carte
-• Objectif de calories, mangé aujourd’hui et ce qu’il reste
-• Carte du repas : photo, score et portion
-• Un texte plus grand tient encore à l’écran
+Photographiez le repas et voyez tout de suite les calories restantes.
+• La photo reste sur la carte
+• Score et portion sur chaque repas
+• Le grand texte tient à l’écran
 • Ouvrez n’importe quel jour passé
 • Plus de l’app dans votre langue

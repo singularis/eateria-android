@@ -1,7 +1,6 @@
-Eateria 5.3
-• Måltidsfotot stannar på kortet
-• Kalorigräns, ätit idag och vad som är kvar
-• Måltidskort med foto, poäng och portion
-• Större text får fortfarande plats på skärmen
+Fota måltidet och se direkt hur många kalorier som är kvar.
+• Fotot stannar på kortet
+• Poäng och portion på varje måltid
+• Stor text får fortfarande plats
 • Öppna vilken tidigare dag som helst
 • Mer av appen på ditt språk

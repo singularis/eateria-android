@@ -1,7 +1,6 @@
-Eateria 5.3
-• Fanann grianghraf an bhéile ar an gcárta
-• Sprioc calraí, a itheadh inniu, agus a fhágtar
-• Cárta béile: grianghraf, scór agus cuid
-• Téacs níos mó fós ar an scáileán
+Tóg grianghraf agus feic na calraí atá fágtha láithreach.
+• Fanann an grianghraf ar an gcárta
+• Scór agus cuid ar gach béile
+• Téacs mór fós ar an scáileán
 • Oscail aon lá caite
 • Tuilleadh den aip i do theanga

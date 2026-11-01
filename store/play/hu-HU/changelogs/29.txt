@@ -1,7 +1,6 @@
-Eateria 5.3
-• Az étel fotója a kártyán marad
-• Kalóriacél, ma megevett és ami maradt
-• Étkezéskártya: fotó, pont és adag
-• A nagyobb szöveg elfér a képernyőn
-• Nyisson meg bármely korábbi napot
-• Az app több része a nyelvén
+Fényképezze le az ételt, és azonnal látja, mennyi kalória maradt.
+• A fotó a kártyán marad
+• Pont és adag minden étkezésnél
+• A nagy szöveg elfér a képernyőn
+• Bármely korábbi napot megnyithat
+• Az app több része az Ön nyelvén

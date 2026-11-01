@@ -1,7 +1,6 @@
-Eateria 5.3
-• Fotografia mesei rămâne pe card
-• Limită de calorii, mâncat azi și cât a rămas
-• Cardul mesei: fotografie, scor și porție
-• Textul mai mare încape pe ecran
+Fă o poză și vezi imediat câte calorii au rămas.
+• Fotografia rămâne pe card
+• Scor și porție la fiecare masă
+• Textul mare încape pe ecran
 • Deschide orice zi trecută
 • Mai mult din aplicație în limba ta

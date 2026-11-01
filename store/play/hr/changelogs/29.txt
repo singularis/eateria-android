@@ -1,7 +1,6 @@
-Eateria 5.3
-• Fotografija obroka ostaje na kartici
-• Limit kalorija, pojedeno danas i koliko je ostalo
-• Kartica obroka: fotografija, ocjena i porcija
-• Veći tekst i dalje stane na zaslon
+Slikajte obrok i odmah vidite koliko je kalorija ostalo.
+• Fotografija ostaje na kartici
+• Ocjena i porcija na svakom obroku
+• Veliki tekst stane na zaslon
 • Otvorite bilo koji prošli dan
 • Više aplikacije na vašem jeziku

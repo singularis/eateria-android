@@ -1,7 +1,6 @@
-Eateria 5.3
-• De maaltijdfoto blijft op de kaart
-• Caloriedoel, vandaag gegeten en wat over is
-• Maaltijdkaart met foto, score en portie
-• Grotere tekst past nog op het scherm
-• Open een willekeurige eerdere dag
+Maak een foto en zie meteen hoeveel calorieën er over zijn.
+• De foto blijft op de kaart
+• Score en portie bij elke maaltijd
+• Grote tekst past nog op het scherm
+• Open elke eerdere dag
 • Meer van de app in je taal

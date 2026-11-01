@@ -1,7 +1,6 @@
-Eateria 5.3
-• A foto da refeição fica no cartão
-• Limite de calorias, comido hoje e o que resta
-• Cartão da refeição: foto, pontuação e porção
-• Texto maior continua a caber no ecrã
+Tire uma foto e veja logo as calorias que restam.
+• A foto fica no cartão
+• Pontuação e porção em cada refeição
+• O texto grande ainda cabe no ecrã
 • Abra qualquer dia anterior
 • Mais da app no seu idioma

@@ -1,7 +1,6 @@
-Eateria 5.3
-• Your meal photo stays on the card
-• Calorie goal, eaten today, and what is left
-• Meal card with photo, score, and portion
-• Larger text still fits the screen
+Snap a meal and see calories left, right away.
+• Your photo stays on the card
+• Health score and portion on every meal
+• Large text still fits the screen
 • Open any past day
 • More of the app is in your language

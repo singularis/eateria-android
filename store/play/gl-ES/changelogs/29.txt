@@ -1,7 +1,6 @@
-Eateria 5.3
-• A foto da comida queda na tarxeta
-• Límite de calorías, comido hoxe e o que queda
-• Tarxeta con foto, puntuación e porción
-• O texto máis grande segue cabendo na pantalla
+Fai unha foto e ve ao momento as calorías que quedan.
+• A foto queda na tarxeta
+• Puntuación e porción en cada comida
+• O texto grande cabe na pantalla
 • Abre calquera día pasado
 • Máis da app no teu idioma

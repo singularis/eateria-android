@@ -1,7 +1,6 @@
-Eateria 5.3
-• Patiekalo nuotrauka lieka kortelėje
-• Kalorijų riba, suvalgyta šiandien ir kiek liko
-• Patiekalo kortelė: nuotrauka, įvertinimas ir porcija
-• Didesnis tekstas telpa ekrane
+Nufotografuokite patiekalą ir iškart matykite, kiek kalorijų liko.
+• Nuotrauka lieka kortelėje
+• Įvertinimas ir porcija kiekviename patiekale
+• Didelis tekstas telpa ekrane
 • Atverkite bet kurią praėjusią dieną
 • Daugiau programos jūsų kalba

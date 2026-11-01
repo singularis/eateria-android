@@ -1,7 +1,6 @@
-Eateria 5.3
-• Fotka jídla zůstane na kartě
-• Limit kalorií, snědeno dnes a kolik zbývá
-• Karta jídla: fotka, skóre a porce
-• Větší text se vejde na obrazovku
-• Otevřete kterýkoli minulý den
+Vyfoťte jídlo a hned uvidíte, kolik kalorií zbývá.
+• Fotka zůstane na kartě
+• Skóre a porce u každého jídla
+• Velký text se vejde na obrazovku
+• Otevřete jakýkoli minulý den
 • Více aplikace ve vašem jazyce

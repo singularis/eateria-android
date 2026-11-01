@@ -1,7 +1,6 @@
-Eateria 5.3
-• Das Foto bleibt auf der Mahlzeitkarte
-• Kalorienziel, heute gegessen und was übrig ist
-• Karte mit Foto, Bewertung und Portion
-• Größerer Text bleibt auf dem Bildschirm
-• Einen beliebigen vergangenen Tag öffnen
+Mahlzeit fotografieren und sofort sehen, wie viele Kalorien übrig sind.
+• Das Foto bleibt auf der Karte
+• Bewertung und Portion bei jeder Mahlzeit
+• Großer Text passt noch auf den Bildschirm
+• Jeden vergangenen Tag öffnen
 • Mehr von der App in Ihrer Sprache

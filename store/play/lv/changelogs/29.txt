@@ -1,7 +1,6 @@
-Eateria 5.3
-• Ēdiena foto paliek kartītē
-• Kaloriju limits, šodien apēsts un cik palicis
-• Ēdiena kartīte: foto, vērtējums un porcija
-• Lielāks teksts joprojām ietilpst ekrānā
+Nofotografējiet ēdienu un uzreiz redziet, cik kaloriju palicis.
+• Foto paliek kartītē
+• Vērtējums un porcija katrā ēdienā
+• Liels teksts ietilpst ekrānā
 • Atveriet jebkuru iepriekšēju dienu
 • Vairāk lietotnes jūsu valodā

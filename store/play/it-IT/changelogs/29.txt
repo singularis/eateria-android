@@ -1,7 +1,6 @@
-Eateria 5.3
-• La foto del pasto resta sulla scheda
-• Limite di calorie, mangiato oggi e quanto resta
-• Scheda pasto: foto, punteggio e porzione
-• Il testo più grande sta ancora nello schermo
+Scatta il pasto e vedi subito le calorie rimaste.
+• La foto resta sulla scheda
+• Punteggio e porzione su ogni pasto
+• Il testo grande entra nello schermo
 • Apri qualsiasi giorno passato
 • Più app nella tua lingua

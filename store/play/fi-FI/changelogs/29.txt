@@ -1,7 +1,6 @@
-Eateria 5.3
-• Ateriakuva pysyy kortissa
-• Kaloritavoite, tänään syöty ja mitä jää
-• Ateriakortti: kuva, pisteet ja annos
-• Isompi teksti mahtuu yhä näytölle
+Kuva ateria ja näe heti, paljonko kaloreita on jäljellä.
+• Kuva pysyy kortissa
+• Pisteet ja annos joka aterialla
+• Iso teksti mahtuu näytölle
 • Avaa mikä tahansa mennyt päivä
-• Lisää sovelluksesta kielelläsi
+• Enemmän sovelluksesta kielelläsi

@@ -1,4 +1,7 @@
+import com.android.build.api.artifact.MultipleArtifact
+import com.android.build.api.artifact.SingleArtifact
 import java.util.Properties
+import java.util.zip.ZipFile
 
 plugins {
     alias(libs.plugins.android.application)
@@ -27,7 +30,7 @@ android {
         applicationId = "com.singularis.eateria"
         minSdk = 26
         targetSdk = 36
-        versionCode = 29
+        versionCode = 30
         versionName = "5.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -80,7 +83,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // Package native debug symbols into the AAB for Play crash symbolication.
+            // Ask AGP to extract symbols from libraries that still have a symbol table.
+            // Pre-stripped AndroidX .so files are handled by packageReleasePlayNativeSymbolTables.
             ndk {
                 debugSymbolLevel = "SYMBOL_TABLE"
             }
@@ -106,6 +110,25 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+// CameraX, DataStore, and Compose ship stripped .so files (dynamic symbols only).
+// AGP skips those because llvm-strip does not change the file, so the App Bundle
+// has native code and no debug-symbols metadata. Play then warns that symbols
+// were not uploaded. Copy each stripped library to <abi>/<name>.so.sym, which is
+// the file AGP would have produced with objcopy --strip-debug.
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        val cap = variant.name.replaceFirstChar { it.uppercase() }
+        val packageSymbols =
+            tasks.register<PackagePlayNativeSymbolTablesTask>("package${cap}PlayNativeSymbolTables") {
+                mergedNativeLibs.set(variant.artifacts.get(SingleArtifact.MERGED_NATIVE_LIBS))
+            }
+        variant.artifacts
+            .use(packageSymbols)
+            .wiredWith(PackagePlayNativeSymbolTablesTask::getSymbolTables)
+            .toAppendTo(MultipleArtifact.NATIVE_SYMBOL_TABLES)
     }
 }
 
@@ -215,4 +238,23 @@ dependencies {
 
     // Accompanist - Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+}
+
+afterEvaluate {
+    tasks.named("bundleRelease").configure {
+        doLast {
+            val bundle = layout.buildDirectory.file("outputs/bundle/release/app-release.aab").get().asFile
+            val symbols =
+                ZipFile(bundle).use { zip ->
+                    zip.entries().asSequence().map { it.name }.filter { entry ->
+                        entry.contains("com.android.tools.build.debugsymbols/") &&
+                            (entry.endsWith(".sym") || entry.endsWith(".dbg"))
+                    }.toList()
+                }
+            check(symbols.isNotEmpty()) {
+                "Release App Bundle has native code but no debug symbols. Play will keep the missing-symbols warning."
+            }
+            logger.lifecycle("Play native debug symbols in ${bundle.name}: ${symbols.size} files")
+        }
+    }
 }

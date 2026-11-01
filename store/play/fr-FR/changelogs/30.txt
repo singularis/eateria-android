@@ -1,0 +1,4 @@
+Le score du jour suit ce que vous avez mangé.
+• Les conseils alimentaires expliquent maintenant pourquoi
+• Les échecs retiennent la couleur avec laquelle vous avez joué
+• Nouveau design en verre liquide

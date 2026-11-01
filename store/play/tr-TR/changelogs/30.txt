@@ -1,0 +1,4 @@
+Bugünün yemek puanı bugün yediklerinize göre.
+• Yemek önerileri artık nedenini açıklıyor
+• Satranç oynadığınız rengi hatırlıyor
+• Yeni sıvı cam tasarımı

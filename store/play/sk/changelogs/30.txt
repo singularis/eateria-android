@@ -1,0 +1,4 @@
+Dnešné skóre jedla vychádza z toho, čo ste zjedli.
+• Rady k jedlu teraz vysvetľujú prečo
+• Šach si pamätá farbu, ktorou ste hrali
+• Nový dizajn tekutého skla

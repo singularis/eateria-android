@@ -1,6 +1,4 @@
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the color you played
+• New liquid glass design

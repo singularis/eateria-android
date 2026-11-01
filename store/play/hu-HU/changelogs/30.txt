@@ -1,0 +1,4 @@
+A mai ételpontszám abból jön, amit ma evett.
+• Az étkezési tanácsok most megmagyarázzák, miért
+• A sakk megjegyzi, milyen színnel játszott
+• Új liquid glass megjelenés

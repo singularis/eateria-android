@@ -1,0 +1,4 @@
+Šodienas ēdiena vērtējums seko tam, ko esat ēdis.
+• Padomi par ēdienu tagad paskaidro kāpēc
+• Šahs atceras krāsu, ar kuru spēlējāt
+• Jauns šķidrā stikla dizains

@@ -1,368 +1,258 @@
 <en-GB>
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the colour you played
+• New liquid glass design
 </en-GB>
 <ar>
-صوّر وجبتك وشاهد السعرات المتبقية فورًا.
-• الصورة تبقى على البطاقة
-• تقييم الصحة والكمية في كل وجبة
-• النص الكبير يبقى داخل الشاشة
-• افتح أي يوم سابق
-• المزيد من التطبيق بلغتك
+نتيجة طعام اليوم تتبع ما أكلته.
+• نصائح الطعام تشرح السبب الآن
+• الشطرنج يتذكر اللون الذي لعبت به
+• تصميم زجاج سائل جديد
 </ar>
 <be>
-Зрабіце фота стравы і адразу ўбачыце, колькі калорый засталося.
-• Фота застаецца на картцы
-• Адзнака здароўя і порцыя ў кожнай страве
-• Вялікі тэкст змяшчаецца на экране
-• Адкрыйце любы мінулы дзень
-• Больш праграмы на вашай мове
+Сённяшняя адзнака ежы адпавядае таму, што вы з'елі.
+• Парады пра ежу цяпер тлумачаць чаму
+• Шахматы памятаюць колер, якім вы гулялі
+• Новы дызайн вадкага шкла
 </be>
 <bg>
-Снимайте ястието и веднага вижте колко калории остават.
-• Снимката остава на картата
-• Оценка и порция на всяко ястие
-• Големият текст се събира на екрана
-• Отворете всеки минал ден
-• Повече от приложението на вашия език
+Днешната оценка следва това, което сте яли.
+• Съветите за храна вече обясняват защо
+• Шахматът помни цвета, с който играхте
+• Нов дизайн от течно стъкло
 </bg>
 <bn-BD>
-খাবারের ছবি তুলুন, সাথে সাথে দেখুন কত ক্যালোরি বাকি।
-• ছবি কার্ডেই থাকে
-• প্রতিটি খাবারে স্কোর ও পরিমাণ
-• বড় লেখা স্ক্রিনেই থাকে
-• যেকোনো আগের দিন খুলুন
-• অ্যাপের আরও অংশ আপনার ভাষায়
+আজকের খাবারের স্কোর দেখায় আপনি যা খেয়েছেন।
+• খাবারের পরামর্শ এখন কারণ জানায়
+• দাবা আপনার খেলার রং মনে রাখে
+• নতুন লিকুইড গ্লাস ডিজাইন
 </bn-BD>
 <cs-CZ>
-Vyfoťte jídlo a hned uvidíte, kolik kalorií zbývá.
-• Fotka zůstane na kartě
-• Skóre a porce u každého jídla
-• Velký text se vejde na obrazovku
-• Otevřete jakýkoli minulý den
-• Více aplikace ve vašem jazyce
+Dnešní skóre jídla vychází z toho, co jste snědli.
+• Rady k jídlu teď vysvětlují proč
+• Šachy si pamatují barvu, kterou jste hráli
+• Nový design tekutého skla
 </cs-CZ>
 <da-DK>
-Tag et foto. Se straks, hvor mange kalorier der er tilbage.
-• Fotoet bliver på kortet
-• Score og portion på hvert måltid
-• Stor tekst passer stadig på skærmen
-• Åbn en hvilken som helst tidligere dag
-• Mere af appen på dit sprog
+Dagens madscore følger det, du har spist.
+• Madråd forklarer nu hvorfor
+• Skak husker den farve, du spillede
+• Nyt design i flydende glas
 </da-DK>
 <de-DE>
-Mahlzeit fotografieren und sofort sehen, wie viele Kalorien übrig sind.
-• Das Foto bleibt auf der Karte
-• Bewertung und Portion bei jeder Mahlzeit
-• Großer Text passt noch auf den Bildschirm
-• Jeden vergangenen Tag öffnen
-• Mehr von der App in Ihrer Sprache
+Die Essensnote von heute folgt dem, was Sie gegessen haben.
+• Ernährungstipps erklären jetzt den Grund
+• Schach merkt sich die Farbe, mit der Sie gespielt haben
+• Neues Liquid-Glass-Design
 </de-DE>
 <el-GR>
-Βγάλτε φωτογραφία το γεύμα και δείτε αμέσως πόσες θερμίδες μένουν.
-• Η φωτογραφία μένει στην κάρτα
-• Βαθμός και μερίδα σε κάθε γεύμα
-• Το μεγάλο κείμενο χωράει στην οθόνη
-• Ανοίξτε οποιαδήποτε παλιά μέρα
-• Περισσότερα από την εφαρμογή στη γλώσσα σας
+Η σημερινή βαθμολογία φαγητού ακολουθεί ό,τι φάγατε.
+• Οι συμβουλές για το φαγητό εξηγούν πλέον το γιατί
+• Το σκάκι θυμάται το χρώμα που παίξατε
+• Νέα σχεδίαση υγρού γυαλιού
 </el-GR>
 <en-AU>
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the colour you played
+• New liquid glass design
 </en-AU>
 <en-CA>
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the colour you played
+• New liquid glass design
 </en-CA>
 <en-IN>
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the color you played
+• New liquid glass design
 </en-IN>
 <en-SG>
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the color you played
+• New liquid glass design
 </en-SG>
 <en-US>
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the color you played
+• New liquid glass design
 </en-US>
 <en-ZA>
-Snap a meal and see calories left, right away.
-• Your photo stays on the card
-• Health score and portion on every meal
-• Large text still fits the screen
-• Open any past day
-• More of the app is in your language
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the colour you played
+• New liquid glass design
 </en-ZA>
 <es-419>
-Haz una foto y ve al momento las calorías que quedan.
-• La foto se queda en la tarjeta
-• Puntuación y porción en cada comida
-• El texto grande cabe en la pantalla
-• Abre cualquier día pasado
-• Más de la app en tu idioma
+La puntuación de hoy sigue lo que comiste.
+• Los consejos de comida ahora explican por qué
+• El ajedrez recuerda el color con el que jugaste
+• Nuevo diseño de vidrio líquido
 </es-419>
 <es-ES>
-Haz una foto y ve al momento las calorías que quedan.
-• La foto se queda en la tarjeta
-• Puntuación y porción en cada comida
-• El texto grande cabe en la pantalla
-• Abre cualquier día pasado
-• Más de la app en tu idioma
+La puntuación de hoy sigue lo que has comido.
+• Los consejos de comida ahora explican por qué
+• El ajedrez recuerda el color con el que jugaste
+• Nuevo diseño de vidrio líquido
 </es-ES>
 <et>
-Pildista eine ja näe kohe, kui palju kaloreid on jäänud.
-• Foto jääb kaardile
-• Hinne ja portsjon igal toidul
-• Suur tekst mahub ekraanile
-• Ava ükskõik milline varasem päev
-• Rohkem rakendusest sinu keeles
+Tänane toiduhinne lähtub sellest, mida sa täna sõid.
+• Toidunõuanded selgitavad nüüd, miks
+• Male jätab meelde värvi, millega mängisid
+• Uus vedelklaasi kujundus
 </et>
 <fi-FI>
-Kuva ateria ja näe heti, paljonko kaloreita on jäljellä.
-• Kuva pysyy kortissa
-• Pisteet ja annos joka aterialla
-• Iso teksti mahtuu näytölle
-• Avaa mikä tahansa mennyt päivä
-• Enemmän sovelluksesta kielelläsi
+Tämän päivän ruokapisteet seuraavat sitä, mitä söit.
+• Ruokaneuvot kertovat nyt miksi
+• Shakki muistaa värin, jolla pelasit
+• Uusi nestemäisen lasin ulkoasu
 </fi-FI>
 <fr-FR>
-Photographiez le repas et voyez tout de suite les calories restantes.
-• La photo reste sur la carte
-• Score et portion sur chaque repas
-• Le grand texte tient à l’écran
-• Ouvrez n’importe quel jour passé
-• Plus de l’app dans votre langue
+Le score du jour suit ce que vous avez mangé.
+• Les conseils alimentaires expliquent maintenant pourquoi
+• Les échecs retiennent la couleur avec laquelle vous avez joué
+• Nouveau design en verre liquide
 </fr-FR>
-<ga>
-Tóg grianghraf agus feic na calraí atá fágtha láithreach.
-• Fanann an grianghraf ar an gcárta
-• Scór agus cuid ar gach béile
-• Téacs mór fós ar an scáileán
-• Oscail aon lá caite
-• Tuilleadh den aip i do theanga
-</ga>
 <gl-ES>
-Fai unha foto e ve ao momento as calorías que quedan.
-• A foto queda na tarxeta
-• Puntuación e porción en cada comida
-• O texto grande cabe na pantalla
-• Abre calquera día pasado
-• Máis da app no teu idioma
+A puntuación de hoxe segue o que comiches.
+• Os consellos de comida agora explican por que
+• O xadrez lembra a cor coa que xogaches
+• Novo deseño de vidro líquido
 </gl-ES>
 <hi-IN>
-खाना फ़ोटो करें और तुरंत देखें कितनी कैलोरी बची है।
-• फ़ोटो कार्ड पर रहती है
-• हर भोजन पर स्कोर और मात्रा
-• बड़ा टेक्स्ट स्क्रीन में आता है
-• कोई भी पिछला दिन खोलें
-• ऐप का और हिस्सा आपकी भाषा में
+आज का फ़ूड स्कोर उसी पर है जो आपने खाया।
+• खाने की सलाह अब वजह बताती है
+• शतरंज आपका रंग याद रखता है
+• नया लिक्विड ग्लास डिज़ाइन
 </hi-IN>
 <hr>
-Slikajte obrok i odmah vidite koliko je kalorija ostalo.
-• Fotografija ostaje na kartici
-• Ocjena i porcija na svakom obroku
-• Veliki tekst stane na zaslon
-• Otvorite bilo koji prošli dan
-• Više aplikacije na vašem jeziku
+Današnja ocjena hrane prati ono što ste jeli.
+• Savjeti o hrani sada objašnjavaju zašto
+• Šah pamti boju kojom ste igrali
+• Novi dizajn tekućeg stakla
 </hr>
 <hu-HU>
-Fényképezze le az ételt, és azonnal látja, mennyi kalória maradt.
-• A fotó a kártyán marad
-• Pont és adag minden étkezésnél
-• A nagy szöveg elfér a képernyőn
-• Bármely korábbi napot megnyithat
-• Az app több része az Ön nyelvén
+A mai ételpontszám abból jön, amit ma evett.
+• Az étkezési tanácsok most megmagyarázzák, miért
+• A sakk megjegyzi, milyen színnel játszott
+• Új liquid glass megjelenés
 </hu-HU>
 <it-IT>
-Scatta il pasto e vedi subito le calorie rimaste.
-• La foto resta sulla scheda
-• Punteggio e porzione su ogni pasto
-• Il testo grande entra nello schermo
-• Apri qualsiasi giorno passato
-• Più app nella tua lingua
+Il punteggio di oggi segue ciò che hai mangiato.
+• I consigli sul cibo ora spiegano perché
+• Gli scacchi ricordano il colore con cui hai giocato
+• Nuovo design in vetro liquido
 </it-IT>
 <ja-JP>
-食事を撮ると、残りのカロリーがすぐわかります。
-• 写真はカードに残ります
-• どの食事にもスコアと量
-• 大きい文字でも画面に収まります
-• 過去のどの日でも開けます
-• アプリのより多くの画面があなたの言語です
+今日の食事スコアは、今日食べたものに合わせています。
+• 食事のアドバイスが理由を説明します
+• チェスは指した色を覚えています
+• 新しいリキッドグラスのデザイン
 </ja-JP>
 <ko-KR>
-식사를 찍으면 남은 칼로리를 바로 볼 수 있습니다.
-• 사진이 카드에 남습니다
-• 모든 식사에 점수와 양
-• 큰 글자도 화면에 들어옵니다
-• 지난 어느 날이든 엽니다
-• 앱의 더 많은 화면이 내 언어로 나옵니다
+오늘 음식 점수는 오늘 먹은 것을 따릅니다.
+• 음식 조언이 이제 이유를 설명합니다
+• 체스는 둔 색을 기억합니다
+• 새로운 리퀴드 글래스 디자인
 </ko-KR>
 <lt>
-Nufotografuokite patiekalą ir iškart matykite, kiek kalorijų liko.
-• Nuotrauka lieka kortelėje
-• Įvertinimas ir porcija kiekviename patiekale
-• Didelis tekstas telpa ekrane
-• Atverkite bet kurią praėjusią dieną
-• Daugiau programos jūsų kalba
+Šiandienos maisto balas seka tai, ką valgėte.
+• Patarimai apie maistą dabar paaiškina kodėl
+• Šachmatai prisimena spalvą, kuria žaidėte
+• Naujas skysto stiklo dizainas
 </lt>
 <lv>
-Nofotografējiet ēdienu un uzreiz redziet, cik kaloriju palicis.
-• Foto paliek kartītē
-• Vērtējums un porcija katrā ēdienā
-• Liels teksts ietilpst ekrānā
-• Atveriet jebkuru iepriekšēju dienu
-• Vairāk lietotnes jūsu valodā
+Šodienas ēdiena vērtējums seko tam, ko esat ēdis.
+• Padomi par ēdienu tagad paskaidro kāpēc
+• Šahs atceras krāsu, ar kuru spēlējāt
+• Jauns šķidrā stikla dizains
 </lv>
-<mt>
-Ħu ritratt u ara minnufih il-kaloriji li fadal.
-• Ir-ritratt jibqa' fuq il-karta
-• Punteġġ u porzjon f'kull ikla
-• It-test kbir xorta joqgħod fl-iskrin
-• Iftaħ kwalunkwe jum li għadda
-• Aktar mill-app bil-lingwa tiegħek
-</mt>
 <nl-NL>
-Maak een foto en zie meteen hoeveel calorieën er over zijn.
-• De foto blijft op de kaart
-• Score en portie bij elke maaltijd
-• Grote tekst past nog op het scherm
-• Open elke eerdere dag
-• Meer van de app in je taal
+De voedingsscore van vandaag volgt wat je at.
+• Voedingsadvies legt nu uit waarom
+• Schaken onthoudt de kleur waarmee je speelde
+• Nieuw liquid glass-ontwerp
 </nl-NL>
 <no-NO>
-Ta et bilde og se med en gang hvor mange kalorier som er igjen.
-• Bildet blir på kortet
-• Poeng og porsjon på hvert måltid
-• Stor tekst får fortsatt plass
-• Åpne en hvilken som helst tidligere dag
-• Mer av appen på språket ditt
+Dagens matscore følger det du spiste.
+• Matråd forklarer nå hvorfor
+• Sjakk husker fargen du spilte
+• Nytt design i flytende glass
 </no-NO>
 <pl-PL>
-Zrób zdjęcie i od razu zobacz, ile kalorii zostało.
-• Zdjęcie zostaje na karcie
-• Wynik i porcja przy każdym posiłku
-• Duży tekst nadal mieści się na ekranie
-• Otwórz dowolny miniony dzień
-• Więcej aplikacji w Twoim języku
+Dzisiejsza ocena jedzenia wynika z tego, co dziś zjadłeś.
+• Porady o jedzeniu teraz tłumaczą dlaczego
+• Szachy pamiętają kolor, którym grałeś
+• Nowy wygląd płynnego szkła
 </pl-PL>
-<pt-BR>
-Tire uma foto e veja na hora as calorias que restam.
-• A foto fica no cartão
-• Pontuação e porção em cada refeição
-• Texto grande ainda cabe na tela
-• Abra qualquer dia anterior
-• Mais do app no seu idioma
-</pt-BR>
 <pt-PT>
-Tire uma foto e veja logo as calorias que restam.
-• A foto fica no cartão
-• Pontuação e porção em cada refeição
-• O texto grande ainda cabe no ecrã
-• Abra qualquer dia anterior
-• Mais da app no seu idioma
+A pontuação de hoje segue o que comeu.
+• Os conselhos de comida agora explicam porquê
+• O xadrez lembra a cor com que jogou
+• Novo design em vidro líquido
 </pt-PT>
 <ro>
-Fă o poză și vezi imediat câte calorii au rămas.
-• Fotografia rămâne pe card
-• Scor și porție la fiecare masă
-• Textul mare încape pe ecran
-• Deschide orice zi trecută
-• Mai mult din aplicație în limba ta
+Scorul de azi urmează ce ai mâncat.
+• Sfaturile despre mâncare explică acum de ce
+• Șahul ține minte culoarea cu care ai jucat
+• Design nou din sticlă lichidă
 </ro>
 <sk>
-Odfotíte jedlo a hneď vidíte, koľko kalórií zostáva.
-• Fotka zostane na karte
-• Skóre a porcia pri každom jedle
-• Veľký text sa zmestí na obrazovku
-• Otvorte ktorýkoľvek minulý deň
-• Viac aplikácie vo vašom jazyku
+Dnešné skóre jedla vychádza z toho, čo ste zjedli.
+• Rady k jedlu teraz vysvetľujú prečo
+• Šach si pamätá farbu, ktorou ste hrali
+• Nový dizajn tekutého skla
 </sk>
 <sl>
-Fotografirajte obrok in takoj vidite, koliko kalorij je ostalo.
-• Fotografija ostane na kartici
-• Ocena in porcija pri vsakem obroku
-• Veliko besedilo še vedno gre na zaslon
-• Odprite kateri koli pretekli dan
-• Več aplikacije v vašem jeziku
+Današnja ocena hrane sledi temu, kar ste jedli.
+• Nasveti o hrani zdaj pojasnijo, zakaj
+• Šah si zapomni barvo, s katero ste igrali
+• Nov videz tekočega stekla
 </sl>
 <sv-SE>
-Fota måltidet och se direkt hur många kalorier som är kvar.
-• Fotot stannar på kortet
-• Poäng och portion på varje måltid
-• Stor text får fortfarande plats
-• Öppna vilken tidigare dag som helst
-• Mer av appen på ditt språk
+Dagens matpoäng följer det du åt.
+• Matråden förklarar nu varför
+• Schack kommer ihåg färgen du spelade
+• Ny design i flytande glas
 </sv-SE>
 <th>
-ถ่ายมื้ออาหาร แล้วเห็นแคลอรีที่เหลือทันที
-• รูปอยู่บนการ์ด
-• คะแนนและปริมาณในทุกมื้อ
-• ตัวอักษรใหญ่ยังอยู่ในหน้าจอ
-• เปิดวันไหนในอดีตก็ได้
-• แอปอีกส่วนในภาษาของคุณ
+คะแนนอาหารวันนี้ตามสิ่งที่คุณกิน
+• คำแนะนำอาหารอธิบายเหตุผลแล้ว
+• หมากรุกจำสีที่คุณเล่น
+• ดีไซน์กระจกเหลวแบบใหม่
 </th>
 <tr-TR>
-Yemeğin fotoğrafını çek, kalan kaloriyi hemen gör.
-• Fotoğraf kartta kalır
-• Her öğünde puan ve porsiyon
-• Büyük yazı ekrana sığar
-• Geçmiş herhangi bir günü aç
-• Uygulamanın daha fazlası senin dilinde
+Bugünün yemek puanı bugün yediklerinize göre.
+• Yemek önerileri artık nedenini açıklıyor
+• Satranç oynadığınız rengi hatırlıyor
+• Yeni sıvı cam tasarımı
 </tr-TR>
 <uk>
-Сфотографуйте страву і одразу побачте, скільки калорій лишилось.
-• Фото лишається на картці
-• Оцінка і порція в кожній страві
-• Великий текст вміщується на екрані
-• Відкрийте будь-який минулий день
-• Більше застосунку вашою мовою
+Сьогоднішня оцінка їжі залежить від того, що ви з'їли.
+• Поради про їжу тепер пояснюють чому
+• Шахи пам'ятають колір, яким ви грали
+• Новий вигляд рідкого скла
 </uk>
 <ur>
-کھانے کی تصویر لیں اور فوراً دیکھیں کتنی کیلوریز بچیں۔
-• تصویر کارڈ پر رہتی ہے
-• ہر کھانے پر اسکور اور مقدار
-• بڑا متن اسکرین میں آتا ہے
-• کوئی بھی پچھلا دن کھولیں
-• ایپ کا مزید حصہ آپ کی زبان میں
+آج کا فوڈ سکور اس پر ہے جو آپ نے کھایا۔
+• کھانے کے مشورے اب وجہ بتاتے ہیں
+• شطرنج آپ کا رنگ یاد رکھتی ہے
+• نیا لیکوئڈ گلاس ڈیزائن
 </ur>
 <vi>
-Chụp bữa ăn và thấy ngay calo còn lại.
-• Ảnh nằm trên thẻ
-• Điểm và khẩu phần trên mỗi bữa
-• Chữ lớn vẫn vừa màn hình
-• Mở bất kỳ ngày trước nào
-• Thêm ứng dụng bằng ngôn ngữ của bạn
+Điểm món ăn hôm nay theo những gì bạn đã ăn.
+• Lời khuyên về món ăn giờ giải thích vì sao
+• Cờ vua nhớ màu bạn đã chơi
+• Thiết kế kính lỏng mới
 </vi>
 <zh-CN>
-拍下这一餐，马上看到还剩多少热量。
-• 照片留在卡片上
-• 每餐都有评分和份量
-• 大字仍然能放进屏幕
-• 打开任意过去的一天
-• 应用的更多界面使用你的语言
+今日饮食评分根据你今天吃的来计算。
+• 饮食建议现在会解释原因
+• 国际象棋会记住你执棋的颜色
+• 全新液态玻璃设计
 </zh-CN>

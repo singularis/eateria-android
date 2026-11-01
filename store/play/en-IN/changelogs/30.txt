@@ -1,0 +1,4 @@
+Today's food score follows what you ate.
+• Food advice now explains why
+• Chess remembers the color you played
+• New liquid glass design

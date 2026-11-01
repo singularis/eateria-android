@@ -2,5 +2,6 @@ Eateria 5.3
 • A foto da comida queda na tarxeta
 • Límite de calorías, comido hoxe e o que queda
 • Tarxeta con foto, puntuación e porción
-• O tamaño do texto agranda toda a app
-• Abre un día pasado e máis da app no teu idioma
+• O texto máis grande segue cabendo na pantalla
+• Abre calquera día pasado
+• Máis da app no teu idioma

@@ -2,5 +2,6 @@ Eateria 5.3
 • De maaltijdfoto blijft op de kaart
 • Caloriedoel, vandaag gegeten en wat over is
 • Maaltijdkaart met foto, score en portie
-• Tekstgrootte vergroot de hele app
-• Open een eerdere dag, en meer van de app in je taal
+• Grotere tekst past nog op het scherm
+• Open een willekeurige eerdere dag
+• Meer van de app in je taal

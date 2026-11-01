@@ -1,0 +1,7 @@
+Eateria 5.3
+• Ir-ritratt tal-ikla jibqa' fuq il-karta
+• Limitu ta' kaloriji, kemm kilt illum, u x'fadal
+• Karta tal-ikla: ritratt, punteġġ u porzjon
+• Test akbar xorta joqgħod fuq l-iskrin
+• Iftaħ kwalunkwe jum li għadda
+• Aktar mill-app bil-lingwa tiegħek

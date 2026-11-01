@@ -3,342 +3,412 @@ Eateria 5.3
 • Your meal photo stays on the card
 • Calorie goal, eaten today, and what is left
 • Meal card with photo, score, and portion
-• Text size scales the whole app
-• Open a past day, with more of the app in your language
+• Larger text still fits the screen
+• Open any past day
+• More of the app is in your language
 </en-GB>
-<en-AU>
-Eateria 5.3
-• Your meal photo stays on the card
-• Calorie goal, eaten today, and what is left
-• Meal card with photo, score, and portion
-• Text size scales the whole app
-• Open a past day, with more of the app in your language
-</en-AU>
-<en-CA>
-Eateria 5.3
-• Your meal photo stays on the card
-• Calorie goal, eaten today, and what is left
-• Meal card with photo, score, and portion
-• Text size scales the whole app
-• Open a past day, with more of the app in your language
-</en-CA>
-<en-IN>
-Eateria 5.3
-• Your meal photo stays on the card
-• Calorie goal, eaten today, and what is left
-• Meal card with photo, score, and portion
-• Text size scales the whole app
-• Open a past day, with more of the app in your language
-</en-IN>
-<en-SG>
-Eateria 5.3
-• Your meal photo stays on the card
-• Calorie goal, eaten today, and what is left
-• Meal card with photo, score, and portion
-• Text size scales the whole app
-• Open a past day, with more of the app in your language
-</en-SG>
-<en-ZA>
-Eateria 5.3
-• Your meal photo stays on the card
-• Calorie goal, eaten today, and what is left
-• Meal card with photo, score, and portion
-• Text size scales the whole app
-• Open a past day, with more of the app in your language
-</en-ZA>
-<en-US>
-Eateria 5.3
-• Your meal photo stays on the card
-• Calorie goal, eaten today, and what is left
-• Meal card with photo, score, and portion
-• Text size scales the whole app
-• Open a past day, with more of the app in your language
-</en-US>
 <ar>
 Eateria 5.3
 • صورة الوجبة تبقى على البطاقة
 • حد السعرات، ما أكلته اليوم، والمتبقي
 • بطاقة الوجبة: صورة وتقييم وكمية
-• حجم النص يكبّر التطبيق كله
-• افتح يوماً سابقاً، والمزيد من التطبيق بلغتك
+• النص الأكبر يبقى داخل الشاشة
+• افتح أي يوم سابق
+• المزيد من التطبيق بلغتك
 </ar>
 <be>
 Eateria 5.3
 • Фота стравы застаецца на картцы
 • Ліміт калорый, з’едзена сёння і колькі засталося
 • Картка стравы: фота, адзнака і порцыя
-• Памер тэксту павялічвае ўсю праграму
-• Адкрыйце мінулы дзень, і больш праграмы на вашай мове
+• Большы тэкст змяшчаецца на экране
+• Адкрыйце любы мінулы дзень
+• Больш праграмы на вашай мове
 </be>
 <bg>
 Eateria 5.3
 • Снимката на ястието остава на картата
 • Лимит на калории, изядено днес и колко остава
 • Карта на ястието: снимка, оценка и порция
-• Размерът на текста увеличава цялото приложение
-• Отворете минал ден и още от приложението на вашия език
+• По-големият текст се събира на екрана
+• Отворете който и да е минал ден
+• Още от приложението на вашия език
 </bg>
 <bn-BD>
 Eateria 5.3
 • খাবারের ছবি কার্ডেই থাকে
 • ক্যালোরি সীমা, আজ খাওয়া এবং যা বাকি
 • খাবারের কার্ড: ছবি, স্কোর ও পরিমাণ
-• লেখার আকার পুরো অ্যাপ বড় করে
-• আগের দিন খুলুন, এবং অ্যাপের আরও অংশ আপনার ভাষায়
+• বড় লেখা স্ক্রিনেই থাকে
+• যেকোনো আগের দিন খুলুন
+• অ্যাপের আরও অংশ আপনার ভাষায়
 </bn-BD>
 <cs-CZ>
 Eateria 5.3
 • Fotka jídla zůstane na kartě
 • Limit kalorií, snědeno dnes a kolik zbývá
 • Karta jídla: fotka, skóre a porce
-• Velikost textu zvětší celou aplikaci
-• Otevřete minulý den a více aplikace ve vašem jazyce
+• Větší text se vejde na obrazovku
+• Otevřete kterýkoli minulý den
+• Více aplikace ve vašem jazyce
 </cs-CZ>
 <da-DK>
 Eateria 5.3
 • Dit måltidsfoto bliver på kortet
 • Kaloriegrænse, spist i dag, og hvad der er tilbage
 • Måltidskort med foto, score og portion
-• Tekststørrelse skalerer hele appen
-• Åbn en tidligere dag, og mere af appen på dit sprog
+• Større tekst passer stadig på skærmen
+• Åbn en hvilken som helst tidligere dag
+• Mere af appen på dit sprog
 </da-DK>
 <de-DE>
 Eateria 5.3
 • Das Foto bleibt auf der Mahlzeitkarte
 • Kalorienziel, heute gegessen und was übrig ist
 • Karte mit Foto, Bewertung und Portion
-• Die Textgröße vergrößert die ganze App
-• Einen vergangenen Tag öffnen, mehr von der App in Ihrer Sprache
+• Größerer Text bleibt auf dem Bildschirm
+• Einen beliebigen vergangenen Tag öffnen
+• Mehr von der App in Ihrer Sprache
 </de-DE>
 <el-GR>
 Eateria 5.3
 • Η φωτογραφία του γεύματος μένει στην κάρτα
 • Όριο θερμίδων, ό,τι φάγατε σήμερα και τι μένει
 • Κάρτα γεύματος: φωτογραφία, βαθμός και μερίδα
-• Το μέγεθος κειμένου μεγαλώνει όλη την εφαρμογή
-• Ανοίξτε μια παλιά μέρα, και περισσότερα από την εφαρμογή στη γλώσσα σας
+• Το μεγαλύτερο κείμενο χωράει στην οθόνη
+• Ανοίξτε οποιαδήποτε παλιά μέρα
+• Περισσότερα από την εφαρμογή στη γλώσσα σας
 </el-GR>
-<es-ES>
+<en-AU>
 Eateria 5.3
-• La foto de la comida se queda en la tarjeta
-• Límite de calorías, lo comido hoy y lo que queda
-• Tarjeta con foto, puntuación y porción
-• El tamaño del texto agranda toda la app
-• Abre un día pasado y más de la app en tu idioma
-</es-ES>
+• Your meal photo stays on the card
+• Calorie goal, eaten today, and what is left
+• Meal card with photo, score, and portion
+• Larger text still fits the screen
+• Open any past day
+• More of the app is in your language
+</en-AU>
+<en-CA>
+Eateria 5.3
+• Your meal photo stays on the card
+• Calorie goal, eaten today, and what is left
+• Meal card with photo, score, and portion
+• Larger text still fits the screen
+• Open any past day
+• More of the app is in your language
+</en-CA>
+<en-IN>
+Eateria 5.3
+• Your meal photo stays on the card
+• Calorie goal, eaten today, and what is left
+• Meal card with photo, score, and portion
+• Larger text still fits the screen
+• Open any past day
+• More of the app is in your language
+</en-IN>
+<en-SG>
+Eateria 5.3
+• Your meal photo stays on the card
+• Calorie goal, eaten today, and what is left
+• Meal card with photo, score, and portion
+• Larger text still fits the screen
+• Open any past day
+• More of the app is in your language
+</en-SG>
+<en-US>
+Eateria 5.3
+• Your meal photo stays on the card
+• Calorie goal, eaten today, and what is left
+• Meal card with photo, score, and portion
+• Larger text still fits the screen
+• Open any past day
+• More of the app is in your language
+</en-US>
+<en-ZA>
+Eateria 5.3
+• Your meal photo stays on the card
+• Calorie goal, eaten today, and what is left
+• Meal card with photo, score, and portion
+• Larger text still fits the screen
+• Open any past day
+• More of the app is in your language
+</en-ZA>
 <es-419>
 Eateria 5.3
 • La foto de la comida se queda en la tarjeta
 • Límite de calorías, lo comido hoy y lo que queda
 • Tarjeta con foto, puntuación y porción
-• El tamaño del texto agranda toda la app
-• Abre un día pasado y más de la app en tu idioma
+• El texto más grande sigue cabiendo en la pantalla
+• Abre cualquier día pasado
+• Más de la app en tu idioma
 </es-419>
+<es-ES>
+Eateria 5.3
+• La foto de la comida se queda en la tarjeta
+• Límite de calorías, lo comido hoy y lo que queda
+• Tarjeta con foto, puntuación y porción
+• El texto más grande sigue cabiendo en la pantalla
+• Abre cualquier día pasado
+• Más de la app en tu idioma
+</es-ES>
 <et>
 Eateria 5.3
 • Toidufoto jääb kaardile
 • Kalorilimiit, täna söödud ja mis jääb
 • Toidukaart: foto, hinne ja portsjon
-• Teksti suurus suurendab kogu rakendust
-• Ava varasem päev ja rohkem rakendusest sinu keeles
+• Suurem tekst mahub ikka ekraanile
+• Ava ükskõik milline varasem päev
+• Rohkem rakendusest sinu keeles
 </et>
 <fi-FI>
 Eateria 5.3
 • Ateriakuva pysyy kortissa
 • Kaloritavoite, tänään syöty ja mitä jää
 • Ateriakortti: kuva, pisteet ja annos
-• Tekstin koko suurentaa koko sovelluksen
-• Avaa mennyt päivä ja lisää sovelluksesta kielelläsi
+• Isompi teksti mahtuu yhä näytölle
+• Avaa mikä tahansa mennyt päivä
+• Lisää sovelluksesta kielelläsi
 </fi-FI>
 <fr-FR>
 Eateria 5.3
 • La photo du repas reste sur la carte
 • Objectif de calories, mangé aujourd’hui et ce qu’il reste
 • Carte du repas : photo, score et portion
-• La taille du texte agrandit toute l’app
-• Ouvrez un jour passé, et plus de l’app dans votre langue
+• Un texte plus grand tient encore à l’écran
+• Ouvrez n’importe quel jour passé
+• Plus de l’app dans votre langue
 </fr-FR>
+<ga>
+Eateria 5.3
+• Fanann grianghraf an bhéile ar an gcárta
+• Sprioc calraí, a itheadh inniu, agus a fhágtar
+• Cárta béile: grianghraf, scór agus cuid
+• Téacs níos mó fós ar an scáileán
+• Oscail aon lá caite
+• Tuilleadh den aip i do theanga
+</ga>
 <gl-ES>
 Eateria 5.3
 • A foto da comida queda na tarxeta
 • Límite de calorías, comido hoxe e o que queda
 • Tarxeta con foto, puntuación e porción
-• O tamaño do texto agranda toda a app
-• Abre un día pasado e máis da app no teu idioma
+• O texto máis grande segue cabendo na pantalla
+• Abre calquera día pasado
+• Máis da app no teu idioma
 </gl-ES>
 <hi-IN>
 Eateria 5.3
 • खाने की फ़ोटो कार्ड पर रहती है
 • कैलोरी सीमा, आज खाया और कितना बचा
 • भोजन कार्ड: फ़ोटो, स्कोर और मात्रा
-• टेक्स्ट साइज़ पूरे ऐप को बड़ा करता है
-• पिछला दिन खोलें, और ऐप का और हिस्सा आपकी भाषा में
+• बड़ा टेक्स्ट स्क्रीन पर ही रहता है
+• कोई भी पिछला दिन खोलें
+• ऐप का और हिस्सा आपकी भाषा में
 </hi-IN>
 <hr>
 Eateria 5.3
 • Fotografija obroka ostaje na kartici
 • Limit kalorija, pojedeno danas i koliko je ostalo
 • Kartica obroka: fotografija, ocjena i porcija
-• Veličina teksta povećava cijelu aplikaciju
-• Otvorite prošli dan i više aplikacije na vašem jeziku
+• Veći tekst i dalje stane na zaslon
+• Otvorite bilo koji prošli dan
+• Više aplikacije na vašem jeziku
 </hr>
 <hu-HU>
 Eateria 5.3
 • Az étel fotója a kártyán marad
 • Kalóriacél, ma megevett és ami maradt
 • Étkezéskártya: fotó, pont és adag
-• A szövegméret az egész appot nagyítja
-• Nyisson meg egy korábbi napot, és az app több része legyen a nyelvén
+• A nagyobb szöveg elfér a képernyőn
+• Nyisson meg bármely korábbi napot
+• Az app több része a nyelvén
 </hu-HU>
 <it-IT>
 Eateria 5.3
 • La foto del pasto resta sulla scheda
 • Limite di calorie, mangiato oggi e quanto resta
 • Scheda pasto: foto, punteggio e porzione
-• La dimensione del testo ingrandisce tutta l’app
-• Apri un giorno passato e più app nella tua lingua
+• Il testo più grande sta ancora nello schermo
+• Apri qualsiasi giorno passato
+• Più app nella tua lingua
 </it-IT>
 <ja-JP>
 Eateria 5.3
 • 食事の写真はカードに残ります
 • カロリー目標、今日食べた量、残り
 • 食事カード：写真、スコア、量
-• 文字サイズでアプリ全体が大きくなります
-• 過去の日を開き、アプリのより多くの画面があなたの言語になります
+• 大きい文字でも画面に収まります
+• 過去のどの日でも開けます
+• アプリのより多くの画面があなたの言語になります
 </ja-JP>
 <ko-KR>
 Eateria 5.3
 • 식사 사진이 카드에 남습니다
 • 칼로리 목표, 오늘 먹은 양, 남은 양
 • 식사 카드: 사진, 점수, 양
-• 글자 크기가 앱 전체를 키웁니다
-• 지난 날을 열고, 앱의 더 많은 화면이 내 언어로 나옵니다
+• 큰 글자도 화면에 들어갑니다
+• 지난 어느 날이든 엽니다
+• 앱의 더 많은 화면이 내 언어로 나옵니다
 </ko-KR>
 <lt>
 Eateria 5.3
 • Patiekalo nuotrauka lieka kortelėje
 • Kalorijų riba, suvalgyta šiandien ir kiek liko
 • Patiekalo kortelė: nuotrauka, įvertinimas ir porcija
-• Teksto dydis didina visą programą
-• Atverkite praėjusią dieną ir daugiau programos jūsų kalba
+• Didesnis tekstas telpa ekrane
+• Atverkite bet kurią praėjusią dieną
+• Daugiau programos jūsų kalba
 </lt>
 <lv>
 Eateria 5.3
 • Ēdiena foto paliek kartītē
 • Kaloriju limits, šodien apēsts un cik palicis
 • Ēdiena kartīte: foto, vērtējums un porcija
-• Teksta izmērs palielina visu lietotni
-• Atveriet iepriekšēju dienu un vairāk lietotnes jūsu valodā
+• Lielāks teksts joprojām ietilpst ekrānā
+• Atveriet jebkuru iepriekšēju dienu
+• Vairāk lietotnes jūsu valodā
 </lv>
+<mt>
+Eateria 5.3
+• Ir-ritratt tal-ikla jibqa' fuq il-karta
+• Limitu ta' kaloriji, kemm kilt illum, u x'fadal
+• Karta tal-ikla: ritratt, punteġġ u porzjon
+• Test akbar xorta joqgħod fuq l-iskrin
+• Iftaħ kwalunkwe jum li għadda
+• Aktar mill-app bil-lingwa tiegħek
+</mt>
 <nl-NL>
 Eateria 5.3
 • De maaltijdfoto blijft op de kaart
 • Caloriedoel, vandaag gegeten en wat over is
 • Maaltijdkaart met foto, score en portie
-• Tekstgrootte vergroot de hele app
-• Open een eerdere dag, en meer van de app in je taal
+• Grotere tekst past nog op het scherm
+• Open een willekeurige eerdere dag
+• Meer van de app in je taal
 </nl-NL>
 <no-NO>
 Eateria 5.3
 • Matbildet blir på kortet
 • Kalorigrense, spist i dag, og det som er igjen
 • Måltidskort med bilde, poeng og porsjon
-• Tekststørrelse forstørrer hele appen
-• Åpne en tidligere dag, og mer av appen på språket ditt
+• Større tekst får fortsatt plass på skjermen
+• Åpne en hvilken som helst tidligere dag
+• Mer av appen på språket ditt
 </no-NO>
 <pl-PL>
 Eateria 5.3
 • Zdjęcie posiłku zostaje na karcie
 • Limit kalorii, zjedzone dziś i ile zostało
 • Karta posiłku: zdjęcie, wynik i porcja
-• Rozmiar tekstu powiększa całą aplikację
-• Otwórz miniony dzień i więcej aplikacji w Twoim języku
+• Większy tekst nadal mieści się na ekranie
+• Otwórz dowolny miniony dzień
+• Więcej aplikacji w Twoim języku
 </pl-PL>
+<pt-BR>
+Eateria 5.3
+• A foto da refeição fica no cartão
+• Meta de calorias, o que você comeu hoje e o que resta
+• Cartão da refeição: foto, pontuação e porção
+• Texto maior continua cabendo na tela
+• Abra qualquer dia passado
+• Mais do app no seu idioma
+</pt-BR>
 <pt-PT>
 Eateria 5.3
 • A foto da refeição fica no cartão
 • Limite de calorias, comido hoje e o que resta
 • Cartão da refeição: foto, pontuação e porção
-• O tamanho do texto aumenta a app toda
-• Abra um dia anterior e mais da app no seu idioma
+• Texto maior continua a caber no ecrã
+• Abra qualquer dia anterior
+• Mais da app no seu idioma
 </pt-PT>
 <ro>
 Eateria 5.3
 • Fotografia mesei rămâne pe card
 • Limită de calorii, mâncat azi și cât a rămas
 • Cardul mesei: fotografie, scor și porție
-• Mărimea textului mărește toată aplicația
-• Deschide o zi trecută și mai mult din aplicație în limba ta
+• Textul mai mare încape pe ecran
+• Deschide orice zi trecută
+• Mai mult din aplicație în limba ta
 </ro>
 <sk>
 Eateria 5.3
 • Fotka jedla zostane na karte
 • Limit kalórií, zjedené dnes a koľko zostáva
 • Karta jedla: fotka, skóre a porcia
-• Veľkosť textu zväčší celú aplikáciu
-• Otvorte minulý deň a viac aplikácie vo vašom jazyku
+• Väčší text sa stále zmestí na obrazovku
+• Otvorte ktorýkoľvek minulý deň
+• Viac aplikácie vo vašom jazyku
 </sk>
 <sl>
 Eateria 5.3
 • Fotografija obroka ostane na kartici
 • Omejitev kalorij, zaužito danes in koliko ostane
 • Kartica obroka: fotografija, ocena in porcija
-• Velikost besedila poveča celotno aplikacijo
-• Odprite pretekli dan in več aplikacije v vašem jeziku
+• Večje besedilo se še vedno prilega zaslonu
+• Odprite kateri koli pretekli dan
+• Več aplikacije v vašem jeziku
 </sl>
 <sv-SE>
 Eateria 5.3
 • Måltidsfotot stannar på kortet
 • Kalorigräns, ätit idag och vad som är kvar
 • Måltidskort med foto, poäng och portion
-• Textstorleken förstorar hela appen
-• Öppna en tidigare dag och mer av appen på ditt språk
+• Större text får fortfarande plats på skärmen
+• Öppna vilken tidigare dag som helst
+• Mer av appen på ditt språk
 </sv-SE>
 <th>
 Eateria 5.3
 • รูปมื้ออาหารอยู่บนการ์ด
 • เป้าแคลอรี กินวันนี้ และที่เหลือ
 • การ์ดมื้ออาหาร: รูป คะแนน และปริมาณ
-• ขนาดตัวอักษรขยายทั้งแอป
-• เปิดวันก่อน และแอปอีกส่วนในภาษาของคุณ
+• ตัวอักษรใหญ่ยังอยู่ในหน้าจอ
+• เปิดวันก่อนหน้าวันใดก็ได้
+• แอปอีกส่วนในภาษาของคุณ
 </th>
 <tr-TR>
 Eateria 5.3
 • Yemek fotoğrafı kartta kalır
 • Kalori hedefi, bugün yenen ve kalan
 • Yemek kartı: fotoğraf, puan ve porsiyon
-• Yazı boyutu tüm uygulamayı büyütür
-• Geçmiş bir günü açın, uygulamanın daha fazlası dilinizde
+• Daha büyük yazı yine ekrana sığar
+• Geçmiş herhangi bir günü açın
+• Uygulamanın daha fazlası dilinizde
 </tr-TR>
 <uk>
 Eateria 5.3
 • Фото страви лишається на картці
 • Ліміт калорій, з’їдено сьогодні і скільки лишилось
 • Картка страви: фото, оцінка і порція
-• Розмір тексту збільшує весь застосунок
-• Відкрийте минулий день і більше застосунку вашою мовою
+• Більший текст і далі вміщується на екрані
+• Відкрийте будь-який минулий день
+• Більше застосунку вашою мовою
 </uk>
 <ur>
 Eateria 5.3
 • کھانے کی تصویر کارڈ پر رہتی ہے
 • کیلوری حد، آج کھایا اور جو بچا
 • کھانے کا کارڈ: تصویر، اسکور اور مقدار
-• متن کا سائز پوری ایپ بڑا کرتا ہے
-• پچھلا دن کھولیں، اور ایپ کا مزید حصہ آپ کی زبان میں
+• بڑا متن اب بھی اسکرین پر رہتا ہے
+• کوئی بھی پچھلا دن کھولیں
+• ایپ کا مزید حصہ آپ کی زبان میں
 </ur>
 <vi>
 Eateria 5.3
 • Ảnh bữa ăn nằm trên thẻ
 • Giới hạn calo, đã ăn hôm nay và phần còn lại
 • Thẻ bữa ăn: ảnh, điểm và khẩu phần
-• Cỡ chữ phóng to cả ứng dụng
-• Mở một ngày trước và thêm ứng dụng bằng ngôn ngữ của bạn
+• Chữ lớn hơn vẫn nằm gọn trên màn hình
+• Mở bất kỳ ngày trước nào
+• Thêm ứng dụng bằng ngôn ngữ của bạn
 </vi>
 <zh-CN>
 Eateria 5.3
 • 餐食照片留在卡片上
 • 热量目标、今天吃了多少、还剩多少
 • 餐食卡片：照片、评分和份量
-• 文字大小会放大整个应用
-• 打开过去的一天，应用的更多界面使用你的语言
+• 更大的文字仍然能放进屏幕
+• 打开过去的任意一天
+• 应用的更多界面使用你的语言
 </zh-CN>

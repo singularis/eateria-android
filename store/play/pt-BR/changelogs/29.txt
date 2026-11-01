@@ -1,0 +1,7 @@
+Eateria 5.3
+• A foto da refeição fica no cartão
+• Meta de calorias, o que você comeu hoje e o que resta
+• Cartão da refeição: foto, pontuação e porção
+• Texto maior continua cabendo na tela
+• Abra qualquer dia passado
+• Mais do app no seu idioma

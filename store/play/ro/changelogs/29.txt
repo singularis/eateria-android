@@ -2,5 +2,6 @@ Eateria 5.3
 • Fotografia mesei rămâne pe card
 • Limită de calorii, mâncat azi și cât a rămas
 • Cardul mesei: fotografie, scor și porție
-• Mărimea textului mărește toată aplicația
-• Deschide o zi trecută și mai mult din aplicație în limba ta
+• Textul mai mare încape pe ecran
+• Deschide orice zi trecută
+• Mai mult din aplicație în limba ta

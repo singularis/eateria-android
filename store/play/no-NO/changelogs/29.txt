@@ -2,5 +2,6 @@ Eateria 5.3
 • Matbildet blir på kortet
 • Kalorigrense, spist i dag, og det som er igjen
 • Måltidskort med bilde, poeng og porsjon
-• Tekststørrelse forstørrer hele appen
-• Åpne en tidligere dag, og mer av appen på språket ditt
+• Større tekst får fortsatt plass på skjermen
+• Åpne en hvilken som helst tidligere dag
+• Mer av appen på språket ditt

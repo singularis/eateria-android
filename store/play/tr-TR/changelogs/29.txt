@@ -2,5 +2,6 @@ Eateria 5.3
 • Yemek fotoğrafı kartta kalır
 • Kalori hedefi, bugün yenen ve kalan
 • Yemek kartı: fotoğraf, puan ve porsiyon
-• Yazı boyutu tüm uygulamayı büyütür
-• Geçmiş bir günü açın, uygulamanın daha fazlası dilinizde
+• Daha büyük yazı yine ekrana sığar
+• Geçmiş herhangi bir günü açın
+• Uygulamanın daha fazlası dilinizde

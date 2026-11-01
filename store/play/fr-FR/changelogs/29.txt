@@ -2,5 +2,6 @@ Eateria 5.3
 • La photo du repas reste sur la carte
 • Objectif de calories, mangé aujourd’hui et ce qu’il reste
 • Carte du repas : photo, score et portion
-• La taille du texte agrandit toute l’app
-• Ouvrez un jour passé, et plus de l’app dans votre langue
+• Un texte plus grand tient encore à l’écran
+• Ouvrez n’importe quel jour passé
+• Plus de l’app dans votre langue

@@ -2,5 +2,6 @@ Eateria 5.3
 • A foto da refeição fica no cartão
 • Limite de calorias, comido hoje e o que resta
 • Cartão da refeição: foto, pontuação e porção
-• O tamanho do texto aumenta a app toda
-• Abra um dia anterior e mais da app no seu idioma
+• Texto maior continua a caber no ecrã
+• Abra qualquer dia anterior
+• Mais da app no seu idioma

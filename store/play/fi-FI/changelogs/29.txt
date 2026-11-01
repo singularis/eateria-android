@@ -2,5 +2,6 @@ Eateria 5.3
 • Ateriakuva pysyy kortissa
 • Kaloritavoite, tänään syöty ja mitä jää
 • Ateriakortti: kuva, pisteet ja annos
-• Tekstin koko suurentaa koko sovelluksen
-• Avaa mennyt päivä ja lisää sovelluksesta kielelläsi
+• Isompi teksti mahtuu yhä näytölle
+• Avaa mikä tahansa mennyt päivä
+• Lisää sovelluksesta kielelläsi
